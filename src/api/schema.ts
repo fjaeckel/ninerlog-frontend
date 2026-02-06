@@ -399,13 +399,25 @@ export interface components {
             arrivalIcao?: string | null;
             /**
              * Format: time
-             * @description Local departure time
+             * @description Off-block time (chocks off / engine start) in UTC. Marks the beginning of block time per EASA FCL.010 / FAA 14 CFR 1.1.
+             * @example 14:15:00
+             */
+            offBlockTime?: string | null;
+            /**
+             * Format: time
+             * @description On-block time (chocks on / engine shutdown) in UTC. Marks the end of block time per EASA FCL.010 / FAA 14 CFR 1.1.
+             * @example 16:55:00
+             */
+            onBlockTime?: string | null;
+            /**
+             * Format: time
+             * @description Takeoff time in UTC. Marks the beginning of airborne/flight time.
              * @example 14:30:00
              */
             departureTime?: string | null;
             /**
              * Format: time
-             * @description Local arrival time
+             * @description Landing time in UTC. Marks the end of airborne/flight time.
              * @example 16:45:00
              */
             arrivalTime?: string | null;
@@ -492,11 +504,25 @@ export interface components {
             arrivalIcao?: string | null;
             /**
              * Format: time
+             * @description Off-block time (chocks off / engine start) in UTC
+             * @example 14:15:00
+             */
+            offBlockTime?: string | null;
+            /**
+             * Format: time
+             * @description On-block time (chocks on / engine shutdown) in UTC
+             * @example 16:55:00
+             */
+            onBlockTime?: string | null;
+            /**
+             * Format: time
+             * @description Takeoff time in UTC
              * @example 14:30:00
              */
             departureTime?: string | null;
             /**
              * Format: time
+             * @description Landing time in UTC
              * @example 16:45:00
              */
             arrivalTime?: string | null;
@@ -555,9 +581,25 @@ export interface components {
             aircraftType?: string;
             departureIcao?: string | null;
             arrivalIcao?: string | null;
-            /** Format: time */
+            /**
+             * Format: time
+             * @description Off-block time (chocks off / engine start) in UTC
+             */
+            offBlockTime?: string | null;
+            /**
+             * Format: time
+             * @description On-block time (chocks on / engine shutdown) in UTC
+             */
+            onBlockTime?: string | null;
+            /**
+             * Format: time
+             * @description Takeoff time in UTC
+             */
             departureTime?: string | null;
-            /** Format: time */
+            /**
+             * Format: time
+             * @description Landing time in UTC
+             */
             arrivalTime?: string | null;
             /** Format: float */
             totalTime?: number;

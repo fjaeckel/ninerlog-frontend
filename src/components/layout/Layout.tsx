@@ -29,6 +29,12 @@ export default function Layout() {
                   Dashboard
                 </Link>
                 <Link
+                  to="/flights"
+                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Flights
+                </Link>
+                <Link
                   to="/licenses"
                   className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                 >

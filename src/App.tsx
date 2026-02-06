@@ -5,6 +5,8 @@ import RegisterPage from './pages/auth/RegisterPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import LicensesPage from './pages/licenses/LicensesPage';
+import FlightsPage from './pages/flights/FlightsPage';
+import FlightDetailPage from './pages/flights/FlightDetailPage';
 import Layout from './components/layout/Layout';
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
       <Route element={<Layout />}>
         <Route path="/dashboard" element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />} />
         <Route path="/licenses" element={isAuthenticated ? <LicensesPage /> : <Navigate to="/login" />} />
+        <Route path="/flights" element={isAuthenticated ? <FlightsPage /> : <Navigate to="/login" />} />
+        <Route path="/flights/:flightId" element={isAuthenticated ? <FlightDetailPage /> : <Navigate to="/login" />} />
       </Route>
 
       {/* Redirect root to dashboard or login */}
