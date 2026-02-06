@@ -20,19 +20,22 @@ echo "🔍 Using OpenAPI spec: $OPENAPI_SPEC"
 
 # Output directory
 OUTPUT_DIR="$PROJECT_ROOT/src/api"
+SCHEMA_FILE="$OUTPUT_DIR/schema.ts"
 
-echo "🧹 Cleaning output directory..."
-rm -rf "$OUTPUT_DIR"
+echo "🧹 Cleaning generated schema..."
+rm -f "$SCHEMA_FILE"
 mkdir -p "$OUTPUT_DIR"
 
-echo "⚙️  Generating TypeScript client..."
+echo "⚙️  Generating TypeScript types with openapi-typescript..."
 
-# Using openapi-typescript-codegen for better React Query integration
-npx @hey-api/openapi-ts \
-    -i "$OPENAPI_SPEC" \
-    -o "$OUTPUT_DIR" \
-    -c axios \
-    --name PilotLogClient
+# Use Node 24 if available, otherwise use default
+if [ -d "/opt/homebrew/opt/node@24" ]; then
+    export PATH="/opt/homebrew/opt/node@24/bin:$PATH"
+    echo "ℹ️  Using Node $(node --version)"
+fi
+
+# Generate types using openapi-typescript
+npx openapi-typescript "$OPENAPI_SPEC" -o "$SCHEMA_FILE"
 
 echo "📝 Adding warning header to generated files..."
 cat > "$OUTPUT_DIR/README.md" << 'EOF'

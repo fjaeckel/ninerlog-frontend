@@ -7,7 +7,7 @@ import { useRegister } from '../../hooks/useAuth';
 
 const registerSchema = z
   .object({
-    name: z.string().min(2, 'Name must be at least 2 characters').or(z.literal('')).optional(),
+    name: z.string().min(1, 'Name is required').max(255, 'Name must be less than 255 characters'),
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
@@ -63,7 +63,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Name (optional)
+              Full Name *
             </label>
             <input
               {...registerField('name')}

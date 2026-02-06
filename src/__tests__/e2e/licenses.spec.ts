@@ -155,7 +155,7 @@ test.describe('License Management', () => {
     
     // Mock update API
     await page.route('**/api/v1/licenses/1', (route) => {
-      if (route.request().method() === 'PUT') {
+      if (route.request().method() === 'PATCH') {
         route.fulfill({
           status: 200,
           body: JSON.stringify({

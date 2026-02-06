@@ -5,6 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useResetPassword } from '../../hooks/useAuth';
 
+// ⚠️ WARNING: /auth/reset-password is NOT in the OpenAPI spec
+// This page will fail until the backend implements this endpoint
+// See: pilotlog-project/api-spec/openapi.yaml
+
 const resetSchema = z.object({
   email: z.string().email('Invalid email address'),
 });

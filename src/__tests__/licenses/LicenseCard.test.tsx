@@ -7,12 +7,15 @@ import { License } from '../../stores/licenseStore';
 describe('LicenseCard', () => {
   const mockLicense: License = {
     id: '123',
+    userId: 'user-123',
     licenseType: 'EASA_PPL',
     licenseNumber: 'PPL-12345',
     issueDate: '2024-01-01',
     expiryDate: '2026-01-01',
     issuingAuthority: 'EASA',
     isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   };
 
   const mockOnEdit = vi.fn();

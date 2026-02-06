@@ -9,9 +9,6 @@ pnpm-debug.log*
 dist/
 build/
 
-# Generated files
-src/api/
-
 # Environment files
 .env
 .env.local

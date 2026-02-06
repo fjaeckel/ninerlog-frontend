@@ -1,15 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useLicenseStore, License } from '../stores/licenseStore';
-import apiClient from '../lib/api';
+import { useLicenseStore } from '../stores/licenseStore';
+import { apiClient } from '../api/client';
+import type { components, operations } from '../api/schema';
 
-interface CreateLicenseData {
-  licenseType: string;
-  licenseNumber: string;
-  issueDate: string;
-  expiryDate?: string;
-  issuingAuthority: string;
-  isActive?: boolean;
-}
+type License = components['schemas']['License'];
+type LicenseCreate = components['schemas']['LicenseCreate'];
+// LicenseUpdate is inline in the operation
+type LicenseUpdate = operations['updateLicense']['requestBody']['content']['application/json'];
 
 export const useLicenses = () => {
   const { setLicenses } = useLicenseStore();
@@ -17,8 +14,9 @@ export const useLicenses = () => {
   return useQuery({
     queryKey: ['licenses'],
     queryFn: async (): Promise<License[]> => {
-      const response = await apiClient.get('/licenses');
-      const licenses = response.data;
+      const { data, error } = await apiClient.GET('/licenses');
+      if (error) throw error;
+      const licenses = data as License[];
       setLicenses(licenses);
       return licenses;
     },
@@ -30,9 +28,12 @@ export const useCreateLicense = () => {
   const { addLicense } = useLicenseStore();
 
   return useMutation({
-    mutationFn: async (data: CreateLicenseData): Promise<License> => {
-      const response = await apiClient.post('/licenses', data);
-      return response.data;
+    mutationFn: async (requestData: LicenseCreate): Promise<License> => {
+      const { data, error } = await apiClient.POST('/licenses', {
+        body: requestData as any,
+      });
+      if (error) throw error;
+      return data as License;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['licenses'] });
@@ -46,9 +47,13 @@ export const useUpdateLicense = () => {
   const { updateLicense: updateLicenseInStore } = useLicenseStore();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<License> }): Promise<License> => {
-      const response = await apiClient.put(`/licenses/${id}`, data);
-      return response.data;
+    mutationFn: async ({ id, data: updateData }: { id: string; data: LicenseUpdate }): Promise<License> => {
+      const { data, error } = await apiClient.PATCH('/licenses/{licenseId}', {
+        params: { path: { licenseId: id } },
+        body: updateData as any,
+      });
+      if (error) throw error;
+      return data as License;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['licenses'] });
@@ -63,7 +68,10 @@ export const useDeleteLicense = () => {
 
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
-      await apiClient.delete(`/licenses/${id}`);
+      const { error } = await apiClient.DELETE('/licenses/{licenseId}', {
+        params: { path: { licenseId: id } },
+      });
+      if (error) throw error;
     },
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['licenses'] });

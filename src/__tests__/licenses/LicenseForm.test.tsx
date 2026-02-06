@@ -63,7 +63,8 @@ describe('LicenseForm', () => {
     await user.click(screen.getByRole('button', { name: /add license/i }));
     
     await waitFor(() => {
-      expect(screen.getByText(/license type is required/i)).toBeInTheDocument();
+      // Zod enum validation message for empty/invalid enum value
+      expect(screen.getByText(/invalid/i)).toBeInTheDocument();
       expect(screen.getByText(/license number is required/i)).toBeInTheDocument();
     });
   });
@@ -87,8 +88,7 @@ describe('LicenseForm', () => {
         licenseNumber: 'PPL-12345',
         issuingAuthority: 'EASA',
         issueDate: '2024-01-01',
-        expiryDate: '',
-        isActive: true,
+        expiryDate: null, // No expiry date provided
       });
       expect(mockOnClose).toHaveBeenCalled();
     });
@@ -98,11 +98,15 @@ describe('LicenseForm', () => {
     const user = userEvent.setup();
     const existingLicense = {
       id: '123',
-      licenseType: 'EASA_PPL',
+      userId: 'user-123',
+      licenseType: 'EASA_PPL' as const,
       licenseNumber: 'PPL-12345',
       issuingAuthority: 'EASA',
       issueDate: '2024-01-01',
+      expiryDate: null,
       isActive: true,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
     };
 
     vi.spyOn(useLicensesHook, 'useLicenses').mockReturnValue({
@@ -115,16 +119,17 @@ describe('LicenseForm', () => {
     
     renderWithProviders(<LicenseForm licenseId="123" onClose={mockOnClose} />);
     
-    await user.clear(screen.getByLabelText(/license number/i));
-    await user.type(screen.getByLabelText(/license number/i), 'PPL-67890');
+    // Update only sends expiryDate and isActive per OpenAPI spec
+    await user.type(screen.getByLabelText(/expiry date/i), '2026-01-01');
     await user.click(screen.getByRole('button', { name: /update license/i }));
     
     await waitFor(() => {
       expect(mockUpdate.mutateAsync).toHaveBeenCalledWith({
         id: '123',
-        data: expect.objectContaining({
-          licenseNumber: 'PPL-67890',
-        }),
+        data: {
+          expiryDate: '2026-01-01',
+          isActive: true,
+        },
       });
       expect(mockOnClose).toHaveBeenCalled();
     });

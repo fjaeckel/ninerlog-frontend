@@ -98,11 +98,13 @@ describe('RegisterPage', () => {
     
     renderWithProviders(<RegisterPage />);
     
-    // Fill in only the required fields (skip name to avoid validation error)
+    // Fill in all required fields (name is now required per OpenAPI spec)
+    const nameInput = screen.getByLabelText(/full name/i);
     const emailInput = screen.getByLabelText(/email address/i);
     const passwordInput = screen.getByLabelText(/^password$/i);
     const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
     
+    await user.type(nameInput, 'Test User');
     await user.type(emailInput, 'existing@example.com');
     await user.type(passwordInput, 'password123');
     await user.type(confirmPasswordInput, 'password123');

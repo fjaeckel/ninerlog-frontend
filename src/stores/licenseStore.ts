@@ -1,14 +1,8 @@
 import { create } from 'zustand';
+import type { License } from '../types/api';
 
-export interface License {
-  id: string;
-  licenseType: string;
-  licenseNumber: string;
-  issueDate: string;
-  expiryDate?: string;
-  issuingAuthority: string;
-  isActive: boolean;
-}
+// Re-export for backward compatibility
+export type { License };
 
 interface LicenseState {
   licenses: License[];

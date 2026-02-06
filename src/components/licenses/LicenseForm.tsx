@@ -3,25 +3,41 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateLicense, useUpdateLicense, useLicenses } from '../../hooks/useLicenses';
+import type { LicenseType, LicenseCreate, LicenseUpdate } from '../../types/api';
 
 const licenseSchema = z.object({
-  licenseType: z.string().min(1, 'License type is required'),
+  licenseType: z.enum([
+    'EASA_PPL',
+    'FAA_PPL',
+    'EASA_SPL',
+    'FAA_SPORT',
+    'EASA_CPL',
+    'FAA_CPL',
+    'EASA_ATPL',
+    'FAA_ATPL',
+    'EASA_IR',
+    'FAA_IR',
+  ]),
   licenseNumber: z.string().min(1, 'License number is required'),
   issueDate: z.string().min(1, 'Issue date is required'),
   expiryDate: z.string().optional(),
   issuingAuthority: z.string().min(1, 'Issuing authority is required'),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 type LicenseFormData = z.infer<typeof licenseSchema>;
 
 const LICENSE_TYPES = [
-  { value: 'EASA_PPL', label: 'EASA PPL' },
-  { value: 'FAA_PPL', label: 'FAA PPL' },
-  { value: 'EASA_SPL', label: 'EASA SPL' },
-  { value: 'FAA_SPORT', label: 'FAA Sport Pilot' },
-  { value: 'EASA_CPL', label: 'EASA CPL' },
-  { value: 'FAA_CPL', label: 'FAA CPL' },
+  { value: 'EASA_PPL', label: 'EASA PPL - Private Pilot License' },
+  { value: 'FAA_PPL', label: 'FAA PPL - Private Pilot Certificate' },
+  { value: 'EASA_SPL', label: 'EASA SPL - Sailplane Pilot License' },
+  { value: 'FAA_SPORT', label: 'FAA Sport Pilot Certificate' },
+  { value: 'EASA_CPL', label: 'EASA CPL - Commercial Pilot License' },
+  { value: 'FAA_CPL', label: 'FAA CPL - Commercial Pilot Certificate' },
+  { value: 'EASA_ATPL', label: 'EASA ATPL - Airline Transport Pilot License' },
+  { value: 'FAA_ATPL', label: 'FAA ATPL - Airline Transport Pilot Certificate' },
+  { value: 'EASA_IR', label: 'EASA IR - Instrument Rating' },
+  { value: 'FAA_IR', label: 'FAA IR - Instrument Rating' },
 ];
 
 interface LicenseFormProps {
@@ -44,23 +60,48 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
     reset,
   } = useForm<LicenseFormData>({
     resolver: zodResolver(licenseSchema),
-    defaultValues: existingLicense || {
+    defaultValues: existingLicense ? {
+      licenseType: existingLicense.licenseType,
+      licenseNumber: existingLicense.licenseNumber,
+      issueDate: existingLicense.issueDate,
+      expiryDate: existingLicense.expiryDate || undefined,
+      issuingAuthority: existingLicense.issuingAuthority,
+      isActive: existingLicense.isActive,
+    } : {
       isActive: true,
     },
   });
 
   useEffect(() => {
     if (existingLicense) {
-      reset(existingLicense);
+      reset({
+        licenseType: existingLicense.licenseType,
+        licenseNumber: existingLicense.licenseNumber,
+        issueDate: existingLicense.issueDate,
+        expiryDate: existingLicense.expiryDate || undefined,
+        issuingAuthority: existingLicense.issuingAuthority,
+        isActive: existingLicense.isActive,
+      });
     }
   }, [existingLicense, reset]);
 
   const onSubmit = async (data: LicenseFormData) => {
     try {
       if (isEditing && licenseId) {
-        await updateLicense.mutateAsync({ id: licenseId, data });
+        const updateData: LicenseUpdate = {
+          expiryDate: data.expiryDate || null,
+          isActive: data.isActive,
+        };
+        await updateLicense.mutateAsync({ id: licenseId, data: updateData });
       } else {
-        await createLicense.mutateAsync(data);
+        const createData: LicenseCreate = {
+          licenseType: data.licenseType as LicenseType,
+          licenseNumber: data.licenseNumber,
+          issueDate: data.issueDate,
+          expiryDate: data.expiryDate || null,
+          issuingAuthority: data.issuingAuthority,
+        };
+        await createLicense.mutateAsync(createData);
       }
       onClose();
     } catch (error) {

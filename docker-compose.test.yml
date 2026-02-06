@@ -1,0 +1,115 @@
+services:
+  frontend-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: pilotlog-frontend-test
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - CI=true
+    command: npm run test -- --run --reporter=verbose
+    profiles:
+      - test
+
+  frontend-e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
+    container_name: pilotlog-frontend-e2e
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - VITE_API_BASE_URL=http://api-test:3000/api/v1
+      - HOME=/root
+    command: npm run test:e2e
+    profiles:
+      - e2e
+    depends_on:
+      frontend-dev:
+        condition: service_started
+      api-test:
+        condition: service_healthy
+    networks:
+      - test-network
+
+  # Frontend dev server for E2E tests
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: pilotlog-frontend-dev-e2e
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://api-test:3000/api/v1
+    ports:
+      - "5174:5173"
+    command: npm run dev -- --host 0.0.0.0
+    profiles:
+      - e2e
+    networks:
+      - test-network
+
+  # Test database for e2e tests
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: pilotlog-frontend-test-db
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: pilotlog_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d pilotlog_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    tmpfs:
+      - /var/lib/postgresql/data
+    profiles:
+      - e2e
+    networks:
+      - test-network
+
+  # API service for e2e tests
+  api-test:
+    build:
+      context: ../pilotlog-api
+      dockerfile: Dockerfile
+    container_name: pilotlog-api-test
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://testuser:testpass@postgres-test:5432/pilotlog_test?sslmode=disable
+      PORT: 3000
+      GIN_MODE: test
+      JWT_SECRET: test-jwt-secret
+      REFRESH_SECRET: test-refresh-secret
+      JWT_EXPIRES_IN: 15m
+      REFRESH_EXPIRES_IN: 7d
+      CORS_ORIGIN: "*"
+      LOG_LEVEL: info
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    profiles:
+      - e2e
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
