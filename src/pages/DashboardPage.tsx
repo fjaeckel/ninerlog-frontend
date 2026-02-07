@@ -1,15 +1,23 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useLicenses } from '../hooks/useLicenses';
 import { useLicenseStore } from '../stores/licenseStore';
 import { useFlights } from '../hooks/useFlights';
-import { useLicenseStatistics } from '../hooks/useStatistics';
+import { useLicenseStatistics, useLicenseCurrency } from '../hooks/useStatistics';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const { data: licenses } = useLicenses();
-  const { activeLicense } = useLicenseStore();
+  const { activeLicense, setActiveLicense } = useLicenseStore();
   const navigate = useNavigate();
+
+  // Auto-select first license if none is active
+  useEffect(() => {
+    if (!activeLicense && licenses && licenses.length > 0) {
+      setActiveLicense(licenses[0]);
+    }
+  }, [activeLicense, licenses, setActiveLicense]);
 
   const { data: flightsData } = useFlights({
     licenseId: activeLicense?.id,
@@ -20,6 +28,7 @@ export default function DashboardPage() {
   });
 
   const { data: statistics } = useLicenseStatistics(activeLicense?.id || '');
+  const { data: currency } = useLicenseCurrency(activeLicense?.id || '');
 
   const recentFlights = flightsData?.data || [];
   const totalFlights = flightsData?.pagination?.total || 0;
@@ -51,6 +60,90 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {/* Currency Status */}
+      {currency && (
+        <div className="mt-6 card">
+          <h2 className="text-lg font-semibold mb-4">Currency Status (Last 90 Days)</h2>
+
+          {/* Overall status banner */}
+          <div className={`rounded-lg px-4 py-3 mb-4 ${
+            currency.isCurrent
+              ? 'bg-green-50 border border-green-200'
+              : 'bg-red-50 border border-red-200'
+          }`}>
+            <div className="flex items-center gap-2">
+              <span className={`text-lg ${currency.isCurrent ? 'text-green-600' : 'text-red-600'}`}>
+                {currency.isCurrent ? '✓' : '✗'}
+              </span>
+              <span className={`font-semibold ${currency.isCurrent ? 'text-green-800' : 'text-red-800'}`}>
+                {currency.isCurrent ? 'Current — cleared to carry passengers' : 'Not current — complete required landings'}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Day currency */}
+            <div className={`rounded-lg p-4 ${
+              currency.daysCurrent ? 'bg-green-50' : 'bg-red-50'
+            }`}>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">Day Currency</span>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                  currency.daysCurrent
+                    ? 'bg-green-200 text-green-800'
+                    : 'bg-red-200 text-red-800'
+                }`}>
+                  {currency.daysCurrent ? 'CURRENT' : 'NOT CURRENT'}
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">
+                {currency.last90Days.dayLandings}
+                <span className="text-sm font-normal text-gray-500">
+                  {' '}/ {currency.requiredLandings?.day ?? 3} landings
+                </span>
+              </p>
+              {!currency.daysCurrent && (
+                <p className="text-xs text-red-600 mt-1">
+                  Need {(currency.requiredLandings?.day ?? 3) - currency.last90Days.dayLandings} more day landing{(currency.requiredLandings?.day ?? 3) - currency.last90Days.dayLandings !== 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
+
+            {/* Night currency */}
+            <div className={`rounded-lg p-4 ${
+              currency.nightsCurrent ? 'bg-green-50' : 'bg-amber-50'
+            }`}>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">Night Currency</span>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                  currency.nightsCurrent
+                    ? 'bg-green-200 text-green-800'
+                    : 'bg-amber-200 text-amber-800'
+                }`}>
+                  {currency.nightsCurrent ? 'CURRENT' : 'NOT CURRENT'}
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">
+                {currency.last90Days.nightLandings}
+                <span className="text-sm font-normal text-gray-500">
+                  {' '}/ {currency.requiredLandings?.night ?? 3} landings
+                </span>
+              </p>
+              {!currency.nightsCurrent && currency.requiredLandings?.night !== 0 && (
+                <p className="text-xs text-amber-700 mt-1">
+                  Need {(currency.requiredLandings?.night ?? 3) - currency.last90Days.nightLandings} more night landing{(currency.requiredLandings?.night ?? 3) - currency.last90Days.nightLandings !== 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-3 text-xs text-gray-400 text-center">
+            {currency.last90Days.flights} flight{currency.last90Days.flights !== 1 ? 's' : ''} in the last 90 days &middot;
+            {' '}{currency.last90Days.totalLandings} total landing{currency.last90Days.totalLandings !== 1 ? 's' : ''}
+          </div>
+        </div>
+      )}
 
       {/* Hours breakdown */}
       {statistics && statistics.totalHours > 0 && (
