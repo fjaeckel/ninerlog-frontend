@@ -180,6 +180,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/aircraft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List aircraft
+         * @description Get all aircraft registered by the authenticated user
+         */
+        get: operations["listAircraft"];
+        put?: never;
+        /**
+         * Add aircraft
+         * @description Register a new aircraft to the user's database
+         */
+        post: operations["createAircraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/aircraft/{aircraftId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get aircraft details
+         * @description Get detailed information about a specific aircraft
+         */
+        get: operations["getAircraft"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete aircraft
+         * @description Delete an aircraft from the user's database. Note - flights using this aircraft will retain the registration/type as text.
+         */
+        delete: operations["deleteAircraft"];
+        options?: never;
+        head?: never;
+        /**
+         * Update aircraft
+         * @description Update aircraft information
+         */
+        patch: operations["updateAircraft"];
+        trace?: never;
+    };
     "/flights": {
         parameters: {
             query?: never;
@@ -356,6 +408,164 @@ export interface components {
             /** @example EASA */
             issuingAuthority: string;
         };
+        Aircraft: {
+            /**
+             * Format: uuid
+             * @example 770e8400-e29b-41d4-a716-446655440002
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            userId: string;
+            /**
+             * @description Aircraft registration/tail number
+             * @example D-EFGH
+             */
+            registration: string;
+            /**
+             * @description Aircraft type designation (e.g., C172, PA28, ASK21)
+             * @example C172
+             */
+            type: string;
+            /**
+             * @description Aircraft manufacturer
+             * @example Cessna
+             */
+            make: string;
+            /**
+             * @description Aircraft model name
+             * @example 172 Skyhawk
+             */
+            model: string;
+            /**
+             * @description Aircraft category (e.g., SEP - Single Engine Piston, MEP - Multi Engine Piston, TMG - Touring Motor Glider)
+             * @example SEP
+             */
+            category?: string | null;
+            /**
+             * @description Engine type
+             * @example piston
+             * @enum {string|null}
+             */
+            engineType?: "piston" | "turboprop" | "jet" | "electric" | "null" | null;
+            /**
+             * @description Whether aircraft has retractable gear, flaps, and constant speed propeller
+             * @default false
+             * @example false
+             */
+            isComplex: boolean;
+            /**
+             * @description Whether aircraft has more than 200 HP
+             * @default false
+             * @example false
+             */
+            isHighPerformance: boolean;
+            /**
+             * @description Whether aircraft has tailwheel (conventional gear)
+             * @default false
+             * @example false
+             */
+            isTailwheel: boolean;
+            /**
+             * @description Additional notes about the aircraft
+             * @example Club aircraft, requires checkout
+             */
+            notes?: string | null;
+            /**
+             * @description Whether aircraft is still active in the user's fleet
+             * @default true
+             * @example true
+             */
+            isActive: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-01-15T10:00:00Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-02-01T14:30:00Z
+             */
+            updatedAt: string;
+        };
+        AircraftCreate: {
+            /**
+             * @description Aircraft registration/tail number
+             * @example D-EFGH
+             */
+            registration: string;
+            /**
+             * @description Aircraft type designation
+             * @example C172
+             */
+            type: string;
+            /**
+             * @description Aircraft manufacturer
+             * @example Cessna
+             */
+            make: string;
+            /**
+             * @description Aircraft model name
+             * @example 172 Skyhawk
+             */
+            model: string;
+            /**
+             * @description Aircraft category
+             * @example SEP
+             */
+            category?: string | null;
+            /**
+             * @example piston
+             * @enum {string|null}
+             */
+            engineType?: "piston" | "turboprop" | "jet" | "electric" | "null" | null;
+            /**
+             * @default false
+             * @example false
+             */
+            isComplex: boolean;
+            /**
+             * @default false
+             * @example false
+             */
+            isHighPerformance: boolean;
+            /**
+             * @default false
+             * @example false
+             */
+            isTailwheel: boolean;
+            /** @example Club aircraft, requires checkout */
+            notes?: string | null;
+        };
+        AircraftUpdate: {
+            /** @example D-EFGH */
+            registration?: string;
+            /** @example C172 */
+            type?: string;
+            /** @example Cessna */
+            make?: string;
+            /** @example 172 Skyhawk */
+            model?: string;
+            /** @example SEP */
+            category?: string | null;
+            /**
+             * @example piston
+             * @enum {string|null}
+             */
+            engineType?: "piston" | "turboprop" | "jet" | "electric" | "null" | null;
+            /** @example false */
+            isComplex?: boolean;
+            /** @example false */
+            isHighPerformance?: boolean;
+            /** @example false */
+            isTailwheel?: boolean;
+            /** @example Club aircraft, requires checkout */
+            notes?: string | null;
+            /** @example true */
+            isActive?: boolean;
+        };
         Flight: {
             /**
              * Format: uuid
@@ -428,14 +638,24 @@ export interface components {
              */
             totalTime: number;
             /**
+             * @description Whether this flight was logged as pilot-in-command. Mutually exclusive with isDual.
+             * @example true
+             */
+            isPic: boolean;
+            /**
+             * @description Whether this flight was logged as dual instruction received. Mutually exclusive with isPic.
+             * @example false
+             */
+            isDual: boolean;
+            /**
              * Format: float
-             * @description Pilot-in-command time in hours
+             * @description Pilot-in-command time in hours (computed from isPic and totalTime)
              * @example 2.5
              */
             picTime: number;
             /**
              * Format: float
-             * @description Dual instruction time in hours
+             * @description Dual instruction time in hours (computed from isDual and totalTime)
              * @example 0
              */
             dualTime: number;
@@ -498,51 +718,70 @@ export interface components {
             aircraftReg: string;
             /** @example C172 */
             aircraftType: string;
-            /** @example EDDF */
-            departureIcao?: string | null;
-            /** @example EDDH */
-            arrivalIcao?: string | null;
+            /**
+             * @description Departure airport ICAO code
+             * @example EDDF
+             */
+            departureIcao: string;
+            /**
+             * @description Arrival airport ICAO code
+             * @example EDDH
+             */
+            arrivalIcao: string;
             /**
              * Format: time
              * @description Off-block time (chocks off / engine start) in UTC
              * @example 14:15:00
              */
-            offBlockTime?: string | null;
+            offBlockTime: string;
             /**
              * Format: time
              * @description On-block time (chocks on / engine shutdown) in UTC
              * @example 16:55:00
              */
-            onBlockTime?: string | null;
+            onBlockTime: string;
             /**
              * Format: time
              * @description Takeoff time in UTC
              * @example 14:30:00
              */
-            departureTime?: string | null;
+            departureTime: string;
             /**
              * Format: time
              * @description Landing time in UTC
              * @example 16:45:00
              */
-            arrivalTime?: string | null;
+            arrivalTime: string;
             /**
              * Format: float
+             * @description Total block time calculated from offBlockTime and onBlockTime. This field is computed by the server and should not be provided by the client.
              * @example 2.5
              */
-            totalTime: number;
+            readonly totalTime?: number;
+            /**
+             * @description Whether this flight is logged as pilot-in-command. When true, picTime is set to totalTime. Mutually exclusive with isDual.
+             * @default true
+             * @example true
+             */
+            isPic: boolean;
+            /**
+             * @description Whether this flight is logged as dual instruction received. When true, dualTime is set to totalTime. Mutually exclusive with isPic.
+             * @default false
+             * @example false
+             */
+            isDual: boolean;
             /**
              * Format: float
-             * @default 0
+             * @description Pilot-in-command time in hours. Computed by server — equals totalTime when isPic is true, 0 otherwise.
              * @example 2.5
              */
-            picTime: number;
+            readonly picTime?: number;
             /**
              * Format: float
-             * @default 0
+             * @description Dual instruction time in hours. Computed by server — equals totalTime when isDual is true, 0 otherwise.
              * @example 0
              */
-            dualTime: number;
+            readonly dualTime?: number;
             /**
              * Format: float
              * @default 0
@@ -562,12 +801,12 @@ export interface components {
              */
             ifrTime: number;
             /**
-             * @default 0
+             * @description Number of day landings performed during this flight
              * @example 3
              */
             landingsDay: number;
             /**
-             * @default 0
+             * @description Number of night landings performed during this flight
              * @example 1
              */
             landingsNight: number;
@@ -603,10 +842,10 @@ export interface components {
             arrivalTime?: string | null;
             /** Format: float */
             totalTime?: number;
-            /** Format: float */
-            picTime?: number;
-            /** Format: float */
-            dualTime?: number;
+            /** @description Whether this flight is logged as pilot-in-command */
+            isPic?: boolean;
+            /** @description Whether this flight is logged as dual instruction received */
+            isDual?: boolean;
             /** Format: float */
             soloTime?: number;
             /** Format: float */
@@ -762,6 +1001,31 @@ export interface components {
                 totalPages: number;
             };
         };
+        PaginatedAircraft: {
+            data: components["schemas"]["Aircraft"][];
+            pagination: {
+                /**
+                 * @description Current page (1-indexed)
+                 * @example 1
+                 */
+                page: number;
+                /**
+                 * @description Items per page
+                 * @example 20
+                 */
+                pageSize: number;
+                /**
+                 * @description Total number of items
+                 * @example 25
+                 */
+                total: number;
+                /**
+                 * @description Total number of pages
+                 * @example 2
+                 */
+                totalPages: number;
+            };
+        };
         Error: {
             /**
              * @description Error message
@@ -834,6 +1098,8 @@ export interface components {
     parameters: {
         /** @description License UUID */
         LicenseId: string;
+        /** @description Aircraft UUID */
+        AircraftId: string;
         /** @description Flight UUID */
         FlightId: string;
     };
@@ -1201,6 +1467,145 @@ export interface operations {
                     "application/json": components["schemas"]["Currency"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listAircraft: {
+        parameters: {
+            query?: {
+                /** @description Page number (1-indexed) */
+                page?: number;
+                /** @description Items per page */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of aircraft */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedAircraft"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    createAircraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AircraftCreate"];
+            };
+        };
+        responses: {
+            /** @description Aircraft created successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Aircraft"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            /** @description Aircraft registration already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getAircraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Aircraft UUID */
+                aircraftId: components["parameters"]["AircraftId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Aircraft details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Aircraft"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteAircraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Aircraft UUID */
+                aircraftId: components["parameters"]["AircraftId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Aircraft deleted successfully */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateAircraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Aircraft UUID */
+                aircraftId: components["parameters"]["AircraftId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AircraftUpdate"];
+            };
+        };
+        responses: {
+            /** @description Aircraft updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Aircraft"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
         };

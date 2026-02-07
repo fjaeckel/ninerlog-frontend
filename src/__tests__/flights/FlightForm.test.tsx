@@ -71,7 +71,7 @@ describe('FlightForm', () => {
 
     expect(screen.getByText('Basic Information')).toBeInTheDocument();
     expect(screen.getByText('Route & Times (UTC)')).toBeInTheDocument();
-    expect(screen.getByText('Flight Times (hours)')).toBeInTheDocument();
+    expect(screen.getByText('Flight Times')).toBeInTheDocument();
     expect(screen.getByText('Landings')).toBeInTheDocument();
   });
 
@@ -90,17 +90,16 @@ describe('FlightForm', () => {
     expect(screen.getByLabelText(/departure icao/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/arrival icao/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/off-block/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^takeoff$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^landing$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/takeoff/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^landing/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/on-block/i)).toBeInTheDocument();
   });
 
   it('renders time fields', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    expect(screen.getByLabelText(/total time/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/pic time/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/dual time/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/pic/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/dual/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/solo time/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/night time/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/ifr time/i)).toBeInTheDocument();
@@ -140,10 +139,13 @@ describe('FlightForm', () => {
     await user.type(screen.getByLabelText(/^date/i), '2026-01-15');
     await user.type(screen.getByLabelText(/aircraft registration/i), 'D-EFGH');
     await user.type(screen.getByLabelText(/aircraft type/i), 'C172');
-    await user.clear(screen.getByLabelText(/total time/i));
-    await user.type(screen.getByLabelText(/total time/i), '1.5');
-    await user.clear(screen.getByLabelText(/pic time/i));
-    await user.type(screen.getByLabelText(/pic time/i), '1.5');
+    await user.type(screen.getByLabelText(/departure icao/i), 'EDDF');
+    await user.type(screen.getByLabelText(/arrival icao/i), 'EDDH');
+    // Fill required time fields via fireEvent (time inputs)
+    fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
+    fireEvent.change(screen.getByLabelText(/takeoff/i), { target: { value: '14:30' } });
+    fireEvent.change(screen.getByLabelText(/^landing/i), { target: { value: '16:00' } });
+    fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '16:10' } });
 
     // Submit via form submit event directly
     fireEvent.submit(screen.getByRole('button', { name: /log flight/i }).closest('form')!);
@@ -154,8 +156,13 @@ describe('FlightForm', () => {
           licenseId: 'lic-1',
           aircraftReg: 'D-EFGH',
           aircraftType: 'C172',
-          totalTime: 1.5,
-          picTime: 1.5,
+          departureIcao: 'EDDF',
+          arrivalIcao: 'EDDH',
+          offBlockTime: '14:15:00',
+          onBlockTime: '16:10:00',
+          departureTime: '14:30:00',
+          arrivalTime: '16:00:00',
+          isPic: true,
         })
       );
       expect(mockOnClose).toHaveBeenCalled();
@@ -173,8 +180,12 @@ describe('FlightForm', () => {
     await user.type(screen.getByLabelText(/^date/i), '2026-01-15');
     await user.type(screen.getByLabelText(/aircraft registration/i), 'd-efgh');
     await user.type(screen.getByLabelText(/aircraft type/i), 'c172');
-    await user.clear(screen.getByLabelText(/total time/i));
-    await user.type(screen.getByLabelText(/total time/i), '1');
+    await user.type(screen.getByLabelText(/departure icao/i), 'eddf');
+    await user.type(screen.getByLabelText(/arrival icao/i), 'eddh');
+    fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
+    fireEvent.change(screen.getByLabelText(/takeoff/i), { target: { value: '14:30' } });
+    fireEvent.change(screen.getByLabelText(/^landing/i), { target: { value: '16:00' } });
+    fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '16:10' } });
 
     fireEvent.submit(screen.getByRole('button', { name: /log flight/i }).closest('form')!);
 
@@ -183,6 +194,8 @@ describe('FlightForm', () => {
         expect.objectContaining({
           aircraftReg: 'D-EFGH',
           aircraftType: 'C172',
+          departureIcao: 'EDDF',
+          arrivalIcao: 'EDDH',
         })
       );
     });
@@ -203,6 +216,8 @@ describe('FlightForm', () => {
       offBlockTime: '14:15:00',
       onBlockTime: '16:10:00',
       totalTime: 1.5,
+      isPic: true,
+      isDual: false,
       picTime: 1.5,
       dualTime: 0,
       soloTime: 0,

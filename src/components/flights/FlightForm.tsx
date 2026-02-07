@@ -11,15 +11,14 @@ const flightSchema = z.object({
   date: z.string().min(1, 'Date is required'),
   aircraftReg: z.string().min(1, 'Aircraft registration is required'),
   aircraftType: z.string().min(1, 'Aircraft type is required'),
-  departureIcao: z.string().max(4).optional().or(z.literal('')),
-  arrivalIcao: z.string().max(4).optional().or(z.literal('')),
-  offBlockTime: z.string().optional().or(z.literal('')),
-  onBlockTime: z.string().optional().or(z.literal('')),
-  departureTime: z.string().optional().or(z.literal('')),
-  arrivalTime: z.string().optional().or(z.literal('')),
-  totalTime: z.number().min(0, 'Must be 0 or greater'),
-  picTime: z.number().min(0),
-  dualTime: z.number().min(0),
+  departureIcao: z.string().min(1, 'Departure ICAO is required').max(4),
+  arrivalIcao: z.string().min(1, 'Arrival ICAO is required').max(4),
+  offBlockTime: z.string().min(1, 'Off-block time is required'),
+  onBlockTime: z.string().min(1, 'On-block time is required'),
+  departureTime: z.string().min(1, 'Takeoff time is required'),
+  arrivalTime: z.string().min(1, 'Landing time is required'),
+  isPic: z.boolean(),
+  isDual: z.boolean(),
   soloTime: z.number().min(0),
   nightTime: z.number().min(0),
   ifrTime: z.number().min(0),
@@ -49,7 +48,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    watch,
   } = useForm<FlightFormData>({
     resolver: zodResolver(flightSchema),
     defaultValues: {
@@ -63,9 +61,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       onBlockTime: '',
       departureTime: '',
       arrivalTime: '',
-      totalTime: 0,
-      picTime: 0,
-      dualTime: 0,
+      isPic: true,
+      isDual: false,
       soloTime: 0,
       nightTime: 0,
       ifrTime: 0,
@@ -88,9 +85,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         onBlockTime: existingFlight.onBlockTime?.slice(0, 5) || '',
         departureTime: existingFlight.departureTime?.slice(0, 5) || '',
         arrivalTime: existingFlight.arrivalTime?.slice(0, 5) || '',
-        totalTime: existingFlight.totalTime,
-        picTime: existingFlight.picTime,
-        dualTime: existingFlight.dualTime,
+        isPic: existingFlight.isPic,
+        isDual: existingFlight.isDual,
         soloTime: existingFlight.soloTime,
         nightTime: existingFlight.nightTime,
         ifrTime: existingFlight.ifrTime,
@@ -101,24 +97,21 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     }
   }, [existingFlight, isEditing, reset]);
 
-  const totalTime = watch('totalTime');
-
   const onSubmit = async (data: FlightFormData) => {
     try {
-      const payload = {
+      const basePayload = {
         licenseId: data.licenseId,
         date: data.date,
         aircraftReg: data.aircraftReg.toUpperCase(),
         aircraftType: data.aircraftType.toUpperCase(),
-        departureIcao: data.departureIcao?.toUpperCase() || null,
-        arrivalIcao: data.arrivalIcao?.toUpperCase() || null,
-        offBlockTime: data.offBlockTime ? data.offBlockTime + ':00' : null,
-        onBlockTime: data.onBlockTime ? data.onBlockTime + ':00' : null,
-        departureTime: data.departureTime ? data.departureTime + ':00' : null,
-        arrivalTime: data.arrivalTime ? data.arrivalTime + ':00' : null,
-        totalTime: data.totalTime,
-        picTime: data.picTime,
-        dualTime: data.dualTime,
+        departureIcao: data.departureIcao.toUpperCase(),
+        arrivalIcao: data.arrivalIcao.toUpperCase(),
+        offBlockTime: data.offBlockTime + ':00',
+        onBlockTime: data.onBlockTime + ':00',
+        departureTime: data.departureTime + ':00',
+        arrivalTime: data.arrivalTime + ':00',
+        isPic: data.isPic,
+        isDual: data.isDual,
         soloTime: data.soloTime,
         nightTime: data.nightTime,
         ifrTime: data.ifrTime,
@@ -128,9 +121,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       };
 
       if (isEditing && flightId) {
-        await updateFlight.mutateAsync({ id: flightId, data: payload });
+        await updateFlight.mutateAsync({ id: flightId, data: basePayload });
       } else {
-        await createFlight.mutateAsync(payload);
+        await createFlight.mutateAsync(basePayload);
       }
       onClose();
     } catch (error) {
@@ -211,7 +204,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
             <label htmlFor="departureIcao" className="block text-sm font-medium text-gray-700">
-              Departure ICAO
+              Departure ICAO *
             </label>
             <input
               {...register('departureIcao')}
@@ -221,10 +214,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               placeholder="EDDF"
               maxLength={4}
             />
+            {errors.departureIcao && (
+              <p className="mt-1 text-sm text-red-600">{errors.departureIcao.message}</p>
+            )}
           </div>
           <div>
             <label htmlFor="offBlockTime" className="block text-sm font-medium text-gray-700">
-              Off-Block
+              Off-Block *
             </label>
             <input
               {...register('offBlockTime')}
@@ -233,10 +229,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               className="input mt-1"
               title="Chocks off / engine start (UTC)"
             />
+            {errors.offBlockTime && (
+              <p className="mt-1 text-sm text-red-600">{errors.offBlockTime.message}</p>
+            )}
           </div>
           <div>
             <label htmlFor="departureTime" className="block text-sm font-medium text-gray-700">
-              Takeoff
+              Takeoff *
             </label>
             <input
               {...register('departureTime')}
@@ -245,11 +244,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               className="input mt-1"
               title="Takeoff time (UTC)"
             />
+            {errors.departureTime && (
+              <p className="mt-1 text-sm text-red-600">{errors.departureTime.message}</p>
+            )}
           </div>
           <div className="hidden sm:block" />
           <div>
             <label htmlFor="arrivalIcao" className="block text-sm font-medium text-gray-700">
-              Arrival ICAO
+              Arrival ICAO *
             </label>
             <input
               {...register('arrivalIcao')}
@@ -259,10 +261,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               placeholder="EDDH"
               maxLength={4}
             />
+            {errors.arrivalIcao && (
+              <p className="mt-1 text-sm text-red-600">{errors.arrivalIcao.message}</p>
+            )}
           </div>
           <div>
             <label htmlFor="onBlockTime" className="block text-sm font-medium text-gray-700">
-              On-Block
+              On-Block *
             </label>
             <input
               {...register('onBlockTime')}
@@ -271,10 +276,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               className="input mt-1"
               title="Chocks on / engine shutdown (UTC)"
             />
+            {errors.onBlockTime && (
+              <p className="mt-1 text-sm text-red-600">{errors.onBlockTime.message}</p>
+            )}
           </div>
           <div>
             <label htmlFor="arrivalTime" className="block text-sm font-medium text-gray-700">
-              Landing
+              Landing *
             </label>
             <input
               {...register('arrivalTime')}
@@ -283,57 +291,47 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               className="input mt-1"
               title="Landing time (UTC)"
             />
+            {errors.arrivalTime && (
+              <p className="mt-1 text-sm text-red-600">{errors.arrivalTime.message}</p>
+            )}
           </div>
         </div>
       </fieldset>
 
       {/* Flight Times */}
       <fieldset>
-        <legend className="text-sm font-semibold text-gray-900 mb-3">Flight Times (hours)</legend>
+        <legend className="text-sm font-semibold text-gray-900 mb-3">Flight Times</legend>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div>
-            <label htmlFor="totalTime" className="block text-sm font-medium text-gray-700">
-              Total Time *
+          {isEditing && existingFlight && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Total Time
+              </label>
+              <div className="input mt-1 bg-gray-50 text-gray-700">
+                {existingFlight.totalTime.toFixed(1)}h
+              </div>
+              <p className="mt-1 text-xs text-gray-500">Computed from block times</p>
+            </div>
+          )}
+          <div className="flex items-center gap-6 sm:col-span-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                {...register('isPic')}
+                type="checkbox"
+                id="isPic"
+                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span className="text-sm font-medium text-gray-700">PIC</span>
             </label>
-            <input
-              {...register('totalTime', { valueAsNumber: true })}
-              type="number"
-              id="totalTime"
-              step="0.1"
-              min="0"
-              className="input mt-1"
-            />
-            {errors.totalTime && (
-              <p className="mt-1 text-sm text-red-600">{errors.totalTime.message}</p>
-            )}
-          </div>
-          <div>
-            <label htmlFor="picTime" className="block text-sm font-medium text-gray-700">
-              PIC Time
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                {...register('isDual')}
+                type="checkbox"
+                id="isDual"
+                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span className="text-sm font-medium text-gray-700">Dual (instruction received)</span>
             </label>
-            <input
-              {...register('picTime', { valueAsNumber: true })}
-              type="number"
-              id="picTime"
-              step="0.1"
-              min="0"
-              max={totalTime || undefined}
-              className="input mt-1"
-            />
-          </div>
-          <div>
-            <label htmlFor="dualTime" className="block text-sm font-medium text-gray-700">
-              Dual Time
-            </label>
-            <input
-              {...register('dualTime', { valueAsNumber: true })}
-              type="number"
-              id="dualTime"
-              step="0.1"
-              min="0"
-              max={totalTime || undefined}
-              className="input mt-1"
-            />
           </div>
           <div>
             <label htmlFor="soloTime" className="block text-sm font-medium text-gray-700">
@@ -345,7 +343,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               id="soloTime"
               step="0.1"
               min="0"
-              max={totalTime || undefined}
               className="input mt-1"
             />
           </div>
@@ -359,7 +356,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               id="nightTime"
               step="0.1"
               min="0"
-              max={totalTime || undefined}
               className="input mt-1"
             />
           </div>
@@ -373,7 +369,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               id="ifrTime"
               step="0.1"
               min="0"
-              max={totalTime || undefined}
               className="input mt-1"
             />
           </div>

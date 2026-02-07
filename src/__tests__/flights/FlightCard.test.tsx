@@ -20,6 +20,8 @@ const mockFlight: Flight = {
   offBlockTime: '14:15:00',
   onBlockTime: '16:10:00',
   totalTime: 1.5,
+  isPic: true,
+  isDual: false,
   picTime: 1.5,
   dualTime: 0,
   soloTime: 0,

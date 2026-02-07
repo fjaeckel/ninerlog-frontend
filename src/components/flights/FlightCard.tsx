@@ -59,6 +59,11 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
             <span className="text-gray-500">Dual:</span> {flight.dualTime.toFixed(1)}h
           </div>
         )}
+        {!flight.isPic && !flight.isDual && (
+          <div>
+            <span className="text-gray-500">Function:</span> —
+          </div>
+        )}
         {flight.soloTime > 0 && (
           <div>
             <span className="text-gray-500">Solo:</span> {flight.soloTime.toFixed(1)}h
