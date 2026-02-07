@@ -49,7 +49,6 @@ export default function FlightDetailPage() {
     { label: 'Pilot Function', value: -1, text: flight.isPic ? 'PIC' : flight.isDual ? 'Dual' : '—' },
     { label: 'PIC Time', value: flight.picTime },
     { label: 'Dual Time', value: flight.dualTime },
-    { label: 'Solo Time', value: flight.soloTime },
     { label: 'Night Time', value: flight.nightTime },
     { label: 'IFR Time', value: flight.ifrTime },
   ];

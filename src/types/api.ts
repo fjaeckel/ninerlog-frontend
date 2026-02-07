@@ -105,7 +105,6 @@ export interface Flight {
   totalTime: number;
   picTime: number;
   dualTime: number;
-  soloTime: number;
   nightTime: number;
   ifrTime: number;
   landingsDay: number;
@@ -127,7 +126,6 @@ export interface FlightCreate {
   totalTime: number;
   picTime?: number;
   dualTime?: number;
-  soloTime?: number;
   nightTime?: number;
   ifrTime?: number;
   landingsDay?: number;
@@ -146,7 +144,6 @@ export interface FlightUpdate {
   totalTime?: number;
   picTime?: number;
   dualTime?: number;
-  soloTime?: number;
   nightTime?: number;
   ifrTime?: number;
   landingsDay?: number;
@@ -189,7 +186,6 @@ export interface Statistics {
   totalHours: number;
   picHours: number;
   dualHours: number;
-  soloHours: number;
   nightHours: number;
   ifrHours: number;
   landingsDay: number;

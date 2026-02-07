@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
 import { useLicenseStore } from '../../stores/licenseStore';
 import FlightForm from '../../components/flights/FlightForm';
-import FlightCard from '../../components/flights/FlightCard';
 import type { operations } from '../../api/schema';
 
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
@@ -140,16 +140,77 @@ export default function FlightsPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {flights.map((flight) => (
-              <FlightCard
-                key={flight.id}
-                flight={flight}
-                onEdit={() => handleEdit(flight.id)}
-                onDelete={() => handleDelete(flight.id)}
-                onClick={() => navigate(`/flights/${flight.id}`)}
-              />
-            ))}
+          <div className="overflow-x-auto card p-0">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium text-gray-500">Date</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-500">Route</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-500">Aircraft</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-500">Off / On Block</th>
+                  <th className="px-4 py-3 text-right font-medium text-gray-500">Total</th>
+                  <th className="px-4 py-3 text-center font-medium text-gray-500">Function</th>
+                  <th className="px-4 py-3 text-right font-medium text-gray-500">Ldg</th>
+                  <th className="px-4 py-3 text-right font-medium text-gray-500" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {flights.map((flight) => (
+                  <tr
+                    key={flight.id}
+                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => navigate(`/flights/${flight.id}`)}
+                  >
+                    <td className="px-4 py-3 whitespace-nowrap text-gray-900">
+                      {format(new Date(flight.date), 'dd MMM yyyy')}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap font-medium">
+                      {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-gray-600">
+                      <span className="font-medium">{flight.aircraftReg}</span>
+                      <span className="text-gray-400 ml-1">({flight.aircraftType})</span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-gray-600 tabular-nums">
+                      {flight.offBlockTime?.slice(0, 5) || '—'} / {flight.onBlockTime?.slice(0, 5) || '—'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-right font-semibold tabular-nums">
+                      {flight.totalTime.toFixed(1)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
+                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                        flight.isPic
+                          ? 'bg-blue-100 text-blue-700'
+                          : flight.isDual
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : '—'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-right tabular-nums text-gray-600">
+                      {flight.landingsDay + flight.landingsNight}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-right">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleEdit(flight.id); }}
+                        className="text-gray-400 hover:text-primary-600 mr-2"
+                        title="Edit"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(flight.id); }}
+                        className="text-gray-400 hover:text-red-600"
+                        title="Delete"
+                      >
+                        ✕
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {/* Pagination */}

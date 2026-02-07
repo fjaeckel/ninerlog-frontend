@@ -661,12 +661,6 @@ export interface components {
             dualTime: number;
             /**
              * Format: float
-             * @description Solo flight time in hours
-             * @example 0
-             */
-            soloTime: number;
-            /**
-             * Format: float
              * @description Night flying time in hours
              * @example 0.5
              */
@@ -785,12 +779,6 @@ export interface components {
             /**
              * Format: float
              * @default 0
-             * @example 0
-             */
-            soloTime: number;
-            /**
-             * Format: float
-             * @default 0
              * @example 0.5
              */
             nightTime: number;
@@ -847,8 +835,6 @@ export interface components {
             /** @description Whether this flight is logged as dual instruction received */
             isDual?: boolean;
             /** Format: float */
-            soloTime?: number;
-            /** Format: float */
             nightTime?: number;
             /** Format: float */
             ifrTime?: number;
@@ -885,12 +871,6 @@ export interface components {
              * @example 45.5
              */
             dualHours: number;
-            /**
-             * Format: float
-             * @description Total solo hours
-             * @example 20
-             */
-            soloHours: number;
             /**
              * Format: float
              * @description Total night hours

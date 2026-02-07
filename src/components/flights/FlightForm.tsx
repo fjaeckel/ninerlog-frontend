@@ -19,7 +19,6 @@ const flightSchema = z.object({
   arrivalTime: z.string().min(1, 'Landing time is required'),
   isPic: z.boolean(),
   isDual: z.boolean(),
-  soloTime: z.number().min(0),
   nightTime: z.number().min(0),
   ifrTime: z.number().min(0),
   landingsDay: z.number().int().min(0),
@@ -63,7 +62,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       arrivalTime: '',
       isPic: true,
       isDual: false,
-      soloTime: 0,
       nightTime: 0,
       ifrTime: 0,
       landingsDay: 1,
@@ -87,7 +85,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         arrivalTime: existingFlight.arrivalTime?.slice(0, 5) || '',
         isPic: existingFlight.isPic,
         isDual: existingFlight.isDual,
-        soloTime: existingFlight.soloTime,
         nightTime: existingFlight.nightTime,
         ifrTime: existingFlight.ifrTime,
         landingsDay: existingFlight.landingsDay,
@@ -112,7 +109,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         arrivalTime: data.arrivalTime + ':00',
         isPic: data.isPic,
         isDual: data.isDual,
-        soloTime: data.soloTime,
         nightTime: data.nightTime,
         ifrTime: data.ifrTime,
         landingsDay: data.landingsDay,
@@ -332,19 +328,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               />
               <span className="text-sm font-medium text-gray-700">Dual (instruction received)</span>
             </label>
-          </div>
-          <div>
-            <label htmlFor="soloTime" className="block text-sm font-medium text-gray-700">
-              Solo Time
-            </label>
-            <input
-              {...register('soloTime', { valueAsNumber: true })}
-              type="number"
-              id="soloTime"
-              step="0.1"
-              min="0"
-              className="input mt-1"
-            />
           </div>
           <div>
             <label htmlFor="nightTime" className="block text-sm font-medium text-gray-700">

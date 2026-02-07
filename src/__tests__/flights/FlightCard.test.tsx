@@ -24,7 +24,6 @@ const mockFlight: Flight = {
   isDual: false,
   picTime: 1.5,
   dualTime: 0,
-  soloTime: 0,
   nightTime: 0.5,
   ifrTime: 0,
   landingsDay: 2,
@@ -201,7 +200,6 @@ describe('FlightCard', () => {
     const flightNoExtras = {
       ...mockFlight,
       dualTime: 0,
-      soloTime: 0,
       nightTime: 0,
       ifrTime: 0,
     };
@@ -216,7 +214,6 @@ describe('FlightCard', () => {
     );
 
     expect(screen.queryByText(/Dual:/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Solo:/)).not.toBeInTheDocument();
     expect(screen.queryByText(/IFR:/)).not.toBeInTheDocument();
   });
 });

@@ -100,7 +100,6 @@ describe('FlightForm', () => {
 
     expect(screen.getByLabelText(/pic/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/dual/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/solo time/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/night time/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/ifr time/i)).toBeInTheDocument();
   });
@@ -220,7 +219,6 @@ describe('FlightForm', () => {
       isDual: false,
       picTime: 1.5,
       dualTime: 0,
-      soloTime: 0,
       nightTime: 0,
       ifrTime: 0,
       landingsDay: 2,

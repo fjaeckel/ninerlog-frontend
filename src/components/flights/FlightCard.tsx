@@ -64,11 +64,6 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
             <span className="text-gray-500">Function:</span> —
           </div>
         )}
-        {flight.soloTime > 0 && (
-          <div>
-            <span className="text-gray-500">Solo:</span> {flight.soloTime.toFixed(1)}h
-          </div>
-        )}
         {flight.nightTime > 0 && (
           <div>
             <span className="text-gray-500">Night:</span> {flight.nightTime.toFixed(1)}h

@@ -60,7 +60,6 @@ export default function DashboardPage() {
             {[
               { label: 'PIC', value: statistics.picHours },
               { label: 'Dual', value: statistics.dualHours },
-              { label: 'Solo', value: statistics.soloHours },
               { label: 'Night', value: statistics.nightHours },
               { label: 'IFR', value: statistics.ifrHours },
             ].map(({ label, value }) => (
