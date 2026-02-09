@@ -2,6 +2,63 @@
 
 You are assisting with the PilotLog Frontend repository, a mobile-first Progressive Web App for pilot logbook management.
 
+## IMPORTANT: Design System
+
+**ALL UI code must follow the PilotLog Design System.** Before writing any UI code, consult:
+
+- `../pilotlog-project/docs/design/design-system.md` — Colors, typography, spacing, tokens
+- `../pilotlog-project/docs/design/components.md` — Component specs (Button, Input, Badge, Card, etc.)
+- `../pilotlog-project/docs/design/screens.md` — Screen layouts, wireframes, states
+- `../pilotlog-project/docs/design/interactions.md` — Navigation, forms, gestures, offline UX
+- `../pilotlog-project/docs/design/handoff.md` — Implementation guide, naming, patterns
+
+### Design System Quick Reference
+
+```
+Primary Blue:     #2563EB (brand-600, buttons, links)
+Aviation Dark:    #1E3A5F (brand-800, header backgrounds)
+Success Green:    #16A34A (current-600, valid status)
+Warning Amber:    #D97706 (expiring-600, expiring status)
+Danger Red:       #DC2626 (expired-600, expired/critical)
+Background:       slate-50 (light) / slate-900 (dark)
+Card:             white / slate-800 (dark), border-slate-200/700, rounded-lg, shadow-sm
+Font:             Inter (UI) / JetBrains Mono (data)
+Min touch target: 44×44px
+Border radius:    8px cards / 6px inputs+buttons / full badges
+```
+
+### Color Rules
+- Use `slate-*` palette for neutrals (NOT `gray-*`)
+- Use `blue-600` for primary actions, `blue-700` on hover
+- Use aviation signal colors: green=current, amber=expiring, red=expired
+- Always provide `dark:` variant classes alongside light mode
+- Never rely on color alone — pair with icons/text
+
+### Typography Classes
+- Page title: `text-2xl font-bold text-slate-800 dark:text-slate-100`
+- Section title: `text-lg font-semibold`
+- Body: `text-base text-slate-600 dark:text-slate-300`
+- Muted: `text-sm text-slate-500 dark:text-slate-400`
+- Data display: `font-mono text-sm tabular-nums`
+- Large data: `text-2xl font-bold font-mono tabular-nums`
+
+### Component Classes (defined in index.css)
+- `.btn-primary` / `.btn-secondary` / `.btn-danger` / `.btn-ghost`
+- `.btn-sm` / `.btn-lg`
+- `.input` / `.input-error`
+- `.card` / `.card-hover`
+- `.badge-current` / `.badge-expiring` / `.badge-expired` / `.badge-info` / `.badge-neutral`
+- `.form-label` / `.form-error` / `.form-helper`
+- `.page-title` / `.section-title`
+- `.data-lg` / `.data-sm`
+
+### Layout Structure
+- Fixed header: `h-14` mobile, `h-16` desktop (lg:)
+- Bottom nav: `h-14`, hidden on `lg:` screens
+- Desktop sidebar: `w-64`, visible on `lg:` screens
+- Main content: `pt-14 lg:pt-16 pb-16 lg:pb-4 lg:pl-64`
+- Content max-widths: forms=640px, lists=960px, dashboard=1280px
+
 ## Repository Context
 
 This is the **frontend web application** built with React and TypeScript. It provides:
@@ -303,11 +360,16 @@ Essential fields to include in forms:
 - Suspense for async components
 
 ### Styling
-- Tailwind utility classes preferred
-- Extract to component classes when repeating
-- Dark mode support via `dark:` variants
-- Responsive breakpoints: sm, md, lg, xl, 2xl
-- Semantic color names from theme
+- **Always follow the PilotLog Design System** (see `../pilotlog-project/docs/design/`)
+- Tailwind utility classes preferred, use design system component classes
+- Use `slate-*` palette for neutrals (NEVER `gray-*`)
+- Always provide `dark:` variant classes alongside light mode
+- Use aviation signal colors: green=current, amber=expiring, red=expired
+- Responsive breakpoints: sm (640), md (768), lg (1024), xl (1280), 2xl (1536)
+- Border radius: rounded-lg (cards), rounded-md (inputs/buttons), rounded-full (badges)
+- Min touch targets: 44×44px on all interactive elements
+- Extract to component classes in index.css when repeating patterns
+- Use `font-mono tabular-nums` for all numeric data display
 
 ### Testing
 - Test user interactions, not implementation

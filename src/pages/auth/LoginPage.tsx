@@ -7,7 +7,7 @@ import { useLogin } from '../../hooks/useAuth';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -31,44 +31,51 @@ export default function LoginPage() {
       await login.mutateAsync(data);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.message || 'Invalid email or password.');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">PilotLog</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">Sign in to your account</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4">
+      <div className="w-full max-w-[400px] space-y-8">
+        {/* Logo & Tagline */}
+        <div className="text-center">
+          <div className="text-4xl mb-2">✈</div>
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">PilotLog</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Your digital logbook, always current.
+          </p>
         </div>
 
-        <form className="mt-8 space-y-6 card" onSubmit={handleSubmit(onSubmit)}>
+        <form
+          className="card p-6 space-y-5"
+          onSubmit={handleSubmit(onSubmit)}
+        >
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email address
+            <label htmlFor="email" className="form-label">
+              Email
             </label>
             <input
               {...register('email')}
               type="email"
               id="email"
               autoComplete="email"
-              className="input mt-1"
+              className={`input ${errors.email ? 'input-error' : ''}`}
               placeholder="pilot@example.com"
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              <p className="form-error">{errors.email.message}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="form-label">
               Password
             </label>
             <input
@@ -76,18 +83,18 @@ export default function LoginPage() {
               type="password"
               id="password"
               autoComplete="current-password"
-              className="input mt-1"
+              className={`input ${errors.password ? 'input-error' : ''}`}
               placeholder="••••••••"
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+              <p className="form-error">{errors.password.message}</p>
             )}
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="text-right">
             <Link
               to="/reset-password"
-              className="text-sm font-medium text-primary-600 hover:text-primary-500"
+              className="text-sm text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
             >
               Forgot password?
             </Link>
@@ -96,15 +103,18 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting || login.isPending}
-            className="btn-primary w-full"
+            className="btn-primary w-full btn-lg"
           >
-            {isSubmitting || login.isPending ? 'Signing in...' : 'Sign in'}
+            {isSubmitting || login.isPending ? 'Signing in...' : 'Log In'}
           </button>
 
-          <p className="text-center text-sm text-gray-600">
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400">
             Don't have an account?{' '}
-            <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
-              Register here
+            <Link
+              to="/register"
+              className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Create one
             </Link>
           </p>
         </form>

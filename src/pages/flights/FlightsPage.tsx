@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
 import { useLicenseStore } from '../../stores/licenseStore';
@@ -16,7 +16,17 @@ export default function FlightsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const deleteFlight = useDeleteFlight();
+
+  // Open form modal when navigated with state.openForm (e.g. from bottom nav + button)
+  useEffect(() => {
+    if ((location.state as any)?.openForm) {
+      setShowForm(true);
+      // Clear the state so refreshing doesn't re-open
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   const params: ListFlightsParams = {
     licenseId: activeLicense?.id,
@@ -56,16 +66,30 @@ export default function FlightsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-gray-600">Loading flights...</div>
+      <div className="mx-auto max-w-[960px] py-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48"></div>
+          <div className="card p-0">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="px-4 py-4 border-b border-slate-100 dark:border-slate-700 last:border-0">
+                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-red-600">Error loading flights. Please try again.</div>
+      <div className="mx-auto max-w-[960px] py-6">
+        <div className="card text-center py-12">
+          <div className="text-4xl mb-3">⚠</div>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Something went wrong</h2>
+          <p className="text-slate-500 dark:text-slate-400">Error loading flights. Please try again.</p>
+        </div>
       </div>
     );
   }
@@ -74,32 +98,32 @@ export default function FlightsPage() {
   const pagination = data?.pagination;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="mx-auto max-w-[960px] py-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Flight Log</h1>
+          <h1 className="page-title">Flight Log</h1>
           {pagination && (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               {pagination.total} flight{pagination.total !== 1 ? 's' : ''} total
             </p>
           )}
         </div>
         <button onClick={() => setShowForm(true)} className="btn-primary">
-          Log Flight
+          + Log Flight
         </button>
       </div>
 
       {/* Sort controls */}
       <div className="flex gap-2 mb-4 text-sm">
-        <span className="text-gray-500 py-1">Sort by:</span>
+        <span className="text-slate-500 dark:text-slate-400 py-1">Sort by:</span>
         {(['date', 'totalTime', 'createdAt'] as const).map((field) => (
           <button
             key={field}
             onClick={() => toggleSort(field)}
             className={`px-3 py-1 rounded-full transition-colors ${
               sortBy === field
-                ? 'bg-primary-100 text-primary-700 font-medium'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-blue-100 text-blue-700 font-medium dark:bg-blue-900/30 dark:text-blue-400'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
             }`}
           >
             {field === 'date' ? 'Date' : field === 'totalTime' ? 'Hours' : 'Added'}
@@ -110,18 +134,19 @@ export default function FlightsPage() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true">
+          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
                   {editingFlight ? 'Edit Flight' : 'Log New Flight'}
                 </h2>
                 <button
                   onClick={handleCloseForm}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  aria-label="Close"
                 >
-                  ×
+                  ✕
                 </button>
               </div>
               <FlightForm flightId={editingFlight} onClose={handleCloseForm} />
@@ -133,75 +158,79 @@ export default function FlightsPage() {
       {/* Flight List */}
       {flights.length === 0 ? (
         <div className="card text-center py-12">
-          <p className="text-gray-600 mb-4">No flights logged yet.</p>
+          <div className="text-5xl mb-4">✈</div>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">No flights logged yet</h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-6">
+            Start building your logbook by adding your first flight.
+          </p>
           <button onClick={() => setShowForm(true)} className="btn-primary">
-            Log Your First Flight
+            + Log Your First Flight
           </button>
         </div>
       ) : (
         <>
           <div className="overflow-x-auto card p-0">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-800/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Date</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Route</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Aircraft</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Off / On Block</th>
-                  <th className="px-4 py-3 text-right font-medium text-gray-500">Total</th>
-                  <th className="px-4 py-3 text-center font-medium text-gray-500">Function</th>
-                  <th className="px-4 py-3 text-right font-medium text-gray-500">Ldg</th>
-                  <th className="px-4 py-3 text-right font-medium text-gray-500" />
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Date</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Route</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Aircraft</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Off / On Block</th>
+                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">Total</th>
+                  <th className="px-4 py-3 text-center font-medium text-slate-500 dark:text-slate-400">Function</th>
+                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">Ldg</th>
+                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                 {flights.map((flight) => (
                   <tr
                     key={flight.id}
-                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition-colors"
                     onClick={() => navigate(`/flights/${flight.id}`)}
                   >
-                    <td className="px-4 py-3 whitespace-nowrap text-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-slate-800 dark:text-slate-200">
                       {format(new Date(flight.date), 'dd MMM yyyy')}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap font-medium">
+                    <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-800 dark:text-slate-100">
                       {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">
                       <span className="font-medium">{flight.aircraftReg}</span>
-                      <span className="text-gray-400 ml-1">({flight.aircraftType})</span>
+                      <span className="text-slate-400 dark:text-slate-500 ml-1">({flight.aircraftType})</span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-gray-600 tabular-nums">
+                    <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono tabular-nums text-xs">
                       {flight.offBlockTime?.slice(0, 5) || '—'} / {flight.onBlockTime?.slice(0, 5) || '—'}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-right font-semibold tabular-nums">
+                    <td className="px-4 py-3 whitespace-nowrap text-right font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">
                       {flight.totalTime.toFixed(1)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-center">
-                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                         flight.isPic
-                          ? 'bg-blue-100 text-blue-700'
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                           : flight.isDual
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-gray-100 text-gray-500'
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                            : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
                       }`}>
                         {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : '—'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-right tabular-nums text-gray-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
                       {flight.landingsDay + flight.landingsNight}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleEdit(flight.id); }}
-                        className="text-gray-400 hover:text-primary-600 mr-2"
+                        className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mr-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
                         title="Edit"
                       >
                         ✎
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(flight.id); }}
-                        className="text-gray-400 hover:text-red-600"
+                        className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
                         title="Delete"
                       >
                         ✕
@@ -219,17 +248,17 @@ export default function FlightsPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="btn-secondary text-sm disabled:opacity-50"
+                className="btn-secondary text-sm"
               >
                 Previous
               </button>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-slate-600 dark:text-slate-400">
                 Page {pagination.page} of {pagination.totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
                 disabled={page >= pagination.totalPages}
-                className="btn-secondary text-sm disabled:opacity-50"
+                className="btn-secondary text-sm"
               >
                 Next
               </button>

@@ -30,48 +30,65 @@ export default function LicensesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-600">Loading licenses...</div>
+      <div className="mx-auto max-w-[960px] py-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48"></div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="card h-48">
+                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-3"></div>
+                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mb-2"></div>
+                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-2/3"></div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-600">Error loading licenses. Please try again.</div>
+      <div className="mx-auto max-w-[960px] py-6">
+        <div className="card text-center py-12">
+          <div className="text-4xl mb-3">⚠</div>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Something went wrong</h2>
+          <p className="text-slate-500 dark:text-slate-400">Error loading licenses. Please try again.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">My Licenses</h1>
+    <div className="mx-auto max-w-[960px] py-6">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="page-title">My Licenses</h1>
         <button onClick={() => setShowForm(true)} className="btn-primary">
-          Add License
+          + Add License
         </button>
       </div>
 
       {licenses && licenses.length > 1 && (
-        <div className="mb-6">
+        <div className="card mb-6 p-4">
           <LicenseSwitcher />
         </div>
       )}
 
+      {/* Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true">
+          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-[560px] w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
                   {editingLicense ? 'Edit License' : 'Add License'}
                 </h2>
                 <button
                   onClick={handleCloseForm}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  aria-label="Close"
                 >
-                  ×
+                  ✕
                 </button>
               </div>
               <LicenseForm licenseId={editingLicense} onClose={handleCloseForm} />
@@ -82,9 +99,13 @@ export default function LicensesPage() {
 
       {licenses && licenses.length === 0 ? (
         <div className="card text-center py-12">
-          <p className="text-gray-600 mb-4">You haven't added any licenses yet.</p>
+          <div className="text-5xl mb-4">🏅</div>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Add your first license</h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+            Get started by adding your pilot license to track flights and currency.
+          </p>
           <button onClick={() => setShowForm(true)} className="btn-primary">
-            Add Your First License
+            + Add License
           </button>
         </div>
       ) : (

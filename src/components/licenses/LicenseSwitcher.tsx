@@ -6,8 +6,8 @@ export default function LicenseSwitcher() {
   if (licenses.length === 0) return null;
 
   return (
-    <div className="card">
-      <label htmlFor="license-select" className="block text-sm font-medium text-gray-700 mb-2">
+    <div>
+      <label htmlFor="license-select" className="form-label">
         Active License
       </label>
       <select
@@ -22,12 +22,12 @@ export default function LicenseSwitcher() {
         <option value="">Select a license</option>
         {licenses.map((license) => (
           <option key={license.id} value={license.id}>
-            {license.licenseType.replace('_', ' ')} - {license.licenseNumber}
+            {license.licenseType.replace('_', ' ')} — {license.licenseNumber}
           </option>
         ))}
       </select>
       {activeLicense && (
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="form-helper">
           Flight logs will be associated with this license
         </p>
       )}

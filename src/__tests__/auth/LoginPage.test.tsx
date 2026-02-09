@@ -47,16 +47,16 @@ describe('LoginPage', () => {
     renderWithProviders(<LoginPage />);
     
     expect(screen.getByText('PilotLog')).toBeInTheDocument();
-    expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument();
   });
 
   it('shows validation errors for invalid input', async () => {
     const user = userEvent.setup();
     renderWithProviders(<LoginPage />);
     
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
+    const submitButton = screen.getByRole('button', { name: /log in/i });
     await user.click(submitButton);
     
     await waitFor(() => {
@@ -70,9 +70,9 @@ describe('LoginPage', () => {
     
     renderWithProviders(<LoginPage />);
     
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/^email/i), 'test@example.com');
     await user.type(screen.getByLabelText(/password/i), 'password123');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.click(screen.getByRole('button', { name: /log in/i }));
     
     await waitFor(() => {
       expect(mockLogin.mutateAsync).toHaveBeenCalledWith({
@@ -90,9 +90,9 @@ describe('LoginPage', () => {
     
     renderWithProviders(<LoginPage />);
     
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/^email/i), 'test@example.com');
     await user.type(screen.getByLabelText(/password/i), 'wrongpassword');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.click(screen.getByRole('button', { name: /log in/i }));
     
     await waitFor(() => {
       expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
@@ -102,7 +102,7 @@ describe('LoginPage', () => {
   it('navigates to register page', () => {
     renderWithProviders(<LoginPage />);
     
-    const registerLink = screen.getByText(/register here/i);
+    const registerLink = screen.getByText(/create one/i);
     expect(registerLink).toHaveAttribute('href', '/register');
   });
 });

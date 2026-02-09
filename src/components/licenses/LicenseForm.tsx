@@ -110,12 +110,12 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div>
-        <label htmlFor="licenseType" className="block text-sm font-medium text-gray-700">
-          License Type *
+        <label htmlFor="licenseType" className="form-label">
+          License Type <span className="text-red-500">*</span>
         </label>
-        <select {...register('licenseType')} id="licenseType" className="input mt-1">
+        <select {...register('licenseType')} id="licenseType" className={`input ${errors.licenseType ? 'input-error' : ''}`}>
           <option value="">Select a license type</option>
           {LICENSE_TYPES.map((type) => (
             <option key={type.value} value={type.value}>
@@ -124,87 +124,85 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
           ))}
         </select>
         {errors.licenseType && (
-          <p className="mt-1 text-sm text-red-600">{errors.licenseType.message}</p>
+          <p className="form-error">{errors.licenseType.message}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700">
-          License Number *
+        <label htmlFor="licenseNumber" className="form-label">
+          License Number <span className="text-red-500">*</span>
         </label>
         <input
           {...register('licenseNumber')}
           type="text"
           id="licenseNumber"
-          className="input mt-1"
-          placeholder="PPL-12345"
+          className={`input ${errors.licenseNumber ? 'input-error' : ''}`}
+          placeholder="DE.FCL.12345"
         />
         {errors.licenseNumber && (
-          <p className="mt-1 text-sm text-red-600">{errors.licenseNumber.message}</p>
+          <p className="form-error">{errors.licenseNumber.message}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="issuingAuthority" className="block text-sm font-medium text-gray-700">
-          Issuing Authority *
+        <label htmlFor="issuingAuthority" className="form-label">
+          Issuing Authority <span className="text-red-500">*</span>
         </label>
         <input
           {...register('issuingAuthority')}
           type="text"
           id="issuingAuthority"
-          className="input mt-1"
-          placeholder="EASA, FAA, CAA, etc."
+          className={`input ${errors.issuingAuthority ? 'input-error' : ''}`}
+          placeholder="LBA (Germany)"
         />
         {errors.issuingAuthority && (
-          <p className="mt-1 text-sm text-red-600">{errors.issuingAuthority.message}</p>
+          <p className="form-error">{errors.issuingAuthority.message}</p>
         )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="issueDate" className="block text-sm font-medium text-gray-700">
-            Issue Date *
+          <label htmlFor="issueDate" className="form-label">
+            Issue Date <span className="text-red-500">*</span>
           </label>
           <input
             {...register('issueDate')}
             type="date"
             id="issueDate"
-            className="input mt-1"
+            className={`input ${errors.issueDate ? 'input-error' : ''}`}
           />
           {errors.issueDate && (
-            <p className="mt-1 text-sm text-red-600">{errors.issueDate.message}</p>
+            <p className="form-error">{errors.issueDate.message}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="expiryDate" className="form-label">
             Expiry Date
           </label>
           <input
             {...register('expiryDate')}
             type="date"
             id="expiryDate"
-            className="input mt-1"
+            className="input"
           />
-          {errors.expiryDate && (
-            <p className="mt-1 text-sm text-red-600">{errors.expiryDate.message}</p>
-          )}
+          <p className="form-helper">Leave blank if license doesn't expire</p>
         </div>
       </div>
 
-      <div className="flex items-center">
+      <div className="flex items-center gap-2">
         <input
           {...register('isActive')}
           type="checkbox"
           id="isActive"
-          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
         />
-        <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
+        <label htmlFor="isActive" className="block text-sm text-slate-700 dark:text-slate-300">
           Active license
         </label>
       </div>
 
-      <div className="flex gap-3 pt-4">
+      <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
         <button
           type="submit"
           disabled={isSubmitting}

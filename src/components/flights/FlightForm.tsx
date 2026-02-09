@@ -131,13 +131,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Basic Info */}
       <fieldset>
-        <legend className="text-sm font-semibold text-gray-900 mb-3">Basic Information</legend>
+        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Basic Information</legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="licenseId" className="block text-sm font-medium text-gray-700">
-              License *
+            <label htmlFor="licenseId" className="form-label">
+              License <span className="text-red-500">*</span>
             </label>
-            <select {...register('licenseId')} id="licenseId" className="input mt-1">
+            <select {...register('licenseId')} id="licenseId" className="input">
               <option value="">Select license</option>
               {licenses?.map((lic) => (
                 <option key={lic.id} value={lic.id}>
@@ -146,49 +146,49 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               ))}
             </select>
             {errors.licenseId && (
-              <p className="mt-1 text-sm text-red-600">{errors.licenseId.message}</p>
+              <p className="form-error">{errors.licenseId.message}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700">
-              Date *
+            <label htmlFor="date" className="form-label">
+              Date <span className="text-red-500">*</span>
             </label>
-            <input {...register('date')} type="date" id="date" className="input mt-1" />
+            <input {...register('date')} type="date" id="date" className="input" />
             {errors.date && (
-              <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>
+              <p className="form-error">{errors.date.message}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="aircraftReg" className="block text-sm font-medium text-gray-700">
-              Aircraft Registration *
+            <label htmlFor="aircraftReg" className="form-label">
+              Aircraft Registration <span className="text-red-500">*</span>
             </label>
             <input
               {...register('aircraftReg')}
               type="text"
               id="aircraftReg"
-              className="input mt-1"
+              className="input"
               placeholder="D-EFGH"
             />
             {errors.aircraftReg && (
-              <p className="mt-1 text-sm text-red-600">{errors.aircraftReg.message}</p>
+              <p className="form-error">{errors.aircraftReg.message}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="aircraftType" className="block text-sm font-medium text-gray-700">
-              Aircraft Type *
+            <label htmlFor="aircraftType" className="form-label">
+              Aircraft Type <span className="text-red-500">*</span>
             </label>
             <input
               {...register('aircraftType')}
               type="text"
               id="aircraftType"
-              className="input mt-1"
+              className="input"
               placeholder="C172"
             />
             {errors.aircraftType && (
-              <p className="mt-1 text-sm text-red-600">{errors.aircraftType.message}</p>
+              <p className="form-error">{errors.aircraftType.message}</p>
             )}
           </div>
         </div>
@@ -196,99 +196,99 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
       {/* Route & Times */}
       <fieldset>
-        <legend className="text-sm font-semibold text-gray-900 mb-3">Route & Times (UTC)</legend>
+        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Route & Times (UTC)</legend>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
-            <label htmlFor="departureIcao" className="block text-sm font-medium text-gray-700">
-              Departure ICAO *
+            <label htmlFor="departureIcao" className="form-label">
+              Departure ICAO <span className="text-red-500">*</span>
             </label>
             <input
               {...register('departureIcao')}
               type="text"
               id="departureIcao"
-              className="input mt-1 uppercase"
+              className="input uppercase"
               placeholder="EDDF"
               maxLength={4}
             />
             {errors.departureIcao && (
-              <p className="mt-1 text-sm text-red-600">{errors.departureIcao.message}</p>
+              <p className="form-error">{errors.departureIcao.message}</p>
             )}
           </div>
           <div>
-            <label htmlFor="offBlockTime" className="block text-sm font-medium text-gray-700">
-              Off-Block *
+            <label htmlFor="offBlockTime" className="form-label">
+              Off-Block <span className="text-red-500">*</span>
             </label>
             <input
               {...register('offBlockTime')}
               type="time"
               id="offBlockTime"
-              className="input mt-1"
+              className="input"
               title="Chocks off / engine start (UTC)"
             />
             {errors.offBlockTime && (
-              <p className="mt-1 text-sm text-red-600">{errors.offBlockTime.message}</p>
+              <p className="form-error">{errors.offBlockTime.message}</p>
             )}
           </div>
           <div>
-            <label htmlFor="departureTime" className="block text-sm font-medium text-gray-700">
-              Takeoff *
+            <label htmlFor="departureTime" className="form-label">
+              Takeoff <span className="text-red-500">*</span>
             </label>
             <input
               {...register('departureTime')}
               type="time"
               id="departureTime"
-              className="input mt-1"
+              className="input"
               title="Takeoff time (UTC)"
             />
             {errors.departureTime && (
-              <p className="mt-1 text-sm text-red-600">{errors.departureTime.message}</p>
+              <p className="form-error">{errors.departureTime.message}</p>
             )}
           </div>
           <div className="hidden sm:block" />
           <div>
-            <label htmlFor="arrivalIcao" className="block text-sm font-medium text-gray-700">
-              Arrival ICAO *
+            <label htmlFor="arrivalIcao" className="form-label">
+              Arrival ICAO <span className="text-red-500">*</span>
             </label>
             <input
               {...register('arrivalIcao')}
               type="text"
               id="arrivalIcao"
-              className="input mt-1 uppercase"
+              className="input uppercase"
               placeholder="EDDH"
               maxLength={4}
             />
             {errors.arrivalIcao && (
-              <p className="mt-1 text-sm text-red-600">{errors.arrivalIcao.message}</p>
+              <p className="form-error">{errors.arrivalIcao.message}</p>
             )}
           </div>
           <div>
-            <label htmlFor="onBlockTime" className="block text-sm font-medium text-gray-700">
-              On-Block *
+            <label htmlFor="onBlockTime" className="form-label">
+              On-Block <span className="text-red-500">*</span>
             </label>
             <input
               {...register('onBlockTime')}
               type="time"
               id="onBlockTime"
-              className="input mt-1"
+              className="input"
               title="Chocks on / engine shutdown (UTC)"
             />
             {errors.onBlockTime && (
-              <p className="mt-1 text-sm text-red-600">{errors.onBlockTime.message}</p>
+              <p className="form-error">{errors.onBlockTime.message}</p>
             )}
           </div>
           <div>
-            <label htmlFor="arrivalTime" className="block text-sm font-medium text-gray-700">
-              Landing *
+            <label htmlFor="arrivalTime" className="form-label">
+              Landing <span className="text-red-500">*</span>
             </label>
             <input
               {...register('arrivalTime')}
               type="time"
               id="arrivalTime"
-              className="input mt-1"
+              className="input"
               title="Landing time (UTC)"
             />
             {errors.arrivalTime && (
-              <p className="mt-1 text-sm text-red-600">{errors.arrivalTime.message}</p>
+              <p className="form-error">{errors.arrivalTime.message}</p>
             )}
           </div>
         </div>
@@ -296,17 +296,17 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
       {/* Block Times */}
       <fieldset>
-        <legend className="text-sm font-semibold text-gray-900 mb-3">Block Times</legend>
+        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Block Times</legend>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {isEditing && existingFlight && (
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="form-label">
                 Total Block Time
               </label>
-              <div className="input mt-1 bg-gray-50 text-gray-700">
+              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
                 {existingFlight.totalTime.toFixed(1)}h
               </div>
-              <p className="mt-1 text-xs text-gray-500">Computed from block times</p>
+              <p className="form-helper">Computed from block times</p>
             </div>
           )}
           <div className="flex items-center gap-6 sm:col-span-2">
@@ -315,22 +315,22 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 {...register('isPic')}
                 type="checkbox"
                 id="isPic"
-                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm font-medium text-gray-700">PIC</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">PIC</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 {...register('isDual')}
                 type="checkbox"
                 id="isDual"
-                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm font-medium text-gray-700">Dual (instruction received)</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Dual (instruction received)</span>
             </label>
           </div>
           <div>
-            <label htmlFor="nightTime" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="nightTime" className="form-label">
               Night Time
             </label>
             <input
@@ -339,11 +339,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               id="nightTime"
               step="0.1"
               min="0"
-              className="input mt-1"
+              className="input"
             />
           </div>
           <div>
-            <label htmlFor="ifrTime" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="ifrTime" className="form-label">
               IFR Time
             </label>
             <input
@@ -352,7 +352,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               id="ifrTime"
               step="0.1"
               min="0"
-              className="input mt-1"
+              className="input"
             />
           </div>
         </div>
@@ -360,10 +360,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
       {/* Landings */}
       <fieldset>
-        <legend className="text-sm font-semibold text-gray-900 mb-3">Landings</legend>
+        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Landings</legend>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="landingsDay" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="landingsDay" className="form-label">
               Day Landings
             </label>
             <input
@@ -371,11 +371,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               type="number"
               id="landingsDay"
               min="0"
-              className="input mt-1"
+              className="input"
             />
           </div>
           <div>
-            <label htmlFor="landingsNight" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="landingsNight" className="form-label">
               Night Landings
             </label>
             <input
@@ -383,7 +383,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               type="number"
               id="landingsNight"
               min="0"
-              className="input mt-1"
+              className="input"
             />
           </div>
         </div>
@@ -391,20 +391,20 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
       {/* Remarks */}
       <div>
-        <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="remarks" className="form-label">
           Remarks
         </label>
         <textarea
           {...register('remarks')}
           id="remarks"
           rows={3}
-          className="input mt-1"
+          className="input"
           placeholder="Training flight, touch and go practice, etc."
         />
       </div>
 
       {/* Submit */}
-      <div className="flex gap-3 pt-4">
+      <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
         <button type="submit" disabled={isSubmitting} className="btn-primary flex-1">
           {isSubmitting ? 'Saving...' : isEditing ? 'Update Flight' : 'Log Flight'}
         </button>

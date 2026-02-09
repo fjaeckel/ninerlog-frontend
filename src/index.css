@@ -1,42 +1,279 @@
 @import "tailwindcss";
 
+/* Fonts — Inter for UI, JetBrains Mono for data */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  /* Brand primary — Aviation Blue */
+  --color-brand-50: #EFF6FF;
+  --color-brand-100: #DBEAFE;
+  --color-brand-200: #BFDBFE;
+  --color-brand-300: #93C5FD;
+  --color-brand-400: #60A5FA;
+  --color-brand-500: #3B82F6;
+  --color-brand-600: #2563EB;
+  --color-brand-700: #1D4ED8;
+  --color-brand-800: #1E3A5F;
+  --color-brand-900: #1E3A8A;
+  --color-brand-950: #172554;
+
+  /* Legacy aliases for primary */
+  --color-primary-50: #EFF6FF;
+  --color-primary-100: #DBEAFE;
+  --color-primary-200: #BFDBFE;
+  --color-primary-300: #93C5FD;
+  --color-primary-400: #60A5FA;
+  --color-primary-500: #3B82F6;
+  --color-primary-600: #2563EB;
+  --color-primary-700: #1D4ED8;
+  --color-primary-800: #1E3A5F;
+  --color-primary-900: #1E3A8A;
+
+  /* Semantic: Currency / Status — Aviation Signal Colors */
+  --color-current-50: #F0FDF4;
+  --color-current-100: #DCFCE7;
+  --color-current-500: #22C55E;
+  --color-current-600: #16A34A;
+  --color-current-700: #15803D;
+
+  --color-expiring-50: #FFFBEB;
+  --color-expiring-100: #FEF3C7;
+  --color-expiring-500: #F59E0B;
+  --color-expiring-600: #D97706;
+  --color-expiring-700: #B45309;
+
+  --color-expired-50: #FEF2F2;
+  --color-expired-100: #FEE2E2;
+  --color-expired-500: #EF4444;
+  --color-expired-600: #DC2626;
+  --color-expired-700: #B91C1C;
+
+  /* Font families */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Layout spacing tokens */
+  --spacing-header: 56px;
+  --spacing-header-lg: 64px;
+  --spacing-bottom-nav: 56px;
+
+  /* Max widths */
+  --container-form: 640px;
+  --container-content: 960px;
+  --container-dashboard: 1280px;
+
+  /* Animations */
+  --animate-fade-in: fadeIn 200ms ease-out;
+  --animate-slide-up: slideUp 300ms ease-out;
+  --animate-slide-down: slideDown 300ms ease-out;
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes slideUp {
+    0% { transform: translateY(16px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes slideDown {
+    0% { transform: translateY(-16px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
 }
 
 @layer base {
+  :root {
+    /* Surfaces */
+    --header-height: 56px;
+    --bottom-nav-height: 56px;
+  }
+
+  @media (min-width: 1024px) {
+    :root {
+      --header-height: 64px;
+      --bottom-nav-height: 0px;
+    }
+  }
+
+  /* Smooth scroll for non-reduced-motion */
+  html {
+    @apply scroll-smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Tabular numbers for data display */
+  .font-mono, [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Focus-visible ring (design-system standard) */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+  }
+
+  /* Body defaults — design system slate palette */
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-slate-50 text-slate-800 font-sans antialiased;
+    @apply dark:bg-slate-900 dark:text-slate-100;
+  }
+}
+
+@layer utilities {
+  /* Safe area insets for mobile notch */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-header {
+    padding-top: var(--header-height);
+  }
+  .pb-nav {
+    padding-bottom: var(--bottom-nav-height);
   }
 }
 
 @layer components {
+  /* ── Buttons ── */
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors;
+    @apply inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:pointer-events-none;
   }
-  
+
   .btn-primary {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:pointer-events-none;
+    @apply h-10 px-4 text-sm bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.98];
+    @apply focus-visible:ring-blue-500;
   }
-  
+
   .btn-secondary {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors bg-gray-200 text-gray-900 hover:bg-gray-300 active:bg-gray-400;
+    @apply inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:pointer-events-none;
+    @apply h-10 px-4 text-sm bg-white text-slate-700 border border-slate-300 hover:bg-slate-50;
+    @apply dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-700;
   }
-  
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:pointer-events-none;
+    @apply h-10 px-4 text-sm bg-red-600 text-white hover:bg-red-700 active:scale-[0.98];
+    @apply focus-visible:ring-red-500;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:pointer-events-none;
+    @apply h-10 px-4 text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700;
+    @apply dark:text-blue-400 dark:hover:bg-blue-900/20;
+  }
+
+  .btn-lg {
+    @apply h-12 px-6 text-base;
+  }
+
+  .btn-sm {
+    @apply h-8 px-3 text-sm;
+  }
+
+  /* ── Input ── */
   .input {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full h-10 px-3 border border-slate-300 rounded-md text-sm bg-white;
+    @apply hover:border-slate-400;
+    @apply focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
+    @apply disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed;
+    @apply dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100;
+    @apply dark:focus:border-blue-400 dark:focus:ring-blue-400;
   }
-  
+
+  .input-error {
+    @apply border-red-500 ring-1 ring-red-500 focus:border-red-500 focus:ring-red-500;
+  }
+
+  /* ── Card ── */
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
+    @apply bg-white rounded-lg shadow-sm border border-slate-200 p-4;
+    @apply dark:bg-slate-800 dark:border-slate-700;
+  }
+
+  .card-hover {
+    @apply bg-white rounded-lg shadow-sm border border-slate-200 p-4;
+    @apply dark:bg-slate-800 dark:border-slate-700;
+    @apply hover:shadow-md transition-shadow cursor-pointer;
+    @apply active:bg-slate-50 dark:active:bg-slate-700/50;
+  }
+
+  /* ── Badges ── */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+
+  .badge-current {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+    @apply bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400;
+  }
+
+  .badge-expiring {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+    @apply bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400;
+  }
+
+  .badge-expired {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+    @apply bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400;
+  }
+
+  .badge-info {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+    @apply bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400;
+  }
+
+  .badge-neutral {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+    @apply bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300;
+  }
+
+  /* ── Form label ── */
+  .form-label {
+    @apply block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1;
+  }
+
+  .form-error {
+    @apply mt-1 text-xs text-red-600 dark:text-red-400;
+  }
+
+  .form-helper {
+    @apply mt-1 text-xs text-slate-500 dark:text-slate-400;
+  }
+
+  /* ── Page heading ── */
+  .page-title {
+    @apply text-2xl font-bold text-slate-800 dark:text-slate-100;
+  }
+
+  /* ── Section heading ── */
+  .section-title {
+    @apply text-lg font-semibold text-slate-800 dark:text-slate-100;
+  }
+
+  /* ── Data display (monospace) ── */
+  .data-lg {
+    @apply text-2xl font-bold font-mono tabular-nums;
+  }
+
+  .data-sm {
+    @apply text-sm font-medium font-mono tabular-nums;
   }
 }

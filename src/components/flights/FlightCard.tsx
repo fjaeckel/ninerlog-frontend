@@ -17,13 +17,13 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
     <div className="card hover:shadow-md transition-shadow cursor-pointer" onClick={onClick}>
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="text-lg font-semibold">
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
             {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             {format(new Date(flight.date), 'MMM dd, yyyy')}
             {(flight.offBlockTime || flight.departureTime || flight.arrivalTime || flight.onBlockTime) && (
-              <span className="ml-2">
+              <span className="ml-2 font-mono tabular-nums text-xs">
                 {(flight.offBlockTime || flight.departureTime)
                   ? (flight.offBlockTime || flight.departureTime)!.slice(0, 5)
                   : '—'}
@@ -35,66 +35,66 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
             )}
           </p>
         </div>
-        <span className="px-2 py-1 text-xs bg-primary-100 text-primary-700 rounded-full font-medium">
+        <span className="badge-info font-semibold">
           {flight.totalTime.toFixed(1)}h
         </span>
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
         <div>
-          <span className="text-gray-500">Aircraft:</span>{' '}
-          <span className="font-medium">{flight.aircraftReg}</span>
+          <span className="text-slate-500 dark:text-slate-400">Aircraft:</span>{' '}
+          <span className="font-medium text-slate-700 dark:text-slate-200">{flight.aircraftReg}</span>
         </div>
         <div>
-          <span className="text-gray-500">Type:</span>{' '}
-          <span className="font-medium">{flight.aircraftType}</span>
+          <span className="text-slate-500 dark:text-slate-400">Type:</span>{' '}
+          <span className="font-medium text-slate-700 dark:text-slate-200">{flight.aircraftType}</span>
         </div>
         {flight.picTime > 0 && (
-          <div>
-            <span className="text-gray-500">PIC:</span> {flight.picTime.toFixed(1)}h
+          <div className="text-slate-600 dark:text-slate-300">
+            <span className="text-slate-500 dark:text-slate-400">PIC:</span> <span className="font-mono tabular-nums">{flight.picTime.toFixed(1)}h</span>
           </div>
         )}
         {flight.dualTime > 0 && (
-          <div>
-            <span className="text-gray-500">Dual:</span> {flight.dualTime.toFixed(1)}h
+          <div className="text-slate-600 dark:text-slate-300">
+            <span className="text-slate-500 dark:text-slate-400">Dual:</span> <span className="font-mono tabular-nums">{flight.dualTime.toFixed(1)}h</span>
           </div>
         )}
         {!flight.isPic && !flight.isDual && (
-          <div>
-            <span className="text-gray-500">Function:</span> —
+          <div className="text-slate-500 dark:text-slate-400">
+            <span>Function:</span> —
           </div>
         )}
         {flight.nightTime > 0 && (
-          <div>
-            <span className="text-gray-500">Night:</span> {flight.nightTime.toFixed(1)}h
+          <div className="text-slate-600 dark:text-slate-300">
+            <span className="text-slate-500 dark:text-slate-400">Night:</span> <span className="font-mono tabular-nums">{flight.nightTime.toFixed(1)}h</span>
           </div>
         )}
         {flight.ifrTime > 0 && (
-          <div>
-            <span className="text-gray-500">IFR:</span> {flight.ifrTime.toFixed(1)}h
+          <div className="text-slate-600 dark:text-slate-300">
+            <span className="text-slate-500 dark:text-slate-400">IFR:</span> <span className="font-mono tabular-nums">{flight.ifrTime.toFixed(1)}h</span>
           </div>
         )}
         {totalLandings > 0 && (
-          <div>
-            <span className="text-gray-500">Landings:</span> {flight.landingsDay}D / {flight.landingsNight}N
+          <div className="text-slate-600 dark:text-slate-300">
+            <span className="text-slate-500 dark:text-slate-400">Landings:</span> <span className="font-mono tabular-nums">{flight.landingsDay}D / {flight.landingsNight}N</span>
           </div>
         )}
       </div>
 
       {flight.remarks && (
-        <p className="mt-2 text-sm text-gray-500 italic truncate">{flight.remarks}</p>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 italic truncate">{flight.remarks}</p>
       )}
 
-      <div className="flex gap-2 mt-4 pt-3 border-t border-gray-200">
+      <div className="flex gap-2 mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
         <button
           onClick={(e) => { e.stopPropagation(); onEdit(); }}
-          className="btn-secondary flex-1 text-sm py-1"
+          className="btn-secondary btn-sm flex-1"
         >
           Edit
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="btn-secondary flex-1 text-sm py-1 hover:bg-red-50 hover:text-red-700"
+          className="btn-secondary btn-sm flex-1 hover:bg-red-50 hover:text-red-700 hover:border-red-200 dark:hover:bg-red-900/20 dark:hover:text-red-400"
         >
           Delete
         </button>

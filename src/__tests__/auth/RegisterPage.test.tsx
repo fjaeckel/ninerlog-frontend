@@ -47,8 +47,8 @@ describe('RegisterPage', () => {
     renderWithProviders(<RegisterPage />);
     
     expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
@@ -57,13 +57,13 @@ describe('RegisterPage', () => {
     const user = userEvent.setup();
     renderWithProviders(<RegisterPage />);
     
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
-    await user.type(screen.getByLabelText(/^password$/i), 'password123');
-    await user.type(screen.getByLabelText(/confirm password/i), 'password456');
+    await user.type(screen.getByLabelText(/^email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/^password/i), 'password1234');
+    await user.type(screen.getByLabelText(/confirm password/i), 'password4567');
     await user.click(screen.getByRole('button', { name: /create account/i }));
     
     await waitFor(() => {
-      expect(screen.getByText(/passwords don't match/i)).toBeInTheDocument();
+      expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
     });
   });
 
@@ -74,15 +74,15 @@ describe('RegisterPage', () => {
     renderWithProviders(<RegisterPage />);
     
     await user.type(screen.getByLabelText(/name/i), 'John Doe');
-    await user.type(screen.getByLabelText(/email address/i), 'john@example.com');
-    await user.type(screen.getByLabelText(/^password$/i), 'password123');
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+    await user.type(screen.getByLabelText(/^email/i), 'john@example.com');
+    await user.type(screen.getByLabelText(/^password/i), 'password1234');
+    await user.type(screen.getByLabelText(/confirm password/i), 'password1234');
     await user.click(screen.getByRole('button', { name: /create account/i }));
     
     await waitFor(() => {
       expect(mockRegister.mutateAsync).toHaveBeenCalledWith({
         email: 'john@example.com',
-        password: 'password123',
+        password: 'password1234',
         name: 'John Doe',
       });
     });
@@ -100,14 +100,14 @@ describe('RegisterPage', () => {
     
     // Fill in all required fields (name is now required per OpenAPI spec)
     const nameInput = screen.getByLabelText(/full name/i);
-    const emailInput = screen.getByLabelText(/email address/i);
-    const passwordInput = screen.getByLabelText(/^password$/i);
+    const emailInput = screen.getByLabelText(/^email/i);
+    const passwordInput = screen.getByLabelText(/^password/i);
     const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
     
     await user.type(nameInput, 'Test User');
     await user.type(emailInput, 'existing@example.com');
-    await user.type(passwordInput, 'password123');
-    await user.type(confirmPasswordInput, 'password123');
+    await user.type(passwordInput, 'password1234');
+    await user.type(confirmPasswordInput, 'password1234');
     
     // Submit the form
     const submitButton = screen.getByRole('button', { name: /create account/i });

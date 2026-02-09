@@ -34,7 +34,7 @@ describe('LicenseCard', () => {
     expect(screen.getByText('EASA PPL')).toBeInTheDocument();
     expect(screen.getByText('PPL-12345')).toBeInTheDocument();
     expect(screen.getByText('EASA')).toBeInTheDocument();
-    expect(screen.getByText('Active', { selector: 'span.px-2' })).toBeInTheDocument();
+    expect(screen.getByText('Active', { selector: 'span.badge-info' })).toBeInTheDocument();
   });
 
   it('calls onEdit when edit button is clicked', async () => {
@@ -100,6 +100,6 @@ describe('LicenseCard', () => {
       />
     );
     
-    expect(screen.getByText(/expires soon/i)).toBeInTheDocument();
+    expect(screen.getByText(/expiring/i)).toBeInTheDocument();
   });
 });
