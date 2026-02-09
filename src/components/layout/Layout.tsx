@@ -43,7 +43,12 @@ export default function Layout() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">{user?.email}</span>
+              <Link
+                to="/profile"
+                className="text-sm text-gray-700 hover:text-gray-900"
+              >
+                {user?.email}
+              </Link>
               <button onClick={handleLogout} className="btn-secondary text-sm">
                 Logout
               </button>

@@ -64,6 +64,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change password
+         * @description Change the authenticated user's password. Requires the current password for verification.
+         */
+        post: operations["changePassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me": {
         parameters: {
             query?: never;
@@ -78,7 +98,11 @@ export interface paths {
         get: operations["getCurrentUser"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete current user account
+         * @description Permanently delete the authenticated user's account and all associated data (licenses, flights, tokens). This action cannot be undone.
+         */
+        delete: operations["deleteCurrentUser"];
         options?: never;
         head?: never;
         /**
@@ -633,7 +657,7 @@ export interface components {
             arrivalTime?: string | null;
             /**
              * Format: float
-             * @description Total flight time in hours
+             * @description Total block time in hours (off-block to on-block)
              * @example 2.5
              */
             totalTime: number;
@@ -649,25 +673,25 @@ export interface components {
             isDual: boolean;
             /**
              * Format: float
-             * @description Pilot-in-command time in hours (computed from isPic and totalTime)
+             * @description Pilot-in-command block time in hours (computed from isPic and totalTime)
              * @example 2.5
              */
             picTime: number;
             /**
              * Format: float
-             * @description Dual instruction time in hours (computed from isDual and totalTime)
+             * @description Dual instruction block time in hours (computed from isDual and totalTime)
              * @example 0
              */
             dualTime: number;
             /**
              * Format: float
-             * @description Night flying time in hours
+             * @description Night block time in hours
              * @example 0.5
              */
             nightTime: number;
             /**
              * Format: float
-             * @description Instrument flight time in hours
+             * @description Instrument block time in hours
              * @example 1
              */
             ifrTime: number;
@@ -855,31 +879,31 @@ export interface components {
             totalFlights: number;
             /**
              * Format: float
-             * @description Total flight hours
+             * @description Total block hours
              * @example 385.5
              */
             totalHours: number;
             /**
              * Format: float
-             * @description Total PIC hours
+             * @description Total PIC block hours
              * @example 320
              */
             picHours: number;
             /**
              * Format: float
-             * @description Total dual instruction hours
+             * @description Total dual instruction block hours
              * @example 45.5
              */
             dualHours: number;
             /**
              * Format: float
-             * @description Total night hours
+             * @description Total night block hours
              * @example 15.5
              */
             nightHours: number;
             /**
              * Format: float
-             * @description Total IFR hours
+             * @description Total IFR block hours
              * @example 30
              */
             ifrHours: number;
@@ -1213,6 +1237,41 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
+    changePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * Format: password
+                     * @description The user's current password
+                     */
+                    currentPassword: string;
+                    /**
+                     * Format: password
+                     * @description The new password (minimum 8 characters)
+                     */
+                    newPassword: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Password changed successfully */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
     getCurrentUser: {
         parameters: {
             query?: never;
@@ -1230,6 +1289,35 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["User"];
                 };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    deleteCurrentUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * Format: password
+                     * @description Current password for confirmation
+                     */
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Account deleted successfully */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             401: components["responses"]["Unauthorized"];
         };

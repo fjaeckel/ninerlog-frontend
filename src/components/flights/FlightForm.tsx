@@ -294,14 +294,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         </div>
       </fieldset>
 
-      {/* Flight Times */}
+      {/* Block Times */}
       <fieldset>
-        <legend className="text-sm font-semibold text-gray-900 mb-3">Flight Times</legend>
+        <legend className="text-sm font-semibold text-gray-900 mb-3">Block Times</legend>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {isEditing && existingFlight && (
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Total Time
+                Total Block Time
               </label>
               <div className="input mt-1 bg-gray-50 text-gray-700">
                 {existingFlight.totalTime.toFixed(1)}h

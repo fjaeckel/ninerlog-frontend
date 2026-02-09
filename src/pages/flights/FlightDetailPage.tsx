@@ -45,7 +45,7 @@ export default function FlightDetailPage() {
   };
 
   const timeFields = [
-    { label: 'Total Time', value: flight.totalTime },
+    { label: 'Total Block Time', value: flight.totalTime },
     { label: 'Pilot Function', value: -1, text: flight.isPic ? 'PIC' : flight.isDual ? 'Dual' : '—' },
     { label: 'PIC Time', value: flight.picTime },
     { label: 'Dual Time', value: flight.dualTime },
@@ -159,7 +159,7 @@ export default function FlightDetailPage() {
 
         {/* Flight Times */}
         <div className="card">
-          <h2 className="text-lg font-semibold mb-4">Flight Times</h2>
+          <h2 className="text-lg font-semibold mb-4">Block Times</h2>
           <dl className="space-y-3">
             {timeFields.map(({ label, value, text }) => (
               <div key={label} className="flex justify-between">

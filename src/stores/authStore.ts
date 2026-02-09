@@ -9,6 +9,7 @@ interface AuthState {
   expiresIn: number | null;
   isAuthenticated: boolean;
   setAuth: (user: User, accessToken: string, refreshToken: string, expiresIn: number) => void;
+  updateUser: (updates: Partial<User>) => void;
   clearAuth: () => void;
 }
 
@@ -22,6 +23,11 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       setAuth: (user, accessToken, refreshToken, expiresIn) => {
         set({ user, accessToken, refreshToken, expiresIn, isAuthenticated: true });
+      },
+      updateUser: (updates) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null,
+        }));
       },
       clearAuth: () => {
         set({ user: null, accessToken: null, refreshToken: null, expiresIn: null, isAuthenticated: false });

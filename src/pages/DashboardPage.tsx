@@ -49,7 +49,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="card">
-          <h2 className="text-sm font-medium text-gray-500 mb-1">Flight Hours</h2>
+          <h2 className="text-sm font-medium text-gray-500 mb-1">Block Hours</h2>
           <p className="text-3xl font-bold text-primary-600">{statistics?.totalHours?.toFixed(1) ?? '0.0'}</p>
         </div>
 
@@ -148,7 +148,7 @@ export default function DashboardPage() {
       {/* Hours breakdown */}
       {statistics && statistics.totalHours > 0 && (
         <div className="mt-6 card">
-          <h2 className="text-lg font-semibold mb-4">Hours Breakdown</h2>
+          <h2 className="text-lg font-semibold mb-4">Block Hours Breakdown</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-center">
             {[
               { label: 'PIC', value: statistics.picHours },

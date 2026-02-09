@@ -71,7 +71,7 @@ describe('FlightForm', () => {
 
     expect(screen.getByText('Basic Information')).toBeInTheDocument();
     expect(screen.getByText('Route & Times (UTC)')).toBeInTheDocument();
-    expect(screen.getByText('Flight Times')).toBeInTheDocument();
+    expect(screen.getByText('Block Times')).toBeInTheDocument();
     expect(screen.getByText('Landings')).toBeInTheDocument();
   });
 
