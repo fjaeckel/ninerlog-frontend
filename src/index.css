@@ -79,6 +79,11 @@
     0% { transform: translateY(-16px); opacity: 0; }
     100% { transform: translateY(0); opacity: 1; }
   }
+  --animate-sheet-up: sheetUp 250ms ease-out;
+  @keyframes sheetUp {
+    0% { transform: translateY(100%); }
+    100% { transform: translateY(0); }
+  }
 }
 
 @layer base {

@@ -112,6 +112,30 @@ export interface paths {
         patch: operations["updateCurrentUser"];
         trace?: never;
     };
+    "/users/me/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get notification preferences
+         * @description Get the authenticated user's notification preferences
+         */
+        get: operations["getNotificationPreferences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update notification preferences
+         * @description Update the authenticated user's notification preferences
+         */
+        patch: operations["updateNotificationPreferences"];
+        trace?: never;
+    };
     "/licenses": {
         parameters: {
             query?: never;
@@ -202,6 +226,49 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/credentials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List credentials
+         * @description Get all credentials for the authenticated user
+         */
+        get: operations["listCredentials"];
+        put?: never;
+        /**
+         * Add credential
+         * @description Add a new credential (medical, language proficiency, or security clearance)
+         */
+        post: operations["createCredential"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/credentials/{credentialId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get credential details */
+        get: operations["getCredential"];
+        put?: never;
+        post?: never;
+        /** Delete credential */
+        delete: operations["deleteCredential"];
+        options?: never;
+        head?: never;
+        /** Update credential */
+        patch: operations["updateCredential"];
         trace?: never;
     };
     "/aircraft": {
@@ -980,6 +1047,109 @@ export interface components {
              */
             expiryDate?: string | null;
         };
+        NotificationPreferences: {
+            /**
+             * @description Master switch for all email notifications
+             * @example true
+             */
+            emailEnabled: boolean;
+            /**
+             * @description Email warnings when currency is about to expire
+             * @example true
+             */
+            currencyWarnings: boolean;
+            /**
+             * @description Email warnings when credentials (medicals, etc.) are about to expire
+             * @example true
+             */
+            credentialWarnings: boolean;
+            /**
+             * @description Days before expiry to send warnings
+             * @example [
+             *       30,
+             *       14,
+             *       7
+             *     ]
+             */
+            warningDays: number[];
+        };
+        NotificationPreferencesUpdate: {
+            emailEnabled?: boolean;
+            currencyWarnings?: boolean;
+            credentialWarnings?: boolean;
+            warningDays?: number[];
+        };
+        /**
+         * @description Credential type:
+         *     - EASA_CLASS1_MEDICAL: EASA Class 1 Medical Certificate
+         *     - EASA_CLASS2_MEDICAL: EASA Class 2 Medical Certificate
+         *     - EASA_LAPL_MEDICAL: EASA LAPL Medical Certificate
+         *     - FAA_CLASS1_MEDICAL: FAA First-Class Medical Certificate
+         *     - FAA_CLASS2_MEDICAL: FAA Second-Class Medical Certificate
+         *     - FAA_CLASS3_MEDICAL: FAA Third-Class Medical Certificate
+         *     - LANG_ICAO_LEVEL4: Language Proficiency ICAO Level 4
+         *     - LANG_ICAO_LEVEL5: Language Proficiency ICAO Level 5
+         *     - LANG_ICAO_LEVEL6: Language Proficiency ICAO Level 6 (Expert)
+         *     - SEC_CLEARANCE_ZUP: Security Clearance ZÜP (Germany)
+         *     - SEC_CLEARANCE_ZUBB: Security Clearance ZüBB (Germany)
+         *     - OTHER: Other credential
+         * @enum {string}
+         */
+        CredentialType: "EASA_CLASS1_MEDICAL" | "EASA_CLASS2_MEDICAL" | "EASA_LAPL_MEDICAL" | "FAA_CLASS1_MEDICAL" | "FAA_CLASS2_MEDICAL" | "FAA_CLASS3_MEDICAL" | "LANG_ICAO_LEVEL4" | "LANG_ICAO_LEVEL5" | "LANG_ICAO_LEVEL6" | "SEC_CLEARANCE_ZUP" | "SEC_CLEARANCE_ZUBB" | "OTHER";
+        Credential: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            credentialType: components["schemas"]["CredentialType"];
+            /**
+             * @description Official credential number/reference
+             * @example MED-2026-001
+             */
+            credentialNumber?: string | null;
+            /**
+             * Format: date
+             * @example 2026-01-15
+             */
+            issueDate: string;
+            /**
+             * Format: date
+             * @description Null if credential doesn't expire
+             * @example 2027-01-15
+             */
+            expiryDate?: string | null;
+            /**
+             * @description Authority or examiner that issued the credential
+             * @example EASA AME
+             */
+            issuingAuthority: string;
+            /** @example Annual renewal required */
+            notes?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CredentialCreate: {
+            credentialType: components["schemas"]["CredentialType"];
+            credentialNumber?: string | null;
+            /** Format: date */
+            issueDate: string;
+            /** Format: date */
+            expiryDate?: string | null;
+            issuingAuthority: string;
+            notes?: string | null;
+        };
+        CredentialUpdate: {
+            credentialType?: components["schemas"]["CredentialType"];
+            credentialNumber?: string | null;
+            /** Format: date */
+            issueDate?: string;
+            /** Format: date */
+            expiryDate?: string | null;
+            issuingAuthority?: string;
+            notes?: string | null;
+        };
         PaginatedFlights: {
             data: components["schemas"]["Flight"][];
             pagination: {
@@ -1106,6 +1276,8 @@ export interface components {
         AircraftId: string;
         /** @description Flight UUID */
         FlightId: string;
+        /** @description Credential UUID */
+        CredentialId: string;
     };
     requestBodies: never;
     headers: never;
@@ -1352,6 +1524,53 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
+    getNotificationPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Notification preferences */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferences"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    updateNotificationPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotificationPreferencesUpdate"];
+            };
+        };
+        responses: {
+            /** @description Preferences updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferences"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
     listLicenses: {
         parameters: {
             query?: {
@@ -1535,6 +1754,131 @@ export interface operations {
                     "application/json": components["schemas"]["Currency"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listCredentials: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of credentials */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Credential"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    createCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CredentialCreate"];
+            };
+        };
+        responses: {
+            /** @description Credential created successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Credential"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Credential UUID */
+                credentialId: components["parameters"]["CredentialId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Credential details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Credential"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Credential UUID */
+                credentialId: components["parameters"]["CredentialId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Credential deleted successfully */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Credential UUID */
+                credentialId: components["parameters"]["CredentialId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CredentialUpdate"];
+            };
+        };
+        responses: {
+            /** @description Credential updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Credential"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
         };

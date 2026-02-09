@@ -5,6 +5,7 @@ import { useLicenses } from '../hooks/useLicenses';
 import { useLicenseStore } from '../stores/licenseStore';
 import { useFlights } from '../hooks/useFlights';
 import { useLicenseStatistics, useLicenseCurrency } from '../hooks/useStatistics';
+import { useCredentials } from '../hooks/useCredentials';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -29,6 +30,7 @@ export default function DashboardPage() {
 
   const { data: statistics } = useLicenseStatistics(activeLicense?.id || '');
   const { data: currency } = useLicenseCurrency(activeLicense?.id || '');
+  const { data: credentials } = useCredentials();
 
   const recentFlights = flightsData?.data || [];
   const totalFlights = flightsData?.pagination?.total || 0;
@@ -134,6 +136,43 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Credential Expiry Alerts */}
+      {credentials && credentials.length > 0 && (() => {
+        const now = new Date();
+        const expiring = credentials.filter((c) => {
+          if (!c.expiryDate) return false;
+          const days = Math.ceil((new Date(c.expiryDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          return days <= 30;
+        });
+        if (expiring.length === 0) return null;
+        return (
+          <div className="mb-6 space-y-2">
+            {expiring.map((cred) => {
+              const days = Math.ceil((new Date(cred.expiryDate!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+              const isExpired = days < 0;
+              return (
+                <div
+                  key={cred.id}
+                  className={`rounded-lg px-4 py-3 flex items-center justify-between text-sm cursor-pointer ${
+                    isExpired
+                      ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                      : 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
+                  }`}
+                  onClick={() => navigate('/credentials')}
+                >
+                  <span className={isExpired ? 'text-red-800 dark:text-red-300' : 'text-amber-800 dark:text-amber-300'}>
+                    {isExpired ? '⚠ ' : '⏰ '}
+                    <strong>{cred.credentialType.replace(/_/g, ' ')}</strong>
+                    {isExpired ? ` expired ${Math.abs(days)} days ago` : ` expires in ${days} days`}
+                  </span>
+                  <span className="text-xs opacity-60">View →</span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* Stats grid */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">

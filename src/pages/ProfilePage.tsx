@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useUpdateProfile, useChangePassword, useDeleteAccount } from '../hooks/useProfile';
+import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
 
 export default function ProfilePage() {
   const { user } = useAuthStore();
@@ -9,6 +10,8 @@ export default function ProfilePage() {
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
   const deleteAccount = useDeleteAccount();
+  const { data: notifPrefs } = useNotificationPreferences();
+  const updateNotifPrefs = useUpdateNotificationPreferences();
 
   // Profile form state
   const [name, setName] = useState(user?.name || '');
@@ -179,6 +182,85 @@ export default function ProfilePage() {
           </button>
         </form>
       </div>
+
+      {/* Notification Settings */}
+      {notifPrefs && (
+        <div className="card mb-6">
+          <h2 className="text-lg font-semibold mb-4">Notification Settings</h2>
+          <div className="space-y-4">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Email Notifications</span>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Master switch for all email alerts</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={notifPrefs.emailEnabled}
+                onChange={(e) => updateNotifPrefs.mutate({ emailEnabled: e.target.checked })}
+                className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              />
+            </label>
+
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Currency Warnings</span>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Alerts when landing currency is about to expire</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={notifPrefs.currencyWarnings}
+                disabled={!notifPrefs.emailEnabled}
+                onChange={(e) => updateNotifPrefs.mutate({ currencyWarnings: e.target.checked })}
+                className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+              />
+            </label>
+
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Credential Warnings</span>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Alerts when medicals, language certs, or clearances expire</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={notifPrefs.credentialWarnings}
+                disabled={!notifPrefs.emailEnabled}
+                onChange={(e) => updateNotifPrefs.mutate({ credentialWarnings: e.target.checked })}
+                className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+              />
+            </label>
+
+            <div>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Warning Schedule</span>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Days before expiry to send warnings</p>
+              <div className="flex gap-2">
+                {[30, 14, 7, 3, 1].map((day) => {
+                  const active = notifPrefs.warningDays.includes(day);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      disabled={!notifPrefs.emailEnabled}
+                      onClick={() => {
+                        const newDays = active
+                          ? notifPrefs.warningDays.filter((d) => d !== day)
+                          : [...notifPrefs.warningDays, day].sort((a, b) => b - a);
+                        updateNotifPrefs.mutate({ warningDays: newDays });
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                        active
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                      } disabled:opacity-50`}
+                    >
+                      {day}d
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Account */}
       <div className="card border-red-200">

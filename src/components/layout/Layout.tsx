@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import { useLogout } from '../../hooks/useAuth';
 import { useAuthStore } from '../../stores/authStore';
@@ -6,6 +7,7 @@ export default function Layout() {
   const { user } = useAuthStore();
   const logout = useLogout();
   const navigate = useNavigate();
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   const handleLogout = async () => {
     await logout.mutateAsync();
@@ -59,6 +61,7 @@ export default function Layout() {
         <nav className="flex-1 space-y-1" aria-label="Main">
           <SidebarItem to="/dashboard" label="Dashboard" icon="🏠" />
           <SidebarItem to="/flights" label="Flights" icon="✈" />
+          <SidebarItem to="/credentials" label="Credentials" icon="📋" />
           <SidebarItem to="/statistics" label="Statistics" icon="📊" />
           <SidebarItem to="/licenses" label="Licenses" icon="🏅" />
         </nav>
@@ -88,8 +91,44 @@ export default function Layout() {
           </span>
         </Link>
         <BottomNavItem to="/statistics" label="Stats" icon="📊" />
-        <BottomNavItem to="/licenses" label="More" icon="☰" />
+        <button
+          onClick={() => setShowMoreMenu(true)}
+          className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-xs text-slate-400 dark:text-slate-500 transition-colors"
+          aria-label="More menu"
+        >
+          <span className="text-lg mb-0.5">☰</span>
+          <span>More</span>
+        </button>
       </nav>
+
+      {/* ── Mobile "More" Menu Sheet ── */}
+      {showMoreMenu && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-50 lg:hidden"
+            onClick={() => setShowMoreMenu(false)}
+            aria-hidden="true"
+          />
+          <div className="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-white dark:bg-slate-800 rounded-t-2xl shadow-2xl pb-safe animate-sheet-up">
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+            </div>
+            <nav className="px-4 pb-4 space-y-1" aria-label="More navigation">
+              <MoreMenuItem to="/credentials" label="Credentials" icon="📋" onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/licenses" label="Licenses" icon="🏅" onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/profile" label="Profile & Settings" icon="👤" onClick={() => setShowMoreMenu(false)} />
+              <div className="border-t border-slate-100 dark:border-slate-700 my-2" />
+              <button
+                onClick={() => { setShowMoreMenu(false); handleLogout(); }}
+                className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              >
+                <span className="w-5 text-center">🚪</span>
+                Logout
+              </button>
+            </nav>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -126,6 +165,25 @@ function BottomNavItem({ to, label, icon }: { to: string; label: string; icon: s
     >
       <span className="text-lg mb-0.5">{icon}</span>
       <span>{label}</span>
+    </NavLink>
+  );
+}
+
+function MoreMenuItem({ to, label, icon, onClick }: { to: string; label: string; icon: string; onClick: () => void }) {
+  return (
+    <NavLink
+      to={to}
+      onClick={onClick}
+      className={({ isActive }) =>
+        `flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
+          isActive
+            ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+        }`
+      }
+    >
+      <span className="w-5 text-center">{icon}</span>
+      {label}
     </NavLink>
   );
 }
