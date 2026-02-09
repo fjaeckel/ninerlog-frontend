@@ -250,4 +250,32 @@ describe('FlightForm', () => {
     await user.click(screen.getByRole('button', { name: /cancel/i }));
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
+
+  it('hides night time and night landings for SPL license', () => {
+    const splLicense = {
+      ...mockLicense,
+      id: 'lic-spl',
+      licenseType: 'EASA_SPL' as const,
+      licenseNumber: 'SPL-12345',
+    };
+
+    vi.spyOn(useLicensesHook, 'useLicenses').mockReturnValue({
+      data: [splLicense],
+      isLoading: false,
+      error: null,
+    } as any);
+    useLicenseStore.setState({ activeLicense: splLicense });
+
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    expect(screen.queryByLabelText(/night time/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/night landings/i)).not.toBeInTheDocument();
+  });
+
+  it('shows night time and night landings for PPL license', () => {
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    expect(screen.getByLabelText(/night time/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/night landings/i)).toBeInTheDocument();
+  });
 });

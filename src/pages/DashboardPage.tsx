@@ -33,6 +33,9 @@ export default function DashboardPage() {
   const recentFlights = flightsData?.data || [];
   const totalFlights = flightsData?.pagination?.total || 0;
 
+  // Determine if active license is SPL/Sport (no night flying)
+  const isSPL = activeLicense?.licenseType === 'EASA_SPL' || activeLicense?.licenseType === 'FAA_SPORT';
+
   // Greeting based on time of day
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -95,7 +98,8 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Night currency */}
+            {/* Night currency — hidden for SPL/Sport licenses */}
+            {!isSPL && (
             <div className={`rounded-lg p-4 ${
               currency.nightsCurrent
                 ? 'bg-green-50 dark:bg-green-900/20'
@@ -121,6 +125,7 @@ export default function DashboardPage() {
                 </p>
               )}
             </div>
+            )}
           </div>
 
           <div className="mt-3 text-xs text-slate-400 dark:text-slate-500 text-center">
@@ -150,7 +155,7 @@ export default function DashboardPage() {
             {[
               { label: 'PIC', value: statistics.picHours },
               { label: 'Dual', value: statistics.dualHours },
-              { label: 'Night', value: statistics.nightHours },
+              ...(!isSPL ? [{ label: 'Night', value: statistics.nightHours }] : []),
               { label: 'IFR', value: statistics.ifrHours },
             ].map(({ label, value }) => (
               <div key={label}>

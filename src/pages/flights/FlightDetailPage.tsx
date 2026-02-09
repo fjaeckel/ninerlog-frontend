@@ -35,6 +35,7 @@ export default function FlightDetailPage() {
   }
 
   const license = licenses?.find((l) => l.id === flight.licenseId);
+  const isSPL = license?.licenseType === 'EASA_SPL' || license?.licenseType === 'FAA_SPORT';
   const totalLandings = flight.landingsDay + flight.landingsNight;
 
   const handleDelete = async () => {
@@ -49,35 +50,35 @@ export default function FlightDetailPage() {
     { label: 'Pilot Function', value: -1, text: flight.isPic ? 'PIC' : flight.isDual ? 'Dual' : '—' },
     { label: 'PIC Time', value: flight.picTime },
     { label: 'Dual Time', value: flight.dualTime },
-    { label: 'Night Time', value: flight.nightTime },
+    ...(!isSPL ? [{ label: 'Night Time', value: flight.nightTime }] : []),
     { label: 'IFR Time', value: flight.ifrTime },
   ];
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="min-w-0">
           <button
             onClick={() => navigate('/flights')}
-            className="text-sm text-gray-500 hover:text-gray-700 mb-2 inline-flex items-center"
+            className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 mb-2 inline-flex items-center"
           >
             ← Back to Flights
           </button>
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-2xl sm:text-3xl font-bold truncate">
             {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-slate-600 dark:text-slate-400">
             {format(new Date(flight.date), 'EEEE, MMMM d, yyyy')}
           </p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowEditForm(true)} className="btn-secondary">
+        <div className="flex gap-2 shrink-0">
+          <button onClick={() => setShowEditForm(true)} className="btn-secondary flex-1 sm:flex-none">
             Edit
           </button>
           <button
             onClick={handleDelete}
-            className="btn-secondary hover:bg-red-50 hover:text-red-700"
+            className="btn-secondary flex-1 sm:flex-none hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20 dark:hover:text-red-400"
           >
             Delete
           </button>
@@ -86,14 +87,15 @@ export default function FlightDetailPage() {
 
       {/* Edit Form Modal */}
       {showEditForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="edit-flight-title">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">Edit Flight</h2>
+                <h2 id="edit-flight-title" className="text-2xl font-bold">Edit Flight</h2>
                 <button
                   onClick={() => setShowEditForm(false)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                  className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  aria-label="Close"
                 >
                   ×
                 </button>

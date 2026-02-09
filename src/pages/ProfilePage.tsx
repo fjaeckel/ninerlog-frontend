@@ -80,7 +80,7 @@ export default function ProfilePage() {
         <h2 className="text-lg font-semibold mb-4">Profile Information</h2>
         <form onSubmit={handleUpdateProfile} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               Name
             </label>
             <input
@@ -93,7 +93,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               Email
             </label>
             <input
@@ -125,7 +125,7 @@ export default function ProfilePage() {
         <h2 className="text-lg font-semibold mb-4">Change Password</h2>
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
-            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="currentPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               Current Password
             </label>
             <input
@@ -138,7 +138,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               New Password
             </label>
             <input
@@ -152,7 +152,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
               Confirm New Password
             </label>
             <input
@@ -182,8 +182,8 @@ export default function ProfilePage() {
 
       {/* Delete Account */}
       <div className="card border-red-200">
-        <h2 className="text-lg font-semibold text-red-700 mb-4">Danger Zone</h2>
-        <p className="text-sm text-gray-600 mb-4">
+        <h2 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-4">Danger Zone</h2>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
           Permanently delete your account and all associated data including licenses, flights, and tokens.
           This action cannot be undone.
         </p>
@@ -191,12 +191,12 @@ export default function ProfilePage() {
         {!showDeleteConfirm ? (
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="btn-secondary text-red-700 hover:bg-red-50 border-red-300"
+            className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300"
           >
             Delete Account
           </button>
         ) : (
-          <div className="space-y-4 p-4 bg-red-50 rounded-lg border border-red-200">
+          <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
             <p className="text-sm font-medium text-red-800">
               Enter your password to confirm account deletion:
             </p>

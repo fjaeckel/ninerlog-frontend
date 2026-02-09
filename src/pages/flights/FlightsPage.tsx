@@ -134,16 +134,16 @@ export default function FlightsPage() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="flight-form-title">
           <div className="bg-white dark:bg-slate-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
+                <h2 id="flight-form-title" className="text-xl font-semibold text-slate-800 dark:text-slate-100">
                   {editingFlight ? 'Edit Flight' : 'Log New Flight'}
                 </h2>
                 <button
                   onClick={handleCloseForm}
-                  className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   aria-label="Close"
                 >
                   ✕
@@ -170,7 +170,7 @@ export default function FlightsPage() {
       ) : (
         <>
           <div className="overflow-x-auto card p-0">
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm" aria-label="Flight log">
               <thead className="bg-slate-50 dark:bg-slate-800/50">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Date</th>

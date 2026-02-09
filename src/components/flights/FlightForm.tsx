@@ -47,6 +47,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
+    setValue,
   } = useForm<FlightFormData>({
     resolver: zodResolver(flightSchema),
     defaultValues: {
@@ -93,6 +95,21 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       });
     }
   }, [existingFlight, isEditing, reset]);
+
+  // Determine if active license is SPL/Sport (no night flying allowed)
+  const selectedLicenseId = watch('licenseId');
+  const isSPL = (() => {
+    const lic = licenses?.find((l) => l.id === selectedLicenseId);
+    return lic?.licenseType === 'EASA_SPL' || lic?.licenseType === 'FAA_SPORT';
+  })();
+
+  // Force night fields to 0 when SPL is selected
+  useEffect(() => {
+    if (isSPL) {
+      setValue('nightTime', 0);
+      setValue('landingsNight', 0);
+    }
+  }, [isSPL, setValue]);
 
   const onSubmit = async (data: FlightFormData) => {
     try {
@@ -197,7 +214,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       {/* Route & Times */}
       <fieldset>
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Route & Times (UTC)</legend>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label htmlFor="departureIcao" className="form-label">
               Departure ICAO <span className="text-red-500">*</span>
@@ -329,19 +346,21 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Dual (instruction received)</span>
             </label>
           </div>
-          <div>
-            <label htmlFor="nightTime" className="form-label">
-              Night Time
-            </label>
-            <input
-              {...register('nightTime', { valueAsNumber: true })}
-              type="number"
-              id="nightTime"
-              step="0.1"
-              min="0"
-              className="input"
-            />
-          </div>
+          {!isSPL && (
+            <div>
+              <label htmlFor="nightTime" className="form-label">
+                Night Time
+              </label>
+              <input
+                {...register('nightTime', { valueAsNumber: true })}
+                type="number"
+                id="nightTime"
+                step="0.1"
+                min="0"
+                className="input"
+              />
+            </div>
+          )}
           <div>
             <label htmlFor="ifrTime" className="form-label">
               IFR Time
@@ -374,18 +393,20 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               className="input"
             />
           </div>
-          <div>
-            <label htmlFor="landingsNight" className="form-label">
-              Night Landings
-            </label>
-            <input
-              {...register('landingsNight', { valueAsNumber: true })}
-              type="number"
-              id="landingsNight"
-              min="0"
-              className="input"
-            />
-          </div>
+          {!isSPL && (
+            <div>
+              <label htmlFor="landingsNight" className="form-label">
+                Night Landings
+              </label>
+              <input
+                {...register('landingsNight', { valueAsNumber: true })}
+                type="number"
+                id="landingsNight"
+                min="0"
+                className="input"
+              />
+            </div>
+          )}
         </div>
       </fieldset>
 
