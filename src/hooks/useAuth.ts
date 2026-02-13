@@ -36,14 +36,16 @@ export const useLogin = () => {
   const { setAuth } = useAuthStore();
 
   return useMutation({
-    mutationFn: async (requestData: LoginRequest): Promise<NonNullable<AuthResponse>> => {
+    mutationFn: async (requestData: LoginRequest): Promise<any> => {
       const { data, error } = await apiClient.POST('/auth/login', {
         body: requestData as any,
       });
       if (error) throw error;
-      return data as NonNullable<AuthResponse>;
+      return data;
     },
     onSuccess: (data) => {
+      // Skip setAuth if 2FA is required — handled by LoginPage
+      if (data.requiresTwoFactor) return;
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);
     },
   });

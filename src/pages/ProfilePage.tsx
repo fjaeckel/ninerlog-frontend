@@ -3,15 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useUpdateProfile, useChangePassword, useDeleteAccount } from '../hooks/useProfile';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
+import { useSetup2FA, useVerify2FA, useDisable2FA } from '../hooks/useTwoFactor';
 
 export default function ProfilePage() {
-  const { user } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
   const navigate = useNavigate();
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
   const deleteAccount = useDeleteAccount();
   const { data: notifPrefs } = useNotificationPreferences();
   const updateNotifPrefs = useUpdateNotificationPreferences();
+  const setup2FA = useSetup2FA();
+  const verify2FA = useVerify2FA();
+  const disable2FA = useDisable2FA();
+
+  // 2FA state
+  const [twoFASetupData, setTwoFASetupData] = useState<{ secret: string; qrUri: string } | null>(null);
+  const [twoFACode, setTwoFACode] = useState('');
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
+  const [twoFADisablePassword, setTwoFADisablePassword] = useState('');
+  const [showDisable2FA, setShowDisable2FA] = useState(false);
+  const [twoFAMessage, setTwoFAMessage] = useState('');
 
   // Profile form state
   const [name, setName] = useState(user?.name || '');
@@ -261,6 +273,170 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Two-Factor Authentication */}
+      <div className="card mb-6">
+        <h2 className="text-lg font-semibold mb-4">Two-Factor Authentication</h2>
+
+        {recoveryCodes ? (
+          // Show recovery codes after enabling
+          <div className="space-y-4">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+              <p className="text-sm font-medium text-green-800 dark:text-green-300 mb-2">2FA Enabled Successfully!</p>
+              <p className="text-xs text-green-700 dark:text-green-400 mb-3">
+                Save these recovery codes in a safe place. Each can only be used once.
+              </p>
+              <div className="grid grid-cols-2 gap-1 font-mono text-sm bg-white dark:bg-slate-900 p-3 rounded border">
+                {recoveryCodes.map((code, i) => (
+                  <div key={i} className="text-slate-700 dark:text-slate-300">{code}</div>
+                ))}
+              </div>
+            </div>
+            <button
+              onClick={() => { setRecoveryCodes(null); setTwoFASetupData(null); }}
+              className="btn-primary w-full"
+            >
+              I've saved my codes
+            </button>
+          </div>
+        ) : twoFASetupData ? (
+          // Setup wizard - verify code
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Scan the QR code with your authenticator app (Google Authenticator, Authy, etc.), then enter the 6-digit code below.
+            </p>
+            <div className="flex justify-center p-4 bg-white dark:bg-slate-900 rounded-lg border">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(twoFASetupData.qrUri)}`}
+                alt="2FA QR Code"
+                className="w-48 h-48"
+              />
+            </div>
+            <div>
+              <label className="form-label">Manual entry key</label>
+              <code className="block text-xs bg-slate-100 dark:bg-slate-800 p-2 rounded font-mono break-all select-all">
+                {twoFASetupData.secret}
+              </code>
+            </div>
+            <div>
+              <label htmlFor="twoFACode" className="form-label">Verification Code</label>
+              <input
+                id="twoFACode"
+                type="text"
+                value={twoFACode}
+                onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className="input font-mono text-center text-lg tracking-widest"
+                placeholder="000000"
+                maxLength={6}
+                inputMode="numeric"
+              />
+            </div>
+            {twoFAMessage && <p className="text-sm text-red-600">{twoFAMessage}</p>}
+            <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  setTwoFAMessage('');
+                  try {
+                    const result = await verify2FA.mutateAsync(twoFACode);
+                    setRecoveryCodes(result.recoveryCodes);
+                    updateUser({ twoFactorEnabled: true });
+                    setTwoFACode('');
+                  } catch {
+                    setTwoFAMessage('Invalid code. Check your authenticator and try again.');
+                  }
+                }}
+                disabled={twoFACode.length !== 6 || verify2FA.isPending}
+                className="btn-primary flex-1"
+              >
+                {verify2FA.isPending ? 'Verifying...' : 'Verify & Enable'}
+              </button>
+              <button
+                onClick={() => { setTwoFASetupData(null); setTwoFACode(''); setTwoFAMessage(''); }}
+                className="btn-secondary flex-1"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : user?.twoFactorEnabled ? (
+          // 2FA is enabled — show disable option
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="text-green-600 text-lg">🛡</span>
+              <div>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">2FA is enabled</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Your account is protected with TOTP authentication</p>
+              </div>
+            </div>
+            {!showDisable2FA ? (
+              <button
+                onClick={() => setShowDisable2FA(true)}
+                className="btn-secondary text-sm text-red-600"
+              >
+                Disable 2FA
+              </button>
+            ) : (
+              <div className="space-y-3 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                <p className="text-sm text-red-800 dark:text-red-300">Enter your password to disable 2FA:</p>
+                <input
+                  type="password"
+                  value={twoFADisablePassword}
+                  onChange={(e) => setTwoFADisablePassword(e.target.value)}
+                  className="input"
+                  placeholder="Your password"
+                />
+                {twoFAMessage && <p className="text-sm text-red-600">{twoFAMessage}</p>}
+                <div className="flex gap-3">
+                  <button
+                    onClick={async () => {
+                      setTwoFAMessage('');
+                      try {
+                        await disable2FA.mutateAsync(twoFADisablePassword);
+                        updateUser({ twoFactorEnabled: false });
+                        setShowDisable2FA(false);
+                        setTwoFADisablePassword('');
+                      } catch {
+                        setTwoFAMessage('Incorrect password.');
+                      }
+                    }}
+                    disabled={!twoFADisablePassword || disable2FA.isPending}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {disable2FA.isPending ? 'Disabling...' : 'Disable 2FA'}
+                  </button>
+                  <button
+                    onClick={() => { setShowDisable2FA(false); setTwoFADisablePassword(''); setTwoFAMessage(''); }}
+                    className="btn-secondary text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          // 2FA not enabled — show setup button
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Add an extra layer of security to your account with a time-based one-time password (TOTP) from an authenticator app.
+            </p>
+            <button
+              onClick={async () => {
+                try {
+                  const data = await setup2FA.mutateAsync();
+                  setTwoFASetupData(data);
+                } catch {
+                  setTwoFAMessage('Failed to start 2FA setup.');
+                }
+              }}
+              disabled={setup2FA.isPending}
+              className="btn-primary"
+            >
+              {setup2FA.isPending ? 'Setting up...' : 'Enable 2FA'}
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Delete Account */}
       <div className="card border-red-200">

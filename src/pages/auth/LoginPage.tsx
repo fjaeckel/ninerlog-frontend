@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLogin } from '../../hooks/useAuth';
+import { useLogin2FA } from '../../hooks/useTwoFactor';
+import { useAuthStore } from '../../stores/authStore';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -15,7 +17,11 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const navigate = useNavigate();
   const login = useLogin();
+  const login2FA = useLogin2FA();
+  const { setAuth } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
+  const [twoFactorToken, setTwoFactorToken] = useState<string | null>(null);
+  const [twoFACode, setTwoFACode] = useState('');
 
   const {
     register,
@@ -28,10 +34,34 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setError(null);
-      await login.mutateAsync(data);
+      const result = await login.mutateAsync(data);
+
+      // Check if 2FA is required
+      if ((result as any).requiresTwoFactor) {
+        setTwoFactorToken((result as any).twoFactorToken);
+        return;
+      }
+
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid email or password.');
+    }
+  };
+
+  const handleTwoFactorSubmit = async () => {
+    try {
+      setError(null);
+      if (!twoFactorToken) return;
+
+      const result = await login2FA.mutateAsync({
+        twoFactorToken,
+        code: twoFACode,
+      });
+
+      setAuth(result.user, result.accessToken, result.refreshToken, result.expiresIn);
+      navigate('/dashboard');
+    } catch {
+      setError('Invalid 2FA code. Try again.');
     }
   };
 
@@ -47,6 +77,57 @@ export default function LoginPage() {
           </p>
         </div>
 
+        {twoFactorToken ? (
+          // 2FA Code Entry
+          <div className="card p-6 space-y-5">
+            <div className="text-center">
+              <span className="text-3xl">🔐</span>
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mt-2">Two-Factor Authentication</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Enter the 6-digit code from your authenticator app
+              </p>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="twoFACode" className="form-label">Authentication Code</label>
+              <input
+                id="twoFACode"
+                type="text"
+                value={twoFACode}
+                onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className="input font-mono text-center text-2xl tracking-[0.5em]"
+                placeholder="000000"
+                maxLength={6}
+                inputMode="numeric"
+                autoFocus
+              />
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                Or enter a recovery code
+              </p>
+            </div>
+
+            <button
+              onClick={handleTwoFactorSubmit}
+              disabled={twoFACode.length < 6 || login2FA.isPending}
+              className="btn-primary w-full btn-lg"
+            >
+              {login2FA.isPending ? 'Verifying...' : 'Verify'}
+            </button>
+
+            <button
+              onClick={() => { setTwoFactorToken(null); setTwoFACode(''); setError(null); }}
+              className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 w-full text-center"
+            >
+              ← Back to login
+            </button>
+          </div>
+        ) : (
         <form
           className="card p-6 space-y-5"
           onSubmit={handleSubmit(onSubmit)}
@@ -118,6 +199,7 @@ export default function LoginPage() {
             </Link>
           </p>
         </form>
+        )}
       </div>
     </div>
   );

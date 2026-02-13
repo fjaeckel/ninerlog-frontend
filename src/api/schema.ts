@@ -84,6 +84,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/2fa/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start 2FA setup
+         * @description Generate a TOTP secret and return the provisioning URI for authenticator apps. Does not enable 2FA until verified.
+         */
+        post: operations["setup2FA"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/2fa/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify and enable 2FA
+         * @description Verify a TOTP code to confirm setup and enable 2FA. Returns backup recovery codes.
+         */
+        post: operations["verify2FA"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/2fa/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disable 2FA
+         * @description Disable two-factor authentication. Requires current password for confirmation.
+         */
+        post: operations["disable2FA"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/2fa/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete login with 2FA code
+         * @description After initial login returns requiresTwoFactor, submit the TOTP code or recovery code here.
+         */
+        post: operations["login2FA"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me": {
         parameters: {
             query?: never;
@@ -402,6 +482,40 @@ export interface components {
              * @example 2026-01-20T14:45:00Z
              */
             updatedAt: string;
+            /**
+             * @description Whether 2FA is enabled for this account
+             * @example false
+             */
+            twoFactorEnabled?: boolean;
+        };
+        TwoFactorSetup: {
+            /**
+             * @description Base32-encoded TOTP secret for manual entry
+             * @example JBSWY3DPEHPK3PXP
+             */
+            secret: string;
+            /**
+             * @description otpauth:// URI for QR code generation
+             * @example otpauth://totp/PilotLog:pilot@example.com?secret=JBSWY3DPEHPK3PXP&issuer=PilotLog
+             */
+            qrUri: string;
+        };
+        TwoFactorEnabled: {
+            /**
+             * @description One-time recovery codes to use if authenticator is unavailable
+             * @example [
+             *       "abc12-def34",
+             *       "ghi56-jkl78",
+             *       "mno90-pqr12"
+             *     ]
+             */
+            recoveryCodes: string[];
+        };
+        TwoFactorLoginRequired: {
+            /** @example true */
+            requiresTwoFactor: boolean;
+            /** @description Temporary token to use with /auth/2fa/login */
+            twoFactorToken: string;
         };
         AuthResponse: {
             /**
@@ -1441,6 +1555,121 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    setup2FA: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 2FA setup data with secret and QR URI */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoFactorSetup"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description 2FA is already enabled */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    verify2FA: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description 6-digit TOTP code from authenticator app */
+                    code: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 2FA enabled with recovery codes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoFactorEnabled"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    disable2FA: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: password */
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 2FA disabled */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    login2FA: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Temporary token from login response */
+                    twoFactorToken: string;
+                    /** @description 6-digit TOTP code or recovery code */
+                    code: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Login successful */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
             401: components["responses"]["Unauthorized"];
         };
     };

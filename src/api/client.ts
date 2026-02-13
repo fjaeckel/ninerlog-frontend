@@ -21,12 +21,16 @@ apiClient.use({
     }
     return request;
   },
-  onResponse({ response }) {
-    // Handle 401 by clearing auth
+  onResponse({ response, request }) {
+    // Handle 401 by clearing auth — but NOT for auth-related endpoints
     if (response.status === 401) {
-      useAuthStore.getState().clearAuth();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+      const url = request.url || '';
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/2fa/') || url.includes('/auth/register');
+      if (!isAuthEndpoint) {
+        useAuthStore.getState().clearAuth();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
       }
     }
     return response;
