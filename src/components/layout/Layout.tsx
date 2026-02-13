@@ -63,7 +63,7 @@ export default function Layout() {
           <SidebarItem to="/flights" label="Flights" icon="✈" />
           <SidebarItem to="/credentials" label="Credentials" icon="📋" />
           <SidebarItem to="/aircraft" label="Aircraft" icon="🛩" />
-          <SidebarItem to="/statistics" label="Statistics" icon="📊" />
+          <SidebarItem to="/reports" label="Reports" icon="📊" />
           <SidebarItem to="/licenses" label="Licenses" icon="🏅" />
         </nav>
         <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-1">
@@ -91,7 +91,7 @@ export default function Layout() {
             +
           </span>
         </Link>
-        <BottomNavItem to="/statistics" label="Stats" icon="📊" />
+        <BottomNavItem to="/reports" label="Reports" icon="📊" />
         <button
           onClick={() => setShowMoreMenu(true)}
           className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-xs text-slate-400 dark:text-slate-500 transition-colors"

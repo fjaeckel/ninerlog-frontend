@@ -14,6 +14,7 @@ const FlightDetailPage = lazy(() => import('./pages/flights/FlightDetailPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CredentialsPage = lazy(() => import('./pages/credentials/CredentialsPage'));
 const AircraftPage = lazy(() => import('./pages/aircraft/AircraftPage'));
+const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'));
 
 function PageLoader() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />} />
           <Route path="/credentials" element={isAuthenticated ? <CredentialsPage /> : <Navigate to="/login" />} />
           <Route path="/aircraft" element={isAuthenticated ? <AircraftPage /> : <Navigate to="/login" />} />
+          <Route path="/reports" element={isAuthenticated ? <ReportsPage /> : <Navigate to="/login" />} />
         </Route>
 
         {/* Redirect root to dashboard or login */}
