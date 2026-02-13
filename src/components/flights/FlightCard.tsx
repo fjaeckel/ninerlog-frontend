@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { Pencil, Trash2 } from 'lucide-react';
 import type { components } from '../../api/schema';
 
 type Flight = components['schemas']['Flight'];
@@ -14,7 +15,14 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
   const totalLandings = flight.landingsDay + flight.landingsNight;
 
   return (
-    <div className="card hover:shadow-md transition-shadow cursor-pointer" onClick={onClick}>
+    <div
+      className="card hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Flight ${flight.departureIcao || '—'} to ${flight.arrivalIcao || '—'} on ${format(new Date(flight.date), 'MMM dd, yyyy')}, ${flight.totalTime.toFixed(1)} hours`}
+    >
       <div className="flex justify-between items-start mb-3">
         <div>
           <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
@@ -89,13 +97,17 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
         <button
           onClick={(e) => { e.stopPropagation(); onEdit(); }}
           className="btn-secondary btn-sm flex-1"
+          aria-label={`Edit flight ${flight.departureIcao || ''} to ${flight.arrivalIcao || ''}`}
         >
+          <Pencil className="w-3.5 h-3.5" />
           Edit
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
           className="btn-secondary btn-sm flex-1 hover:bg-red-50 hover:text-red-700 hover:border-red-200 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+          aria-label={`Delete flight ${flight.departureIcao || ''} to ${flight.arrivalIcao || ''}`}
         >
+          <Trash2 className="w-3.5 h-3.5" />
           Delete
         </button>
       </div>

@@ -160,7 +160,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="issueDate" className="form-label">
             Issue Date <span className="text-red-500">*</span>

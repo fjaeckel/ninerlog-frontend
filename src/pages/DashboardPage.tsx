@@ -6,6 +6,7 @@ import { useLicenseStore } from '../stores/licenseStore';
 import { useFlights } from '../hooks/useFlights';
 import { useLicenseStatistics, useLicenseCurrency } from '../hooks/useStatistics';
 import { useCredentials } from '../hooks/useCredentials';
+import { StatCard } from '../components/ui/StatCard';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -176,8 +177,8 @@ export default function DashboardPage() {
 
       {/* Stats grid */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
-        <StatCard label="Total Hours" value={statistics?.totalHours?.toFixed(1) ?? '0.0'} />
-        <StatCard label="PIC Hours" value={statistics?.picHours?.toFixed(1) ?? '0.0'} />
+        <StatCard label="Total Hours" value={statistics?.totalHours?.toFixed(1) ?? '0.0'} unit="h" />
+        <StatCard label="PIC Hours" value={statistics?.picHours?.toFixed(1) ?? '0.0'} unit="h" />
         <StatCard label="Total Flights" value={String(statistics?.totalFlights ?? totalFlights)} />
         <StatCard
           label="Landings"
@@ -194,6 +195,8 @@ export default function DashboardPage() {
             {[
               { label: 'PIC', value: statistics.picHours },
               { label: 'Dual', value: statistics.dualHours },
+              { label: 'Solo', value: statistics.soloHours ?? 0 },
+              { label: 'Cross-Country', value: statistics.crossCountryHours ?? 0 },
               ...(!isSPL ? [{ label: 'Night', value: statistics.nightHours }] : []),
               { label: 'IFR', value: statistics.ifrHours },
             ].map(({ label, value }) => (
@@ -253,16 +256,6 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function StatCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
-  return (
-    <div className="card">
-      <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{label}</p>
-      <p className="data-lg text-slate-800 dark:text-slate-100">{value}</p>
-      {detail && <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{detail}</p>}
     </div>
   );
 }

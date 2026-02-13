@@ -19,12 +19,15 @@ const flightSchema = z.object({
   onBlockTime: z.string().min(1, 'On-block time is required'),
   departureTime: z.string().min(1, 'Takeoff time is required'),
   arrivalTime: z.string().min(1, 'Landing time is required'),
+  route: z.string().optional().or(z.literal('')),
   isPic: z.boolean(),
   isDual: z.boolean(),
   nightTime: z.number().min(0),
   ifrTime: z.number().min(0),
   landingsDay: z.number().int().min(0),
   landingsNight: z.number().int().min(0),
+  takeoffsDay: z.number().int().min(0).optional(),
+  takeoffsNight: z.number().int().min(0).optional(),
   remarks: z.string().optional().or(z.literal('')),
 });
 
@@ -73,12 +76,15 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       onBlockTime: '',
       departureTime: '',
       arrivalTime: '',
+      route: '',
       isPic: true,
       isDual: false,
       nightTime: 0,
       ifrTime: 0,
       landingsDay: 1,
       landingsNight: 0,
+      takeoffsDay: undefined,
+      takeoffsNight: undefined,
       remarks: '',
     },
   });
@@ -96,12 +102,15 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         onBlockTime: existingFlight.onBlockTime?.slice(0, 5) || '',
         departureTime: existingFlight.departureTime?.slice(0, 5) || '',
         arrivalTime: existingFlight.arrivalTime?.slice(0, 5) || '',
+        route: existingFlight.route || '',
         isPic: existingFlight.isPic,
         isDual: existingFlight.isDual,
         nightTime: existingFlight.nightTime,
         ifrTime: existingFlight.ifrTime,
         landingsDay: existingFlight.landingsDay,
         landingsNight: existingFlight.landingsNight,
+        takeoffsDay: existingFlight.takeoffsDay,
+        takeoffsNight: existingFlight.takeoffsNight,
         remarks: existingFlight.remarks || '',
       });
     }
@@ -201,12 +210,15 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         onBlockTime: data.onBlockTime + ':00',
         departureTime: data.departureTime + ':00',
         arrivalTime: data.arrivalTime + ':00',
+        route: data.route || null,
         isPic: data.isPic,
         isDual: data.isDual,
         nightTime: data.nightTime,
         ifrTime: data.ifrTime,
         landingsDay: data.landingsDay,
         landingsNight: data.landingsNight,
+        ...(data.takeoffsDay !== undefined && { takeoffsDay: data.takeoffsDay }),
+        ...(data.takeoffsNight !== undefined && { takeoffsNight: data.takeoffsNight }),
         remarks: data.remarks || null,
       };
 
@@ -462,6 +474,21 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             )}
           </div>
         </div>
+
+        {/* Route waypoints */}
+        <div className="mt-4">
+          <label htmlFor="route" className="form-label">
+            Route (waypoints)
+          </label>
+          <input
+            {...register('route')}
+            type="text"
+            id="route"
+            className="input uppercase"
+            placeholder="EDDF,EDDS,EDDM"
+          />
+          <p className="form-helper">Comma-separated ICAO codes for VFR/IFR flight plans</p>
+        </div>
       </fieldset>
 
       {/* Block Times */}
@@ -530,10 +557,40 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         </div>
       </fieldset>
 
-      {/* Landings */}
+      {/* Takeoffs & Landings */}
       <fieldset>
-        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Landings</legend>
-        <div className="grid grid-cols-2 gap-4">
+        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Takeoffs & Landings</legend>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <label htmlFor="takeoffsDay" className="form-label">
+              Day Takeoffs
+            </label>
+            <input
+              {...register('takeoffsDay', { setValueAs: (v: string) => (v === '' ? undefined : Number(v)) })}
+              type="number"
+              id="takeoffsDay"
+              min="0"
+              className="input"
+              placeholder="Auto"
+            />
+            <p className="form-helper">Auto-calculated if empty</p>
+          </div>
+          {!isSPL && (
+            <div>
+              <label htmlFor="takeoffsNight" className="form-label">
+                Night Takeoffs
+              </label>
+              <input
+                {...register('takeoffsNight', { setValueAs: (v: string) => (v === '' ? undefined : Number(v)) })}
+                type="number"
+                id="takeoffsNight"
+                min="0"
+                className="input"
+                placeholder="Auto"
+              />
+              <p className="form-helper">Auto-calculated if empty</p>
+            </div>
+          )}
           <div>
             <label htmlFor="landingsDay" className="form-label">
               Day Landings
@@ -562,6 +619,39 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           )}
         </div>
       </fieldset>
+
+      {/* Auto-Calculated Values (edit mode) */}
+      {isEditing && existingFlight && (
+        <fieldset>
+          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Auto-Calculated Values</legend>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <label className="form-label">All Landings</label>
+              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
+                {existingFlight.allLandings}
+              </div>
+            </div>
+            <div>
+              <label className="form-label">Solo Time</label>
+              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
+                {existingFlight.soloTime.toFixed(1)}h
+              </div>
+            </div>
+            <div>
+              <label className="form-label">Cross-Country</label>
+              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
+                {existingFlight.crossCountryTime.toFixed(1)}h
+              </div>
+            </div>
+            <div>
+              <label className="form-label">Distance</label>
+              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
+                {existingFlight.distance.toFixed(1)} NM
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      )}
 
       {/* Remarks */}
       <div>

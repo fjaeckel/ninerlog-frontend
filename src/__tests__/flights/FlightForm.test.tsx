@@ -82,7 +82,7 @@ describe('FlightForm', () => {
     expect(screen.getByText('Basic Information')).toBeInTheDocument();
     expect(screen.getByText('Route & Times (UTC)')).toBeInTheDocument();
     expect(screen.getByText('Block Times')).toBeInTheDocument();
-    expect(screen.getByText('Landings')).toBeInTheDocument();
+    expect(screen.getByText('Takeoffs & Landings')).toBeInTheDocument();
   });
 
   it('renders basic form fields', () => {
@@ -100,8 +100,8 @@ describe('FlightForm', () => {
     expect(screen.getByLabelText(/departure icao/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/arrival icao/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/off-block/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/takeoff/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^landing/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Takeoff *')).toBeInTheDocument();
+    expect(screen.getByLabelText('Landing *')).toBeInTheDocument();
     expect(screen.getByLabelText(/on-block/i)).toBeInTheDocument();
   });
 
@@ -152,8 +152,8 @@ describe('FlightForm', () => {
     await user.type(screen.getByLabelText(/arrival icao/i), 'EDDH');
     // Fill required time fields via fireEvent (time inputs)
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
-    fireEvent.change(screen.getByLabelText(/takeoff/i), { target: { value: '14:30' } });
-    fireEvent.change(screen.getByLabelText(/^landing/i), { target: { value: '16:00' } });
+    fireEvent.change(screen.getByLabelText('Takeoff *'), { target: { value: '14:30' } });
+    fireEvent.change(screen.getByLabelText('Landing *'), { target: { value: '16:00' } });
     fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '16:10' } });
 
     // Submit via form submit event directly
@@ -192,8 +192,8 @@ describe('FlightForm', () => {
     await user.type(screen.getByLabelText(/departure icao/i), 'eddf');
     await user.type(screen.getByLabelText(/arrival icao/i), 'eddh');
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
-    fireEvent.change(screen.getByLabelText(/takeoff/i), { target: { value: '14:30' } });
-    fireEvent.change(screen.getByLabelText(/^landing/i), { target: { value: '16:00' } });
+    fireEvent.change(screen.getByLabelText('Takeoff *'), { target: { value: '14:30' } });
+    fireEvent.change(screen.getByLabelText('Landing *'), { target: { value: '16:00' } });
     fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '16:10' } });
 
     fireEvent.submit(screen.getByRole('button', { name: /log flight/i }).closest('form')!);
@@ -233,6 +233,12 @@ describe('FlightForm', () => {
       ifrTime: 0,
       landingsDay: 2,
       landingsNight: 0,
+      allLandings: 2,
+      takeoffsDay: 2,
+      takeoffsNight: 0,
+      soloTime: 1.5,
+      crossCountryTime: 1.5,
+      distance: 185.3,
       remarks: 'Training flight',
       createdAt: '2026-01-15T00:00:00Z',
       updatedAt: '2026-01-15T00:00:00Z',

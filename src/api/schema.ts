@@ -1085,6 +1085,44 @@ export interface components {
              */
             landingsNight: number;
             /**
+             * @description Total landings (day + night). Auto-calculated by the server.
+             * @example 4
+             */
+            allLandings: number;
+            /**
+             * @description Number of day takeoffs. Auto-calculated from sunset/sunrise at departure airport unless overridden.
+             * @example 3
+             */
+            takeoffsDay: number;
+            /**
+             * @description Number of night takeoffs. Auto-calculated from sunset/sunrise at departure airport unless overridden.
+             * @example 1
+             */
+            takeoffsNight: number;
+            /**
+             * @description Route waypoints as comma-separated ICAO codes for VFR/IFR flight plans
+             * @example EDDF,EDDS,EDDM
+             */
+            route?: string | null;
+            /**
+             * Format: float
+             * @description Solo time in hours. Auto-calculated when no crew and not dual instruction.
+             * @example 1.5
+             */
+            soloTime: number;
+            /**
+             * Format: float
+             * @description Cross-country time in hours. Auto-calculated when departure ≠ arrival.
+             * @example 2.5
+             */
+            crossCountryTime: number;
+            /**
+             * Format: float
+             * @description Distance in nautical miles. Auto-calculated from airport coordinates.
+             * @example 185.3
+             */
+            distance: number;
+            /**
              * @description Free text notes
              * @example Training flight - touch and go practice
              */
@@ -1201,6 +1239,38 @@ export interface components {
              * @example 1
              */
             landingsNight: number;
+            /**
+             * @description Number of day takeoffs. Provide to override auto-calculation.
+             * @example 3
+             */
+            takeoffsDay?: number;
+            /**
+             * @description Number of night takeoffs. Provide to override auto-calculation.
+             * @example 0
+             */
+            takeoffsNight?: number;
+            /**
+             * @description Route waypoints as comma-separated ICAO codes
+             * @example EDDF,EDDS,EDDM
+             */
+            route?: string | null;
+            /**
+             * Format: float
+             * @description Solo time in hours. Auto-calculated by the server.
+             */
+            readonly soloTime?: number;
+            /**
+             * Format: float
+             * @description Cross-country time in hours. Auto-calculated by the server.
+             */
+            readonly crossCountryTime?: number;
+            /**
+             * Format: float
+             * @description Distance in nautical miles. Auto-calculated by the server.
+             */
+            readonly distance?: number;
+            /** @description Total landings (day + night). Auto-calculated by the server. */
+            readonly allLandings?: number;
             /** @example Training flight - touch and go practice */
             remarks?: string | null;
         };
@@ -1243,6 +1313,12 @@ export interface components {
             ifrTime?: number;
             landingsDay?: number;
             landingsNight?: number;
+            /** @description Number of day takeoffs. Provide to override auto-calculation. */
+            takeoffsDay?: number;
+            /** @description Number of night takeoffs. Provide to override auto-calculation. */
+            takeoffsNight?: number;
+            /** @description Route waypoints as comma-separated ICAO codes */
+            route?: string | null;
             remarks?: string | null;
         };
         Statistics: {
@@ -1296,6 +1372,18 @@ export interface components {
              * @example 35
              */
             landingsNight: number;
+            /**
+             * Format: float
+             * @description Total solo hours
+             * @example 120
+             */
+            soloHours?: number;
+            /**
+             * Format: float
+             * @description Total cross-country hours
+             * @example 200
+             */
+            crossCountryHours?: number;
         };
         Currency: {
             /**

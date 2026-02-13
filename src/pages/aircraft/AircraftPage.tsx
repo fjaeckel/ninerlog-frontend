@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useAircraft, useDeleteAircraft } from '../../hooks/useAircraft';
 import AircraftForm from '../../components/aircraft/AircraftForm';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { SkeletonGrid } from '../../components/ui/Skeleton';
+import { ErrorState } from '../../components/ui/ErrorState';
 
 const ENGINE_LABELS: Record<string, string> = {
   piston: 'Piston',
@@ -10,27 +13,44 @@ const ENGINE_LABELS: Record<string, string> = {
 };
 
 export default function AircraftPage() {
-  const { data: aircraft, isLoading } = useAircraft();
+  const { data: aircraft, isLoading, error } = useAircraft();
   const deleteAircraft = useDeleteAircraft();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Delete this aircraft?')) {
-      await deleteAircraft.mutateAsync(id);
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget) {
+      await deleteAircraft.mutateAsync(deleteTarget);
+      setDeleteTarget(null);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-slate-400">Loading aircraft...</div>
+      <div className="mx-auto max-w-[960px] py-6">
+        <SkeletonGrid count={4} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-[960px] py-6">
+        <ErrorState
+          title="Failed to load aircraft"
+          message="An error occurred while loading your fleet. Please try again."
+        />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-[1280px] py-6">
+    <div className="mx-auto max-w-[960px] py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="page-title">Aircraft</h1>
@@ -138,17 +158,17 @@ export default function AircraftPage() {
                 {(ac.isComplex || ac.isHighPerformance || ac.isTailwheel) && (
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {ac.isComplex && (
-                      <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                      <span className="badge-info">
                         Complex
                       </span>
                     )}
                     {ac.isHighPerformance && (
-                      <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                      <span className="badge-expiring">
                         High Perf
                       </span>
                     )}
                     {ac.isTailwheel && (
-                      <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                      <span className="badge-neutral">
                         Tailwheel
                       </span>
                     )}
@@ -181,6 +201,18 @@ export default function AircraftPage() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        title="Delete aircraft?"
+        description="This aircraft will be permanently removed from your fleet. This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        isLoading={deleteAircraft.isPending}
+      />
     </div>
   );
 }

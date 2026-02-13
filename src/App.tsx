@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
+import { useTheme } from './hooks/useTheme';
 import Layout from './components/layout/Layout';
 
 // Lazy-loaded pages for code splitting
@@ -28,6 +29,9 @@ function PageLoader() {
 
 function App() {
   const { isAuthenticated } = useAuthStore();
+
+  // Sync theme preference to document
+  useTheme();
 
   return (
     <Suspense fallback={<PageLoader />}>

@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
+import {
+  LayoutDashboard, Plane, FileText, PlaneTakeoff, BarChart3, Map,
+  Award, Settings, User, Upload, LogOut, Menu, Plus
+} from 'lucide-react';
 import { useLogout } from '../../hooks/useAuth';
 import { useAuthStore } from '../../stores/authStore';
+import { ThemeSwitcher } from '../ui/ThemeSwitcher';
 
 export default function Layout() {
   const { user } = useAuthStore();
@@ -31,7 +36,7 @@ export default function Layout() {
       {/* ── App Header ── */}
       <header className="fixed top-0 inset-x-0 h-14 lg:h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-40 flex items-center justify-between px-4 lg:px-6" role="banner">
         <Link to="/dashboard" className="flex items-center gap-2">
-          <span className="text-lg">✈</span>
+          <Plane className="w-5 h-5 text-brand-600" aria-hidden="true" />
           <span className="text-lg font-bold text-brand-800 dark:text-blue-400">PilotLog</span>
         </Link>
 
@@ -59,17 +64,19 @@ export default function Layout() {
       {/* ── Desktop Sidebar ── */}
       <aside className="fixed left-0 top-16 bottom-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 hidden lg:flex lg:flex-col z-30" aria-label="Desktop navigation">
         <nav className="flex-1 space-y-1" aria-label="Main">
-          <SidebarItem to="/dashboard" label="Dashboard" icon="🏠" />
-          <SidebarItem to="/flights" label="Flights" icon="✈" />
-          <SidebarItem to="/credentials" label="Credentials" icon="📋" />
-          <SidebarItem to="/aircraft" label="Aircraft" icon="🛩" />
-          <SidebarItem to="/reports" label="Reports" icon="📊" />
-          <SidebarItem to="/map" label="Map" icon="🗺" />
-          <SidebarItem to="/licenses" label="Licenses" icon="🏅" />
+          <SidebarItem to="/dashboard" label="Dashboard" icon={<LayoutDashboard className="w-5 h-5" />} />
+          <SidebarItem to="/flights" label="Flights" icon={<Plane className="w-5 h-5" />} />
+          <SidebarItem to="/credentials" label="Credentials" icon={<FileText className="w-5 h-5" />} />
+          <SidebarItem to="/aircraft" label="Aircraft" icon={<PlaneTakeoff className="w-5 h-5" />} />
+          <SidebarItem to="/reports" label="Reports" icon={<BarChart3 className="w-5 h-5" />} />
+          <SidebarItem to="/map" label="Map" icon={<Map className="w-5 h-5" />} />
+          <SidebarItem to="/licenses" label="Licenses" icon={<Award className="w-5 h-5" />} />
+          <SidebarItem to="/import" label="Import" icon={<Upload className="w-5 h-5" />} />
         </nav>
         <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-1">
-          <SidebarItem to="/settings" label="Settings" icon="⚙" />
-          <SidebarItem to="/profile" label="Profile" icon="👤" />
+          <ThemeSwitcher className="w-full" />
+          <SidebarItem to="/settings" label="Settings" icon={<Settings className="w-5 h-5" />} />
+          <SidebarItem to="/profile" label="Profile" icon={<User className="w-5 h-5" />} />
         </div>
       </aside>
 
@@ -80,25 +87,25 @@ export default function Layout() {
 
       {/* ── Mobile Bottom Nav ── */}
       <nav className="fixed bottom-0 inset-x-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-40 flex items-center justify-around lg:hidden pb-safe" aria-label="Mobile navigation">
-        <BottomNavItem to="/dashboard" label="Home" icon="🏠" />
-        <BottomNavItem to="/flights" label="Flights" icon="✈" />
+        <BottomNavItem to="/dashboard" label="Home" icon={<LayoutDashboard className="w-5 h-5" />} />
+        <BottomNavItem to="/flights" label="Flights" icon={<Plane className="w-5 h-5" />} />
         <Link
           to="/flights"
           state={{ openForm: true }}
           className="flex flex-col items-center justify-center -mt-3"
           aria-label="Add Flight"
         >
-          <span className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl shadow-lg hover:bg-blue-700 transition-colors">
-            +
+          <span className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition-colors">
+            <Plus className="w-6 h-6" />
           </span>
         </Link>
-        <BottomNavItem to="/reports" label="Reports" icon="📊" />
+        <BottomNavItem to="/reports" label="Reports" icon={<BarChart3 className="w-5 h-5" />} />
         <button
           onClick={() => setShowMoreMenu(true)}
           className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-xs text-slate-400 dark:text-slate-500 transition-colors"
           aria-label="More menu"
         >
-          <span className="text-lg mb-0.5">☰</span>
+          <Menu className="w-5 h-5 mb-0.5" />
           <span>More</span>
         </button>
       </nav>
@@ -116,18 +123,18 @@ export default function Layout() {
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
             </div>
             <nav className="px-4 pb-4 space-y-1" aria-label="More navigation">
-              <MoreMenuItem to="/credentials" label="Credentials" icon="📋" onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/aircraft" label="Aircraft" icon="🛩" onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/map" label="Route Map" icon="🗺" onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/import" label="Import Flights" icon="📥" onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/licenses" label="Licenses" icon="🏅" onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/profile" label="Profile & Settings" icon="👤" onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/credentials" label="Credentials" icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/aircraft" label="Aircraft" icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/map" label="Route Map" icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/import" label="Import Flights" icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/licenses" label="Licenses" icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/profile" label="Profile & Settings" icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <div className="border-t border-slate-100 dark:border-slate-700 my-2" />
               <button
                 onClick={() => { setShowMoreMenu(false); handleLogout(); }}
                 className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
-                <span className="w-5 text-center">🚪</span>
+                <LogOut className="w-5 h-5" />
                 Logout
               </button>
             </nav>
@@ -138,7 +145,7 @@ export default function Layout() {
   );
 }
 
-function SidebarItem({ to, label, icon }: { to: string; label: string; icon: string }) {
+function SidebarItem({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) {
   return (
     <NavLink
       to={to}
@@ -150,13 +157,13 @@ function SidebarItem({ to, label, icon }: { to: string; label: string; icon: str
         }`
       }
     >
-      <span className="w-5 text-center">{icon}</span>
+      <span className="shrink-0" aria-hidden="true">{icon}</span>
       {label}
     </NavLink>
   );
 }
 
-function BottomNavItem({ to, label, icon }: { to: string; label: string; icon: string }) {
+function BottomNavItem({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) {
   return (
     <NavLink
       to={to}
@@ -168,13 +175,13 @@ function BottomNavItem({ to, label, icon }: { to: string; label: string; icon: s
         }`
       }
     >
-      <span className="text-lg mb-0.5">{icon}</span>
+      <span className="mb-0.5" aria-hidden="true">{icon}</span>
       <span>{label}</span>
     </NavLink>
   );
 }
 
-function MoreMenuItem({ to, label, icon, onClick }: { to: string; label: string; icon: string; onClick: () => void }) {
+function MoreMenuItem({ to, label, icon, onClick }: { to: string; label: string; icon: React.ReactNode; onClick: () => void }) {
   return (
     <NavLink
       to={to}
@@ -187,7 +194,7 @@ function MoreMenuItem({ to, label, icon, onClick }: { to: string; label: string;
         }`
       }
     >
-      <span className="w-5 text-center">{icon}</span>
+      <span className="shrink-0" aria-hidden="true">{icon}</span>
       {label}
     </NavLink>
   );

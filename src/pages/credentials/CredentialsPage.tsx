@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { useCredentials, useDeleteCredential } from '../../hooks/useCredentials';
 import CredentialForm from '../../components/credentials/CredentialForm';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { SkeletonGrid } from '../../components/ui/Skeleton';
+import { ErrorState } from '../../components/ui/ErrorState';
 
 const CREDENTIAL_LABELS: Record<string, string> = {
   EASA_CLASS1_MEDICAL: 'EASA Class 1 Medical',
@@ -24,34 +27,51 @@ function getExpiryStatus(expiryDate: string | null | undefined): { label: string
   const now = new Date();
   const daysLeft = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (daysLeft < 0) return { label: 'EXPIRED', class: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' };
-  if (daysLeft <= 30) return { label: `${daysLeft}d left`, class: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' };
-  if (daysLeft <= 90) return { label: `${daysLeft}d left`, class: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' };
+  if (daysLeft < 0) return { label: 'EXPIRED', class: 'badge-expired' };
+  if (daysLeft <= 30) return { label: `${daysLeft}d left`, class: 'badge-expiring' };
+  if (daysLeft <= 90) return { label: `${daysLeft}d left`, class: 'badge-expiring' };
   return { label: 'Valid', class: 'badge-current' };
 }
 
 export default function CredentialsPage() {
-  const { data: credentials, isLoading } = useCredentials();
+  const { data: credentials, isLoading, error } = useCredentials();
   const deleteCredential = useDeleteCredential();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Delete this credential?')) {
-      await deleteCredential.mutateAsync(id);
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget) {
+      await deleteCredential.mutateAsync(deleteTarget);
+      setDeleteTarget(null);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-slate-400">Loading credentials...</div>
+      <div className="mx-auto max-w-[960px] py-6">
+        <SkeletonGrid count={4} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-[960px] py-6">
+        <ErrorState
+          title="Failed to load credentials"
+          message="An error occurred while loading your credentials. Please try again."
+        />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-[1280px] py-6">
+    <div className="mx-auto max-w-[960px] py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="page-title">Credentials</h1>
@@ -86,6 +106,18 @@ export default function CredentialsPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        title="Delete credential?"
+        description="This credential will be permanently removed. This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        isLoading={deleteCredential.isPending}
+      />
 
       {/* Credentials List */}
       {!credentials || credentials.length === 0 ? (

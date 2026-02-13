@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
+import { Pencil, Trash2, Search, X } from 'lucide-react';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
 import { useLicenseStore } from '../../stores/licenseStore';
 import FlightForm from '../../components/flights/FlightForm';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import type { operations } from '../../api/schema';
 
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
@@ -16,6 +18,7 @@ export default function FlightsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
@@ -80,8 +83,13 @@ export default function FlightsPage() {
   const { data, isLoading, error } = useFlights(params);
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this flight?')) {
-      await deleteFlight.mutateAsync(id);
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget) {
+      await deleteFlight.mutateAsync(deleteTarget);
+      setDeleteTarget(null);
     }
   };
 
@@ -157,7 +165,7 @@ export default function FlightsPage() {
       {/* Search Bar */}
       <div className="mb-4">
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
           <input
             type="text"
             value={search}
@@ -169,12 +177,13 @@ export default function FlightsPage() {
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-3"
               aria-label="Clear search"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
-          )}
+          )
+          }
         </div>
       </div>
 
@@ -358,33 +367,33 @@ export default function FlightsPage() {
                       {flight.totalTime.toFixed(1)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-center">
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      <span className={`badge ${
                         flight.isPic
-                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          ? 'badge-info'
                           : flight.isDual
-                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                            : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                            ? 'badge-expiring'
+                            : 'badge-neutral'
                       }`}>
                         {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : '—'}
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
-                      {flight.landingsDay + flight.landingsNight}
+                      {flight.allLandings}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleEdit(flight.id); }}
                         className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mr-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
-                        title="Edit"
+                        aria-label={`Edit flight ${flight.departureIcao || ''} to ${flight.arrivalIcao || ''}`}
                       >
-                        ✎
+                        <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(flight.id); }}
                         className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
-                        title="Delete"
+                        aria-label={`Delete flight ${flight.departureIcao || ''} to ${flight.arrivalIcao || ''}`}
                       >
-                        ✕
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
@@ -417,6 +426,18 @@ export default function FlightsPage() {
           )}
         </>
       )}
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        title="Delete flight?"
+        description="This flight will be permanently removed from your logbook. This action cannot be undone."
+        confirmLabel="Delete Flight"
+        variant="danger"
+        isLoading={deleteFlight.isPending}
+      />
     </div>
   );
 }

@@ -6,11 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="EASA/FAA Compliant Pilot Logbook" />
     <meta name="theme-color" content="#2563eb" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>PilotLog - Pilot Logbook</title>
-    <script type="module" crossorigin src="/assets/index-C0E2HRXX.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DRGvZddG.css">
+    <script type="module" crossorigin src="/assets/index-Bu21Kyqo.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Ckj3EQ9v.css">
   <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
   <body>
+    <noscript>PilotLog requires JavaScript to run.</noscript>
+    <!-- Prevent flash of wrong theme -->
+    <script>
+      (function() {
+        try {
+          var stored = JSON.parse(localStorage.getItem('pilotlog-theme') || '{}');
+          var theme = stored.state && stored.state.theme;
+          var dark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch(e) {}
+      })();
+    </script>
     <div id="root"></div>
   </body>
 </html>

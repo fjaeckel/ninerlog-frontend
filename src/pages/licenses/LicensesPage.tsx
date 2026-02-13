@@ -4,6 +4,7 @@ import { useLicenseStore } from '../../stores/licenseStore';
 import LicenseForm from '../../components/licenses/LicenseForm';
 import LicenseCard from '../../components/licenses/LicenseCard';
 import LicenseSwitcher from '../../components/licenses/LicenseSwitcher';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 
 export default function LicensesPage() {
   const { data: licenses, isLoading, error } = useLicenses();
@@ -11,10 +12,16 @@ export default function LicensesPage() {
   const deleteLicense = useDeleteLicense();
   const [showForm, setShowForm] = useState(false);
   const [editingLicense, setEditingLicense] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this license?')) {
-      await deleteLicense.mutateAsync(id);
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget) {
+      await deleteLicense.mutateAsync(deleteTarget);
+      setDeleteTarget(null);
     }
   };
 
@@ -76,16 +83,16 @@ export default function LicensesPage() {
 
       {/* Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="license-form-title">
           <div className="bg-white dark:bg-slate-800 rounded-xl max-w-[560px] w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
+                <h2 id="license-form-title" className="text-xl font-semibold text-slate-800 dark:text-slate-100">
                   {editingLicense ? 'Edit License' : 'Add License'}
                 </h2>
                 <button
                   onClick={handleCloseForm}
-                  className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   aria-label="Close"
                 >
                   ✕
@@ -121,6 +128,16 @@ export default function LicensesPage() {
           ))}
         </div>
       )}
-    </div>
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        title="Delete license?"
+        description="This license and its associated flight data references will be permanently removed. This action cannot be undone."
+        confirmLabel="Delete License"
+        variant="danger"
+        isLoading={deleteLicense.isPending}
+      />    </div>
   );
 }

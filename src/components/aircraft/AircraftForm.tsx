@@ -119,9 +119,11 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             id="registration"
             className={`input ${errors.registration ? 'input-error' : ''}`}
             placeholder="D-EFGH"
+            aria-invalid={!!errors.registration}
+            aria-describedby={errors.registration ? 'err-registration' : undefined}
           />
           {errors.registration && (
-            <p className="mt-1 text-sm text-red-600">{errors.registration.message}</p>
+            <p id="err-registration" className="form-error">{errors.registration.message}</p>
           )}
         </div>
         <div>
@@ -134,9 +136,11 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             id="type"
             className={`input ${errors.type ? 'input-error' : ''}`}
             placeholder="C172"
+            aria-invalid={!!errors.type}
+            aria-describedby={errors.type ? 'err-type' : undefined}
           />
           {errors.type && (
-            <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>
+            <p id="err-type" className="form-error">{errors.type.message}</p>
           )}
         </div>
       </div>
@@ -153,9 +157,11 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             id="make"
             className={`input ${errors.make ? 'input-error' : ''}`}
             placeholder="Cessna"
+            aria-invalid={!!errors.make}
+            aria-describedby={errors.make ? 'err-make' : undefined}
           />
           {errors.make && (
-            <p className="mt-1 text-sm text-red-600">{errors.make.message}</p>
+            <p id="err-make" className="form-error">{errors.make.message}</p>
           )}
         </div>
         <div>
@@ -168,9 +174,11 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             id="model"
             className={`input ${errors.model ? 'input-error' : ''}`}
             placeholder="172 Skyhawk"
+            aria-invalid={!!errors.model}
+            aria-describedby={errors.model ? 'err-model' : undefined}
           />
           {errors.model && (
-            <p className="mt-1 text-sm text-red-600">{errors.model.message}</p>
+            <p id="err-model" className="form-error">{errors.model.message}</p>
           )}
         </div>
       </div>

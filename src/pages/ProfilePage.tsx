@@ -4,6 +4,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useUpdateProfile, useChangePassword, useDeleteAccount } from '../hooks/useProfile';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
 import { useSetup2FA, useVerify2FA, useDisable2FA } from '../hooks/useTwoFactor';
+import { ThemeSwitcher } from '../components/ui/ThemeSwitcher';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuthStore();
@@ -87,15 +88,20 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
+    <div className="max-w-[640px] mx-auto px-4 py-8">
+      <h1 className="page-title mb-8">Profile Settings</h1>
+
+      {/* Appearance */}
+      <div className="card mb-6">
+        <ThemeSwitcher variant="full" />
+      </div>
 
       {/* Update Profile */}
       <div className="card mb-6">
         <h2 className="text-lg font-semibold mb-4">Profile Information</h2>
         <form onSubmit={handleUpdateProfile} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="name" className="form-label">
               Name
             </label>
             <input
@@ -108,7 +114,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="email" className="form-label">
               Email
             </label>
             <input
@@ -121,7 +127,7 @@ export default function ProfilePage() {
             />
           </div>
           {profileMessage && (
-            <p className={`text-sm ${profileMessage.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-sm ${profileMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
               {profileMessage}
             </p>
           )}
@@ -140,7 +146,7 @@ export default function ProfilePage() {
         <h2 className="text-lg font-semibold mb-4">Change Password</h2>
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
-            <label htmlFor="currentPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="currentPassword" className="form-label">
               Current Password
             </label>
             <input
@@ -153,7 +159,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="newPassword" className="form-label">
               New Password
             </label>
             <input
@@ -167,7 +173,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="confirmPassword" className="form-label">
               Confirm New Password
             </label>
             <input
@@ -181,7 +187,7 @@ export default function ProfilePage() {
             />
           </div>
           {passwordMessage && (
-            <p className={`text-sm ${passwordMessage.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-sm ${passwordMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
               {passwordMessage}
             </p>
           )}
@@ -331,7 +337,7 @@ export default function ProfilePage() {
                 inputMode="numeric"
               />
             </div>
-            {twoFAMessage && <p className="text-sm text-red-600">{twoFAMessage}</p>}
+            {twoFAMessage && <p className="text-sm text-red-600 dark:text-red-400">{twoFAMessage}</p>}
             <div className="flex gap-3">
               <button
                 onClick={async () => {
@@ -385,7 +391,7 @@ export default function ProfilePage() {
                   className="input"
                   placeholder="Your password"
                 />
-                {twoFAMessage && <p className="text-sm text-red-600">{twoFAMessage}</p>}
+                {twoFAMessage && <p className="text-sm text-red-600 dark:text-red-400">{twoFAMessage}</p>}
                 <div className="flex gap-3">
                   <button
                     onClick={async () => {
@@ -400,7 +406,7 @@ export default function ProfilePage() {
                       }
                     }}
                     disabled={!twoFADisablePassword || disable2FA.isPending}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50"
+                    className="btn-danger"
                   >
                     {disable2FA.isPending ? 'Disabling...' : 'Disable 2FA'}
                   </button>
@@ -455,7 +461,7 @@ export default function ProfilePage() {
           </button>
         ) : (
           <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
-            <p className="text-sm font-medium text-red-800">
+            <p className="text-sm font-medium text-red-800 dark:text-red-300">
               Enter your password to confirm account deletion:
             </p>
             <input
@@ -467,13 +473,13 @@ export default function ProfilePage() {
               aria-label="Confirm deletion password"
             />
             {deleteError && (
-              <p className="text-sm text-red-600">{deleteError}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">{deleteError}</p>
             )}
             <div className="flex gap-3">
               <button
                 onClick={handleDeleteAccount}
                 disabled={!deletePassword || deleteAccount.isPending}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50"
+                className="btn-danger"
               >
                 {deleteAccount.isPending ? 'Deleting...' : 'Permanently Delete Account'}
               </button>

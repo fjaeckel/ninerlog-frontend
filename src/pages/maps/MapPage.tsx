@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import { useFlightRoutes, useAirportStats } from '../../hooks/useMaps';
+import { SkeletonList } from '../../components/ui/Skeleton';
+import { ErrorState } from '../../components/ui/ErrorState';
 import 'leaflet/dist/leaflet.css';
 
 // Fit map bounds to all markers
@@ -22,11 +24,23 @@ export default function MapPage() {
   const [view, setView] = useState<MapView>('routes');
 
   const isLoading = routesLoading || statsLoading;
+  const isError = !isLoading && (!routeData && !airportStats);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-slate-400">Loading map data...</div>
+      <div className="mx-auto max-w-[1280px] py-6">
+        <SkeletonList rows={3} />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-[1280px] py-6">
+        <ErrorState
+          title="Failed to load map data"
+          message="An error occurred while loading your flight routes. Please try again."
+        />
       </div>
     );
   }

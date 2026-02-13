@@ -6,6 +6,9 @@ import {
 } from 'recharts';
 import { useTrends } from '../../hooks/useReports';
 import { exportTrendsToCSV, exportTrendsToPDF } from '../../lib/exportReports';
+import { StatCard } from '../../components/ui/StatCard';
+import { SkeletonList } from '../../components/ui/Skeleton';
+import { ErrorState } from '../../components/ui/ErrorState';
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#ec4899', '#6366f1'];
 
@@ -13,12 +16,23 @@ type TimeRange = 6 | 12 | 24;
 
 export default function ReportsPage() {
   const [months, setMonths] = useState<TimeRange>(12);
-  const { data: trends, isLoading } = useTrends(months);
+  const { data: trends, isLoading, error } = useTrends(months);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-slate-400">Loading reports...</div>
+      <div className="mx-auto max-w-[1280px] py-6">
+        <SkeletonList rows={3} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-[1280px] py-6">
+        <ErrorState
+          title="Failed to load reports"
+          message="An error occurred while loading flight trends. Please try again."
+        />
       </div>
     );
   }
@@ -76,10 +90,10 @@ export default function ReportsPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <SummaryCard label="Flights" value={totalFlights.toString()} />
-        <SummaryCard label="Total Hours" value={totalHours.toFixed(1)} />
-        <SummaryCard label="Aircraft Types" value={byAircraft.length.toString()} />
-        <SummaryCard label="Avg Hours/Month" value={monthly.length > 0 ? (totalHours / monthly.length).toFixed(1) : '0'} />
+        <StatCard label="Flights" value={totalFlights.toString()} />
+        <StatCard label="Total Hours" value={totalHours.toFixed(1)} unit="h" />
+        <StatCard label="Aircraft Types" value={byAircraft.length.toString()} />
+        <StatCard label="Avg Hours/Month" value={monthly.length > 0 ? (totalHours / monthly.length).toFixed(1) : '0'} unit="h" />
       </div>
 
       {/* Block Hours Over Time */}
@@ -207,15 +221,6 @@ export default function ReportsPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function SummaryCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="card text-center">
-      <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">{value}</div>
-      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</div>
     </div>
   );
 }

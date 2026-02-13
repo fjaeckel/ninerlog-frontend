@@ -99,14 +99,17 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
         <label htmlFor="credentialType" className="form-label">
           Type <span className="text-red-500">*</span>
         </label>
-        <select {...register('credentialType')} id="credentialType" className="input">
+        <select {...register('credentialType')} id="credentialType" className={`input ${errors.credentialType ? 'input-error' : ''}`}
+          aria-invalid={!!errors.credentialType}
+          aria-describedby={errors.credentialType ? 'err-credentialType' : undefined}
+        >
           <option value="">Select type</option>
           {CREDENTIAL_TYPES.map((type) => (
             <option key={type.value} value={type.value}>{type.label}</option>
           ))}
         </select>
         {errors.credentialType && (
-          <p className="mt-1 text-sm text-red-600">{errors.credentialType.message}</p>
+          <p id="err-credentialType" className="form-error">{errors.credentialType.message}</p>
         )}
       </div>
 
@@ -128,9 +131,12 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
           <label htmlFor="issueDate" className="form-label">
             Issue Date <span className="text-red-500">*</span>
           </label>
-          <input {...register('issueDate')} type="date" id="issueDate" className="input" />
+          <input {...register('issueDate')} type="date" id="issueDate" className={`input ${errors.issueDate ? 'input-error' : ''}`}
+            aria-invalid={!!errors.issueDate}
+            aria-describedby={errors.issueDate ? 'err-issueDate' : undefined}
+          />
           {errors.issueDate && (
-            <p className="mt-1 text-sm text-red-600">{errors.issueDate.message}</p>
+            <p id="err-issueDate" className="form-error">{errors.issueDate.message}</p>
           )}
         </div>
         <div>
@@ -151,9 +157,11 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
           id="issuingAuthority"
           className="input"
           placeholder="EASA AME, FAA, etc."
+          aria-invalid={!!errors.issuingAuthority}
+          aria-describedby={errors.issuingAuthority ? 'err-issuingAuthority' : undefined}
         />
         {errors.issuingAuthority && (
-          <p className="mt-1 text-sm text-red-600">{errors.issuingAuthority.message}</p>
+          <p id="err-issuingAuthority" className="form-error">{errors.issuingAuthority.message}</p>
         )}
       </div>
 
