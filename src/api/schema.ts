@@ -2419,6 +2419,16 @@ export interface operations {
                 endDate?: string;
                 /** @description Filter by aircraft registration */
                 aircraftReg?: string;
+                /** @description Filter by departure airport ICAO code */
+                departureIcao?: string;
+                /** @description Filter by arrival airport ICAO code */
+                arrivalIcao?: string;
+                /** @description Filter by PIC flights only */
+                isPic?: boolean;
+                /** @description Filter by dual instruction flights only */
+                isDual?: boolean;
+                /** @description Free-text search across registration, type, ICAO codes, and remarks */
+                search?: string;
                 /** @description Page number (1-indexed) */
                 page?: number;
                 /** @description Number of items per page */

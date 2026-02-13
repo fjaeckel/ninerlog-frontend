@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
@@ -15,9 +15,29 @@ export default function FlightsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showForm, setShowForm] = useState(false);
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
+
+  // Search & filter state
+  const [search, setSearch] = useState('');
+  const [searchDebounced, setSearchDebounced] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [aircraftReg, setAircraftReg] = useState('');
+  const [departureIcao, setDepartureIcao] = useState('');
+  const [arrivalIcao, setArrivalIcao] = useState('');
+  const [functionFilter, setFunctionFilter] = useState<'' | 'pic' | 'dual'>('');
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchDebounced(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   // Open form modal when navigated with state.openForm (e.g. from bottom nav + button)
   useEffect(() => {
@@ -34,7 +54,28 @@ export default function FlightsPage() {
     pageSize: 20,
     sortBy,
     sortOrder,
+    ...(searchDebounced ? { search: searchDebounced } : {}),
+    ...(startDate ? { startDate } : {}),
+    ...(endDate ? { endDate } : {}),
+    ...(aircraftReg ? { aircraftReg } : {}),
+    ...(departureIcao ? { departureIcao: departureIcao.toUpperCase() } : {}),
+    ...(arrivalIcao ? { arrivalIcao: arrivalIcao.toUpperCase() } : {}),
+    ...(functionFilter === 'pic' ? { isPic: true } : {}),
+    ...(functionFilter === 'dual' ? { isDual: true } : {}),
   };
+
+  const activeFilterCount = [startDate, endDate, aircraftReg, departureIcao, arrivalIcao, functionFilter].filter(Boolean).length;
+
+  const clearFilters = useCallback(() => {
+    setSearch('');
+    setStartDate('');
+    setEndDate('');
+    setAircraftReg('');
+    setDepartureIcao('');
+    setArrivalIcao('');
+    setFunctionFilter('');
+    setPage(1);
+  }, []);
 
   const { data, isLoading, error } = useFlights(params);
 
@@ -99,7 +140,7 @@ export default function FlightsPage() {
 
   return (
     <div className="mx-auto max-w-[960px] py-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="page-title">Flight Log</h1>
           {pagination && (
@@ -113,14 +154,54 @@ export default function FlightsPage() {
         </button>
       </div>
 
-      {/* Sort controls */}
-      <div className="flex gap-2 mb-4 text-sm">
-        <span className="text-slate-500 dark:text-slate-400 py-1">Sort by:</span>
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search flights — registration, type, ICAO, remarks..."
+            className="input pl-10 pr-10"
+            aria-label="Search flights"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Filter toggle + sort controls */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+            showFilters || activeFilterCount > 0
+              ? 'border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
+              : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+          }`}
+        >
+          Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+        </button>
+        {activeFilterCount > 0 && (
+          <button onClick={clearFilters} className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
+            Clear all
+          </button>
+        )}
+        <div className="flex-1" />
+        <span className="text-xs text-slate-500 dark:text-slate-400">Sort:</span>
         {(['date', 'totalTime', 'createdAt'] as const).map((field) => (
           <button
             key={field}
             onClick={() => toggleSort(field)}
-            className={`px-3 py-1 rounded-full transition-colors ${
+            className={`px-3 py-1 rounded-full text-xs transition-colors ${
               sortBy === field
                 ? 'bg-blue-100 text-blue-700 font-medium dark:bg-blue-900/30 dark:text-blue-400'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
@@ -131,6 +212,76 @@ export default function FlightsPage() {
           </button>
         ))}
       </div>
+
+      {/* Collapsible Filter Panel */}
+      {showFilters && (
+        <div className="card mb-4 p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Date From</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+                className="input text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Date To</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
+                className="input text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Aircraft Reg</label>
+              <input
+                type="text"
+                value={aircraftReg}
+                onChange={(e) => { setAircraftReg(e.target.value); setPage(1); }}
+                placeholder="D-EFGH"
+                className="input text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Departure ICAO</label>
+              <input
+                type="text"
+                value={departureIcao}
+                onChange={(e) => { setDepartureIcao(e.target.value.toUpperCase()); setPage(1); }}
+                placeholder="EDDF"
+                maxLength={4}
+                className="input text-sm uppercase"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Arrival ICAO</label>
+              <input
+                type="text"
+                value={arrivalIcao}
+                onChange={(e) => { setArrivalIcao(e.target.value.toUpperCase()); setPage(1); }}
+                placeholder="EDDH"
+                maxLength={4}
+                className="input text-sm uppercase"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Function</label>
+              <select
+                value={functionFilter}
+                onChange={(e) => { setFunctionFilter(e.target.value as '' | 'pic' | 'dual'); setPage(1); }}
+                className="input text-sm"
+              >
+                <option value="">All</option>
+                <option value="pic">PIC only</option>
+                <option value="dual">Dual only</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Form Modal */}
       {showForm && (
