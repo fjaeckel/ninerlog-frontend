@@ -119,6 +119,7 @@ export default function Layout() {
               <MoreMenuItem to="/credentials" label="Credentials" icon="📋" onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/aircraft" label="Aircraft" icon="🛩" onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/map" label="Route Map" icon="🗺" onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/import" label="Import Flights" icon="📥" onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/licenses" label="Licenses" icon="🏅" onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/profile" label="Profile & Settings" icon="👤" onClick={() => setShowMoreMenu(false)} />
               <div className="border-t border-slate-100 dark:border-slate-700 my-2" />

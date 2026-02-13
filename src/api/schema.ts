@@ -535,6 +535,124 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/imports/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload file for import
+         * @description Upload a CSV or XLS/XLSX file containing flight log entries.
+         *     The server parses the file, detects the format (generic CSV, ForeFlight CSV,
+         *     or Excel), and returns the detected columns along with a preview of the
+         *     first rows.  No flights are created at this stage.
+         *
+         *     **Supported formats:**
+         *     - Generic CSV (comma, semicolon, or tab delimited)
+         *     - ForeFlight logbook export CSV (auto-detected via header row)
+         *     - XLS (Excel 97-2003)
+         *     - XLSX (Excel 2007+)
+         *
+         *     Maximum file size: 10 MB.
+         */
+        post: operations["uploadImportFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/imports/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview mapped flights
+         * @description Submit column-to-field mappings for a previously uploaded file.
+         *     The server validates every row against flight log rules, detects
+         *     potential duplicates (same date + aircraft + departure + arrival within
+         *     a time tolerance), and returns the validated flights grouped into
+         *     `valid`, `duplicate`, and `error` buckets.  No flights are persisted.
+         */
+        post: operations["previewImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/imports/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm and execute import
+         * @description Confirm a previously previewed import.  The caller specifies which rows
+         *     to import (by row index) and whether to include detected duplicates.
+         *     The server creates flight log entries for the selected rows and returns
+         *     an import summary.
+         */
+        post: operations["confirmImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List import history
+         * @description Get a paginated list of past imports for the authenticated user
+         */
+        get: operations["listImports"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/imports/{importId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get import details
+         * @description Get details of a specific import including per-row results
+         */
+        get: operations["getImport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1471,6 +1589,307 @@ export interface components {
             /** @description Total flights (departures + arrivals) */
             totalFlights: number;
         };
+        /**
+         * @description Detected file format:
+         *     - CSV: Generic comma/semicolon/tab-separated values
+         *     - FOREFLIGHT_CSV: ForeFlight logbook export (auto-detected from header structure)
+         *     - XLS: Microsoft Excel 97-2003 workbook
+         *     - XLSX: Microsoft Excel 2007+ workbook (Open XML)
+         * @enum {string}
+         */
+        ImportFormat: "CSV" | "FOREFLIGHT_CSV" | "XLS" | "XLSX";
+        /**
+         * @description Target flight log field for column mapping.
+         *     Use `ignore` to skip a column during import.
+         * @enum {string}
+         */
+        ImportField: "date" | "aircraftReg" | "aircraftType" | "departureIcao" | "arrivalIcao" | "offBlockTime" | "onBlockTime" | "departureTime" | "arrivalTime" | "totalTime" | "isPic" | "isDual" | "nightTime" | "ifrTime" | "landingsDay" | "landingsNight" | "remarks" | "ignore";
+        ImportColumnMapping: {
+            /**
+             * @description Column header name from the uploaded file
+             * @example Date
+             */
+            sourceColumn: string;
+            targetField: components["schemas"]["ImportField"];
+            /**
+             * @description Date parsing format (Go / strftime-style). Only relevant when targetField is `date`.
+             * @example 2006-01-02
+             */
+            dateFormat?: string;
+            /**
+             * @description Time parsing format. Only relevant for time fields.
+             * @example 15:04
+             */
+            timeFormat?: string;
+            /**
+             * @description String value that maps to boolean `true` (e.g. "Yes", "X", "1"). Only relevant for isPic / isDual.
+             * @example X
+             */
+            trueValue?: string;
+        };
+        ImportUploadResponse: {
+            /**
+             * @description Opaque token identifying this upload session. Valid for 1 hour.
+             * @example imp_01HXYZ1234567890ABCDEF
+             */
+            uploadToken: string;
+            format: components["schemas"]["ImportFormat"];
+            /**
+             * @description Column headers found in the file
+             * @example [
+             *       "Date",
+             *       "AircraftID",
+             *       "From",
+             *       "To",
+             *       "Route",
+             *       "TimeOut",
+             *       "TimeIn",
+             *       "TotalTime",
+             *       "PIC",
+             *       "Landings"
+             *     ]
+             */
+            columns: string[];
+            /**
+             * @description First 5 rows as key-value objects (column header → cell value)
+             * @example [
+             *       {
+             *         "Date": "2025-12-01",
+             *         "AircraftID": "D-EFGH",
+             *         "From": "EDDF",
+             *         "To": "EDDH",
+             *         "TotalTime": "1.5",
+             *         "PIC": "1.5",
+             *         "Landings": "1"
+             *       }
+             *     ]
+             */
+            previewRows: {
+                [key: string]: string;
+            }[];
+            /**
+             * @description Total number of data rows in the file (excluding header)
+             * @example 42
+             */
+            totalRows: number;
+            /**
+             * @description Server-suggested column mappings based on header names.
+             *     For ForeFlight exports these are pre-filled from the known column layout.
+             *     The user can adjust mappings before submitting the preview request.
+             */
+            suggestedMappings: components["schemas"]["ImportColumnMapping"][];
+        };
+        ImportPreviewRequest: {
+            /**
+             * @description Upload token from the upload response
+             * @example imp_01HXYZ1234567890ABCDEF
+             */
+            uploadToken: string;
+            /**
+             * Format: uuid
+             * @description License to associate imported flights with
+             * @example 660e8400-e29b-41d4-a716-446655440001
+             */
+            licenseId: string;
+            /** @description Column → field mappings (user-confirmed or adjusted) */
+            mappings: components["schemas"]["ImportColumnMapping"][];
+            /**
+             * @description Whether to flag rows that match existing flights as duplicates
+             * @default true
+             */
+            skipDuplicates: boolean;
+        };
+        ImportPreviewFlight: {
+            /**
+             * @description 1-based row number in the original file
+             * @example 2
+             */
+            rowIndex: number;
+            /**
+             * @description Row validation result:
+             *     - valid: Ready to import
+             *     - duplicate: Matches an existing flight (same date, aircraft, departure, arrival, total time ±0.1h)
+             *     - error: Validation failed — see `errors` field
+             * @enum {string}
+             */
+            status: "valid" | "duplicate" | "error";
+            flight: components["schemas"]["FlightCreate"];
+            /**
+             * Format: uuid
+             * @description ID of the matching existing flight when status is `duplicate`
+             */
+            existingFlightId?: string | null;
+            /** @description Validation errors when status is `error` */
+            errors?: {
+                /** @example totalTime */
+                field?: string;
+                /** @example Must be greater than 0 */
+                message?: string;
+            }[];
+        };
+        ImportPreviewResponse: {
+            /**
+             * @description Upload token to use in the confirm request
+             * @example imp_01HXYZ1234567890ABCDEF
+             */
+            uploadToken: string;
+            /**
+             * @description Total rows processed
+             * @example 42
+             */
+            totalRows: number;
+            /**
+             * @description Rows ready to import
+             * @example 38
+             */
+            validCount: number;
+            /**
+             * @description Rows matching existing flights
+             * @example 3
+             */
+            duplicateCount: number;
+            /**
+             * @description Rows with validation errors
+             * @example 1
+             */
+            errorCount: number;
+            /** @description All rows with their validation status, sorted by rowIndex */
+            flights: components["schemas"]["ImportPreviewFlight"][];
+        };
+        ImportConfirmRequest: {
+            /**
+             * @description Upload token from the preview response
+             * @example imp_01HXYZ1234567890ABCDEF
+             */
+            uploadToken: string;
+            /**
+             * Format: uuid
+             * @description License to associate imported flights with
+             * @example 660e8400-e29b-41d4-a716-446655440001
+             */
+            licenseId: string;
+            /**
+             * @description Row indices to import (1-based). If omitted or empty, all `valid` rows are imported.
+             *     Include duplicate row indices here to force-import them.
+             * @example [
+             *       1,
+             *       2,
+             *       3,
+             *       5,
+             *       7,
+             *       8
+             *     ]
+             */
+            selectedRows?: number[];
+            /**
+             * @description When true, import all duplicate rows as well (overrides selectedRows filtering)
+             * @default false
+             */
+            includeDuplicates: boolean;
+        };
+        /**
+         * @description Overall import result:
+         *     - completed: All selected rows imported successfully
+         *     - partial: Some rows imported, some failed
+         *     - failed: No rows imported (all failed validation)
+         * @enum {string}
+         */
+        ImportStatus: "completed" | "partial" | "failed";
+        ImportResult: {
+            /**
+             * Format: uuid
+             * @example 990e8400-e29b-41d4-a716-446655440004
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            userId: string;
+            /**
+             * Format: uuid
+             * @example 660e8400-e29b-41d4-a716-446655440001
+             */
+            licenseId: string;
+            /** @example foreflight_logbook_2025.csv */
+            fileName: string;
+            format: components["schemas"]["ImportFormat"];
+            status: components["schemas"]["ImportStatus"];
+            /**
+             * @description Total rows in the uploaded file
+             * @example 42
+             */
+            totalRows: number;
+            /**
+             * @description Number of flights successfully created
+             * @example 38
+             */
+            importedCount: number;
+            /**
+             * @description Number of rows skipped (duplicates not imported)
+             * @example 3
+             */
+            skippedCount: number;
+            /**
+             * @description Number of rows that failed validation
+             * @example 1
+             */
+            errorCount: number;
+            /**
+             * @description Number of rows detected as duplicates
+             * @example 3
+             */
+            duplicateCount: number;
+            /** @description IDs of the created flight log entries */
+            importedFlightIds?: string[];
+            /** @description Per-row errors for rows that were not imported */
+            errors?: {
+                /**
+                 * @description 1-based row number that caused the error
+                 * @example 15
+                 */
+                rowIndex: number;
+                /** @example totalTime */
+                field: string;
+                /** @example Must be greater than 0 */
+                message: string;
+                /**
+                 * @description The original value from the file that caused the error
+                 * @example -1.5
+                 */
+                rawValue?: string;
+            }[];
+            /**
+             * Format: date-time
+             * @example 2026-02-13T18:00:00Z
+             */
+            createdAt: string;
+        };
+        PaginatedImports: {
+            data: components["schemas"]["ImportResult"][];
+            pagination: {
+                /**
+                 * @description Current page (1-indexed)
+                 * @example 1
+                 */
+                page: number;
+                /**
+                 * @description Items per page
+                 * @example 20
+                 */
+                pageSize: number;
+                /**
+                 * @description Total number of imports
+                 * @example 5
+                 */
+                total: number;
+                /**
+                 * @description Total number of pages
+                 * @example 1
+                 */
+                totalPages: number;
+            };
+        };
         Error: {
             /**
              * @description Error message
@@ -1549,6 +1968,8 @@ export interface components {
         FlightId: string;
         /** @description Credential UUID */
         CredentialId: string;
+        /** @description Import UUID */
+        ImportId: string;
     };
     requestBodies: never;
     headers: never;
@@ -2650,6 +3071,167 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    uploadImportFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description CSV or XLS/XLSX file to import
+                     */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description File parsed successfully — columns and preview rows returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportUploadResponse"];
+                };
+            };
+            /** @description File is empty, too large, unsupported format, or cannot be parsed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    previewImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Validation results with categorised flights */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportPreviewResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            /** @description Upload token not found or expired */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    confirmImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description Import completed — flights created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            /** @description Upload token not found or expired */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listImports: {
+        parameters: {
+            query?: {
+                /** @description Page number (1-indexed) */
+                page?: number;
+                /** @description Items per page */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated list of imports */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedImports"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Import UUID */
+                importId: components["parameters"]["ImportId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Import details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
 }
