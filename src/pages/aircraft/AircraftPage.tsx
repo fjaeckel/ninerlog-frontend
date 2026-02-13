@@ -1,0 +1,186 @@
+import { useState } from 'react';
+import { useAircraft, useDeleteAircraft } from '../../hooks/useAircraft';
+import AircraftForm from '../../components/aircraft/AircraftForm';
+
+const ENGINE_LABELS: Record<string, string> = {
+  piston: 'Piston',
+  turboprop: 'Turboprop',
+  jet: 'Jet',
+  electric: 'Electric',
+};
+
+export default function AircraftPage() {
+  const { data: aircraft, isLoading } = useAircraft();
+  const deleteAircraft = useDeleteAircraft();
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Delete this aircraft?')) {
+      await deleteAircraft.mutateAsync(id);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-slate-400">Loading aircraft...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-[1280px] py-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="page-title">Aircraft</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Manage your fleet of aircraft
+          </p>
+        </div>
+        <button
+          onClick={() => { setEditingId(null); setShowForm(true); }}
+          className="btn-primary"
+        >
+          + Add Aircraft
+        </button>
+      </div>
+
+      {/* Form Modal */}
+      {showForm && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="aircraft-form-title"
+        >
+          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2
+                  id="aircraft-form-title"
+                  className="text-xl font-semibold text-slate-800 dark:text-slate-100"
+                >
+                  {editingId ? 'Edit Aircraft' : 'Add Aircraft'}
+                </h2>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              <AircraftForm
+                aircraftId={editingId}
+                onClose={() => setShowForm(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Aircraft List */}
+      {!aircraft || aircraft.length === 0 ? (
+        <div className="card text-center py-12">
+          <p className="text-slate-500 dark:text-slate-400 mb-4">
+            No aircraft added yet.
+          </p>
+          <button onClick={() => setShowForm(true)} className="btn-primary">
+            Add Your First Aircraft
+          </button>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {aircraft.map((ac) => (
+            <div key={ac.id} className="card">
+              {/* Header: Reg + Status */}
+              <div className="flex justify-between items-start mb-3">
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate text-lg">
+                    {ac.registration}
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    {ac.make} {ac.model}
+                  </p>
+                </div>
+                <span
+                  className={`badge text-xs shrink-0 ml-2 ${
+                    ac.isActive
+                      ? 'badge-current'
+                      : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                  }`}
+                >
+                  {ac.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+
+              {/* Details */}
+              <dl className="text-sm space-y-1.5 mb-4">
+                <div className="flex justify-between">
+                  <dt className="text-slate-500 dark:text-slate-400">Type</dt>
+                  <dd className="text-slate-700 dark:text-slate-300">{ac.type}</dd>
+                </div>
+                {ac.category && (
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-400">Category</dt>
+                    <dd className="text-slate-700 dark:text-slate-300">{ac.category}</dd>
+                  </div>
+                )}
+                {ac.engineType && ac.engineType !== 'null' && (
+                  <div className="flex justify-between">
+                    <dt className="text-slate-500 dark:text-slate-400">Engine</dt>
+                    <dd className="text-slate-700 dark:text-slate-300">
+                      {ENGINE_LABELS[ac.engineType] || ac.engineType}
+                    </dd>
+                  </div>
+                )}
+                {(ac.isComplex || ac.isHighPerformance || ac.isTailwheel) && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {ac.isComplex && (
+                      <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                        Complex
+                      </span>
+                    )}
+                    {ac.isHighPerformance && (
+                      <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                        High Perf
+                      </span>
+                    )}
+                    {ac.isTailwheel && (
+                      <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                        Tailwheel
+                      </span>
+                    )}
+                  </div>
+                )}
+              </dl>
+
+              {ac.notes && (
+                <p className="text-xs text-slate-500 dark:text-slate-400 italic mb-3 truncate">
+                  {ac.notes}
+                </p>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                <button
+                  onClick={() => { setEditingId(ac.id); setShowForm(true); }}
+                  className="btn-ghost btn-sm flex-1"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(ac.id)}
+                  className="btn-ghost btn-sm flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

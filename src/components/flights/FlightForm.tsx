@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateFlight, useUpdateFlight, useFlight } from '../../hooks/useFlights';
 import { useLicenses } from '../../hooks/useLicenses';
 import { useLicenseStore } from '../../stores/licenseStore';
+import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
+import type { Aircraft } from '../../hooks/useAircraft';
 
 const flightSchema = z.object({
   licenseId: z.string().min(1, 'License is required'),
@@ -39,8 +41,17 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const { data: licenses } = useLicenses();
   const { activeLicense } = useLicenseStore();
   const { data: existingFlight } = useFlight(flightId || '');
+  const { data: aircraftList } = useAircraft();
+  const createAircraft = useCreateAircraft();
 
   const isEditing = !!flightId;
+
+  // Aircraft autocomplete state
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [quickAddMake, setQuickAddMake] = useState('');
+  const [quickAddModel, setQuickAddModel] = useState('');
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
   const {
     register,
@@ -111,6 +122,72 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     }
   }, [isSPL, setValue]);
 
+  // Aircraft autocomplete: filter suggestions based on typed registration
+  const watchedReg = watch('aircraftReg');
+  const filteredAircraft = (aircraftList ?? []).filter(
+    (ac) =>
+      ac.isActive &&
+      ac.registration.toUpperCase().includes((watchedReg || '').toUpperCase()) &&
+      (watchedReg || '').length > 0
+  );
+
+  // Auto-fill aircraft type when registration matches a known aircraft
+  const selectAircraft = useCallback(
+    (ac: Aircraft) => {
+      setValue('aircraftReg', ac.registration, { shouldValidate: true });
+      setValue('aircraftType', ac.type, { shouldValidate: true });
+      setShowSuggestions(false);
+      setShowQuickAdd(false);
+    },
+    [setValue]
+  );
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Determine if entered reg matches a known aircraft (for quick-add prompt)
+  const regUppercase = (watchedReg || '').toUpperCase();
+  const matchedAircraft = (aircraftList ?? []).find(
+    (ac) => ac.registration.toUpperCase() === regUppercase
+  );
+
+  // Auto-fill type when registration exactly matches a known aircraft
+  useEffect(() => {
+    if (matchedAircraft && !isEditing) {
+      setValue('aircraftType', matchedAircraft.type, { shouldValidate: true });
+    }
+  }, [matchedAircraft, setValue, isEditing]);
+
+  // Quick-add aircraft handler
+  const handleQuickAdd = async () => {
+    if (!regUppercase || !quickAddMake || !quickAddModel) return;
+    const watchedType = watch('aircraftType');
+    try {
+      await createAircraft.mutateAsync({
+        registration: regUppercase,
+        type: (watchedType || '').toUpperCase(),
+        make: quickAddMake,
+        model: quickAddModel,
+        isComplex: false,
+        isHighPerformance: false,
+        isTailwheel: false,
+      });
+      setShowQuickAdd(false);
+      setQuickAddMake('');
+      setQuickAddModel('');
+    } catch (error) {
+      console.error('Failed to quick-add aircraft:', error);
+    }
+  };
+
   const onSubmit = async (data: FlightFormData) => {
     try {
       const basePayload = {
@@ -177,7 +254,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             )}
           </div>
 
-          <div>
+          <div className="relative" ref={suggestionsRef}>
             <label htmlFor="aircraftReg" className="form-label">
               Aircraft Registration <span className="text-red-500">*</span>
             </label>
@@ -187,9 +264,43 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               id="aircraftReg"
               className="input"
               placeholder="D-EFGH"
+              autoComplete="off"
+              onFocus={() => setShowSuggestions(true)}
+              onChange={(e) => {
+                register('aircraftReg').onChange(e);
+                setShowSuggestions(true);
+              }}
             />
             {errors.aircraftReg && (
               <p className="form-error">{errors.aircraftReg.message}</p>
+            )}
+
+            {/* Autocomplete suggestions dropdown */}
+            {showSuggestions && filteredAircraft.length > 0 && (
+              <div className="absolute z-20 top-full left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg">
+                {filteredAircraft.slice(0, 8).map((ac) => (
+                  <button
+                    key={ac.id}
+                    type="button"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex justify-between items-center"
+                    onClick={() => selectAircraft(ac)}
+                  >
+                    <span className="font-medium text-slate-800 dark:text-slate-100">{ac.registration}</span>
+                    <span className="text-slate-500 dark:text-slate-400">{ac.type} — {ac.make} {ac.model}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Quick-add prompt for unrecognized registration */}
+            {!matchedAircraft && regUppercase.length >= 2 && !showQuickAdd && (
+              <button
+                type="button"
+                className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                onClick={() => setShowQuickAdd(true)}
+              >
+                New aircraft? Save "{regUppercase}" to your fleet →
+              </button>
             )}
           </div>
 
@@ -209,6 +320,48 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             )}
           </div>
         </div>
+
+        {/* Quick-add aircraft inline form */}
+        {showQuickAdd && (
+          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              Quick-add "{regUppercase}" to your aircraft fleet
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={quickAddMake}
+                onChange={(e) => setQuickAddMake(e.target.value)}
+                className="input text-sm"
+                placeholder="Make (e.g. Cessna)"
+              />
+              <input
+                type="text"
+                value={quickAddModel}
+                onChange={(e) => setQuickAddModel(e.target.value)}
+                className="input text-sm"
+                placeholder="Model (e.g. 172 Skyhawk)"
+              />
+            </div>
+            <div className="flex gap-2 mt-2">
+              <button
+                type="button"
+                onClick={handleQuickAdd}
+                disabled={!quickAddMake || !quickAddModel || createAircraft.isPending}
+                className="btn-primary btn-sm text-xs"
+              >
+                {createAircraft.isPending ? 'Saving...' : 'Save Aircraft'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowQuickAdd(false)}
+                className="btn-ghost btn-sm text-xs"
+              >
+                Skip
+              </button>
+            </div>
+          </div>
+        )}
       </fieldset>
 
       {/* Route & Times */}

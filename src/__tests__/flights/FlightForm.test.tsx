@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import FlightForm from '../../components/flights/FlightForm';
 import * as useFlightsHook from '../../hooks/useFlights';
 import * as useLicensesHook from '../../hooks/useLicenses';
+import * as useAircraftHook from '../../hooks/useAircraft';
 import { useLicenseStore } from '../../stores/licenseStore';
 
 const renderWithProviders = (component: React.ReactElement) => {
@@ -62,6 +63,15 @@ describe('FlightForm', () => {
       data: [mockLicense],
       isLoading: false,
       error: null,
+    } as any);
+    vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: null,
+    } as any);
+    vi.spyOn(useAircraftHook, 'useCreateAircraft').mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
     } as any);
     useLicenseStore.setState({ activeLicense: mockLicense });
   });
@@ -277,5 +287,119 @@ describe('FlightForm', () => {
 
     expect(screen.getByLabelText(/night time/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/night landings/i)).toBeInTheDocument();
+  });
+
+  it('shows aircraft autocomplete suggestions when typing registration', async () => {
+    const user = userEvent.setup();
+    const mockAircraft = [
+      {
+        id: 'ac-1', userId: 'user-1', registration: 'D-EFGH', type: 'C172',
+        make: 'Cessna', model: '172 Skyhawk', isComplex: false, isHighPerformance: false,
+        isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
+      },
+      {
+        id: 'ac-2', userId: 'user-1', registration: 'D-ABCD', type: 'PA28',
+        make: 'Piper', model: 'Cherokee', isComplex: false, isHighPerformance: false,
+        isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
+      },
+    ];
+    vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
+      data: mockAircraft, isLoading: false, error: null,
+    } as any);
+
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    const regInput = screen.getByLabelText(/aircraft registration/i);
+    await user.type(regInput, 'D-E');
+
+    await waitFor(() => {
+      expect(screen.getByText('D-EFGH')).toBeInTheDocument();
+    });
+  });
+
+  it('auto-fills aircraft type when selecting from suggestions', async () => {
+    const user = userEvent.setup();
+    const mockAircraft = [
+      {
+        id: 'ac-1', userId: 'user-1', registration: 'D-EFGH', type: 'C172',
+        make: 'Cessna', model: '172 Skyhawk', isComplex: false, isHighPerformance: false,
+        isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
+      },
+    ];
+    vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
+      data: mockAircraft, isLoading: false, error: null,
+    } as any);
+
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    const regInput = screen.getByLabelText(/aircraft registration/i);
+    await user.type(regInput, 'D-E');
+
+    await waitFor(() => {
+      expect(screen.getByText('D-EFGH')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText('D-EFGH'));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/aircraft registration/i)).toHaveValue('D-EFGH');
+      expect(screen.getByLabelText(/aircraft type/i)).toHaveValue('C172');
+    });
+  });
+
+  it('shows quick-add prompt for unrecognized registration', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
+      data: [], isLoading: false, error: null,
+    } as any);
+
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    await user.type(screen.getByLabelText(/aircraft registration/i), 'N12345');
+
+    await waitFor(() => {
+      expect(screen.getByText(/new aircraft\? save/i)).toBeInTheDocument();
+    });
+  });
+
+  it('quick-adds aircraft to fleet from flight form', async () => {
+    const user = userEvent.setup();
+    const mockCreateAircraft = { mutateAsync: vi.fn().mockResolvedValueOnce({}), isPending: false };
+    vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
+      data: [], isLoading: false, error: null,
+    } as any);
+    vi.spyOn(useAircraftHook, 'useCreateAircraft').mockReturnValue(mockCreateAircraft as any);
+
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    await user.type(screen.getByLabelText(/aircraft registration/i), 'N12345');
+    await user.type(screen.getByLabelText(/aircraft type/i), 'C152');
+
+    await waitFor(() => {
+      expect(screen.getByText(/new aircraft\? save/i)).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText(/new aircraft\? save/i));
+
+    // Quick-add form should appear
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/make/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/model/i)).toBeInTheDocument();
+    });
+
+    await user.type(screen.getByPlaceholderText(/make/i), 'Cessna');
+    await user.type(screen.getByPlaceholderText(/model/i), '152');
+    await user.click(screen.getByRole('button', { name: /save aircraft/i }));
+
+    await waitFor(() => {
+      expect(mockCreateAircraft.mutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          registration: 'N12345',
+          type: 'C152',
+          make: 'Cessna',
+          model: '152',
+        })
+      );
+    });
   });
 });
