@@ -108,17 +108,13 @@ describe('FlightForm', () => {
   it('renders time fields', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    expect(screen.getByLabelText(/pic/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/dual/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/night time/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/ifr time/i)).toBeInTheDocument();
   });
 
   it('renders landing fields', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    expect(screen.getByLabelText(/day landings/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/night landings/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/total landings/i)).toBeInTheDocument();
   });
 
   it('validates required fields', async () => {
@@ -171,7 +167,6 @@ describe('FlightForm', () => {
           onBlockTime: '16:10:00',
           departureTime: '14:30:00',
           arrivalTime: '16:00:00',
-          isPic: true,
         })
       );
       expect(mockOnClose).toHaveBeenCalled();
@@ -267,7 +262,7 @@ describe('FlightForm', () => {
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
-  it('hides night time and night landings for SPL license', () => {
+  it('hides night-related fields for SPL license', () => {
     const splLicense = {
       ...mockLicense,
       id: 'lic-spl',
@@ -284,15 +279,7 @@ describe('FlightForm', () => {
 
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    expect(screen.queryByLabelText(/night time/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/night landings/i)).not.toBeInTheDocument();
-  });
-
-  it('shows night time and night landings for PPL license', () => {
-    renderWithProviders(<FlightForm onClose={mockOnClose} />);
-
-    expect(screen.getByLabelText(/night time/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/night landings/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/takeoffs.*night/i)).not.toBeInTheDocument();
   });
 
   it('shows aircraft autocomplete suggestions when typing registration', async () => {

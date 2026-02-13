@@ -79,7 +79,7 @@ describe('ReportsPage', () => {
     } as any);
 
     renderWithProviders(<ReportsPage />);
-    expect(screen.getByText(/loading reports/i)).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: /loading/i })).toBeInTheDocument();
   });
 
   it('renders page title and subtitle', () => {

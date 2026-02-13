@@ -111,6 +111,14 @@ export interface Flight {
   landingsDay: number;
   landingsNight: number;
   remarks: string | null;
+  // New fields
+  instructorName: string | null;
+  instructorComments: string | null;
+  sicTime: number;
+  dualGivenTime: number;
+  simulatedFlightTime: number;
+  groundTrainingTime: number;
+  crewMembers?: FlightCrewMember[];
   createdAt: string;
   updatedAt: string;
 }
@@ -127,11 +135,16 @@ export interface FlightCreate {
   totalTime: number;
   picTime?: number;
   dualTime?: number;
-  nightTime?: number;
   ifrTime?: number;
-  landingsDay?: number;
-  landingsNight?: number;
+  landings?: number;
   remarks?: string | null;
+  instructorName?: string | null;
+  instructorComments?: string | null;
+  sicTime?: number;
+  dualGivenTime?: number;
+  simulatedFlightTime?: number;
+  groundTrainingTime?: number;
+  crewMembers?: FlightCrewMemberInput[];
 }
 
 export interface FlightUpdate {
@@ -145,10 +158,8 @@ export interface FlightUpdate {
   totalTime?: number;
   picTime?: number;
   dualTime?: number;
-  nightTime?: number;
   ifrTime?: number;
-  landingsDay?: number;
-  landingsNight?: number;
+  landings?: number;
   remarks?: string | null;
 }
 
@@ -216,4 +227,40 @@ export interface Currency {
     night: number;
   };
   expiryDate: string | null;
+}
+
+// ============ Crew & Contact Types ============
+
+export type CrewRole = 'PIC' | 'SIC' | 'Instructor' | 'Student' | 'Passenger' | 'SafetyPilot' | 'Examiner';
+
+export interface FlightCrewMember {
+  id: string;
+  flightId: string;
+  contactId?: string | null;
+  name: string;
+  role: CrewRole;
+}
+
+export interface FlightCrewMemberInput {
+  contactId?: string | null;
+  name: string;
+  role: CrewRole;
+}
+
+export interface Contact {
+  id: string;
+  userId: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContactCreate {
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  notes?: string | null;
 }

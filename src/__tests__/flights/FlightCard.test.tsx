@@ -35,6 +35,10 @@ const mockFlight: Flight = {
   crossCountryTime: 1.5,
   distance: 185.3,
   remarks: 'Training flight',
+  sicTime: 0,
+  dualGivenTime: 0,
+  simulatedFlightTime: 0,
+  groundTrainingTime: 0,
   createdAt: '2026-01-15T00:00:00Z',
   updatedAt: '2026-01-15T00:00:00Z',
 };

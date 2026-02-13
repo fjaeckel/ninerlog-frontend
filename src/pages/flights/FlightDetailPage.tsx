@@ -68,6 +68,10 @@ export default function FlightDetailPage() {
     { label: 'Cross-Country', value: flight.crossCountryTime },
     ...(!isSPL ? [{ label: 'Night Time', value: flight.nightTime }] : []),
     { label: 'IFR Time', value: flight.ifrTime },
+    { label: 'SIC Time', value: flight.sicTime || 0 },
+    { label: 'Dual Given', value: flight.dualGivenTime || 0 },
+    { label: 'Simulated Flight', value: flight.simulatedFlightTime || 0 },
+    { label: 'Ground Training', value: flight.groundTrainingTime || 0 },
   ];
 
   return (
@@ -209,15 +213,45 @@ export default function FlightDetailPage() {
           </dl>
         </div>
 
-        {/* Remarks */}
+        {/* Remarks & Comments */}
         <div className="card">
-          <h2 className="section-title mb-4">Remarks</h2>
-          {flight.remarks ? (
-            <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{flight.remarks}</p>
-          ) : (
-            <p className="text-slate-400 dark:text-slate-500 italic">No remarks</p>
-          )}
+          <h2 className="section-title mb-4">Remarks & Comments</h2>
+          <dl className="space-y-3">
+            <div>
+              <dt className="text-slate-500 dark:text-slate-400 text-sm mb-1">Remarks</dt>
+              <dd className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+                {flight.remarks || <span className="text-slate-400 italic">—</span>}
+              </dd>
+            </div>
+            {flight.instructorName && (
+              <div>
+                <dt className="text-slate-500 dark:text-slate-400 text-sm mb-1">Instructor</dt>
+                <dd className="text-slate-700 dark:text-slate-300">{flight.instructorName}</dd>
+              </div>
+            )}
+            {flight.instructorComments && (
+              <div>
+                <dt className="text-slate-500 dark:text-slate-400 text-sm mb-1">Instructor Comments</dt>
+                <dd className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{flight.instructorComments}</dd>
+              </div>
+            )}
+          </dl>
         </div>
+
+        {/* Crew Members */}
+        {flight.crewMembers && flight.crewMembers.length > 0 && (
+          <div className="card">
+            <h2 className="section-title mb-4">People on Board</h2>
+            <div className="space-y-2">
+              {flight.crewMembers.map((member) => (
+                <div key={member.id} className="flex items-center gap-2 text-sm">
+                  <span className="badge-info text-xs">{member.role}</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-200">{member.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Metadata */}

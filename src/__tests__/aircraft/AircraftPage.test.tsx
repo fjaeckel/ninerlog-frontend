@@ -53,7 +53,7 @@ describe('AircraftPage', () => {
 
     renderWithProviders(<AircraftPage />);
 
-    expect(screen.getByText(/loading aircraft/i)).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: /loading/i })).toBeInTheDocument();
   });
 
   it('renders aircraft cards', () => {
@@ -235,7 +235,6 @@ describe('AircraftPage', () => {
 
   it('calls delete with confirmation', async () => {
     const user = userEvent.setup();
-    window.confirm = vi.fn(() => true);
     mockDelete.mutateAsync.mockResolvedValueOnce(undefined);
 
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
@@ -262,9 +261,20 @@ describe('AircraftPage', () => {
 
     renderWithProviders(<AircraftPage />);
 
+    // Click the delete button on the card
     await user.click(screen.getByRole('button', { name: /delete/i }));
 
-    expect(window.confirm).toHaveBeenCalledWith('Delete this aircraft?');
+    // ConfirmDialog should appear
+    await waitFor(() => {
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Delete aircraft?')).toBeInTheDocument();
+
+    // Click the confirm button in the dialog
+    const dialog = screen.getByRole('alertdialog');
+    const confirmBtn = dialog.querySelector('button.btn-danger') as HTMLElement;
+    await user.click(confirmBtn);
+
     await waitFor(() => {
       expect(mockDelete.mutateAsync).toHaveBeenCalledWith('ac-1');
     });
@@ -272,7 +282,6 @@ describe('AircraftPage', () => {
 
   it('does not delete when confirmation is cancelled', async () => {
     const user = userEvent.setup();
-    window.confirm = vi.fn(() => false);
 
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
       data: [
@@ -298,9 +307,17 @@ describe('AircraftPage', () => {
 
     renderWithProviders(<AircraftPage />);
 
+    // Click the delete button on the card
     await user.click(screen.getByRole('button', { name: /delete/i }));
 
-    expect(window.confirm).toHaveBeenCalled();
+    // ConfirmDialog should appear
+    await waitFor(() => {
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    });
+
+    // Click cancel in the dialog
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+
     expect(mockDelete.mutateAsync).not.toHaveBeenCalled();
   });
 

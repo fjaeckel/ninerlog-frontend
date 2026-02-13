@@ -1064,7 +1064,7 @@ export interface components {
             dualTime: number;
             /**
              * Format: float
-             * @description Night block time in hours
+             * @description Night block time in hours. Auto-calculated from departure/arrival times and airport sunset/sunrise data.
              * @example 0.5
              */
             nightTime: number;
@@ -1075,12 +1075,12 @@ export interface components {
              */
             ifrTime: number;
             /**
-             * @description Number of day landings
+             * @description Number of day landings. Auto-calculated from sunset/sunrise at arrival airport.
              * @example 3
              */
             landingsDay: number;
             /**
-             * @description Number of night landings
+             * @description Number of night landings. Auto-calculated from sunset/sunrise at arrival airport.
              * @example 1
              */
             landingsNight: number;
@@ -1127,6 +1127,36 @@ export interface components {
              * @example Training flight - touch and go practice
              */
             remarks?: string | null;
+            /** @description Name of the instructor for this flight */
+            instructorName?: string | null;
+            /** @description Instructor comments about the flight */
+            instructorComments?: string | null;
+            /**
+             * Format: float
+             * @description Second-in-command time in hours. Auto-calculated when SIC crew role assigned.
+             * @example 0
+             */
+            sicTime?: number;
+            /**
+             * Format: float
+             * @description Dual instruction given time in hours. Auto-calculated when user acts as instructor.
+             * @example 0
+             */
+            dualGivenTime?: number;
+            /**
+             * Format: float
+             * @description Simulated flight time in hours (FTD/FSTD)
+             * @example 0
+             */
+            simulatedFlightTime?: number;
+            /**
+             * Format: float
+             * @description Ground training time in hours
+             * @example 0
+             */
+            groundTrainingTime?: number;
+            /** @description People on board this flight with their roles */
+            crewMembers?: components["schemas"]["FlightCrewMember"][];
             /**
              * Format: date-time
              * @example 2026-01-30T16:00:00Z
@@ -1194,18 +1224,6 @@ export interface components {
              */
             readonly totalTime?: number;
             /**
-             * @description Whether this flight is logged as pilot-in-command. When true, picTime is set to totalTime. Mutually exclusive with isDual.
-             * @default true
-             * @example true
-             */
-            isPic: boolean;
-            /**
-             * @description Whether this flight is logged as dual instruction received. When true, dualTime is set to totalTime. Mutually exclusive with isPic.
-             * @default false
-             * @example false
-             */
-            isDual: boolean;
-            /**
              * Format: float
              * @description Pilot-in-command time in hours. Computed by server — equals totalTime when isPic is true, 0 otherwise.
              * @example 2.5
@@ -1220,25 +1238,14 @@ export interface components {
             /**
              * Format: float
              * @default 0
-             * @example 0.5
-             */
-            nightTime: number;
-            /**
-             * Format: float
-             * @default 0
              * @example 1
              */
             ifrTime: number;
             /**
-             * @description Number of day landings performed during this flight
+             * @description Total number of landings. Day/night split is auto-calculated from sunset/sunrise at arrival airport.
              * @example 3
              */
-            landingsDay: number;
-            /**
-             * @description Number of night landings performed during this flight
-             * @example 1
-             */
-            landingsNight: number;
+            landings: number;
             /**
              * @description Number of day takeoffs. Provide to override auto-calculation.
              * @example 3
@@ -1273,6 +1280,18 @@ export interface components {
             readonly allLandings?: number;
             /** @example Training flight - touch and go practice */
             remarks?: string | null;
+            instructorName?: string | null;
+            instructorComments?: string | null;
+            /** Format: float */
+            sicTime?: number;
+            /** Format: float */
+            dualGivenTime?: number;
+            /** Format: float */
+            simulatedFlightTime?: number;
+            /** Format: float */
+            groundTrainingTime?: number;
+            /** @description People on board this flight */
+            crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
         };
         FlightUpdate: {
             /** Format: date */
@@ -1303,16 +1322,10 @@ export interface components {
             arrivalTime?: string | null;
             /** Format: float */
             totalTime?: number;
-            /** @description Whether this flight is logged as pilot-in-command */
-            isPic?: boolean;
-            /** @description Whether this flight is logged as dual instruction received */
-            isDual?: boolean;
-            /** Format: float */
-            nightTime?: number;
             /** Format: float */
             ifrTime?: number;
-            landingsDay?: number;
-            landingsNight?: number;
+            /** @description Total number of landings */
+            landings?: number;
             /** @description Number of day takeoffs. Provide to override auto-calculation. */
             takeoffsDay?: number;
             /** @description Number of night takeoffs. Provide to override auto-calculation. */
@@ -1320,6 +1333,18 @@ export interface components {
             /** @description Route waypoints as comma-separated ICAO codes */
             route?: string | null;
             remarks?: string | null;
+            instructorName?: string | null;
+            instructorComments?: string | null;
+            /** Format: float */
+            sicTime?: number;
+            /** Format: float */
+            dualGivenTime?: number;
+            /** Format: float */
+            simulatedFlightTime?: number;
+            /** Format: float */
+            groundTrainingTime?: number;
+            /** @description People on board this flight */
+            crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
         };
         Statistics: {
             /**
@@ -1676,6 +1701,56 @@ export interface components {
             arrivals: number;
             /** @description Total flights (departures + arrivals) */
             totalFlights: number;
+        };
+        /**
+         * @description Role of a person on board a flight
+         * @enum {string}
+         */
+        CrewRole: "PIC" | "SIC" | "Instructor" | "Student" | "Passenger" | "SafetyPilot" | "Examiner";
+        FlightCrewMember: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            flightId: string;
+            /**
+             * Format: uuid
+             * @description Reference to a saved contact for autocomplete reuse
+             */
+            contactId?: string | null;
+            /** @example John Smith */
+            name: string;
+            role: components["schemas"]["CrewRole"];
+        };
+        FlightCrewMemberInput: {
+            /** Format: uuid */
+            contactId?: string | null;
+            /** @example John Smith */
+            name: string;
+            role: components["schemas"]["CrewRole"];
+        };
+        Contact: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            /** @example John Smith */
+            name: string;
+            /** Format: email */
+            email?: string | null;
+            phone?: string | null;
+            notes?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ContactCreate: {
+            /** @example John Smith */
+            name: string;
+            /** Format: email */
+            email?: string | null;
+            phone?: string | null;
+            notes?: string | null;
         };
         /**
          * @description Detected file format:

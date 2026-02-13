@@ -2,11 +2,14 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { useCreateFlight, useUpdateFlight, useFlight } from '../../hooks/useFlights';
 import { useLicenses } from '../../hooks/useLicenses';
 import { useLicenseStore } from '../../stores/licenseStore';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
+import { useSearchContacts, useCreateContact } from '../../hooks/useContacts';
 import type { Aircraft } from '../../hooks/useAircraft';
+import type { CrewRole, FlightCrewMemberInput } from '../../types/api';
 
 const flightSchema = z.object({
   licenseId: z.string().min(1, 'License is required'),
@@ -20,15 +23,16 @@ const flightSchema = z.object({
   departureTime: z.string().min(1, 'Takeoff time is required'),
   arrivalTime: z.string().min(1, 'Landing time is required'),
   route: z.string().optional().or(z.literal('')),
-  isPic: z.boolean(),
-  isDual: z.boolean(),
-  nightTime: z.number().min(0),
   ifrTime: z.number().min(0),
-  landingsDay: z.number().int().min(0),
-  landingsNight: z.number().int().min(0),
+  landings: z.number().int().min(0),
   takeoffsDay: z.number().int().min(0).optional(),
   takeoffsNight: z.number().int().min(0).optional(),
   remarks: z.string().optional().or(z.literal('')),
+  // New fields
+  instructorName: z.string().optional().or(z.literal('')),
+  instructorComments: z.string().optional().or(z.literal('')),
+  simulatedFlightTime: z.number().min(0),
+  groundTrainingTime: z.number().min(0),
 });
 
 type FlightFormData = z.infer<typeof flightSchema>;
@@ -56,6 +60,29 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const [quickAddModel, setQuickAddModel] = useState('');
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
+  // Collapsible section state
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    basic: true,
+    route: true,
+    times: true,
+    landings: true,
+    people: false,
+    advanced: false,
+    remarks: true,
+  });
+
+  const toggleSection = (section: string) => {
+    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  // Crew members state
+  const [crewMembers, setCrewMembers] = useState<FlightCrewMemberInput[]>([]);
+  const [crewNameInput, setCrewNameInput] = useState('');
+  const [crewRoleInput, setCrewRoleInput] = useState<CrewRole>('Passenger');
+  const [crewSearch, setCrewSearch] = useState('');
+  const { data: contactResults } = useSearchContacts(crewSearch);
+  const createContact = useCreateContact();
+
   const {
     register,
     handleSubmit,
@@ -77,15 +104,15 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       departureTime: '',
       arrivalTime: '',
       route: '',
-      isPic: true,
-      isDual: false,
-      nightTime: 0,
       ifrTime: 0,
-      landingsDay: 1,
-      landingsNight: 0,
+      landings: 1,
       takeoffsDay: undefined,
       takeoffsNight: undefined,
       remarks: '',
+      instructorName: '',
+      instructorComments: '',
+      simulatedFlightTime: 0,
+      groundTrainingTime: 0,
     },
   });
 
@@ -103,16 +130,24 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         departureTime: existingFlight.departureTime?.slice(0, 5) || '',
         arrivalTime: existingFlight.arrivalTime?.slice(0, 5) || '',
         route: existingFlight.route || '',
-        isPic: existingFlight.isPic,
-        isDual: existingFlight.isDual,
-        nightTime: existingFlight.nightTime,
         ifrTime: existingFlight.ifrTime,
-        landingsDay: existingFlight.landingsDay,
-        landingsNight: existingFlight.landingsNight,
+        landings: existingFlight.allLandings,
         takeoffsDay: existingFlight.takeoffsDay,
         takeoffsNight: existingFlight.takeoffsNight,
         remarks: existingFlight.remarks || '',
+        instructorName: existingFlight.instructorName || '',
+        instructorComments: existingFlight.instructorComments || '',
+        simulatedFlightTime: existingFlight.simulatedFlightTime || 0,
+        groundTrainingTime: existingFlight.groundTrainingTime || 0,
       });
+      // Load existing crew members
+      if (existingFlight.crewMembers) {
+        setCrewMembers(existingFlight.crewMembers.map((m: { contactId?: string | null; name: string; role: string }) => ({
+          contactId: m.contactId || null,
+          name: m.name,
+          role: m.role as CrewRole,
+        })));
+      }
     }
   }, [existingFlight, isEditing, reset]);
 
@@ -123,13 +158,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     return lic?.licenseType === 'EASA_SPL' || lic?.licenseType === 'FAA_SPORT';
   })();
 
-  // Force night fields to 0 when SPL is selected
-  useEffect(() => {
-    if (isSPL) {
-      setValue('nightTime', 0);
-      setValue('landingsNight', 0);
-    }
-  }, [isSPL, setValue]);
+
 
   // Aircraft autocomplete: filter suggestions based on typed registration
   const watchedReg = watch('aircraftReg');
@@ -211,15 +240,16 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         departureTime: data.departureTime + ':00',
         arrivalTime: data.arrivalTime + ':00',
         route: data.route || null,
-        isPic: data.isPic,
-        isDual: data.isDual,
-        nightTime: data.nightTime,
         ifrTime: data.ifrTime,
-        landingsDay: data.landingsDay,
-        landingsNight: data.landingsNight,
+        landings: data.landings,
         ...(data.takeoffsDay !== undefined && { takeoffsDay: data.takeoffsDay }),
         ...(data.takeoffsNight !== undefined && { takeoffsNight: data.takeoffsNight }),
         remarks: data.remarks || null,
+        instructorName: data.instructorName || null,
+        instructorComments: data.instructorComments || null,
+        simulatedFlightTime: data.simulatedFlightTime,
+        groundTrainingTime: data.groundTrainingTime,
+        crewMembers: crewMembers.length > 0 ? crewMembers : undefined,
       };
 
       if (isEditing && flightId) {
@@ -506,41 +536,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               <p className="form-helper">Computed from block times</p>
             </div>
           )}
-          <div className="flex items-center gap-6 sm:col-span-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                {...register('isPic')}
-                type="checkbox"
-                id="isPic"
-                className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">PIC</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                {...register('isDual')}
-                type="checkbox"
-                id="isDual"
-                className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Dual (instruction received)</span>
-            </label>
-          </div>
-          {!isSPL && (
-            <div>
-              <label htmlFor="nightTime" className="form-label">
-                Night Time
-              </label>
-              <input
-                {...register('nightTime', { valueAsNumber: true })}
-                type="number"
-                id="nightTime"
-                step="0.1"
-                min="0"
-                className="input"
-              />
-            </div>
-          )}
+
           <div>
             <label htmlFor="ifrTime" className="form-label">
               IFR Time
@@ -592,31 +588,18 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             </div>
           )}
           <div>
-            <label htmlFor="landingsDay" className="form-label">
-              Day Landings
+            <label htmlFor="landings" className="form-label">
+              Total Landings
             </label>
             <input
-              {...register('landingsDay', { valueAsNumber: true })}
+              {...register('landings', { valueAsNumber: true })}
               type="number"
-              id="landingsDay"
+              id="landings"
               min="0"
               className="input"
             />
+            <p className="form-helper">Day/night split auto-calculated</p>
           </div>
-          {!isSPL && (
-            <div>
-              <label htmlFor="landingsNight" className="form-label">
-                Night Landings
-              </label>
-              <input
-                {...register('landingsNight', { valueAsNumber: true })}
-                type="number"
-                id="landingsNight"
-                min="0"
-                className="input"
-              />
-            </div>
-          )}
         </div>
       </fieldset>
 
@@ -649,22 +632,195 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 {existingFlight.distance.toFixed(1)} NM
               </div>
             </div>
+            <div>
+              <label className="form-label">Night Time</label>
+              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
+                {existingFlight.nightTime.toFixed(1)}h
+              </div>
+            </div>
+            <div>
+              <label className="form-label">Function</label>
+              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                {existingFlight.isPic ? 'PIC' : existingFlight.isDual ? 'Dual' : '—'}
+              </div>
+              <p className="form-helper">Auto from crew</p>
+            </div>
           </div>
         </fieldset>
       )}
 
-      {/* Remarks */}
-      <div>
-        <label htmlFor="remarks" className="form-label">
-          Remarks
-        </label>
-        <textarea
-          {...register('remarks')}
-          id="remarks"
-          rows={3}
-          className="input"
-          placeholder="Training flight, touch and go practice, etc."
-        />
+      {/* People & Crew Section (Collapsible) */}
+      <fieldset>
+        <button
+          type="button"
+          onClick={() => toggleSection('people')}
+          className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3 w-full text-left"
+        >
+          {expandedSections.people ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          People on Board
+          {crewMembers.length > 0 && <span className="badge-info text-xs ml-2">{crewMembers.length}</span>}
+        </button>
+        {expandedSections.people && (
+          <div className="space-y-3">
+            {/* Crew list */}
+            {crewMembers.map((member, idx) => (
+              <div key={idx} className="flex items-center gap-2 text-sm bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2">
+                <span className="badge-info text-xs">{member.role}</span>
+                <span className="flex-1 font-medium text-slate-700 dark:text-slate-200">{member.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setCrewMembers((prev) => prev.filter((_, i) => i !== idx))}
+                  className="text-slate-400 hover:text-red-500"
+                  aria-label={`Remove ${member.name}`}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+
+            {/* Add crew member */}
+            <div className="flex flex-wrap gap-2">
+              <div className="flex-1 min-w-[150px] relative">
+                <input
+                  type="text"
+                  value={crewNameInput}
+                  onChange={(e) => { setCrewNameInput(e.target.value); setCrewSearch(e.target.value); }}
+                  placeholder="Person name"
+                  className="input text-sm"
+                />
+                {contactResults && contactResults.length > 0 && crewNameInput.length >= 2 && (
+                  <div className="absolute z-20 top-full left-0 right-0 mt-1 max-h-32 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg">
+                    {contactResults.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        className="w-full text-left px-3 py-1.5 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        onClick={() => { setCrewNameInput(c.name); setCrewSearch(''); }}
+                      >
+                        {c.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <select
+                value={crewRoleInput}
+                onChange={(e) => setCrewRoleInput(e.target.value as CrewRole)}
+                className="input text-sm w-auto"
+              >
+                <option value="PIC">PIC</option>
+                <option value="SIC">SIC</option>
+                <option value="Instructor">Instructor</option>
+                <option value="Student">Student</option>
+                <option value="Passenger">Passenger</option>
+                <option value="SafetyPilot">Safety Pilot</option>
+                <option value="Examiner">Examiner</option>
+              </select>
+              <button
+                type="button"
+                disabled={!crewNameInput.trim()}
+                onClick={() => {
+                  if (crewNameInput.trim()) {
+                    setCrewMembers((prev) => [...prev, { name: crewNameInput.trim(), role: crewRoleInput, contactId: null }]);
+                    // Auto-save contact for reuse
+                    createContact.mutate({ name: crewNameInput.trim() });
+                    setCrewNameInput('');
+                    setCrewSearch('');
+                  }
+                }}
+                className="btn-secondary btn-sm text-xs"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add
+              </button>
+            </div>
+
+            {/* Instructor fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+              <div>
+                <label htmlFor="instructorName" className="form-label">Instructor Name</label>
+                <input {...register('instructorName')} id="instructorName" className="input text-sm" placeholder="Instructor name" />
+              </div>
+              <div>
+                <label htmlFor="instructorComments" className="form-label">Instructor Comments</label>
+                <input {...register('instructorComments')} id="instructorComments" className="input text-sm" placeholder="Instructor remarks" />
+              </div>
+            </div>
+          </div>
+        )}
+      </fieldset>
+
+      {/* Advanced Times Section (Collapsible) */}
+      <fieldset>
+        <button
+          type="button"
+          onClick={() => toggleSection('advanced')}
+          className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3 w-full text-left"
+        >
+          {expandedSections.advanced ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          Advanced Times
+        </button>
+        {expandedSections.advanced && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <label htmlFor="simulatedFlightTime" className="form-label">Simulated Flight</label>
+              <input
+                {...register('simulatedFlightTime', { valueAsNumber: true })}
+                type="number"
+                id="simulatedFlightTime"
+                step="0.1"
+                min="0"
+                className="input"
+              />
+              <p className="form-helper">Hours (FTD/FSTD)</p>
+            </div>
+            <div>
+              <label htmlFor="groundTrainingTime" className="form-label">Ground Training</label>
+              <input
+                {...register('groundTrainingTime', { valueAsNumber: true })}
+                type="number"
+                id="groundTrainingTime"
+                step="0.1"
+                min="0"
+                className="input"
+              />
+              <p className="form-helper">Hours</p>
+            </div>
+            {isEditing && existingFlight && (
+              <>
+                <div>
+                  <label className="form-label">SIC Time</label>
+                  <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
+                    {existingFlight.sicTime?.toFixed(1) || '0.0'}h
+                  </div>
+                  <p className="form-helper">Auto from crew roles</p>
+                </div>
+                <div>
+                  <label className="form-label">Dual Given</label>
+                  <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
+                    {existingFlight.dualGivenTime?.toFixed(1) || '0.0'}h
+                  </div>
+                  <p className="form-helper">Auto from instructor role</p>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </fieldset>
+
+      {/* Remarks & Comments */}
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="remarks" className="form-label">
+            Remarks
+          </label>
+          <textarea
+            {...register('remarks')}
+            id="remarks"
+            rows={2}
+            className="input"
+            placeholder="Training flight, touch and go practice, etc."
+          />
+        </div>
       </div>
 
       {/* Submit */}

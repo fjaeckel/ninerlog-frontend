@@ -74,7 +74,7 @@ describe('MapPage', () => {
     } as any);
 
     renderWithProviders(<MapPage />);
-    expect(screen.getByText(/loading map data/i)).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: /loading/i })).toBeInTheDocument();
   });
 
   it('renders page title', () => {
