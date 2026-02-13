@@ -455,6 +455,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/airports/{icaoCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get airport coordinates
+         * @description Get coordinates and metadata for an airport by ICAO code
+         */
+        get: operations["getAirport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/airports/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search airports
+         * @description Search airports by ICAO code prefix
+         */
+        get: operations["searchAirports"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/routes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get flight routes for map
+         * @description Get all unique flight routes with coordinates for map visualization
+         */
+        get: operations["getFlightRoutes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/airport-stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get airport statistics
+         * @description Get flight count and hours per airport for the authenticated user
+         */
+        get: operations["getAirportStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1313,6 +1393,83 @@ export interface components {
                  */
                 totalPages: number;
             };
+        };
+        Airport: {
+            /**
+             * @description ICAO airport code
+             * @example EDDF
+             */
+            icao: string;
+            /**
+             * @description Airport name
+             * @example Frankfurt am Main
+             */
+            name: string;
+            /**
+             * Format: double
+             * @description Latitude in decimal degrees
+             * @example 50.033333
+             */
+            latitude: number;
+            /**
+             * Format: double
+             * @description Longitude in decimal degrees
+             * @example 8.570556
+             */
+            longitude: number;
+            /**
+             * @description Airport elevation in feet
+             * @example 364
+             */
+            elevation?: number;
+            /**
+             * @description Country code (ISO 3166-1 alpha-2)
+             * @example DE
+             */
+            country?: string;
+        };
+        FlightRoute: {
+            /** @example EDDF */
+            departureIcao: string;
+            /** @example EDDH */
+            arrivalIcao: string;
+            departureCoords: {
+                /** Format: double */
+                lat: number;
+                /** Format: double */
+                lng: number;
+            };
+            arrivalCoords: {
+                /** Format: double */
+                lat: number;
+                /** Format: double */
+                lng: number;
+            };
+            /**
+             * @description Number of flights on this route
+             * @example 5
+             */
+            flightCount: number;
+        };
+        FlightRoutesResponse: {
+            routes: components["schemas"]["FlightRoute"][];
+            airports: components["schemas"]["Airport"][];
+        };
+        AirportStats: {
+            /** @example EDDF */
+            icao: string;
+            /** @example Frankfurt am Main */
+            name: string;
+            /** Format: double */
+            latitude: number;
+            /** Format: double */
+            longitude: number;
+            /** @description Number of departures from this airport */
+            departures: number;
+            /** @description Number of arrivals to this airport */
+            arrivals: number;
+            /** @description Total flights (departures + arrivals) */
+            totalFlights: number;
         };
         Error: {
             /**
@@ -2391,6 +2548,98 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    getAirport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ICAO airport code (4 characters) */
+                icaoCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Airport information */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Airport"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    searchAirports: {
+        parameters: {
+            query: {
+                /** @description Search query (ICAO code prefix) */
+                q: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of matching airports */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Airport"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getFlightRoutes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Flight routes with airport coordinates */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightRoutesResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getAirportStats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Airport statistics */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AirportStats"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
         };
     };
 }

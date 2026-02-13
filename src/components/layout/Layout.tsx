@@ -64,6 +64,7 @@ export default function Layout() {
           <SidebarItem to="/credentials" label="Credentials" icon="📋" />
           <SidebarItem to="/aircraft" label="Aircraft" icon="🛩" />
           <SidebarItem to="/reports" label="Reports" icon="📊" />
+          <SidebarItem to="/map" label="Map" icon="🗺" />
           <SidebarItem to="/licenses" label="Licenses" icon="🏅" />
         </nav>
         <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-1">
@@ -117,6 +118,7 @@ export default function Layout() {
             <nav className="px-4 pb-4 space-y-1" aria-label="More navigation">
               <MoreMenuItem to="/credentials" label="Credentials" icon="📋" onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/aircraft" label="Aircraft" icon="🛩" onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/map" label="Route Map" icon="🗺" onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/licenses" label="Licenses" icon="🏅" onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/profile" label="Profile & Settings" icon="👤" onClick={() => setShowMoreMenu(false)} />
               <div className="border-t border-slate-100 dark:border-slate-700 my-2" />
