@@ -121,7 +121,7 @@ export default function LicensesPage() {
             <LicenseCard
               key={license.id}
               license={license}
-              isActive={activeLicense?.id === license.id}
+              isDefault={activeLicense?.id === license.id}
               onEdit={() => handleEdit(license.id)}
               onDelete={() => handleDelete(license.id)}
             />

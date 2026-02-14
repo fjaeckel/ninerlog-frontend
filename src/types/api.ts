@@ -18,6 +18,7 @@ export interface User {
   email: string;
   name: string;
   twoFactorEnabled?: boolean;
+  defaultLicenseId?: string | null;
   createdAt: string;
   updatedAt: string;
 }

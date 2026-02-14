@@ -685,6 +685,11 @@ export interface components {
              * @example false
              */
             twoFactorEnabled?: boolean;
+            /**
+             * Format: uuid
+             * @description The user's default license ID, used to pre-select in forms and filter flights
+             */
+            defaultLicenseId?: string | null;
         };
         TwoFactorSetup: {
             /**

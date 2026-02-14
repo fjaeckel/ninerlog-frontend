@@ -1,21 +1,26 @@
 import { useLicenseStore } from '../../stores/licenseStore';
+import { useSetDefaultLicense } from '../../hooks/useProfile';
 
 export default function LicenseSwitcher() {
   const { licenses, activeLicense, setActiveLicense } = useLicenseStore();
+  const setDefaultLicense = useSetDefaultLicense();
 
   if (licenses.length === 0) return null;
 
   return (
     <div>
       <label htmlFor="license-select" className="form-label">
-        Active License
+        Default License
       </label>
       <select
         id="license-select"
         value={activeLicense?.id || ''}
         onChange={(e) => {
           const license = licenses.find((l) => l.id === e.target.value);
-          setActiveLicense(license || null);
+          if (license) {
+            setActiveLicense(license);
+            setDefaultLicense.mutate(license.id);
+          }
         }}
         className="input"
       >
@@ -28,7 +33,7 @@ export default function LicenseSwitcher() {
       </select>
       {activeLicense && (
         <p className="form-helper">
-          Flight logs will be associated with this license
+          All flights and statistics use this license
         </p>
       )}
     </div>

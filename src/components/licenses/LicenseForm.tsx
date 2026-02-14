@@ -22,7 +22,6 @@ const licenseSchema = z.object({
   issueDate: z.string().min(1, 'Issue date is required'),
   expiryDate: z.string().optional(),
   issuingAuthority: z.string().min(1, 'Issuing authority is required'),
-  isActive: z.boolean(),
 });
 
 type LicenseFormData = z.infer<typeof licenseSchema>;
@@ -66,10 +65,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
       issueDate: existingLicense.issueDate,
       expiryDate: existingLicense.expiryDate || undefined,
       issuingAuthority: existingLicense.issuingAuthority,
-      isActive: existingLicense.isActive,
-    } : {
-      isActive: true,
-    },
+    } : {},
   });
 
   useEffect(() => {
@@ -80,7 +76,6 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
         issueDate: existingLicense.issueDate,
         expiryDate: existingLicense.expiryDate || undefined,
         issuingAuthority: existingLicense.issuingAuthority,
-        isActive: existingLicense.isActive,
       });
     }
   }, [existingLicense, reset]);
@@ -90,7 +85,6 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
       if (isEditing && licenseId) {
         const updateData: LicenseUpdate = {
           expiryDate: data.expiryDate || null,
-          isActive: data.isActive,
         };
         await updateLicense.mutateAsync({ id: licenseId, data: updateData });
       } else {
@@ -188,18 +182,6 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
           />
           <p className="form-helper">Leave blank if license doesn't expire</p>
         </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <input
-          {...register('isActive')}
-          type="checkbox"
-          id="isActive"
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-        />
-        <label htmlFor="isActive" className="block text-sm text-slate-700 dark:text-slate-300">
-          Active license
-        </label>
       </div>
 
       <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">

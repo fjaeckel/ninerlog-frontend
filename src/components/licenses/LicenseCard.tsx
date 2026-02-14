@@ -3,12 +3,12 @@ import { format } from 'date-fns';
 
 interface LicenseCardProps {
   license: License;
-  isActive: boolean;
+  isDefault: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-export default function LicenseCard({ license, isActive, onEdit, onDelete }: LicenseCardProps) {
+export default function LicenseCard({ license, isDefault, onEdit, onDelete }: LicenseCardProps) {
   const isExpiringSoon =
     license.expiryDate &&
     new Date(license.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
@@ -22,7 +22,7 @@ export default function LicenseCard({ license, isActive, onEdit, onDelete }: Lic
   return (
     <div
       className={`card transition-shadow ${
-        isActive ? 'ring-2 ring-blue-500 shadow-md' : 'hover:shadow-md'
+        isDefault ? 'ring-2 ring-blue-500 shadow-md' : 'hover:shadow-md'
       } ${isExpired ? 'opacity-60' : ''}`}
     >
       <div className="flex justify-between items-start mb-3">
@@ -35,8 +35,8 @@ export default function LicenseCard({ license, isActive, onEdit, onDelete }: Lic
             <p className="data-sm text-slate-500 dark:text-slate-400">{license.licenseNumber}</p>
           </div>
         </div>
-        {isActive && (
-          <span className="badge-info">Active</span>
+        {isDefault && (
+          <span className="badge-info">Default</span>
         )}
       </div>
 
@@ -74,11 +74,11 @@ export default function LicenseCard({ license, isActive, onEdit, onDelete }: Lic
         <div className="flex justify-between">
           <span className="text-slate-500 dark:text-slate-400">Status</span>
           <span className={
-            license.isActive && !isExpired
+            isDefault && !isExpired
               ? 'badge-current'
               : 'badge-neutral'
           }>
-            {license.isActive && !isExpired ? 'Active' : 'Inactive'}
+            {isDefault && !isExpired ? 'Default' : '—'}
           </span>
         </div>
       </div>

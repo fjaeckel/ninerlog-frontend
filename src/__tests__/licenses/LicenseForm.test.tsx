@@ -53,7 +53,6 @@ describe('LicenseForm', () => {
     expect(screen.getByLabelText(/issuing authority/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/issue date/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/expiry date/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/active license/i)).toBeInTheDocument();
   });
 
   it('validates required fields', async () => {
@@ -128,7 +127,6 @@ describe('LicenseForm', () => {
         id: '123',
         data: {
           expiryDate: '2026-01-01',
-          isActive: true,
         },
       });
       expect(mockOnClose).toHaveBeenCalled();

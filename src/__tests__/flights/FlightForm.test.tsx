@@ -81,17 +81,14 @@ describe('FlightForm', () => {
 
     expect(screen.getByText('Basic Information')).toBeInTheDocument();
     expect(screen.getByText('Route & Times (UTC)')).toBeInTheDocument();
-    expect(screen.getByText('Block Times')).toBeInTheDocument();
     expect(screen.getByText('Takeoffs & Landings')).toBeInTheDocument();
   });
 
   it('renders basic form fields', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    expect(screen.getByLabelText(/license/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^date/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/aircraft registration/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/aircraft type/i)).toBeInTheDocument();
   });
 
   it('renders route and time fields including block times', () => {
@@ -105,8 +102,15 @@ describe('FlightForm', () => {
     expect(screen.getByLabelText(/on-block/i)).toBeInTheDocument();
   });
 
-  it('renders time fields', () => {
+  it('renders time fields in advanced drawer', async () => {
+    const user = userEvent.setup();
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    // IFR Time is inside the collapsed Advanced Times drawer
+    expect(screen.queryByLabelText(/ifr time/i)).not.toBeInTheDocument();
+
+    // Expand Advanced Times
+    await user.click(screen.getByRole('button', { name: /advanced times/i }));
 
     expect(screen.getByLabelText(/ifr time/i)).toBeInTheDocument();
   });
@@ -136,14 +140,21 @@ describe('FlightForm', () => {
     const user = userEvent.setup();
     mockCreate.mutateAsync.mockResolvedValueOnce({});
 
+    // Mock fleet so aircraft type auto-fills when registration matches
+    vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
+      data: [{
+        id: 'ac-1', userId: 'user-1', registration: 'D-EFGH', type: 'C172',
+        make: 'Cessna', model: '172 Skyhawk', isComplex: false, isHighPerformance: false,
+        isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
+      }],
+      isLoading: false, error: null,
+    } as any);
+
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    // Use pure userEvent (matching working LicenseForm test pattern)
-    await user.selectOptions(screen.getByLabelText(/license/i), 'lic-1');
     await user.clear(screen.getByLabelText(/^date/i));
     await user.type(screen.getByLabelText(/^date/i), '2026-01-15');
     await user.type(screen.getByLabelText(/aircraft registration/i), 'D-EFGH');
-    await user.type(screen.getByLabelText(/aircraft type/i), 'C172');
     await user.type(screen.getByLabelText(/departure icao/i), 'EDDF');
     await user.type(screen.getByLabelText(/arrival icao/i), 'EDDH');
     // Fill required time fields via fireEvent (time inputs)
@@ -177,13 +188,21 @@ describe('FlightForm', () => {
     const user = userEvent.setup();
     mockCreate.mutateAsync.mockResolvedValueOnce({});
 
+    // Mock fleet so aircraft type auto-fills (already uppercase from fleet data)
+    vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
+      data: [{
+        id: 'ac-1', userId: 'user-1', registration: 'D-EFGH', type: 'C172',
+        make: 'Cessna', model: '172 Skyhawk', isComplex: false, isHighPerformance: false,
+        isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
+      }],
+      isLoading: false, error: null,
+    } as any);
+
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    await user.selectOptions(screen.getByLabelText(/license/i), 'lic-1');
     await user.clear(screen.getByLabelText(/^date/i));
     await user.type(screen.getByLabelText(/^date/i), '2026-01-15');
     await user.type(screen.getByLabelText(/aircraft registration/i), 'd-efgh');
-    await user.type(screen.getByLabelText(/aircraft type/i), 'c172');
     await user.type(screen.getByLabelText(/departure icao/i), 'eddf');
     await user.type(screen.getByLabelText(/arrival icao/i), 'eddh');
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
@@ -249,7 +268,8 @@ describe('FlightForm', () => {
 
     await waitFor(() => {
       expect(screen.getByLabelText(/aircraft registration/i)).toHaveValue('D-EFGH');
-      expect(screen.getByLabelText(/aircraft type/i)).toHaveValue('C172');
+      // Aircraft type is a hidden input
+      expect(document.querySelector<HTMLInputElement>('input[name="aircraftType"]')?.value).toBe('C172');
       expect(screen.getByRole('button', { name: /update flight/i })).toBeInTheDocument();
     });
   });
@@ -336,7 +356,8 @@ describe('FlightForm', () => {
 
     await waitFor(() => {
       expect(screen.getByLabelText(/aircraft registration/i)).toHaveValue('D-EFGH');
-      expect(screen.getByLabelText(/aircraft type/i)).toHaveValue('C172');
+      // Aircraft type is auto-filled into a hidden input
+      expect(document.querySelector<HTMLInputElement>('input[name="aircraftType"]')?.value).toBe('C172');
     });
   });
 
@@ -366,7 +387,6 @@ describe('FlightForm', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
     await user.type(screen.getByLabelText(/aircraft registration/i), 'N12345');
-    await user.type(screen.getByLabelText(/aircraft type/i), 'C152');
 
     await waitFor(() => {
       expect(screen.getByText(/new aircraft\? save/i)).toBeInTheDocument();
@@ -374,12 +394,14 @@ describe('FlightForm', () => {
 
     await user.click(screen.getByText(/new aircraft\? save/i));
 
-    // Quick-add form should appear
+    // Quick-add form should appear with type, make, and model fields
     await waitFor(() => {
+      expect(screen.getByPlaceholderText(/type/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/make/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/model/i)).toBeInTheDocument();
     });
 
+    await user.type(screen.getByPlaceholderText(/type/i), 'C152');
     await user.type(screen.getByPlaceholderText(/make/i), 'Cessna');
     await user.type(screen.getByPlaceholderText(/model/i), '152');
     await user.click(screen.getByRole('button', { name: /save aircraft/i }));

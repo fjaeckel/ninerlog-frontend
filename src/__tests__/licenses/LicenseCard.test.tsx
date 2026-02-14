@@ -25,7 +25,7 @@ describe('LicenseCard', () => {
     render(
       <LicenseCard
         license={mockLicense}
-        isActive={true}
+        isDefault={true}
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
@@ -34,7 +34,7 @@ describe('LicenseCard', () => {
     expect(screen.getByText('EASA PPL')).toBeInTheDocument();
     expect(screen.getByText('PPL-12345')).toBeInTheDocument();
     expect(screen.getByText('EASA')).toBeInTheDocument();
-    expect(screen.getByText('Active', { selector: 'span.badge-info' })).toBeInTheDocument();
+    expect(screen.getByText('Default', { selector: 'span.badge-info' })).toBeInTheDocument();
   });
 
   it('calls onEdit when edit button is clicked', async () => {
@@ -42,7 +42,7 @@ describe('LicenseCard', () => {
     render(
       <LicenseCard
         license={mockLicense}
-        isActive={false}
+        isDefault={false}
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
@@ -57,7 +57,7 @@ describe('LicenseCard', () => {
     render(
       <LicenseCard
         license={mockLicense}
-        isActive={false}
+        isDefault={false}
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
@@ -76,7 +76,7 @@ describe('LicenseCard', () => {
     render(
       <LicenseCard
         license={expiredLicense}
-        isActive={false}
+        isDefault={false}
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
@@ -94,7 +94,7 @@ describe('LicenseCard', () => {
     render(
       <LicenseCard
         license={expiringLicense}
-        isActive={true}
+        isDefault={true}
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />

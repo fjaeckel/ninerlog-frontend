@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLicenseStore } from '../stores/licenseStore';
+import { useAuthStore } from '../stores/authStore';
 import { apiClient } from '../api/client';
 import type { components, operations } from '../api/schema';
 
@@ -9,7 +10,8 @@ type LicenseCreate = components['schemas']['LicenseCreate'];
 type LicenseUpdate = operations['updateLicense']['requestBody']['content']['application/json'];
 
 export const useLicenses = () => {
-  const { setLicenses } = useLicenseStore();
+  const { setLicenses, setDefaultLicenseId } = useLicenseStore();
+  const user = useAuthStore((s) => s.user);
 
   return useQuery({
     queryKey: ['licenses'],
@@ -17,6 +19,10 @@ export const useLicenses = () => {
       const { data, error } = await apiClient.GET('/licenses');
       if (error) throw error;
       const licenses = data as License[];
+      // Set default license ID from user profile before setting licenses
+      if (user?.defaultLicenseId) {
+        setDefaultLicenseId(user.defaultLicenseId);
+      }
       setLicenses(licenses);
       return licenses;
     },

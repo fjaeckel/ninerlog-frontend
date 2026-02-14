@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useLicenses } from '../hooks/useLicenses';
@@ -10,16 +9,9 @@ import { StatCard } from '../components/ui/StatCard';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const { data: licenses } = useLicenses();
-  const { activeLicense, setActiveLicense } = useLicenseStore();
+  useLicenses(); // Triggers loading licenses into store
+  const { activeLicense } = useLicenseStore();
   const navigate = useNavigate();
-
-  // Auto-select first license if none is active
-  useEffect(() => {
-    if (!activeLicense && licenses && licenses.length > 0) {
-      setActiveLicense(licenses[0]);
-    }
-  }, [activeLicense, licenses, setActiveLicense]);
 
   const { data: flightsData } = useFlights({
     licenseId: activeLicense?.id,
