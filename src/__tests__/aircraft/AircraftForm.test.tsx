@@ -38,7 +38,6 @@ describe('AircraftForm', () => {
     expect(screen.getByLabelText(/^type/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^make/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^model/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/category/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/engine type/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/complex/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/high performance/i)).toBeInTheDocument();
@@ -83,7 +82,6 @@ describe('AircraftForm', () => {
     await user.type(screen.getByLabelText(/^type/i), 'C172');
     await user.type(screen.getByLabelText(/^make/i), 'Cessna');
     await user.type(screen.getByLabelText(/^model/i), '172 Skyhawk');
-    await user.type(screen.getByLabelText(/category/i), 'SEP');
     await user.selectOptions(screen.getByLabelText(/engine type/i), 'piston');
 
     fireEvent.submit(screen.getByRole('button', { name: /add aircraft/i }).closest('form')!);
@@ -95,7 +93,6 @@ describe('AircraftForm', () => {
           type: 'C172',
           make: 'Cessna',
           model: '172 Skyhawk',
-          category: 'SEP',
           engineType: 'piston',
           isComplex: false,
           isHighPerformance: false,
@@ -141,7 +138,6 @@ describe('AircraftForm', () => {
       type: 'C172',
       make: 'Cessna',
       model: '172 Skyhawk',
-      category: 'SEP',
       engineType: 'piston' as const,
       isComplex: false,
       isHighPerformance: false,
@@ -163,7 +159,6 @@ describe('AircraftForm', () => {
       expect(screen.getByLabelText(/^type/i)).toHaveValue('C172');
       expect(screen.getByLabelText(/^make/i)).toHaveValue('Cessna');
       expect(screen.getByLabelText(/^model/i)).toHaveValue('172 Skyhawk');
-      expect(screen.getByLabelText(/category/i)).toHaveValue('SEP');
       expect(screen.getByLabelText(/notes/i)).toHaveValue('Club aircraft');
       expect(screen.getByRole('button', { name: /update aircraft/i })).toBeInTheDocument();
     });
@@ -200,7 +195,6 @@ describe('AircraftForm', () => {
       type: 'C172',
       make: 'Cessna',
       model: '172 Skyhawk',
-      category: 'SEP',
       engineType: 'piston' as const,
       isComplex: false,
       isHighPerformance: false,

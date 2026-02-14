@@ -3,41 +3,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateLicense, useUpdateLicense, useLicenses } from '../../hooks/useLicenses';
-import type { LicenseType, LicenseCreate, LicenseUpdate } from '../../types/api';
+import type { LicenseCreate, LicenseUpdate } from '../../types/api';
 
 const licenseSchema = z.object({
-  licenseType: z.enum([
-    'EASA_PPL',
-    'FAA_PPL',
-    'EASA_SPL',
-    'FAA_SPORT',
-    'EASA_CPL',
-    'FAA_CPL',
-    'EASA_ATPL',
-    'FAA_ATPL',
-    'EASA_IR',
-    'FAA_IR',
-  ]),
+  regulatoryAuthority: z.string().min(1, 'Regulatory authority is required'),
+  licenseType: z.string().min(1, 'License type is required'),
   licenseNumber: z.string().min(1, 'License number is required'),
   issueDate: z.string().min(1, 'Issue date is required'),
-  expiryDate: z.string().optional(),
   issuingAuthority: z.string().min(1, 'Issuing authority is required'),
+  requiresSeparateLogbook: z.boolean(),
 });
 
 type LicenseFormData = z.infer<typeof licenseSchema>;
-
-const LICENSE_TYPES = [
-  { value: 'EASA_PPL', label: 'EASA PPL - Private Pilot License' },
-  { value: 'FAA_PPL', label: 'FAA PPL - Private Pilot Certificate' },
-  { value: 'EASA_SPL', label: 'EASA SPL - Sailplane Pilot License' },
-  { value: 'FAA_SPORT', label: 'FAA Sport Pilot Certificate' },
-  { value: 'EASA_CPL', label: 'EASA CPL - Commercial Pilot License' },
-  { value: 'FAA_CPL', label: 'FAA CPL - Commercial Pilot Certificate' },
-  { value: 'EASA_ATPL', label: 'EASA ATPL - Airline Transport Pilot License' },
-  { value: 'FAA_ATPL', label: 'FAA ATPL - Airline Transport Pilot Certificate' },
-  { value: 'EASA_IR', label: 'EASA IR - Instrument Rating' },
-  { value: 'FAA_IR', label: 'FAA IR - Instrument Rating' },
-];
 
 interface LicenseFormProps {
   licenseId?: string | null;
@@ -60,22 +37,26 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
   } = useForm<LicenseFormData>({
     resolver: zodResolver(licenseSchema),
     defaultValues: existingLicense ? {
+      regulatoryAuthority: existingLicense.regulatoryAuthority,
       licenseType: existingLicense.licenseType,
       licenseNumber: existingLicense.licenseNumber,
       issueDate: existingLicense.issueDate,
-      expiryDate: existingLicense.expiryDate || undefined,
       issuingAuthority: existingLicense.issuingAuthority,
-    } : {},
+      requiresSeparateLogbook: existingLicense.requiresSeparateLogbook,
+    } : {
+      requiresSeparateLogbook: false,
+    },
   });
 
   useEffect(() => {
     if (existingLicense) {
       reset({
+        regulatoryAuthority: existingLicense.regulatoryAuthority,
         licenseType: existingLicense.licenseType,
         licenseNumber: existingLicense.licenseNumber,
         issueDate: existingLicense.issueDate,
-        expiryDate: existingLicense.expiryDate || undefined,
         issuingAuthority: existingLicense.issuingAuthority,
+        requiresSeparateLogbook: existingLicense.requiresSeparateLogbook,
       });
     }
   }, [existingLicense, reset]);
@@ -84,16 +65,21 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
     try {
       if (isEditing && licenseId) {
         const updateData: LicenseUpdate = {
-          expiryDate: data.expiryDate || null,
+          regulatoryAuthority: data.regulatoryAuthority,
+          licenseType: data.licenseType,
+          licenseNumber: data.licenseNumber,
+          issuingAuthority: data.issuingAuthority,
+          requiresSeparateLogbook: data.requiresSeparateLogbook,
         };
         await updateLicense.mutateAsync({ id: licenseId, data: updateData });
       } else {
         const createData: LicenseCreate = {
-          licenseType: data.licenseType as LicenseType,
+          regulatoryAuthority: data.regulatoryAuthority,
+          licenseType: data.licenseType,
           licenseNumber: data.licenseNumber,
           issueDate: data.issueDate,
-          expiryDate: data.expiryDate || null,
           issuingAuthority: data.issuingAuthority,
+          requiresSeparateLogbook: data.requiresSeparateLogbook,
         };
         await createLicense.mutateAsync(createData);
       }
@@ -105,21 +91,57 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      <div>
-        <label htmlFor="licenseType" className="form-label">
-          License Type <span className="text-red-500">*</span>
-        </label>
-        <select {...register('licenseType')} id="licenseType" className={`input ${errors.licenseType ? 'input-error' : ''}`}>
-          <option value="">Select a license type</option>
-          {LICENSE_TYPES.map((type) => (
-            <option key={type.value} value={type.value}>
-              {type.label}
-            </option>
-          ))}
-        </select>
-        {errors.licenseType && (
-          <p className="form-error">{errors.licenseType.message}</p>
-        )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="regulatoryAuthority" className="form-label">
+            Regulatory Authority <span className="text-red-500">*</span>
+          </label>
+          <input
+            {...register('regulatoryAuthority')}
+            type="text"
+            id="regulatoryAuthority"
+            list="regulatoryAuthority-list"
+            className={`input ${errors.regulatoryAuthority ? 'input-error' : ''}`}
+            placeholder="e.g. EASA"
+          />
+          <datalist id="regulatoryAuthority-list">
+            <option value="EASA" />
+            <option value="FAA" />
+            <option value="CAA UK" />
+            <option value="Transport Canada" />
+            <option value="CASA" />
+            <option value="DGCA" />
+          </datalist>
+          {errors.regulatoryAuthority && (
+            <p className="form-error">{errors.regulatoryAuthority.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="licenseType" className="form-label">
+            License Type <span className="text-red-500">*</span>
+          </label>
+          <input
+            {...register('licenseType')}
+            type="text"
+            id="licenseType"
+            list="licenseType-list"
+            className={`input ${errors.licenseType ? 'input-error' : ''}`}
+            placeholder="e.g. PPL"
+          />
+          <datalist id="licenseType-list">
+            <option value="PPL" />
+            <option value="CPL" />
+            <option value="ATPL" />
+            <option value="SPL" />
+            <option value="LAPL" />
+            <option value="UL" />
+            <option value="IR" />
+          </datalist>
+          {errors.licenseType && (
+            <p className="form-error">{errors.licenseType.message}</p>
+          )}
+        </div>
       </div>
 
       <div>
@@ -154,34 +176,31 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="issueDate" className="form-label">
-            Issue Date <span className="text-red-500">*</span>
-          </label>
-          <input
-            {...register('issueDate')}
-            type="date"
-            id="issueDate"
-            className={`input ${errors.issueDate ? 'input-error' : ''}`}
-          />
-          {errors.issueDate && (
-            <p className="form-error">{errors.issueDate.message}</p>
-          )}
-        </div>
+      <div>
+        <label htmlFor="issueDate" className="form-label">
+          Issue Date <span className="text-red-500">*</span>
+        </label>
+        <input
+          {...register('issueDate')}
+          type="date"
+          id="issueDate"
+          className={`input ${errors.issueDate ? 'input-error' : ''}`}
+        />
+        {errors.issueDate && (
+          <p className="form-error">{errors.issueDate.message}</p>
+        )}
+      </div>
 
-        <div>
-          <label htmlFor="expiryDate" className="form-label">
-            Expiry Date
-          </label>
-          <input
-            {...register('expiryDate')}
-            type="date"
-            id="expiryDate"
-            className="input"
-          />
-          <p className="form-helper">Leave blank if license doesn't expire</p>
-        </div>
+      <div className="flex items-center gap-2">
+        <input
+          {...register('requiresSeparateLogbook')}
+          type="checkbox"
+          id="requiresSeparateLogbook"
+          className="rounded border-slate-300 dark:border-slate-600"
+        />
+        <label htmlFor="requiresSeparateLogbook" className="text-sm text-slate-700 dark:text-slate-300">
+          Requires separate logbook
+        </label>
       </div>
 
       <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">

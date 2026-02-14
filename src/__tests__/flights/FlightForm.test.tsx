@@ -7,7 +7,6 @@ import FlightForm from '../../components/flights/FlightForm';
 import * as useFlightsHook from '../../hooks/useFlights';
 import * as useLicensesHook from '../../hooks/useLicenses';
 import * as useAircraftHook from '../../hooks/useAircraft';
-import { useLicenseStore } from '../../stores/licenseStore';
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -73,7 +72,6 @@ describe('FlightForm', () => {
       mutateAsync: vi.fn(),
       isPending: false,
     } as any);
-    useLicenseStore.setState({ activeLicense: mockLicense });
   });
 
   it('renders all form sections', () => {
@@ -169,7 +167,6 @@ describe('FlightForm', () => {
     await waitFor(() => {
       expect(mockCreate.mutateAsync).toHaveBeenCalledWith(
         expect.objectContaining({
-          licenseId: 'lic-1',
           aircraftReg: 'D-EFGH',
           aircraftType: 'C172',
           departureIcao: 'EDDF',
@@ -280,26 +277,6 @@ describe('FlightForm', () => {
 
     await user.click(screen.getByRole('button', { name: /cancel/i }));
     expect(mockOnClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('hides night-related fields for SPL license', () => {
-    const splLicense = {
-      ...mockLicense,
-      id: 'lic-spl',
-      licenseType: 'EASA_SPL' as const,
-      licenseNumber: 'SPL-12345',
-    };
-
-    vi.spyOn(useLicensesHook, 'useLicenses').mockReturnValue({
-      data: [splLicense],
-      isLoading: false,
-      error: null,
-    } as any);
-    useLicenseStore.setState({ activeLicense: splLicense });
-
-    renderWithProviders(<FlightForm onClose={mockOnClose} />);
-
-    expect(screen.queryByLabelText(/takeoffs.*night/i)).not.toBeInTheDocument();
   });
 
   it('shows aircraft autocomplete suggestions when typing registration', async () => {

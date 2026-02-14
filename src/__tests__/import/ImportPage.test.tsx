@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ImportPage from '../../pages/import/ImportPage';
 import * as useLicensesHook from '../../hooks/useLicenses';
 import * as useImportHook from '../../hooks/useImport';
-import { useLicenseStore } from '../../stores/licenseStore';
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -37,7 +36,6 @@ describe('ImportPage', () => {
     vi.spyOn(useLicensesHook, 'useLicenses').mockReturnValue({
       data: [mockLicense], isLoading: false, error: null,
     } as any);
-    useLicenseStore.setState({ activeLicense: mockLicense });
     vi.spyOn(useImportHook, 'useUploadImport').mockReturnValue({
       mutateAsync: vi.fn(), isPending: false,
     } as any);

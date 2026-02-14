@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
-import { useLicenseStore } from '../stores/licenseStore';
 import type { components } from '../api/schema';
 
 type User = components['schemas']['User'];
@@ -55,30 +54,4 @@ export const useDeleteAccount = () => {
   });
 };
 
-// Set default license
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
-export const useSetDefaultLicense = () => {
-  const { updateUser } = useAuthStore();
-  const { setDefaultLicenseId } = useLicenseStore();
-
-  return useMutation({
-    mutationFn: async (licenseId: string): Promise<{ defaultLicenseId: string }> => {
-      const token = useAuthStore.getState().accessToken;
-      const res = await fetch(`${API_BASE}/users/me/default-license`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ licenseId }),
-      });
-      if (!res.ok) throw new Error('Failed to set default license');
-      return res.json();
-    },
-    onSuccess: (data) => {
-      updateUser({ defaultLicenseId: data.defaultLicenseId });
-      setDefaultLicenseId(data.defaultLicenseId);
-    },
-  });
-};

@@ -1,6 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
-import { useLicenseStore } from '../stores/licenseStore';
 import { apiClient } from '../api/client';
 import type { components, operations } from '../api/schema';
 
@@ -18,7 +17,6 @@ interface ResetPasswordData {
 
 export const useRegister = () => {
   const { setAuth } = useAuthStore();
-  const { setDefaultLicenseId } = useLicenseStore();
 
   return useMutation({
     mutationFn: async (requestData: RegisterRequest): Promise<NonNullable<AuthResponse>> => {
@@ -30,16 +28,12 @@ export const useRegister = () => {
     },
     onSuccess: (data) => {
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);
-      if (data.user.defaultLicenseId) {
-        setDefaultLicenseId(data.user.defaultLicenseId);
-      }
     },
   });
 };
 
 export const useLogin = () => {
   const { setAuth } = useAuthStore();
-  const { setDefaultLicenseId } = useLicenseStore();
 
   return useMutation({
     mutationFn: async (requestData: LoginRequest): Promise<any> => {
@@ -53,9 +47,6 @@ export const useLogin = () => {
       // Skip setAuth if 2FA is required — handled by LoginPage
       if (data.requiresTwoFactor) return;
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);
-      if (data.user?.defaultLicenseId) {
-        setDefaultLicenseId(data.user.defaultLicenseId);
-      }
     },
   });
 };

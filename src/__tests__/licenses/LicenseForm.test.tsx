@@ -48,11 +48,11 @@ describe('LicenseForm', () => {
   it('renders license form fields', () => {
     renderWithProviders(<LicenseForm onClose={mockOnClose} />);
     
+    expect(screen.getByLabelText(/regulatory authority/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/license type/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/license number/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/issuing authority/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/issue date/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/expiry date/i)).toBeInTheDocument();
   });
 
   it('validates required fields', async () => {
@@ -62,8 +62,7 @@ describe('LicenseForm', () => {
     await user.click(screen.getByRole('button', { name: /add license/i }));
     
     await waitFor(() => {
-      // Zod enum validation message for empty/invalid enum value
-      expect(screen.getByText(/invalid/i)).toBeInTheDocument();
+      expect(screen.getByText(/regulatory authority is required/i)).toBeInTheDocument();
       expect(screen.getByText(/license number is required/i)).toBeInTheDocument();
     });
   });
@@ -74,20 +73,22 @@ describe('LicenseForm', () => {
     
     renderWithProviders(<LicenseForm onClose={mockOnClose} />);
     
-    await user.selectOptions(screen.getByLabelText(/license type/i), 'EASA_PPL');
+    await user.type(screen.getByLabelText(/regulatory authority/i), 'EASA');
+    await user.type(screen.getByLabelText(/license type/i), 'PPL');
     await user.type(screen.getByLabelText(/license number/i), 'PPL-12345');
-    await user.type(screen.getByLabelText(/issuing authority/i), 'EASA');
+    await user.type(screen.getByLabelText(/issuing authority/i), 'LBA');
     await user.type(screen.getByLabelText(/issue date/i), '2024-01-01');
     
     await user.click(screen.getByRole('button', { name: /add license/i }));
     
     await waitFor(() => {
       expect(mockCreate.mutateAsync).toHaveBeenCalledWith({
-        licenseType: 'EASA_PPL',
+        regulatoryAuthority: 'EASA',
+        licenseType: 'PPL',
         licenseNumber: 'PPL-12345',
-        issuingAuthority: 'EASA',
+        issuingAuthority: 'LBA',
         issueDate: '2024-01-01',
-        expiryDate: null, // No expiry date provided
+        requiresSeparateLogbook: false,
       });
       expect(mockOnClose).toHaveBeenCalled();
     });
@@ -98,12 +99,12 @@ describe('LicenseForm', () => {
     const existingLicense = {
       id: '123',
       userId: 'user-123',
-      licenseType: 'EASA_PPL' as const,
+      regulatoryAuthority: 'EASA',
+      licenseType: 'PPL',
       licenseNumber: 'PPL-12345',
-      issuingAuthority: 'EASA',
+      issuingAuthority: 'LBA',
       issueDate: '2024-01-01',
-      expiryDate: null,
-      isActive: true,
+      requiresSeparateLogbook: false,
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z',
     };
@@ -118,16 +119,22 @@ describe('LicenseForm', () => {
     
     renderWithProviders(<LicenseForm licenseId="123" onClose={mockOnClose} />);
     
-    // Update only sends expiryDate and isActive per OpenAPI spec
-    await user.type(screen.getByLabelText(/expiry date/i), '2026-01-01');
+    // Update the issuing authority field
+    const issuingAuthorityInput = screen.getByLabelText(/issuing authority/i);
+    await user.clear(issuingAuthorityInput);
+    await user.type(issuingAuthorityInput, 'EASA');
     await user.click(screen.getByRole('button', { name: /update license/i }));
     
     await waitFor(() => {
       expect(mockUpdate.mutateAsync).toHaveBeenCalledWith({
         id: '123',
-        data: {
-          expiryDate: '2026-01-01',
-        },
+        data: expect.objectContaining({
+          regulatoryAuthority: 'EASA',
+          licenseType: 'PPL',
+          licenseNumber: 'PPL-12345',
+          issuingAuthority: 'EASA',
+          requiresSeparateLogbook: false,
+        }),
       });
       expect(mockOnClose).toHaveBeenCalled();
     });

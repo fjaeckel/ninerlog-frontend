@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Pencil, Trash2, Search, X } from 'lucide-react';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
-import { useLicenseStore } from '../../stores/licenseStore';
 import FlightForm from '../../components/flights/FlightForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import type { operations } from '../../api/schema';
@@ -11,7 +10,6 @@ import type { operations } from '../../api/schema';
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
 
 export default function FlightsPage() {
-  const { activeLicense } = useLicenseStore();
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<'date' | 'totalTime' | 'createdAt'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -52,7 +50,6 @@ export default function FlightsPage() {
   }, [location.state, location.pathname, navigate]);
 
   const params: ListFlightsParams = {
-    licenseId: activeLicense?.id,
     page,
     pageSize: 20,
     sortBy,

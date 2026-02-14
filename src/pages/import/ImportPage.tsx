@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { useUploadImport, usePreviewImport, useConfirmImport } from '../../hooks/useImport';
 import { useLicenses } from '../../hooks/useLicenses';
-import { useLicenseStore } from '../../stores/licenseStore';
 import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping } from '../../hooks/useImport';
 
 const IMPORT_FIELDS = [
@@ -38,12 +37,11 @@ export default function ImportPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: licenses } = useLicenses();
-  const { activeLicense } = useLicenseStore();
   const upload = useUploadImport();
   const preview = usePreviewImport();
   const confirm = useConfirmImport();
 
-  const licenseId = selectedLicenseId || activeLicense?.id || '';
+  const licenseId = selectedLicenseId;
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -164,7 +162,7 @@ export default function ImportPage() {
               <option value="">Select license</option>
               {licenses?.map((lic) => (
                 <option key={lic.id} value={lic.id}>
-                  {lic.licenseType.replace('_', ' ')} — {lic.licenseNumber}
+                  {lic.regulatoryAuthority} {lic.licenseType} — {lic.licenseNumber}
                 </option>
               ))}
             </select>

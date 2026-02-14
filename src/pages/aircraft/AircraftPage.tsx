@@ -141,12 +141,6 @@ export default function AircraftPage() {
                   <dt className="text-slate-500 dark:text-slate-400">Type</dt>
                   <dd className="text-slate-700 dark:text-slate-300">{ac.type}</dd>
                 </div>
-                {ac.category && (
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">Category</dt>
-                    <dd className="text-slate-700 dark:text-slate-300">{ac.category}</dd>
-                  </div>
-                )}
                 {ac.engineType && ac.engineType !== 'null' && (
                   <div className="flex justify-between">
                     <dt className="text-slate-500 dark:text-slate-400">Engine</dt>

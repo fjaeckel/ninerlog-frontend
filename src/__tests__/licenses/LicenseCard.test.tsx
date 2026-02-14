@@ -1,19 +1,29 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import LicenseCard from '../../components/licenses/LicenseCard';
 import { License } from '../../stores/licenseStore';
+
+const renderWithProviders = (component: React.ReactElement) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
+  );
+};
 
 describe('LicenseCard', () => {
   const mockLicense: License = {
     id: '123',
     userId: 'user-123',
-    licenseType: 'EASA_PPL',
+    regulatoryAuthority: 'EASA',
+    licenseType: 'PPL',
     licenseNumber: 'PPL-12345',
     issueDate: '2024-01-01',
-    expiryDate: '2026-01-01',
     issuingAuthority: 'EASA',
-    isActive: true,
+    requiresSeparateLogbook: false,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
   };
@@ -22,10 +32,9 @@ describe('LicenseCard', () => {
   const mockOnDelete = vi.fn();
 
   it('renders license information', () => {
-    render(
+    renderWithProviders(
       <LicenseCard
         license={mockLicense}
-        isDefault={true}
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
@@ -33,16 +42,14 @@ describe('LicenseCard', () => {
     
     expect(screen.getByText('EASA PPL')).toBeInTheDocument();
     expect(screen.getByText('PPL-12345')).toBeInTheDocument();
-    expect(screen.getByText('EASA')).toBeInTheDocument();
-    expect(screen.getByText('Default', { selector: 'span.badge-info' })).toBeInTheDocument();
+    expect(screen.getAllByText('EASA').length).toBeGreaterThanOrEqual(1);
   });
 
   it('calls onEdit when edit button is clicked', async () => {
     const user = userEvent.setup();
-    render(
+    renderWithProviders(
       <LicenseCard
         license={mockLicense}
-        isDefault={false}
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
@@ -54,10 +61,9 @@ describe('LicenseCard', () => {
 
   it('calls onDelete when delete button is clicked', async () => {
     const user = userEvent.setup();
-    render(
+    renderWithProviders(
       <LicenseCard
         license={mockLicense}
-        isDefault={false}
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
@@ -67,39 +73,20 @@ describe('LicenseCard', () => {
     expect(mockOnDelete).toHaveBeenCalledTimes(1);
   });
 
-  it('shows expired warning for expired licenses', () => {
-    const expiredLicense = {
+  it('shows separate logbook badge when requiresSeparateLogbook is true', () => {
+    const logbookLicense = {
       ...mockLicense,
-      expiryDate: '2020-01-01',
+      requiresSeparateLogbook: true,
     };
     
-    render(
+    renderWithProviders(
       <LicenseCard
-        license={expiredLicense}
-        isDefault={false}
+        license={logbookLicense}
         onEdit={mockOnEdit}
         onDelete={mockOnDelete}
       />
     );
     
-    expect(screen.getByText(/expired/i)).toBeInTheDocument();
-  });
-
-  it('shows expiring soon warning', () => {
-    const expiringLicense = {
-      ...mockLicense,
-      expiryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    };
-    
-    render(
-      <LicenseCard
-        license={expiringLicense}
-        isDefault={true}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
-    );
-    
-    expect(screen.getByText(/expiring/i)).toBeInTheDocument();
+    expect(screen.getByText('YES')).toBeInTheDocument();
   });
 });

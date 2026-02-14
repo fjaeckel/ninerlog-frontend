@@ -9,7 +9,6 @@ type Flight = components['schemas']['Flight'];
 const mockFlight: Flight = {
   id: 'flight-1',
   userId: 'user-1',
-  licenseId: 'lic-1',
   date: '2026-01-15',
   aircraftReg: 'D-EFGH',
   aircraftType: 'C172',

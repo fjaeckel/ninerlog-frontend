@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
-import { useLicenses } from '../../hooks/useLicenses';
 import FlightForm from '../../components/flights/FlightForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { SkeletonCard } from '../../components/ui/Skeleton';
@@ -13,7 +12,6 @@ export default function FlightDetailPage() {
   const { flightId } = useParams<{ flightId: string }>();
   const navigate = useNavigate();
   const { data: flight, isLoading, error } = useFlight(flightId || '');
-  const { data: licenses } = useLicenses();
   const deleteFlight = useDeleteFlight();
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -49,8 +47,6 @@ export default function FlightDetailPage() {
     );
   }
 
-  const license = licenses?.find((l) => l.id === flight.licenseId);
-  const isSPL = license?.licenseType === 'EASA_SPL' || license?.licenseType === 'FAA_SPORT';
   const totalLandings = flight.allLandings;
   const totalTakeoffs = flight.takeoffsDay + flight.takeoffsNight;
 
@@ -66,7 +62,7 @@ export default function FlightDetailPage() {
     { label: 'Dual Time', value: flight.dualTime },
     { label: 'Solo Time', value: flight.soloTime },
     { label: 'Cross-Country', value: flight.crossCountryTime },
-    ...(!isSPL ? [{ label: 'Night Time', value: flight.nightTime }] : []),
+    { label: 'Night Time', value: flight.nightTime },
     { label: 'IFR Time', value: flight.ifrTime },
     { label: 'SIC Time', value: flight.sicTime || 0 },
     { label: 'Dual Given', value: flight.dualGivenTime || 0 },
@@ -166,9 +162,6 @@ export default function FlightDetailPage() {
             )}
             {flight.onBlockTime && (
               <DetailRow label="On-Block" value={`${flight.onBlockTime.slice(0, 5)} UTC`} mono />
-            )}
-            {license && (
-              <DetailRow label="License" value={license.licenseType.replace('_', ' ')} />
             )}
             {flight.route && (
               <DetailRow label="Route" value={flight.route} mono />

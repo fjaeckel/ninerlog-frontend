@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useLicenses } from '../hooks/useLicenses';
-import { useLicenseStore } from '../stores/licenseStore';
 import { useFlights } from '../hooks/useFlights';
 import { useLicenseStatistics, useLicenseCurrency } from '../hooks/useStatistics';
 import { useCredentials } from '../hooks/useCredentials';
@@ -9,27 +8,25 @@ import { StatCard } from '../components/ui/StatCard';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  useLicenses(); // Triggers loading licenses into store
-  const { activeLicense } = useLicenseStore();
+  const { data: licenses } = useLicenses();
   const navigate = useNavigate();
 
+  // Use the first license for statistics/currency (per-license endpoints still work)
+  const firstLicense = licenses?.[0];
+
   const { data: flightsData } = useFlights({
-    licenseId: activeLicense?.id,
     page: 1,
     pageSize: 5,
     sortBy: 'date',
     sortOrder: 'desc',
   });
 
-  const { data: statistics } = useLicenseStatistics(activeLicense?.id || '');
-  const { data: currency } = useLicenseCurrency(activeLicense?.id || '');
+  const { data: statistics } = useLicenseStatistics(firstLicense?.id || '');
+  const { data: currency } = useLicenseCurrency(firstLicense?.id || '');
   const { data: credentials } = useCredentials();
 
   const recentFlights = flightsData?.data || [];
   const totalFlights = flightsData?.pagination?.total || 0;
-
-  // Determine if active license is SPL/Sport (no night flying)
-  const isSPL = activeLicense?.licenseType === 'EASA_SPL' || activeLicense?.licenseType === 'FAA_SPORT';
 
   // Greeting based on time of day
   const hour = new Date().getHours();
@@ -56,7 +53,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="section-title flex items-center gap-2">
               <span>{currency.isCurrent ? '🛡✓' : '🛡✕'}</span>
-              {activeLicense?.licenseType.replace('_', ' ')} Currency
+              Flight Currency
             </h2>
             <span className={
               currency.isCurrent ? 'badge-current' : 'badge-expired'
@@ -93,8 +90,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Night currency — hidden for SPL/Sport licenses */}
-            {!isSPL && (
+            {/* Night currency */}
             <div className={`rounded-lg p-4 ${
               currency.nightsCurrent
                 ? 'bg-green-50 dark:bg-green-900/20'
@@ -120,7 +116,6 @@ export default function DashboardPage() {
                 </p>
               )}
             </div>
-            )}
           </div>
 
           <div className="mt-3 text-xs text-slate-400 dark:text-slate-500 text-center">
@@ -189,7 +184,7 @@ export default function DashboardPage() {
               { label: 'Dual', value: statistics.dualHours },
               { label: 'Solo', value: statistics.soloHours ?? 0 },
               { label: 'Cross-Country', value: statistics.crossCountryHours ?? 0 },
-              ...(!isSPL ? [{ label: 'Night', value: statistics.nightHours }] : []),
+              { label: 'Night', value: statistics.nightHours },
               { label: 'IFR', value: statistics.ifrHours },
             ].map(({ label, value }) => (
               <div key={label}>

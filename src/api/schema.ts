@@ -277,7 +277,7 @@ export interface paths {
         };
         /**
          * Get license statistics
-         * @description Get hour totals and flight counts for a license
+         * @description Get hour totals and flight counts filtered by aircraft class of the license's ratings
          */
         get: operations["getLicenseStatistics"];
         put?: never;
@@ -306,6 +306,42 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/licenses/{licenseId}/ratings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List class ratings for a license */
+        get: operations["listClassRatings"];
+        put?: never;
+        /** Add class rating to license */
+        post: operations["createClassRating"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/licenses/{licenseId}/ratings/{ratingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete class rating */
+        delete: operations["deleteClassRating"];
+        options?: never;
+        head?: never;
+        /** Update class rating */
+        patch: operations["updateClassRating"];
         trace?: never;
     };
     "/credentials": {
@@ -412,7 +448,7 @@ export interface paths {
         };
         /**
          * List flights
-         * @description Get flights for the authenticated user, optionally filtered by license
+         * @description Get flights for the authenticated user
          */
         get: operations["listFlights"];
         put?: never;
@@ -685,11 +721,6 @@ export interface components {
              * @example false
              */
             twoFactorEnabled?: boolean;
-            /**
-             * Format: uuid
-             * @description The user's default license ID, used to pre-select in forms and filter flights
-             */
-            defaultLicenseId?: string | null;
         };
         TwoFactorSetup: {
             /**
@@ -738,21 +769,6 @@ export interface components {
             expiresIn: number;
             user: components["schemas"]["User"];
         };
-        /**
-         * @description License type:
-         *     - EASA_PPL: EASA Private Pilot License
-         *     - FAA_PPL: FAA Private Pilot Certificate
-         *     - EASA_SPL: EASA Sailplane Pilot License
-         *     - FAA_SPORT: FAA Sport Pilot Certificate
-         *     - EASA_CPL: EASA Commercial Pilot License
-         *     - FAA_CPL: FAA Commercial Pilot Certificate
-         *     - EASA_ATPL: EASA Airline Transport Pilot License
-         *     - FAA_ATPL: FAA Airline Transport Pilot Certificate
-         *     - EASA_IR: EASA Instrument Rating
-         *     - FAA_IR: FAA Instrument Rating
-         * @enum {string}
-         */
-        LicenseType: "EASA_PPL" | "FAA_PPL" | "EASA_SPL" | "FAA_SPORT" | "EASA_CPL" | "FAA_CPL" | "EASA_ATPL" | "FAA_ATPL" | "EASA_IR" | "FAA_IR";
         License: {
             /**
              * Format: uuid
@@ -764,7 +780,16 @@ export interface components {
              * @example 660e8400-e29b-41d4-a716-446655440001
              */
             userId: string;
-            licenseType: components["schemas"]["LicenseType"];
+            /**
+             * @description Regulatory authority (e.g., EASA, FAA, CAA UK, Transport Canada)
+             * @example EASA
+             */
+            regulatoryAuthority: string;
+            /**
+             * @description License type (e.g., PPL, CPL, ATPL, SPL, LAPL, UL)
+             * @example PPL
+             */
+            licenseType: string;
             /** @example PPL-123456 */
             licenseNumber: string;
             /**
@@ -773,21 +798,15 @@ export interface components {
              */
             issueDate: string;
             /**
-             * Format: date
-             * @description Null if license doesn't expire
-             * @example 2025-01-15
-             */
-            expiryDate?: string | null;
-            /**
              * @description e.g., EASA, FAA, CAA UK
              * @example EASA
              */
             issuingAuthority: string;
             /**
-             * @description Whether license is currently active
-             * @example true
+             * @description Whether this license requires a separate logbook (e.g., SPL, Ultralight)
+             * @default false
              */
-            isActive: boolean;
+            requiresSeparateLogbook: boolean;
             /**
              * Format: date-time
              * @example 2020-01-15T10:00:00Z
@@ -800,7 +819,10 @@ export interface components {
             updatedAt: string;
         };
         LicenseCreate: {
-            licenseType: components["schemas"]["LicenseType"];
+            /** @example EASA */
+            regulatoryAuthority: string;
+            /** @example PPL */
+            licenseType: string;
             /** @example PPL-123456 */
             licenseNumber: string;
             /**
@@ -808,13 +830,10 @@ export interface components {
              * @example 2020-01-15
              */
             issueDate: string;
-            /**
-             * Format: date
-             * @example 2025-01-15
-             */
-            expiryDate?: string | null;
             /** @example EASA */
             issuingAuthority: string;
+            /** @default false */
+            requiresSeparateLogbook: boolean;
         };
         Aircraft: {
             /**
@@ -848,11 +867,6 @@ export interface components {
              */
             model: string;
             /**
-             * @description Aircraft category (e.g., SEP - Single Engine Piston, MEP - Multi Engine Piston, TMG - Touring Motor Glider)
-             * @example SEP
-             */
-            category?: string | null;
-            /**
              * @description Engine type
              * @example piston
              * @enum {string|null}
@@ -876,6 +890,7 @@ export interface components {
              * @example false
              */
             isTailwheel: boolean;
+            aircraftClass?: components["schemas"]["ClassType"];
             /**
              * @description Additional notes about the aircraft
              * @example Club aircraft, requires checkout
@@ -920,11 +935,6 @@ export interface components {
              */
             model: string;
             /**
-             * @description Aircraft category
-             * @example SEP
-             */
-            category?: string | null;
-            /**
              * @example piston
              * @enum {string|null}
              */
@@ -944,6 +954,7 @@ export interface components {
              * @example false
              */
             isTailwheel: boolean;
+            aircraftClass?: components["schemas"]["ClassType"];
             /** @example Club aircraft, requires checkout */
             notes?: string | null;
         };
@@ -956,8 +967,6 @@ export interface components {
             make?: string;
             /** @example 172 Skyhawk */
             model?: string;
-            /** @example SEP */
-            category?: string | null;
             /**
              * @example piston
              * @enum {string|null}
@@ -969,6 +978,7 @@ export interface components {
             isHighPerformance?: boolean;
             /** @example false */
             isTailwheel?: boolean;
+            aircraftClass?: components["schemas"]["ClassType"];
             /** @example Club aircraft, requires checkout */
             notes?: string | null;
             /** @example true */
@@ -985,11 +995,6 @@ export interface components {
              * @example 550e8400-e29b-41d4-a716-446655440000
              */
             userId: string;
-            /**
-             * Format: uuid
-             * @example 660e8400-e29b-41d4-a716-446655440001
-             */
-            licenseId: string;
             /**
              * Format: date
              * @example 2026-01-30
@@ -1175,11 +1180,6 @@ export interface components {
         };
         FlightCreate: {
             /**
-             * Format: uuid
-             * @example 660e8400-e29b-41d4-a716-446655440001
-             */
-            licenseId: string;
-            /**
              * Format: date
              * @example 2026-01-30
              */
@@ -1356,7 +1356,7 @@ export interface components {
              * Format: uuid
              * @example 660e8400-e29b-41d4-a716-446655440001
              */
-            licenseId: string;
+            licenseId?: string;
             /**
              * @description Total number of flights
              * @example 150
@@ -1758,6 +1758,56 @@ export interface components {
             notes?: string | null;
         };
         /**
+         * @description Aircraft class rating type:
+         *     - SEP_LAND/SEP_SEA: Single Engine Piston (Land/Sea)
+         *     - MEP_LAND/MEP_SEA: Multi Engine Piston (Land/Sea)
+         *     - SET_LAND/SET_SEA: Single Engine Turboprop (Land/Sea)
+         *     - TMG: Touring Motor Glider
+         *     - IR: Instrument Rating
+         *     - OTHER: Other rating type
+         * @enum {string}
+         */
+        ClassType: "SEP_LAND" | "SEP_SEA" | "MEP_LAND" | "MEP_SEA" | "SET_LAND" | "SET_SEA" | "TMG" | "IR" | "OTHER";
+        ClassRating: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            licenseId: string;
+            classType: components["schemas"]["ClassType"];
+            /**
+             * Format: date
+             * @example 2024-03-15
+             */
+            issueDate: string;
+            /**
+             * Format: date
+             * @description Null if rating doesn't expire (e.g., FAA ratings)
+             * @example 2026-03-15
+             */
+            expiryDate?: string | null;
+            /** @description Optional notes about this rating */
+            notes?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ClassRatingCreate: {
+            classType: components["schemas"]["ClassType"];
+            /** Format: date */
+            issueDate: string;
+            /** Format: date */
+            expiryDate?: string | null;
+            notes?: string | null;
+        };
+        ClassRatingUpdate: {
+            /** Format: date */
+            issueDate?: string;
+            /** Format: date */
+            expiryDate?: string | null;
+            notes?: string | null;
+        };
+        /**
          * @description Detected file format:
          *     - CSV: Generic comma/semicolon/tab-separated values
          *     - FOREFLIGHT_CSV: ForeFlight logbook export (auto-detected from header structure)
@@ -1853,12 +1903,6 @@ export interface components {
              * @example imp_01HXYZ1234567890ABCDEF
              */
             uploadToken: string;
-            /**
-             * Format: uuid
-             * @description License to associate imported flights with
-             * @example 660e8400-e29b-41d4-a716-446655440001
-             */
-            licenseId: string;
             /** @description Column → field mappings (user-confirmed or adjusted) */
             mappings: components["schemas"]["ImportColumnMapping"][];
             /**
@@ -1931,12 +1975,6 @@ export interface components {
              */
             uploadToken: string;
             /**
-             * Format: uuid
-             * @description License to associate imported flights with
-             * @example 660e8400-e29b-41d4-a716-446655440001
-             */
-            licenseId: string;
-            /**
              * @description Row indices to import (1-based). If omitted or empty, all `valid` rows are imported.
              *     Include duplicate row indices here to force-import them.
              * @example [
@@ -1974,11 +2012,6 @@ export interface components {
              * @example 550e8400-e29b-41d4-a716-446655440000
              */
             userId: string;
-            /**
-             * Format: uuid
-             * @example 660e8400-e29b-41d4-a716-446655440001
-             */
-            licenseId: string;
             /** @example foreflight_logbook_2025.csv */
             fileName: string;
             format: components["schemas"]["ImportFormat"];
@@ -2548,10 +2581,7 @@ export interface operations {
     };
     listLicenses: {
         parameters: {
-            query?: {
-                /** @description Filter by active status */
-                isActive?: boolean;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -2657,9 +2687,11 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** Format: date */
-                    expiryDate?: string | null;
-                    isActive?: boolean;
+                    regulatoryAuthority?: string;
+                    licenseType?: string;
+                    licenseNumber?: string;
+                    issuingAuthority?: string;
+                    requiresSeparateLogbook?: boolean;
                 };
             };
         };
@@ -2729,6 +2761,116 @@ export interface operations {
                     "application/json": components["schemas"]["Currency"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listClassRatings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of class ratings */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassRating"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createClassRating: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClassRatingCreate"];
+            };
+        };
+        responses: {
+            /** @description Class rating created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassRating"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteClassRating: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+                ratingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Class rating deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateClassRating: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+                ratingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClassRatingUpdate"];
+            };
+        };
+        responses: {
+            /** @description Class rating updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassRating"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
         };
@@ -3000,8 +3142,6 @@ export interface operations {
     listFlights: {
         parameters: {
             query?: {
-                /** @description Filter by license ID */
-                licenseId?: string;
                 /** @description Filter from this date (inclusive) */
                 startDate?: string;
                 /** @description Filter to this date (inclusive) */

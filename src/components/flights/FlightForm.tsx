@@ -4,15 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { useCreateFlight, useUpdateFlight, useFlight } from '../../hooks/useFlights';
-import { useLicenses } from '../../hooks/useLicenses';
-import { useLicenseStore } from '../../stores/licenseStore';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { useSearchContacts, useCreateContact } from '../../hooks/useContacts';
 import type { Aircraft } from '../../hooks/useAircraft';
 import type { CrewRole, FlightCrewMemberInput } from '../../types/api';
 
 const flightSchema = z.object({
-  licenseId: z.string().min(1, 'License is required'),
   date: z.string().min(1, 'Date is required'),
   aircraftReg: z.string().min(1, 'Aircraft registration is required'),
   aircraftType: z.string().min(1, 'Aircraft type is required'),
@@ -45,8 +42,6 @@ interface FlightFormProps {
 export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const createFlight = useCreateFlight();
   const updateFlight = useUpdateFlight();
-  const { data: licenses } = useLicenses();
-  const { activeLicense } = useLicenseStore();
   const { data: existingFlight } = useFlight(flightId || '');
   const { data: aircraftList } = useAircraft();
   const createAircraft = useCreateAircraft();
@@ -67,7 +62,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     times: true,
     landings: true,
     people: false,
-    license: false,
     advanced: false,
     remarks: true,
   });
@@ -94,7 +88,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   } = useForm<FlightFormData>({
     resolver: zodResolver(flightSchema),
     defaultValues: {
-      licenseId: activeLicense?.id || '',
       date: new Date().toISOString().split('T')[0],
       aircraftReg: '',
       aircraftType: '',
@@ -120,7 +113,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   useEffect(() => {
     if (existingFlight && isEditing) {
       reset({
-        licenseId: existingFlight.licenseId,
         date: existingFlight.date,
         aircraftReg: existingFlight.aircraftReg,
         aircraftType: existingFlight.aircraftType,
@@ -151,13 +143,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       }
     }
   }, [existingFlight, isEditing, reset]);
-
-  // Determine if active license is SPL/Sport (no night flying allowed)
-  const selectedLicenseId = watch('licenseId');
-  const isSPL = (() => {
-    const lic = licenses?.find((l) => l.id === selectedLicenseId);
-    return lic?.licenseType === 'EASA_SPL' || lic?.licenseType === 'FAA_SPORT';
-  })();
 
 
 
@@ -230,7 +215,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const onSubmit = async (data: FlightFormData) => {
     try {
       const basePayload = {
-        licenseId: data.licenseId,
         date: data.date,
         aircraftReg: data.aircraftReg.toUpperCase(),
         aircraftType: data.aircraftType.toUpperCase(),
@@ -522,8 +506,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             />
             <p className="form-helper">Auto-calculated if empty</p>
           </div>
-          {!isSPL && (
-            <div>
+          <div>
               <label htmlFor="takeoffsNight" className="form-label">
                 Night Takeoffs
               </label>
@@ -537,7 +520,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               />
               <p className="form-helper">Auto-calculated if empty</p>
             </div>
-          )}
           <div>
             <label htmlFor="landings" className="form-label">
               Total Landings
@@ -649,36 +631,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 <input {...register('instructorComments')} id="instructorComments" className="input text-sm" placeholder="Instructor remarks" />
               </div>
             </div>
-          </div>
-        )}
-      </fieldset>
-
-      {/* License (Collapsible drawer — defaults to user's default license) */}
-      <fieldset>
-        <button
-          type="button"
-          onClick={() => toggleSection('license')}
-          className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3 w-full text-left"
-        >
-          {expandedSections.license ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          License
-          <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1">
-            {licenses?.find((l) => l.id === watch('licenseId'))?.licenseType.replace('_', ' ') || 'Default'}
-          </span>
-        </button>
-        {expandedSections.license && (
-          <div>
-            <select {...register('licenseId')} id="licenseId" className="input">
-              <option value="">Select license</option>
-              {licenses?.map((lic) => (
-                <option key={lic.id} value={lic.id}>
-                  {lic.licenseType.replace('_', ' ')} — {lic.licenseNumber}
-                </option>
-              ))}
-            </select>
-            {errors.licenseId && (
-              <p className="form-error">{errors.licenseId.message}</p>
-            )}
           </div>
         )}
       </fieldset>

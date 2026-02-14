@@ -18,7 +18,6 @@ export interface User {
   email: string;
   name: string;
   twoFactorEnabled?: boolean;
-  defaultLicenseId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -47,48 +46,34 @@ export interface RefreshTokenRequest {
 
 // ============ License Types ============
 
-export type LicenseType =
-  | 'EASA_PPL'
-  | 'FAA_PPL'
-  | 'EASA_SPL'
-  | 'FAA_SPORT'
-  | 'EASA_CPL'
-  | 'FAA_CPL'
-  | 'EASA_ATPL'
-  | 'FAA_ATPL'
-  | 'EASA_IR'
-  | 'FAA_IR';
-
 export interface License {
   id: string;
   userId: string;
-  licenseType: LicenseType;
+  regulatoryAuthority: string;
+  licenseType: string;
   licenseNumber: string;
   issueDate: string;
-  expiryDate?: string | null;
   issuingAuthority: string;
-  isActive: boolean;
+  requiresSeparateLogbook: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface LicenseCreate {
-  licenseType: LicenseType;
+  regulatoryAuthority: string;
+  licenseType: string;
   licenseNumber: string;
   issueDate: string;
-  expiryDate?: string | null;
   issuingAuthority: string;
+  requiresSeparateLogbook?: boolean;
 }
 
 export interface LicenseUpdate {
-  expiryDate?: string | null;
-  isActive?: boolean;
-}
-
-// ============ License List Query Params ============
-
-export interface ListLicensesParams {
-  isActive?: boolean;
+  regulatoryAuthority?: string;
+  licenseType?: string;
+  licenseNumber?: string;
+  issuingAuthority?: string;
+  requiresSeparateLogbook?: boolean;
 }
 
 // ============ Flight Types ============
@@ -96,7 +81,6 @@ export interface ListLicensesParams {
 export interface Flight {
   id: string;
   userId: string;
-  licenseId: string;
   date: string;
   aircraftReg: string;
   aircraftType: string;
@@ -125,7 +109,6 @@ export interface Flight {
 }
 
 export interface FlightCreate {
-  licenseId: string;
   date: string;
   aircraftReg: string;
   aircraftType: string;
@@ -167,7 +150,6 @@ export interface FlightUpdate {
 // ============ Flight List Query Params ============
 
 export interface ListFlightsParams {
-  licenseId?: string;
   startDate?: string;
   endDate?: string;
   aircraftReg?: string;
@@ -263,5 +245,33 @@ export interface ContactCreate {
   name: string;
   email?: string | null;
   phone?: string | null;
+  notes?: string | null;
+}
+
+// ============ Class Rating Types ============
+
+export type ClassType = 'SEP_LAND' | 'SEP_SEA' | 'MEP_LAND' | 'MEP_SEA' | 'SET_LAND' | 'SET_SEA' | 'TMG' | 'IR' | 'OTHER';
+
+export interface ClassRating {
+  id: string;
+  licenseId: string;
+  classType: ClassType;
+  issueDate: string;
+  expiryDate?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClassRatingCreate {
+  classType: ClassType;
+  issueDate: string;
+  expiryDate?: string | null;
+  notes?: string | null;
+}
+
+export interface ClassRatingUpdate {
+  issueDate?: string;
+  expiryDate?: string | null;
   notes?: string | null;
 }

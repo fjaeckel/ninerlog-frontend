@@ -18,10 +18,6 @@ vi.mock('../../hooks/useLicenses', () => ({
   }),
 }));
 
-vi.mock('../../stores/licenseStore', () => ({
-  useLicenseStore: () => ({ activeLicense: { id: 'lic-1' } }),
-}));
-
 vi.mock('../../hooks/useAircraft', () => ({
   useAircraft: () => ({ data: [] }),
   useCreateAircraft: () => ({ mutateAsync: vi.fn(), isPending: false }),

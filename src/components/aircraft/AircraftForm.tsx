@@ -11,13 +11,24 @@ const ENGINE_TYPES = [
   { value: 'electric', label: 'Electric' },
 ];
 
+const AIRCRAFT_CLASSES = [
+  { value: 'SEP_LAND', label: 'SEP (Land) — Single Engine Piston' },
+  { value: 'SEP_SEA', label: 'SEP (Sea) — Single Engine Piston' },
+  { value: 'MEP_LAND', label: 'MEP (Land) — Multi Engine Piston' },
+  { value: 'MEP_SEA', label: 'MEP (Sea) — Multi Engine Piston' },
+  { value: 'SET_LAND', label: 'SET (Land) — Single Engine Turboprop' },
+  { value: 'SET_SEA', label: 'SET (Sea) — Single Engine Turboprop' },
+  { value: 'TMG', label: 'TMG — Touring Motor Glider' },
+  { value: 'OTHER', label: 'Other' },
+];
+
 const aircraftSchema = z.object({
   registration: z.string().min(1, 'Registration is required').max(20),
   type: z.string().min(1, 'Type is required').max(50),
   make: z.string().min(1, 'Make is required').max(100),
   model: z.string().min(1, 'Model is required').max(100),
-  category: z.string().optional().or(z.literal('')),
   engineType: z.string().optional().or(z.literal('')),
+  aircraftClass: z.enum(['SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA', 'SET_LAND', 'SET_SEA', 'TMG', 'IR', 'OTHER', '']).optional(),
   isComplex: z.boolean(),
   isHighPerformance: z.boolean(),
   isTailwheel: z.boolean(),
@@ -50,8 +61,8 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       type: '',
       make: '',
       model: '',
-      category: '',
       engineType: '',
+      aircraftClass: '',
       isComplex: false,
       isHighPerformance: false,
       isTailwheel: false,
@@ -67,8 +78,8 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         type: existingAircraft.type,
         make: existingAircraft.make,
         model: existingAircraft.model,
-        category: existingAircraft.category || '',
         engineType: existingAircraft.engineType || '',
+        aircraftClass: existingAircraft.aircraftClass || '',
         isComplex: existingAircraft.isComplex ?? false,
         isHighPerformance: existingAircraft.isHighPerformance ?? false,
         isTailwheel: existingAircraft.isTailwheel ?? false,
@@ -85,8 +96,8 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         type: data.type,
         make: data.make,
         model: data.model,
-        category: data.category || null,
         engineType: (data.engineType || null) as any,
+        aircraftClass: (data.aircraftClass || undefined) as any,
         isComplex: data.isComplex,
         isHighPerformance: data.isHighPerformance,
         isTailwheel: data.isTailwheel,
@@ -183,31 +194,30 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         </div>
       </div>
 
-      {/* Category & Engine Type */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="category" className="form-label">
-            Category
-          </label>
-          <input
-            {...register('category')}
-            type="text"
-            id="category"
-            className="input"
-            placeholder="SEP, MEP, TMG, ..."
-          />
-        </div>
-        <div>
-          <label htmlFor="engineType" className="form-label">
-            Engine Type
-          </label>
-          <select {...register('engineType')} id="engineType" className="input">
-            <option value="">Not specified</option>
-            {ENGINE_TYPES.map((et) => (
-              <option key={et.value} value={et.value}>{et.label}</option>
-            ))}
-          </select>
-        </div>
+      {/* Engine Type */}
+      <div>
+        <label htmlFor="engineType" className="form-label">
+          Engine Type
+        </label>
+        <select {...register('engineType')} id="engineType" className="input">
+          <option value="">Not specified</option>
+          {ENGINE_TYPES.map((et) => (
+            <option key={et.value} value={et.value}>{et.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Aircraft Class */}
+      <div>
+        <label htmlFor="aircraftClass" className="form-label">
+          Aircraft Class
+        </label>
+        <select {...register('aircraftClass')} id="aircraftClass" className="input">
+          <option value="">Select class</option>
+          {AIRCRAFT_CLASSES.map((cr) => (
+            <option key={cr.value} value={cr.value}>{cr.label}</option>
+          ))}
+        </select>
       </div>
 
       {/* Boolean Flags */}

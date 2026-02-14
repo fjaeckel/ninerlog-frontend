@@ -1,14 +1,11 @@
 import { useState } from 'react';
 import { useLicenses, useDeleteLicense } from '../../hooks/useLicenses';
-import { useLicenseStore } from '../../stores/licenseStore';
 import LicenseForm from '../../components/licenses/LicenseForm';
 import LicenseCard from '../../components/licenses/LicenseCard';
-import LicenseSwitcher from '../../components/licenses/LicenseSwitcher';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 
 export default function LicensesPage() {
   const { data: licenses, isLoading, error } = useLicenses();
-  const { activeLicense } = useLicenseStore();
   const deleteLicense = useDeleteLicense();
   const [showForm, setShowForm] = useState(false);
   const [editingLicense, setEditingLicense] = useState<string | null>(null);
@@ -75,12 +72,6 @@ export default function LicensesPage() {
         </button>
       </div>
 
-      {licenses && licenses.length > 1 && (
-        <div className="card mb-6 p-4">
-          <LicenseSwitcher />
-        </div>
-      )}
-
       {/* Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="license-form-title">
@@ -121,7 +112,6 @@ export default function LicensesPage() {
             <LicenseCard
               key={license.id}
               license={license}
-              isDefault={activeLicense?.id === license.id}
               onEdit={() => handleEdit(license.id)}
               onDelete={() => handleDelete(license.id)}
             />
