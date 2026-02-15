@@ -1185,6 +1185,38 @@ export interface components {
              * @example 0
              */
             groundTrainingTime?: number;
+            /**
+             * Format: float
+             * @description Actual instrument flight time in hours (under IMC or simulated IMC with view-limiting device)
+             * @example 0.5
+             */
+            actualInstrumentTime?: number;
+            /**
+             * Format: float
+             * @description Simulated instrument time in hours (FSTD/FTD/ATD)
+             * @example 0.3
+             */
+            simulatedInstrumentTime?: number;
+            /**
+             * @description Number of holding procedures performed
+             * @example 1
+             */
+            holds?: number;
+            /**
+             * @description Number of instrument approaches performed
+             * @example 2
+             */
+            approachesCount?: number;
+            /**
+             * @description Whether this flight included an Instrument Proficiency Check (IPC)
+             * @example false
+             */
+            isIpc?: boolean;
+            /**
+             * @description Whether this flight was a Flight Review (FAA 61.56) or equivalent
+             * @example false
+             */
+            isFlightReview?: boolean;
             /** @description People on board this flight with their roles */
             crewMembers?: components["schemas"]["FlightCrewMember"][];
             /**
@@ -1315,6 +1347,14 @@ export interface components {
             simulatedFlightTime?: number;
             /** Format: float */
             groundTrainingTime?: number;
+            /** Format: float */
+            actualInstrumentTime?: number;
+            /** Format: float */
+            simulatedInstrumentTime?: number;
+            holds?: number;
+            approachesCount?: number;
+            isIpc?: boolean;
+            isFlightReview?: boolean;
             /** @description People on board this flight */
             crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
         };
@@ -1368,6 +1408,14 @@ export interface components {
             simulatedFlightTime?: number;
             /** Format: float */
             groundTrainingTime?: number;
+            /** Format: float */
+            actualInstrumentTime?: number;
+            /** Format: float */
+            simulatedInstrumentTime?: number;
+            holds?: number;
+            approachesCount?: number;
+            isIpc?: boolean;
+            isFlightReview?: boolean;
             /** @description People on board this flight */
             crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
         };

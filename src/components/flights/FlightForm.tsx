@@ -30,6 +30,12 @@ const flightSchema = z.object({
   instructorComments: z.string().optional().or(z.literal('')),
   simulatedFlightTime: z.number().min(0),
   groundTrainingTime: z.number().min(0),
+  actualInstrumentTime: z.number().min(0),
+  simulatedInstrumentTime: z.number().min(0),
+  holds: z.number().int().min(0),
+  approachesCount: z.number().int().min(0),
+  isIpc: z.boolean(),
+  isFlightReview: z.boolean(),
 });
 
 type FlightFormData = z.infer<typeof flightSchema>;
@@ -107,6 +113,12 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       instructorComments: '',
       simulatedFlightTime: 0,
       groundTrainingTime: 0,
+      actualInstrumentTime: 0,
+      simulatedInstrumentTime: 0,
+      holds: 0,
+      approachesCount: 0,
+      isIpc: false,
+      isFlightReview: false,
     },
   });
 
@@ -132,6 +144,12 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         instructorComments: existingFlight.instructorComments || '',
         simulatedFlightTime: existingFlight.simulatedFlightTime || 0,
         groundTrainingTime: existingFlight.groundTrainingTime || 0,
+        actualInstrumentTime: existingFlight.actualInstrumentTime || 0,
+        simulatedInstrumentTime: existingFlight.simulatedInstrumentTime || 0,
+        holds: existingFlight.holds || 0,
+        approachesCount: existingFlight.approachesCount || 0,
+        isIpc: existingFlight.isIpc || false,
+        isFlightReview: existingFlight.isFlightReview || false,
       });
       // Load existing crew members
       if (existingFlight.crewMembers) {
@@ -234,6 +252,12 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         instructorComments: data.instructorComments || null,
         simulatedFlightTime: data.simulatedFlightTime,
         groundTrainingTime: data.groundTrainingTime,
+        actualInstrumentTime: data.actualInstrumentTime,
+        simulatedInstrumentTime: data.simulatedInstrumentTime,
+        holds: data.holds,
+        approachesCount: data.approachesCount,
+        isIpc: data.isIpc,
+        isFlightReview: data.isFlightReview,
         crewMembers: crewMembers.length > 0 ? crewMembers : undefined,
       };
 
@@ -709,6 +733,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           Advanced Times
         </button>
         {expandedSections.advanced && (
+          <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
               <label htmlFor="ifrTime" className="form-label">IFR Time</label>
@@ -765,6 +790,80 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               </>
             )}
           </div>
+
+          {/* Instrument Tracking */}
+          <div className="mt-4">
+            <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Instrument Tracking</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <label htmlFor="actualInstrumentTime" className="form-label">Actual Instrument</label>
+                <input
+                  {...register('actualInstrumentTime', { valueAsNumber: true })}
+                  type="number"
+                  id="actualInstrumentTime"
+                  step="0.1"
+                  min="0"
+                  className="input"
+                />
+                <p className="form-helper">Hours (IMC)</p>
+              </div>
+              <div>
+                <label htmlFor="simulatedInstrumentTime" className="form-label">Simulated Instrument</label>
+                <input
+                  {...register('simulatedInstrumentTime', { valueAsNumber: true })}
+                  type="number"
+                  id="simulatedInstrumentTime"
+                  step="0.1"
+                  min="0"
+                  className="input"
+                />
+                <p className="form-helper">Hours (hood/foggles)</p>
+              </div>
+              <div>
+                <label htmlFor="approachesCount" className="form-label">Approaches</label>
+                <input
+                  {...register('approachesCount', { valueAsNumber: true })}
+                  type="number"
+                  id="approachesCount"
+                  min="0"
+                  className="input"
+                />
+                <p className="form-helper">Instrument approaches</p>
+              </div>
+              <div>
+                <label htmlFor="holds" className="form-label">Holds</label>
+                <input
+                  {...register('holds', { valueAsNumber: true })}
+                  type="number"
+                  id="holds"
+                  min="0"
+                  className="input"
+                />
+                <p className="form-helper">Holding procedures</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-3">
+              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                <input
+                  {...register('isIpc')}
+                  type="checkbox"
+                  id="isIpc"
+                  className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+                />
+                Instrument Proficiency Check (IPC)
+              </label>
+              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                <input
+                  {...register('isFlightReview')}
+                  type="checkbox"
+                  id="isFlightReview"
+                  className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+                />
+                Flight Review (BFR / 61.56)
+              </label>
+            </div>
+          </div>
+          </>
         )}
       </fieldset>
 
