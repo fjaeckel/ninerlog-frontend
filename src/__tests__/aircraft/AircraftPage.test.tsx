@@ -66,8 +66,7 @@ describe('AircraftPage', () => {
           type: 'C172',
           make: 'Cessna',
           model: '172 Skyhawk',
-          category: 'SEP',
-          engineType: 'piston',
+          aircraftClass: 'SEP_LAND',
           isComplex: false,
           isHighPerformance: false,
           isTailwheel: false,
@@ -83,8 +82,7 @@ describe('AircraftPage', () => {
           type: 'PA28R',
           make: 'Piper',
           model: 'Arrow',
-          category: 'SEP',
-          engineType: 'piston',
+          aircraftClass: 'SEP_LAND',
           isComplex: true,
           isHighPerformance: true,
           isTailwheel: false,
@@ -321,7 +319,7 @@ describe('AircraftPage', () => {
     expect(mockDelete.mutateAsync).not.toHaveBeenCalled();
   });
 
-  it('displays engine type label', () => {
+  it('displays aircraft class label', () => {
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
       data: [
         {
@@ -331,7 +329,7 @@ describe('AircraftPage', () => {
           type: 'C172',
           make: 'Cessna',
           model: '172',
-          engineType: 'piston',
+          aircraftClass: 'SEP_LAND',
           isComplex: false,
           isHighPerformance: false,
           isTailwheel: false,
@@ -347,7 +345,7 @@ describe('AircraftPage', () => {
 
     renderWithProviders(<AircraftPage />);
 
-    expect(screen.getByText('Piston')).toBeInTheDocument();
+    expect(screen.getByText('SEP (Land)')).toBeInTheDocument();
   });
 
   it('renders page title and subtitle', () => {

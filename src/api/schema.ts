@@ -887,12 +887,6 @@ export interface components {
              */
             model: string;
             /**
-             * @description Engine type
-             * @example piston
-             * @enum {string|null}
-             */
-            engineType?: "piston" | "turboprop" | "jet" | "electric" | "null" | null;
-            /**
              * @description Whether aircraft has retractable gear, flaps, and constant speed propeller
              * @default false
              * @example false
@@ -910,7 +904,11 @@ export interface components {
              * @example false
              */
             isTailwheel: boolean;
-            aircraftClass?: components["schemas"]["ClassType"];
+            /**
+             * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, or any custom value)
+             * @example SEP_LAND
+             */
+            aircraftClass?: string | null;
             /**
              * @description Additional notes about the aircraft
              * @example Club aircraft, requires checkout
@@ -955,11 +953,6 @@ export interface components {
              */
             model: string;
             /**
-             * @example piston
-             * @enum {string|null}
-             */
-            engineType?: "piston" | "turboprop" | "jet" | "electric" | "null" | null;
-            /**
              * @default false
              * @example false
              */
@@ -974,7 +967,11 @@ export interface components {
              * @example false
              */
             isTailwheel: boolean;
-            aircraftClass?: components["schemas"]["ClassType"];
+            /**
+             * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, or any custom value)
+             * @example SEP_LAND
+             */
+            aircraftClass?: string | null;
             /** @example Club aircraft, requires checkout */
             notes?: string | null;
         };
@@ -987,18 +984,17 @@ export interface components {
             make?: string;
             /** @example 172 Skyhawk */
             model?: string;
-            /**
-             * @example piston
-             * @enum {string|null}
-             */
-            engineType?: "piston" | "turboprop" | "jet" | "electric" | "null" | null;
             /** @example false */
             isComplex?: boolean;
             /** @example false */
             isHighPerformance?: boolean;
             /** @example false */
             isTailwheel?: boolean;
-            aircraftClass?: components["schemas"]["ClassType"];
+            /**
+             * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, or any custom value)
+             * @example SEP_LAND
+             */
+            aircraftClass?: string | null;
             /** @example Club aircraft, requires checkout */
             notes?: string | null;
             /** @example true */

@@ -5,11 +5,11 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { SkeletonGrid } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 
-const ENGINE_LABELS: Record<string, string> = {
-  piston: 'Piston',
-  turboprop: 'Turboprop',
-  jet: 'Jet',
-  electric: 'Electric',
+const CLASS_LABELS: Record<string, string> = {
+  SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
+  MEP_LAND: 'MEP (Land)', MEP_SEA: 'MEP (Sea)',
+  SET_LAND: 'SET (Land)', SET_SEA: 'SET (Sea)',
+  TMG: 'TMG',
 };
 
 export default function AircraftPage() {
@@ -141,11 +141,11 @@ export default function AircraftPage() {
                   <dt className="text-slate-500 dark:text-slate-400">Type</dt>
                   <dd className="text-slate-700 dark:text-slate-300">{ac.type}</dd>
                 </div>
-                {ac.engineType && ac.engineType !== 'null' && (
+                {ac.aircraftClass && (
                   <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">Engine</dt>
+                    <dt className="text-slate-500 dark:text-slate-400">Class</dt>
                     <dd className="text-slate-700 dark:text-slate-300">
-                      {ENGINE_LABELS[ac.engineType] || ac.engineType}
+                      {CLASS_LABELS[ac.aircraftClass] || ac.aircraftClass}
                     </dd>
                   </div>
                 )}

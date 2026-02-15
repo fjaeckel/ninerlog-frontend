@@ -38,22 +38,21 @@ describe('AircraftForm', () => {
     expect(screen.getByLabelText(/^type/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^make/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^model/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/engine type/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/aircraft class/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/complex/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/high performance/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/tailwheel/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/notes/i)).toBeInTheDocument();
   });
 
-  it('renders engine type options', () => {
+  it('renders aircraft class options', () => {
     renderWithProviders(<AircraftForm onClose={mockOnClose} />);
 
-    const engineSelect = screen.getByLabelText(/engine type/i);
-    expect(engineSelect).toBeInTheDocument();
-    expect(screen.getByText('Piston')).toBeInTheDocument();
-    expect(screen.getByText('Turboprop')).toBeInTheDocument();
-    expect(screen.getByText('Jet')).toBeInTheDocument();
-    expect(screen.getByText('Electric')).toBeInTheDocument();
+    const classSelect = screen.getByLabelText(/aircraft class/i);
+    expect(classSelect).toBeInTheDocument();
+    expect(screen.getByText(/SEP \(Land\)/)).toBeInTheDocument();
+    expect(screen.getByText(/MEP \(Land\)/)).toBeInTheDocument();
+    expect(screen.getByText(/TMG/)).toBeInTheDocument();
   });
 
   it('shows add button in create mode', () => {
@@ -82,7 +81,7 @@ describe('AircraftForm', () => {
     await user.type(screen.getByLabelText(/^type/i), 'C172');
     await user.type(screen.getByLabelText(/^make/i), 'Cessna');
     await user.type(screen.getByLabelText(/^model/i), '172 Skyhawk');
-    await user.selectOptions(screen.getByLabelText(/engine type/i), 'piston');
+    await user.selectOptions(screen.getByLabelText(/aircraft class/i), 'SEP_LAND');
 
     fireEvent.submit(screen.getByRole('button', { name: /add aircraft/i }).closest('form')!);
 
@@ -93,7 +92,7 @@ describe('AircraftForm', () => {
           type: 'C172',
           make: 'Cessna',
           model: '172 Skyhawk',
-          engineType: 'piston',
+          aircraftClass: 'SEP_LAND',
           isComplex: false,
           isHighPerformance: false,
           isTailwheel: false,
@@ -138,7 +137,7 @@ describe('AircraftForm', () => {
       type: 'C172',
       make: 'Cessna',
       model: '172 Skyhawk',
-      engineType: 'piston' as const,
+      aircraftClass: 'SEP_LAND',
       isComplex: false,
       isHighPerformance: false,
       isTailwheel: false,
@@ -195,7 +194,7 @@ describe('AircraftForm', () => {
       type: 'C172',
       make: 'Cessna',
       model: '172 Skyhawk',
-      engineType: 'piston' as const,
+      aircraftClass: 'SEP_LAND',
       isComplex: false,
       isHighPerformance: false,
       isTailwheel: false,

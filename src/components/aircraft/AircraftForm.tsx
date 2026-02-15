@@ -1,15 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateAircraft, useUpdateAircraft, useAircraftById } from '../../hooks/useAircraft';
-
-const ENGINE_TYPES = [
-  { value: 'piston', label: 'Piston' },
-  { value: 'turboprop', label: 'Turboprop' },
-  { value: 'jet', label: 'Jet' },
-  { value: 'electric', label: 'Electric' },
-];
 
 const AIRCRAFT_CLASSES = [
   { value: 'SEP_LAND', label: 'SEP (Land) — Single Engine Piston' },
@@ -19,7 +12,6 @@ const AIRCRAFT_CLASSES = [
   { value: 'SET_LAND', label: 'SET (Land) — Single Engine Turboprop' },
   { value: 'SET_SEA', label: 'SET (Sea) — Single Engine Turboprop' },
   { value: 'TMG', label: 'TMG — Touring Motor Glider' },
-  { value: 'OTHER', label: 'Other' },
 ];
 
 const aircraftSchema = z.object({
@@ -27,8 +19,7 @@ const aircraftSchema = z.object({
   type: z.string().min(1, 'Type is required').max(50),
   make: z.string().min(1, 'Make is required').max(100),
   model: z.string().min(1, 'Model is required').max(100),
-  engineType: z.string().optional().or(z.literal('')),
-  aircraftClass: z.enum(['SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA', 'SET_LAND', 'SET_SEA', 'TMG', 'IR', 'OTHER', '']).optional(),
+  aircraftClass: z.string().optional().or(z.literal('')),
   isComplex: z.boolean(),
   isHighPerformance: z.boolean(),
   isTailwheel: z.boolean(),
@@ -49,11 +40,14 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
   const { data: existingAircraft } = useAircraftById(aircraftId || '');
   const isEditing = !!aircraftId;
 
+  const [isCustomClass, setIsCustomClass] = useState(false);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    setValue,
   } = useForm<AircraftFormData>({
     resolver: zodResolver(aircraftSchema),
     defaultValues: {
@@ -61,7 +55,6 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       type: '',
       make: '',
       model: '',
-      engineType: '',
       aircraftClass: '',
       isComplex: false,
       isHighPerformance: false,
@@ -73,13 +66,16 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
 
   useEffect(() => {
     if (existingAircraft && isEditing) {
+      const acClass = existingAircraft.aircraftClass || '';
+      const isKnown = AIRCRAFT_CLASSES.some((c) => c.value === acClass);
+      setIsCustomClass(acClass !== '' && !isKnown);
+
       reset({
         registration: existingAircraft.registration,
         type: existingAircraft.type,
         make: existingAircraft.make,
         model: existingAircraft.model,
-        engineType: existingAircraft.engineType || '',
-        aircraftClass: existingAircraft.aircraftClass || '',
+        aircraftClass: acClass,
         isComplex: existingAircraft.isComplex ?? false,
         isHighPerformance: existingAircraft.isHighPerformance ?? false,
         isTailwheel: existingAircraft.isTailwheel ?? false,
@@ -96,8 +92,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         type: data.type,
         make: data.make,
         model: data.model,
-        engineType: (data.engineType || null) as any,
-        aircraftClass: (data.aircraftClass || undefined) as any,
+        aircraftClass: (data.aircraftClass || null) as any,
         isComplex: data.isComplex,
         isHighPerformance: data.isHighPerformance,
         isTailwheel: data.isTailwheel,
@@ -194,30 +189,53 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         </div>
       </div>
 
-      {/* Engine Type */}
-      <div>
-        <label htmlFor="engineType" className="form-label">
-          Engine Type
-        </label>
-        <select {...register('engineType')} id="engineType" className="input">
-          <option value="">Not specified</option>
-          {ENGINE_TYPES.map((et) => (
-            <option key={et.value} value={et.value}>{et.label}</option>
-          ))}
-        </select>
-      </div>
-
       {/* Aircraft Class */}
       <div>
         <label htmlFor="aircraftClass" className="form-label">
           Aircraft Class
         </label>
-        <select {...register('aircraftClass')} id="aircraftClass" className="input">
-          <option value="">Select class</option>
-          {AIRCRAFT_CLASSES.map((cr) => (
-            <option key={cr.value} value={cr.value}>{cr.label}</option>
-          ))}
-        </select>
+        {isCustomClass ? (
+          <div className="flex gap-2">
+            <input
+              {...register('aircraftClass')}
+              type="text"
+              id="aircraftClass"
+              className="input flex-1"
+              placeholder="e.g. ULTRALIGHT, GLIDER, GYROPLANE"
+            />
+            <button
+              type="button"
+              onClick={() => { setIsCustomClass(false); setValue('aircraftClass', ''); }}
+              className="btn-ghost btn-sm text-xs whitespace-nowrap"
+            >
+              ← Pick from list
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <select
+              {...register('aircraftClass')}
+              id="aircraftClass"
+              className="input flex-1"
+              onChange={(e) => {
+                register('aircraftClass').onChange(e);
+              }}
+            >
+              <option value="">Select class</option>
+              {AIRCRAFT_CLASSES.map((cr) => (
+                <option key={cr.value} value={cr.value}>{cr.label}</option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => { setIsCustomClass(true); setValue('aircraftClass', ''); }}
+              className="btn-ghost btn-sm text-xs whitespace-nowrap"
+            >
+              Custom →
+            </button>
+          </div>
+        )}
+        <p className="form-helper">Used for currency tracking. Choose a standard class or enter a custom value.</p>
       </div>
 
       {/* Boolean Flags */}
