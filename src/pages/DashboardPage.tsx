@@ -2,68 +2,18 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useLicenses } from '../hooks/useLicenses';
 import { useFlights } from '../hooks/useFlights';
-import { useLicenseStatistics, useLicenseCurrency } from '../hooks/useStatistics';
+import { useLicenseStatistics } from '../hooks/useStatistics';
 import { useCredentials } from '../hooks/useCredentials';
-import { useClassRatings } from '../hooks/useClassRatings';
+import { useAllCurrencyStatus } from '../hooks/useCurrency';
+import { CurrencyCard } from '../components/currency/CurrencyCard';
 import { StatCard } from '../components/ui/StatCard';
-import { isPast, differenceInDays, format } from 'date-fns';
-
-const CLASS_TYPE_LABELS: Record<string, string> = {
-  SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
-  MEP_LAND: 'MEP (Land)', MEP_SEA: 'MEP (Sea)',
-  SET_LAND: 'SET (Land)', SET_SEA: 'SET (Sea)',
-  TMG: 'TMG', IR: 'IR', OTHER: 'Other',
-};
-
-function LicenseRatingsStatus({ licenseId, authority, licenseType }: { licenseId: string; authority: string; licenseType: string }) {
-  const { data: ratings } = useClassRatings(licenseId);
-  if (!ratings || ratings.length === 0) return null;
-
-  const alertRatings = ratings.filter((r) => {
-    if (!r.expiryDate) return false;
-    return differenceInDays(new Date(r.expiryDate), new Date()) <= 90;
-  });
-
-  if (alertRatings.length === 0) return null;
-
-  return (
-    <>
-      {alertRatings.map((rating) => {
-        const expired = isPast(new Date(rating.expiryDate!));
-        const daysLeft = differenceInDays(new Date(rating.expiryDate!), new Date());
-        return (
-          <div
-            key={rating.id}
-            className={`rounded-lg px-4 py-3 flex items-center justify-between text-sm ${
-              expired
-                ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-                : daysLeft <= 30
-                  ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
-                  : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
-            }`}
-          >
-            <span className={expired ? 'text-red-800 dark:text-red-300' : daysLeft <= 30 ? 'text-amber-800 dark:text-amber-300' : 'text-blue-800 dark:text-blue-300'}>
-              {expired ? '⚠ ' : daysLeft <= 30 ? '⏰ ' : 'ℹ '}
-              <strong>{CLASS_TYPE_LABELS[rating.classType] || rating.classType}</strong>
-              <span className="text-xs ml-1 opacity-70">({authority} {licenseType})</span>
-              {expired
-                ? ` expired ${Math.abs(daysLeft)} days ago`
-                : ` expires ${format(new Date(rating.expiryDate!), 'MMM dd, yyyy')} (${daysLeft}d)`
-              }
-            </span>
-          </div>
-        );
-      })}
-    </>
-  );
-}
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const { data: licenses } = useLicenses();
   const navigate = useNavigate();
 
-  // Use the first license for statistics/currency (per-license endpoints still work)
+  // Use the first license for statistics (per-license endpoint still works)
   const firstLicense = licenses?.[0];
 
   const { data: flightsData } = useFlights({
@@ -74,7 +24,7 @@ export default function DashboardPage() {
   });
 
   const { data: statistics } = useLicenseStatistics(firstLicense?.id || '');
-  const { data: currency } = useLicenseCurrency(firstLicense?.id || '');
+  const { data: currencyStatus } = useAllCurrencyStatus();
   const { data: credentials } = useCredentials();
 
   const recentFlights = flightsData?.data || [];
@@ -97,82 +47,17 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* Currency Status */}
-      {currency && (
-        <div className={`card mb-6 border-l-4 ${
-          currency.isCurrent ? 'border-l-green-500' : 'border-l-red-500'
-        }`}>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="section-title flex items-center gap-2">
-              <span>{currency.isCurrent ? '🛡✓' : '🛡✕'}</span>
-              Flight Currency
-            </h2>
-            <span className={
-              currency.isCurrent ? 'badge-current' : 'badge-expired'
-            }>
-              {currency.isCurrent ? 'CURRENT' : 'NOT CURRENT'}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Day currency */}
-            <div className={`rounded-lg p-4 ${
-              currency.daysCurrent
-                ? 'bg-green-50 dark:bg-green-900/20'
-                : 'bg-red-50 dark:bg-red-900/20'
-            }`}>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Day Currency</span>
-                <span className={`badge ${
-                  currency.daysCurrent ? 'badge-current' : 'badge-expired'
-                }`}>
-                  {currency.daysCurrent ? 'CURRENT' : 'NOT CURRENT'}
-                </span>
-              </div>
-              <p className="data-lg text-slate-800 dark:text-slate-100">
-                {currency.last90Days.dayLandings}
-                <span className="text-sm font-normal text-slate-500 dark:text-slate-400">
-                  {' '}/ {currency.requiredLandings?.day ?? 3} landings
-                </span>
-              </p>
-              {!currency.daysCurrent && (
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                  Need {(currency.requiredLandings?.day ?? 3) - currency.last90Days.dayLandings} more day landing{(currency.requiredLandings?.day ?? 3) - currency.last90Days.dayLandings !== 1 ? 's' : ''}
-                </p>
-              )}
-            </div>
-
-            {/* Night currency */}
-            <div className={`rounded-lg p-4 ${
-              currency.nightsCurrent
-                ? 'bg-green-50 dark:bg-green-900/20'
-                : 'bg-amber-50 dark:bg-amber-900/20'
-            }`}>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Night Currency</span>
-                <span className={`badge ${
-                  currency.nightsCurrent ? 'badge-current' : 'badge-expiring'
-                }`}>
-                  {currency.nightsCurrent ? 'CURRENT' : 'NOT CURRENT'}
-                </span>
-              </div>
-              <p className="data-lg text-slate-800 dark:text-slate-100">
-                {currency.last90Days.nightLandings}
-                <span className="text-sm font-normal text-slate-500 dark:text-slate-400">
-                  {' '}/ {currency.requiredLandings?.night ?? 3} landings
-                </span>
-              </p>
-              {!currency.nightsCurrent && currency.requiredLandings?.night !== 0 && (
-                <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
-                  Need {(currency.requiredLandings?.night ?? 3) - currency.last90Days.nightLandings} more night landing{(currency.requiredLandings?.night ?? 3) - currency.last90Days.nightLandings !== 1 ? 's' : ''}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-3 text-xs text-slate-400 dark:text-slate-500 text-center">
-            {currency.last90Days.flights} flight{currency.last90Days.flights !== 1 ? 's' : ''} in the last 90 days &middot;
-            {' '}{currency.last90Days.totalLandings} total landing{currency.last90Days.totalLandings !== 1 ? 's' : ''}
+      {/* Currency Status — per class rating */}
+      {currencyStatus && currencyStatus.ratings.length > 0 && (
+        <div className="mb-6" data-testid="currency-section">
+          <h2 className="section-title mb-3 flex items-center gap-2">
+            <span>🛡</span>
+            Flight Currency
+          </h2>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+            {currencyStatus.ratings.map((rating) => (
+              <CurrencyCard key={rating.classRatingId} rating={rating} />
+            ))}
           </div>
         </div>
       )}
@@ -213,20 +98,6 @@ export default function DashboardPage() {
           </div>
         );
       })()}
-
-      {/* Class Rating Expiry Alerts */}
-      {licenses && licenses.length > 0 && (
-        <div className="mb-6 space-y-2">
-          {licenses.map((lic) => (
-            <LicenseRatingsStatus
-              key={lic.id}
-              licenseId={lic.id}
-              authority={lic.regulatoryAuthority}
-              licenseType={lic.licenseType}
-            />
-          ))}
-        </div>
-      )}
 
       {/* Stats grid */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">

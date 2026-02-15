@@ -212,6 +212,48 @@ export interface Currency {
   expiryDate: string | null;
 }
 
+export type CurrencyStatus = 'current' | 'expiring' | 'expired' | 'unknown';
+
+export interface CurrencyRequirement {
+  name: string;
+  met: boolean;
+  current: number;
+  required: number;
+  unit: string;
+  message: string;
+}
+
+export interface CurrencyProgress {
+  totalHours: number;
+  picHours: number;
+  ifrHours: number;
+  instructorHours: number;
+  nightHours: number;
+  landings: number;
+  dayLandings: number;
+  nightLandings: number;
+  flights: number;
+  requiredHours?: number;
+  requiredLandings?: number;
+}
+
+export interface ClassRatingCurrency {
+  classRatingId: string;
+  classType: ClassType;
+  licenseId: string;
+  regulatoryAuthority: string;
+  licenseType?: string;
+  status: CurrencyStatus;
+  expiryDate?: string | null;
+  message: string;
+  progress?: CurrencyProgress;
+  requirements?: CurrencyRequirement[];
+}
+
+export interface CurrencyStatusResponse {
+  ratings: ClassRatingCurrency[];
+}
+
 // ============ Crew & Contact Types ============
 
 export type CrewRole = 'PIC' | 'SIC' | 'Instructor' | 'Student' | 'Passenger' | 'SafetyPilot' | 'Examiner';

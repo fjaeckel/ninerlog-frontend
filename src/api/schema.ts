@@ -308,6 +308,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/currency": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get currency status for all class ratings
+         * @description Returns currency status per class rating across all licenses. Each class rating's currency is evaluated based on the regulatory authority of its parent license.
+         */
+        get: operations["getAllCurrencyStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/licenses/{licenseId}/ratings": {
         parameters: {
             query?: never;
@@ -1757,6 +1777,99 @@ export interface components {
             phone?: string | null;
             notes?: string | null;
         };
+        CurrencyStatusResponse: {
+            ratings: components["schemas"]["ClassRatingCurrency"][];
+        };
+        ClassRatingCurrency: {
+            /** Format: uuid */
+            classRatingId: string;
+            classType: components["schemas"]["ClassType"];
+            /** Format: uuid */
+            licenseId: string;
+            /** @description Authority from the parent license (determines which currency rules apply) */
+            regulatoryAuthority: string;
+            /** @description Type from the parent license */
+            licenseType?: string;
+            /**
+             * @description Currency status:
+             *     - current: All requirements met
+             *     - expiring: Rating expiry approaching (within 90 days)
+             *     - expired: Rating has expired or currency requirements not met
+             *     - unknown: Authority not supported for auto-calculation
+             * @enum {string}
+             */
+            status: "current" | "expiring" | "expired" | "unknown";
+            /**
+             * Format: date
+             * @description Class rating expiry date
+             */
+            expiryDate?: string | null;
+            /** @description Human-readable status message */
+            message?: string;
+            /** @description Progress metrics toward currency requirements (authority-specific) */
+            progress?: {
+                /**
+                 * Format: float
+                 * @description Total hours in class in the evaluation period
+                 */
+                totalHours?: number;
+                /**
+                 * Format: float
+                 * @description PIC hours in class in the evaluation period
+                 */
+                picHours?: number;
+                /**
+                 * Format: float
+                 * @description IFR hours in the evaluation period
+                 */
+                ifrHours?: number;
+                /**
+                 * Format: float
+                 * @description Hours with instructor (dual received) in the evaluation period
+                 */
+                instructorHours?: number;
+                /**
+                 * Format: float
+                 * @description Night hours in the evaluation period
+                 */
+                nightHours?: number;
+                /** @description Total landings in class in the evaluation period */
+                landings?: number;
+                dayLandings?: number;
+                nightLandings?: number;
+                /** @description Number of flights in class in the evaluation period */
+                flights?: number;
+                /**
+                 * Format: float
+                 * @description Required hours for currency (authority-specific)
+                 */
+                requiredHours?: number;
+                /** @description Required landings for currency */
+                requiredLandings?: number;
+            };
+            /** @description Per-requirement breakdown showing progress toward each currency requirement */
+            requirements?: components["schemas"]["CurrencyRequirement"][];
+        };
+        CurrencyRequirement: {
+            /** @description Requirement name (e.g., "Day Currency", "PIC Hours", "Refresher Training") */
+            name: string;
+            /** @description Whether this requirement is currently satisfied */
+            met: boolean;
+            /**
+             * Format: float
+             * @description Current progress value
+             */
+            current: number;
+            /**
+             * Format: float
+             * @description Required value to meet this requirement
+             */
+            required: number;
+            /** @description Unit of measurement (e.g., "landings", "hours", "flights") */
+            unit: string;
+            /** @description Human-readable progress description */
+            message?: string;
+        };
         /**
          * @description Aircraft class rating type:
          *     - SEP_LAND/SEP_SEA: Single Engine Piston (Land/Sea)
@@ -2763,6 +2876,27 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    getAllCurrencyStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Currency status per class rating */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrencyStatusResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
         };
     };
     listClassRatings: {
