@@ -4,7 +4,59 @@ import { useLicenses } from '../hooks/useLicenses';
 import { useFlights } from '../hooks/useFlights';
 import { useLicenseStatistics, useLicenseCurrency } from '../hooks/useStatistics';
 import { useCredentials } from '../hooks/useCredentials';
+import { useClassRatings } from '../hooks/useClassRatings';
 import { StatCard } from '../components/ui/StatCard';
+import { isPast, differenceInDays, format } from 'date-fns';
+
+const CLASS_TYPE_LABELS: Record<string, string> = {
+  SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
+  MEP_LAND: 'MEP (Land)', MEP_SEA: 'MEP (Sea)',
+  SET_LAND: 'SET (Land)', SET_SEA: 'SET (Sea)',
+  TMG: 'TMG', IR: 'IR', OTHER: 'Other',
+};
+
+function LicenseRatingsStatus({ licenseId, authority, licenseType }: { licenseId: string; authority: string; licenseType: string }) {
+  const { data: ratings } = useClassRatings(licenseId);
+  if (!ratings || ratings.length === 0) return null;
+
+  const alertRatings = ratings.filter((r) => {
+    if (!r.expiryDate) return false;
+    return differenceInDays(new Date(r.expiryDate), new Date()) <= 90;
+  });
+
+  if (alertRatings.length === 0) return null;
+
+  return (
+    <>
+      {alertRatings.map((rating) => {
+        const expired = isPast(new Date(rating.expiryDate!));
+        const daysLeft = differenceInDays(new Date(rating.expiryDate!), new Date());
+        return (
+          <div
+            key={rating.id}
+            className={`rounded-lg px-4 py-3 flex items-center justify-between text-sm ${
+              expired
+                ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                : daysLeft <= 30
+                  ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
+                  : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
+            }`}
+          >
+            <span className={expired ? 'text-red-800 dark:text-red-300' : daysLeft <= 30 ? 'text-amber-800 dark:text-amber-300' : 'text-blue-800 dark:text-blue-300'}>
+              {expired ? '⚠ ' : daysLeft <= 30 ? '⏰ ' : 'ℹ '}
+              <strong>{CLASS_TYPE_LABELS[rating.classType] || rating.classType}</strong>
+              <span className="text-xs ml-1 opacity-70">({authority} {licenseType})</span>
+              {expired
+                ? ` expired ${Math.abs(daysLeft)} days ago`
+                : ` expires ${format(new Date(rating.expiryDate!), 'MMM dd, yyyy')} (${daysLeft}d)`
+              }
+            </span>
+          </div>
+        );
+      })}
+    </>
+  );
+}
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -161,6 +213,20 @@ export default function DashboardPage() {
           </div>
         );
       })()}
+
+      {/* Class Rating Expiry Alerts */}
+      {licenses && licenses.length > 0 && (
+        <div className="mb-6 space-y-2">
+          {licenses.map((lic) => (
+            <LicenseRatingsStatus
+              key={lic.id}
+              licenseId={lic.id}
+              authority={lic.regulatoryAuthority}
+              licenseType={lic.licenseType}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Stats grid */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
