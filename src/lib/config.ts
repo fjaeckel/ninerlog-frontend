@@ -28,5 +28,5 @@ function getEnv(key: string, fallback: string): string {
   return fallback;
 }
 
-export const API_BASE_URL = getEnv('VITE_API_BASE_URL', 'http://localhost:3000/api/v1');
+export const API_BASE_URL = getEnv('VITE_API_BASE_URL', '/api/v1');
 export const APP_ENV = getEnv('VITE_ENV', 'development');

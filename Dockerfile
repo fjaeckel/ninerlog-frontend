@@ -33,12 +33,18 @@ COPY --from=builder /build/dist /usr/share/nginx/html
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
+# Create conf.d directory and empty TLS config placeholder
+RUN mkdir -p /etc/nginx/conf.d && echo "# placeholder" > /etc/nginx/conf.d/tls.conf
+
+# Create certbot webroot for ACME challenges
+RUN mkdir -p /var/www/certbot
+
 # Create non-root user for nginx
 RUN addgroup -g 101 -S nginx && \
     adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx || true
 
-# Expose port
-EXPOSE 80
+# Expose ports
+EXPOSE 80 443
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
