@@ -5,6 +5,7 @@ import { useUpdateProfile, useChangePassword, useDeleteAccount } from '../hooks/
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
 import { useSetup2FA, useVerify2FA, useDisable2FA } from '../hooks/useTwoFactor';
 import { ThemeSwitcher } from '../components/ui/ThemeSwitcher';
+import { API_BASE_URL as API_BASE } from '../lib/config';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuthStore();
@@ -96,7 +97,6 @@ export default function ProfilePage() {
     setRecalcMessage('');
     try {
       const token = useAuthStore.getState().accessToken;
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
       const res = await fetch(`${API_BASE}/flights/recalculate`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },

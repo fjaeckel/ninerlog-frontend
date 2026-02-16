@@ -3,10 +3,9 @@ import { apiClient } from '../api/client';
 import type { components } from '../api/schema';
 import type { CurrencyStatusResponse } from '../types/api';
 import { useAuthStore } from '../stores/authStore';
+import { API_BASE_URL as API_BASE } from '../lib/config';
 
 type Currency = components['schemas']['Currency'];
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
 // Get currency status for a specific license (legacy per-license endpoint)
 export const useLicenseCurrency = (licenseId: string) => {

@@ -1,8 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ClassRating, ClassRatingCreate, ClassRatingUpdate } from '../types/api';
 import { useAuthStore } from '../stores/authStore';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+import { API_BASE_URL as API_BASE } from '../lib/config';
 
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const token = useAuthStore.getState().accessToken;

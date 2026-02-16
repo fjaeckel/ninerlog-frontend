@@ -1,6 +1,5 @@
 import { useAuthStore } from '../stores/authStore';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+import { API_BASE_URL as API_BASE } from '../lib/config';
 
 async function downloadFile(url: string, filename: string) {
   const token = useAuthStore.getState().accessToken;

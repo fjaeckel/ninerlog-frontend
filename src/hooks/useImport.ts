@@ -9,7 +9,7 @@ type ImportColumnMapping = components['schemas']['ImportColumnMapping'];
 
 export type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping };
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+import { API_BASE_URL } from '../lib/config';
 
 function getAuthHeaders() {
   const token = useAuthStore.getState().accessToken;
