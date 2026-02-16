@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Plane, FileText, PlaneTakeoff, BarChart3, Map,
-  Award, Settings, User, Upload, Download, Shield, LogOut, Menu, Plus
+  Award, User, Upload, Download, Shield, LogOut, Menu, Plus
 } from 'lucide-react';
 import { useLogout } from '../../hooks/useAuth';
 import { useAuthStore } from '../../stores/authStore';
-import { ThemeSwitcher } from '../ui/ThemeSwitcher';
 
 export default function Layout() {
   const { user } = useAuthStore();
@@ -66,24 +65,22 @@ export default function Layout() {
         <nav className="flex-1 space-y-1" aria-label="Main">
           <SidebarItem to="/dashboard" label="Dashboard" icon={<LayoutDashboard className="w-5 h-5" />} />
           <SidebarItem to="/flights" label="Flights" icon={<Plane className="w-5 h-5" />} />
-          <SidebarItem to="/currency" label="Currency" icon={<Shield className="w-5 h-5" />} />
-          <SidebarItem to="/credentials" label="Credentials" icon={<FileText className="w-5 h-5" />} />
           <SidebarItem to="/aircraft" label="Aircraft" icon={<PlaneTakeoff className="w-5 h-5" />} />
+          <SidebarItem to="/currency" label="Currency" icon={<Shield className="w-5 h-5" />} />
+          <SidebarItem to="/licenses" label="Licenses" icon={<Award className="w-5 h-5" />} />
+          <SidebarItem to="/credentials" label="Credentials" icon={<FileText className="w-5 h-5" />} />
           <SidebarItem to="/reports" label="Reports" icon={<BarChart3 className="w-5 h-5" />} />
           <SidebarItem to="/map" label="Map" icon={<Map className="w-5 h-5" />} />
-          <SidebarItem to="/licenses" label="Licenses" icon={<Award className="w-5 h-5" />} />
           <SidebarItem to="/import" label="Import" icon={<Upload className="w-5 h-5" />} />
           <SidebarItem to="/export" label="Export" icon={<Download className="w-5 h-5" />} />
         </nav>
         <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-1">
-          <ThemeSwitcher className="w-full" />
-          <SidebarItem to="/settings" label="Settings" icon={<Settings className="w-5 h-5" />} />
-          <SidebarItem to="/profile" label="Profile" icon={<User className="w-5 h-5" />} />
+          <SidebarItem to="/profile" label="Profile & Settings" icon={<User className="w-5 h-5" />} />
         </div>
       </aside>
 
       {/* ── Main Content ── */}
-      <main id="main-content" className="pt-14 lg:pt-16 pb-16 lg:pb-4 lg:pl-64 px-4 lg:px-8">
+      <main id="main-content" className="pt-14 lg:pt-16 pb-16 lg:pb-4 lg:ml-64 px-4 lg:px-8">
         <Outlet />
       </main>
 
@@ -125,13 +122,13 @@ export default function Layout() {
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
             </div>
             <nav className="px-4 pb-4 space-y-1" aria-label="More navigation">
-              <MoreMenuItem to="/credentials" label="Credentials" icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/currency" label="Currency" icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/aircraft" label="Aircraft" icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/map" label="Route Map" icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/import" label="Import Flights" icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/export" label="Export Data" icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/currency" label="Currency" icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/licenses" label="Licenses" icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/credentials" label="Credentials" icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/map" label="Map" icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/import" label="Import" icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/export" label="Export" icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/profile" label="Profile & Settings" icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <div className="border-t border-slate-100 dark:border-slate-700 my-2" />
               <button
