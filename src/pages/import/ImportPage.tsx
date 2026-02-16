@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { useUploadImport, usePreviewImport, useConfirmImport } from '../../hooks/useImport';
-import { useLicenses } from '../../hooks/useLicenses';
 import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping } from '../../hooks/useImport';
 
 const IMPORT_FIELDS = [
@@ -33,15 +32,11 @@ export default function ImportPage() {
   const [previewData, setPreviewData] = useState<ImportPreviewResponse | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectedLicenseId, setSelectedLicenseId] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: licenses } = useLicenses();
   const upload = useUploadImport();
   const preview = usePreviewImport();
   const confirm = useConfirmImport();
-
-  const licenseId = selectedLicenseId;
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,12 +65,11 @@ export default function ImportPage() {
   };
 
   const handlePreview = async () => {
-    if (!uploadData || !licenseId) return;
+    if (!uploadData) return;
     setError(null);
     try {
       const data = await preview.mutateAsync({
         uploadToken: uploadData.uploadToken,
-        licenseId,
         mappings: mappings.filter((m) => m.targetField !== 'ignore'),
         skipDuplicates: true,
       });
@@ -87,12 +81,11 @@ export default function ImportPage() {
   };
 
   const handleConfirm = async () => {
-    if (!previewData || !licenseId) return;
+    if (!previewData) return;
     setError(null);
     try {
       const res = await confirm.mutateAsync({
         uploadToken: previewData.uploadToken,
-        licenseId,
       });
       setResult(res);
       setStep('result');
@@ -152,21 +145,6 @@ export default function ImportPage() {
           <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
             Supports CSV files including ForeFlight logbook exports. Maximum file size: 10 MB.
           </p>
-          <div className="mb-4">
-            <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Import into license</label>
-            <select
-              value={licenseId}
-              onChange={(e) => setSelectedLicenseId(e.target.value)}
-              className="input max-w-xs mx-auto"
-            >
-              <option value="">Select license</option>
-              {licenses?.map((lic) => (
-                <option key={lic.id} value={lic.id}>
-                  {lic.regulatoryAuthority} {lic.licenseType} — {lic.licenseNumber}
-                </option>
-              ))}
-            </select>
-          </div>
           <input
             ref={fileInputRef}
             type="file"
@@ -176,7 +154,7 @@ export default function ImportPage() {
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={!licenseId || upload.isPending}
+            disabled={upload.isPending}
             className="btn-primary"
           >
             {upload.isPending ? 'Uploading...' : 'Choose File'}

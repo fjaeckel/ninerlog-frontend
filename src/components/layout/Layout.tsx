@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Plane, FileText, PlaneTakeoff, BarChart3, Map,
-  Award, Settings, User, Upload, LogOut, Menu, Plus
+  Award, Settings, User, Upload, Download, LogOut, Menu, Plus
 } from 'lucide-react';
 import { useLogout } from '../../hooks/useAuth';
 import { useAuthStore } from '../../stores/authStore';
@@ -72,6 +72,7 @@ export default function Layout() {
           <SidebarItem to="/map" label="Map" icon={<Map className="w-5 h-5" />} />
           <SidebarItem to="/licenses" label="Licenses" icon={<Award className="w-5 h-5" />} />
           <SidebarItem to="/import" label="Import" icon={<Upload className="w-5 h-5" />} />
+          <SidebarItem to="/export" label="Export" icon={<Download className="w-5 h-5" />} />
         </nav>
         <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-1">
           <ThemeSwitcher className="w-full" />
@@ -127,6 +128,7 @@ export default function Layout() {
               <MoreMenuItem to="/aircraft" label="Aircraft" icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/map" label="Route Map" icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/import" label="Import Flights" icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/export" label="Export Data" icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/licenses" label="Licenses" icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/profile" label="Profile & Settings" icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <div className="border-t border-slate-100 dark:border-slate-700 my-2" />

@@ -233,6 +233,8 @@ export interface CurrencyProgress {
   dayLandings: number;
   nightLandings: number;
   flights: number;
+  approaches: number;
+  holds: number;
   requiredHours?: number;
   requiredLandings?: number;
 }

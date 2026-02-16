@@ -42,6 +42,10 @@ export default function ProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
+  // Recalculate state
+  const [isRecalculating, setIsRecalculating] = useState(false);
+  const [recalcMessage, setRecalcMessage] = useState('');
+
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileMessage('');
@@ -84,6 +88,26 @@ export default function ProfilePage() {
       navigate('/login');
     } catch {
       setDeleteError('Failed to delete account. Check your password.');
+    }
+  };
+
+  const handleRecalculate = async () => {
+    setIsRecalculating(true);
+    setRecalcMessage('');
+    try {
+      const token = useAuthStore.getState().accessToken;
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+      const res = await fetch(`${API_BASE}/flights/recalculate`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json();
+      setRecalcMessage(`Recalculated ${data.updated} flight${data.updated !== 1 ? 's' : ''} successfully.${data.errors > 0 ? ` ${data.errors} error(s).` : ''}`);
+    } catch {
+      setRecalcMessage('Failed to recalculate flights. Please try again.');
+    } finally {
+      setIsRecalculating(false);
     }
   };
 
@@ -441,6 +465,27 @@ export default function ProfilePage() {
               {setup2FA.isPending ? 'Setting up...' : 'Enable 2FA'}
             </button>
           </div>
+        )}
+      </div>
+
+      {/* Flight Data Maintenance */}
+      <div className="card mb-6">
+        <h2 className="text-lg font-semibold mb-4">Flight Data</h2>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          Recalculate all auto-computed fields across your flights (solo time, cross-country, distance, night time, day/night landing split, PIC/Dual).
+          Useful after importing flights or changing aircraft data.
+        </p>
+        <button
+          onClick={handleRecalculate}
+          disabled={isRecalculating}
+          className="btn-secondary"
+        >
+          {isRecalculating ? 'Recalculating...' : 'Recalculate All Flights'}
+        </button>
+        {recalcMessage && (
+          <p className={`text-sm mt-2 ${recalcMessage.includes('error') ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+            {recalcMessage}
+          </p>
         )}
       </div>
 

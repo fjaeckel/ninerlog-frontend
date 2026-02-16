@@ -62,9 +62,10 @@ describe('ImportPage', () => {
     expect(screen.getByText(/4\. done/i)).toBeInTheDocument();
   });
 
-  it('shows license selector', () => {
+  it('does not show license selector (flights detached from licenses)', () => {
     renderWithProviders(<ImportPage />);
-    expect(screen.getByText(/import into license/i)).toBeInTheDocument();
+    expect(screen.queryByText(/import into license/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/select license/i)).not.toBeInTheDocument();
   });
 
   it('renders ForeFlight support info', () => {

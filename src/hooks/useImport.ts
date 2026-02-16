@@ -39,7 +39,6 @@ export const usePreviewImport = () => {
   return useMutation({
     mutationFn: async (req: {
       uploadToken: string;
-      licenseId: string;
       mappings: ImportColumnMapping[];
       skipDuplicates?: boolean;
     }): Promise<ImportPreviewResponse> => {
@@ -61,7 +60,6 @@ export const useConfirmImport = () => {
   return useMutation({
     mutationFn: async (req: {
       uploadToken: string;
-      licenseId: string;
       selectedRows?: number[];
       includeDuplicates?: boolean;
     }): Promise<ImportResult> => {
