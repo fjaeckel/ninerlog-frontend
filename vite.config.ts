@@ -31,6 +31,9 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    sourcemap: false, // Explicitly disable source maps in production builds
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')

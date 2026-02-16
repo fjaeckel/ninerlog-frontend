@@ -1,206 +1,145 @@
 # PilotLog Frontend
 
-Mobile-first web application for the EASA/FAA compliant pilot logbook system.
-
-## Overview
-
-A Progressive Web App (PWA) that allows pilots to log flights, track currency, and manage multiple licenses from any device. Built with React, TypeScript, and a mobile-first approach.
+Mobile-first Progressive Web App for PilotLog — an EASA/FAA compliant digital pilot logbook.
 
 ## Tech Stack
 
-- **Framework**: React 18+ with TypeScript
-- **Build Tool**: Vite
-- **Styling**: TailwindCSS (mobile-first responsive design)
-- **API Client**: Auto-generated from OpenAPI spec
-- **State Management**: 
-  - React Query (server state)
-  - Zustand (client state)
-- **PWA**: Workbox for offline support
-- **Forms**: React Hook Form + Zod validation
-- **Testing**: Vitest + React Testing Library
+- **React 19** / **TypeScript 5.9** / **Vite 7**
+- **Tailwind CSS 4** (mobile-first, dark mode)
+- **React Router 7** (lazy-loaded routes)
+- **TanStack React Query** (server state) / **Zustand** (client state)
+- **React Hook Form** + **Zod** (form validation)
+- **Recharts** (charts & statistics)
+- **Leaflet** + **react-leaflet** (route maps)
+- **openapi-fetch** (type-safe API client, auto-generated)
+- **VitePWA** (installable, offline-capable)
+
+### Dev & Testing
+
+- **Vitest** + **React Testing Library** (unit tests)
+- **Playwright** (E2E tests)
+- **MSW** (API mocking)
+- **ESLint 9** / **Prettier** / **Husky** + **lint-staged**
 
 ## Prerequisites
 
-- Node.js 20+
-- npm or pnpm
-- Access to pilotlog-project repo (for OpenAPI spec)
+- Node.js 24+
+- npm 11+
+- Access to `pilotlog-project` repo (for OpenAPI spec)
 
 ## Quick Start
 
 ```bash
-# Install dependencies
 npm install
-
-# Generate API client from OpenAPI spec
-npm run generate:api
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Run tests
-npm test
+npm run generate:api      # Generate typed API client from OpenAPI spec
+npm run dev               # Start dev server at http://localhost:5173
 ```
 
-## API Client Generation
+## Scripts
 
-The TypeScript API client is **auto-generated** from the OpenAPI specification.
-
-### Automatic (CI/CD)
-When the OpenAPI spec changes in `pilotlog-project`, GitHub Actions automatically:
-1. Generates new TypeScript client
-2. Creates a PR with changes
-3. Runs tests to verify compatibility
-
-### Manual
-```bash
-# Generate from default location
-npm run generate:api
-
-# Generate from custom spec path
-npm run generate:api -- ../pilotlog-project/api-spec/openapi.yaml
-```
-
-**⚠️ Never edit files in `src/api/` manually!** They will be overwritten.
-
-See [OpenAPI Generation Guide](../pilotlog-project/docs/OPENAPI_GENERATION.md) for details.
+| Script | Description |
+|---|---|
+| `npm run dev` | Vite dev server (port 5173, proxies `/api` → `localhost:3000`) |
+| `npm run build` | Type-check + production build |
+| `npm run preview` | Preview production build locally |
+| `npm test` | Run unit tests (Vitest) |
+| `npm run test:e2e` | Run E2E tests (Playwright) |
+| `npm run lint` / `lint:fix` | ESLint |
+| `npm run format` | Prettier |
+| `npm run type-check` | TypeScript `--noEmit` |
+| `npm run generate:api` | Generate API client from OpenAPI spec |
 
 ## Project Structure
 
 ```
 src/
-├── api/              # Generated API client (do not edit manually)
-├── components/       # React components
-│   ├── common/       # Reusable UI components
-│   ├── flight-log/   # Flight logging components
-│   ├── licenses/     # License management
-│   └── dashboard/    # Dashboard views
-├── hooks/            # Custom React hooks
-├── pages/            # Route components
-├── stores/           # Zustand stores
-├── utils/            # Utilities and helpers
-├── types/            # TypeScript type definitions
-└── App.tsx           # Main application component
+├── api/                  # Generated API client & types (do not edit)
+├── components/
+│   ├── layout/           # App shell (sidebar, header, bottom nav)
+│   ├── ui/               # Reusable primitives (PageWrapper, EmptyState, etc.)
+│   ├── aircraft/         # Aircraft forms
+│   ├── credentials/      # Credential forms
+│   ├── currency/         # Currency cards
+│   ├── flights/          # Flight cards & forms
+│   └── licenses/         # License cards, forms, switcher
+├── hooks/                # Custom hooks (useFlights, useCurrency, etc.)
+├── lib/                  # Utilities (config, classnames, API helpers)
+├── pages/                # Route page components
+│   ├── auth/             # Login, Register, Reset Password
+│   ├── flights/          # Flights list, Flight detail
+│   ├── aircraft/         # Aircraft management
+│   ├── credentials/      # Credentials management
+│   ├── currency/         # Currency/recency status
+│   ├── export/           # PDF logbook export
+│   ├── import/           # CSV flight import
+│   ├── licenses/         # License management
+│   ├── maps/             # Route map
+│   └── reports/          # Statistics & charts
+├── stores/               # Zustand stores (auth, license, theme)
+├── test/                 # Test setup
+├── types/                # Shared TypeScript types
+└── __tests__/            # Unit & E2E tests
 ```
 
-## Features
+## Pages & Routes
 
-### Multi-License Management
-- Switch between active licenses (PPL, SPL, etc.)
-- View hours and currency per license
-- License-specific flight log views
+| Route | Page | Auth |
+|---|---|---|
+| `/login` | Login | Public |
+| `/register` | Register | Public |
+| `/reset-password` | Password Reset | Public |
+| `/dashboard` | Dashboard | Protected |
+| `/flights` | Flight Log | Protected |
+| `/flights/:flightId` | Flight Detail | Protected |
+| `/aircraft` | Aircraft | Protected |
+| `/currency` | Currency Status | Protected |
+| `/licenses` | Licenses | Protected |
+| `/credentials` | Credentials | Protected |
+| `/reports` | Reports & Charts | Protected |
+| `/map` | Route Map | Protected |
+| `/import` | CSV Import | Protected |
+| `/export` | PDF Export | Protected |
+| `/profile` | Profile & Settings | Protected |
 
-### Flight Logging
-- Quick entry forms for common flight types
-- Auto-calculation of totals
-- EASA/FAA compliant field validation
-- Photo attachments for receipts/documents
+## API Client Generation
 
-### Currency Tracking
-- Visual currency indicators
-- Automatic expiry warnings
-- Per-license currency requirements
-- Night/IFR currency tracking
-
-### Offline Support
-- Full offline capability with service workers
-- Sync when connection restored
-- Conflict resolution UI
-
-## API Integration
-
-The API client is generated from the OpenAPI specification:
+The TypeScript API client and types are **auto-generated** from the OpenAPI spec in `pilotlog-project/api-spec/openapi.yaml`.
 
 ```bash
-# Regenerate API client (run after spec changes)
 npm run generate:api
 ```
 
-The generated client provides:
-- TypeScript types for all API models
-- Type-safe API methods
-- Automatic request/response validation
+**Do not edit files in `src/api/` manually** — they will be overwritten on regeneration.
 
-## Development
+## Environment
 
-### Environment Variables
+Runtime configuration is injected via `public/env-config.js` (for Docker) or Vite env vars (for development):
 
-Create a `.env.local` file:
+| Variable | Default | Description |
+|---|---|---|
+| `VITE_API_BASE_URL` | `/api/v1` | API base URL |
+| `VITE_ENV` | `development` | Environment name |
 
-```env
-VITE_API_BASE_URL=http://localhost:3000/api
-VITE_ENV=development
-```
+## Docker
 
-### Code Generation
+Multi-stage build: `node:20-alpine` (build) → `nginx:1.25-alpine` (serve). Nginx handles SPA routing, gzip, security headers, static asset caching, and optional TLS via Let's Encrypt.
 
 ```bash
-# Generate API client from OpenAPI spec
-npm run generate:api
-
-# Generate component templates
-npm run generate:component ComponentName
+# From workspace root
+docker compose -f docker-compose.dev.yml up -d   # Dev (hot reload)
+docker compose up -d                               # Production
 ```
 
-### Mobile Testing
-
-```bash
-# Test on local network (access from mobile device)
-npm run dev -- --host
-```
-
-## Styling Guidelines
-
-- **Mobile-First**: Start with mobile layouts, scale up
-- **Tailwind**: Use utility classes, extract to components when repeated
-- **Dark Mode**: Support system preference
-- **Accessibility**: WCAG 2.1 AA compliance
+See [DOCKER.md](../DOCKER.md) for full deployment guide.
 
 ## Testing
 
 ```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run E2E tests
-npm run test:e2e
+npm test                 # Unit tests
+npm run test:e2e         # E2E tests (Playwright)
 ```
-
-## Building
-
-```bash
-# Production build
-npm run build
-
-# Preview production build
-npm run preview
-
-# Analyze bundle size
-npm run analyze
-```
-
-## Deployment
-
-The app is designed to be deployed as a static site:
-- Vercel
-- Netlify
-- AWS S3 + CloudFront
-- Any static hosting service
 
 ## Related Repositories
 
-- **[pilotlog-project](../pilotlog-project)**: Project planning and API spec
-- **[pilotlog-api](../pilotlog-api)**: Backend API
-
-## Contributing
-
-See [CONTRIBUTING.md](../pilotlog-project/CONTRIBUTING.md) for guidelines.
-
-## License
-
-[To be determined]
+- [pilotlog-project](../pilotlog-project) — OpenAPI spec & project planning
+- [pilotlog-api](../pilotlog-api) — Go backend API

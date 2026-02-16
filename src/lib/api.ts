@@ -26,9 +26,13 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Clear auth state (zustand + localStorage) and redirect to login
-      useAuthStore.getState().clearAuth();
-      window.location.href = '/login';
+      // Don't redirect on auth endpoints (login failure returns 401)
+      const url = error.config?.url || '';
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/2fa/') || url.includes('/auth/register') || url.includes('/auth/refresh');
+      if (!isAuthEndpoint) {
+        useAuthStore.getState().clearAuth();
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
