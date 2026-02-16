@@ -1273,6 +1273,12 @@ export interface components {
              * @example false
              */
             isFlightReview?: boolean;
+            /**
+             * @description Launch method for glider/SPL flights (winch, aerotow, or self-launch)
+             * @example winch
+             * @enum {string|null}
+             */
+            launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
             /** @description People on board this flight with their roles */
             crewMembers?: components["schemas"]["FlightCrewMember"][];
             /**
@@ -1323,13 +1329,13 @@ export interface components {
              * @description Takeoff time in UTC
              * @example 14:30:00
              */
-            departureTime: string;
+            departureTime?: string;
             /**
              * Format: time
              * @description Landing time in UTC
              * @example 16:45:00
              */
-            arrivalTime: string;
+            arrivalTime?: string;
             /**
              * Format: float
              * @description Total block time calculated from offBlockTime and onBlockTime. This field is computed by the server and should not be provided by the client.
@@ -1411,6 +1417,8 @@ export interface components {
             approachesCount?: number;
             isIpc?: boolean;
             isFlightReview?: boolean;
+            /** @enum {string|null} */
+            launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
             /** @description People on board this flight */
             crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
         };
@@ -1472,6 +1480,8 @@ export interface components {
             approachesCount?: number;
             isIpc?: boolean;
             isFlightReview?: boolean;
+            /** @enum {string|null} */
+            launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
             /** @description People on board this flight */
             crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
         };
@@ -3408,6 +3418,8 @@ export interface operations {
                 sortBy?: "date" | "totalTime" | "createdAt";
                 /** @description Sort order */
                 sortOrder?: "asc" | "desc";
+                /** @description Filter flights for a separate-logbook license. Only returns flights on aircraft whose class matches the license's class ratings. */
+                logbookLicenseId?: string;
             };
             header?: never;
             path?: never;
@@ -3828,7 +3840,10 @@ export interface operations {
     };
     exportFlightsPDF: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Filter flights for a specific logbook license */
+                logbookLicenseId?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;

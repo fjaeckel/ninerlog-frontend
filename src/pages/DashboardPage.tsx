@@ -5,6 +5,7 @@ import { useFlights } from '../hooks/useFlights';
 import { useLicenseStatistics } from '../hooks/useStatistics';
 import { useCredentials } from '../hooks/useCredentials';
 import { useAllCurrencyStatus } from '../hooks/useCurrency';
+import { useStatsByClass } from '../hooks/useStatsByClass';
 import { CurrencyCard } from '../components/currency/CurrencyCard';
 import { StatCard } from '../components/ui/StatCard';
 
@@ -26,6 +27,7 @@ export default function DashboardPage() {
   const { data: statistics } = useLicenseStatistics(firstLicense?.id || '');
   const { data: currencyStatus } = useAllCurrencyStatus();
   const { data: credentials } = useCredentials();
+  const { data: classStat } = useStatsByClass();
 
   const recentFlights = flightsData?.data || [];
   const totalFlights = flightsData?.pagination?.total || 0;
@@ -127,6 +129,52 @@ export default function DashboardPage() {
               <div key={label}>
                 <p className="data-lg text-slate-800 dark:text-slate-100">{value.toFixed(1)}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Hours by Aircraft Class */}
+      {classStat && classStat.byClass.length > 0 && (
+        <div className="card mb-6">
+          <h2 className="section-title mb-4">Hours by Aircraft Class</h2>
+          <div className="space-y-2">
+            {classStat.byClass.map((cs) => {
+              const maxHours = Math.max(...classStat.byClass.map((c) => c.hours), 1);
+              const pct = (cs.hours / maxHours) * 100;
+              const classLabels: Record<string, string> = {
+                SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
+                MEP_LAND: 'MEP (Land)', MEP_SEA: 'MEP (Sea)',
+                SET_LAND: 'SET (Land)', SET_SEA: 'SET (Sea)',
+                TMG: 'TMG', IR: 'IR', Unclassified: 'Unclassified',
+              };
+              return (
+                <div key={cs.class} data-testid={`class-stat-${cs.class}`}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{classLabels[cs.class] || cs.class}</span>
+                    <span className="text-slate-500 dark:text-slate-400">{cs.hours.toFixed(1)}h · {cs.flights} flights · {cs.landings} ldg</span>
+                  </div>
+                  <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 dark:bg-blue-400 rounded-full" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Hours by Authority */}
+      {classStat && classStat.byAuthority.length > 0 && (
+        <div className="card mb-6">
+          <h2 className="section-title mb-4">Hours by Authority</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {classStat.byAuthority.map((auth) => (
+              <div key={`${auth.authority}-${auth.licenseType}`} className="text-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                <p className="data-lg text-slate-800 dark:text-slate-100">{auth.hours.toFixed(1)}h</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{auth.authority} {auth.licenseType}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">{auth.flights} flights</p>
               </div>
             ))}
           </div>

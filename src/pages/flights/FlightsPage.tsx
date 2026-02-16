@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Pencil, Trash2, Search, X } from 'lucide-react';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
+import { useLicenses } from '../../hooks/useLicenses';
 import FlightForm from '../../components/flights/FlightForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import type { operations } from '../../api/schema';
@@ -30,6 +31,10 @@ export default function FlightsPage() {
   const [departureIcao, setDepartureIcao] = useState('');
   const [arrivalIcao, setArrivalIcao] = useState('');
   const [functionFilter, setFunctionFilter] = useState<'' | 'pic' | 'dual'>('');
+  const [logbookLicenseId, setLogbookLicenseId] = useState<string>('');
+
+  const { data: licenses } = useLicenses();
+  const separateLogbookLicenses = licenses?.filter((l) => l.requiresSeparateLogbook) || [];
 
   // Debounce search input
   useEffect(() => {
@@ -62,6 +67,7 @@ export default function FlightsPage() {
     ...(arrivalIcao ? { arrivalIcao: arrivalIcao.toUpperCase() } : {}),
     ...(functionFilter === 'pic' ? { isPic: true } : {}),
     ...(functionFilter === 'dual' ? { isDual: true } : {}),
+    ...(logbookLicenseId ? { logbookLicenseId } : {}),
   };
 
   const activeFilterCount = [startDate, endDate, aircraftReg, departureIcao, arrivalIcao, functionFilter].filter(Boolean).length;
@@ -158,6 +164,25 @@ export default function FlightsPage() {
           + Log Flight
         </button>
       </div>
+
+      {/* Logbook Selector — only shown if separate-logbook licenses exist */}
+      {separateLogbookLicenses.length > 0 && (
+        <div className="mb-4 flex items-center gap-2">
+          <label className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Logbook:</label>
+          <select
+            value={logbookLicenseId}
+            onChange={(e) => { setLogbookLicenseId(e.target.value); setPage(1); }}
+            className="input text-sm py-1.5 w-auto"
+          >
+            <option value="">All flights</option>
+            {separateLogbookLicenses.map((lic) => (
+              <option key={lic.id} value={lic.id}>
+                {lic.regulatoryAuthority} {lic.licenseType} — {lic.licenseNumber}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="mb-4">

@@ -8,6 +8,7 @@ vi.mock('../../hooks/useFlights', () => ({
   useCreateFlight: () => ({ mutateAsync: vi.fn().mockResolvedValue({}), isPending: false }),
   useUpdateFlight: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useFlight: () => ({ data: null }),
+  useFlights: () => ({ data: { data: [] } }),
 }));
 
 vi.mock('../../hooks/useLicenses', () => ({

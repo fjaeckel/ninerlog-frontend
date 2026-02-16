@@ -248,6 +248,7 @@ export interface ClassRatingCurrency {
   status: CurrencyStatus;
   expiryDate?: string | null;
   message: string;
+  ruleDescription?: string;
   progress?: CurrencyProgress;
   requirements?: CurrencyRequirement[];
 }

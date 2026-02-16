@@ -95,8 +95,8 @@ describe('FlightForm', () => {
     expect(screen.getByLabelText(/departure icao/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/arrival icao/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/off-block/i)).toBeInTheDocument();
-    expect(screen.getByLabelText('Takeoff *')).toBeInTheDocument();
-    expect(screen.getByLabelText('Landing *')).toBeInTheDocument();
+    expect(screen.getByLabelText('Takeoff')).toBeInTheDocument();
+    expect(screen.getByLabelText('Landing')).toBeInTheDocument();
     expect(screen.getByLabelText(/on-block/i)).toBeInTheDocument();
   });
 
@@ -157,8 +157,8 @@ describe('FlightForm', () => {
     await user.type(screen.getByLabelText(/arrival icao/i), 'EDDH');
     // Fill required time fields via fireEvent (time inputs)
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
-    fireEvent.change(screen.getByLabelText('Takeoff *'), { target: { value: '14:30' } });
-    fireEvent.change(screen.getByLabelText('Landing *'), { target: { value: '16:00' } });
+    fireEvent.change(screen.getByLabelText('Takeoff'), { target: { value: '14:30' } });
+    fireEvent.change(screen.getByLabelText('Landing'), { target: { value: '16:00' } });
     fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '16:10' } });
 
     // Submit via form submit event directly
@@ -203,8 +203,8 @@ describe('FlightForm', () => {
     await user.type(screen.getByLabelText(/departure icao/i), 'eddf');
     await user.type(screen.getByLabelText(/arrival icao/i), 'eddh');
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
-    fireEvent.change(screen.getByLabelText('Takeoff *'), { target: { value: '14:30' } });
-    fireEvent.change(screen.getByLabelText('Landing *'), { target: { value: '16:00' } });
+    fireEvent.change(screen.getByLabelText('Takeoff'), { target: { value: '14:30' } });
+    fireEvent.change(screen.getByLabelText('Landing'), { target: { value: '16:00' } });
     fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '16:10' } });
 
     fireEvent.submit(screen.getByRole('button', { name: /log flight/i }).closest('form')!);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Plane, FileText, PlaneTakeoff, BarChart3, Map,
-  Award, Settings, User, Upload, Download, LogOut, Menu, Plus
+  Award, Settings, User, Upload, Download, Shield, LogOut, Menu, Plus
 } from 'lucide-react';
 import { useLogout } from '../../hooks/useAuth';
 import { useAuthStore } from '../../stores/authStore';
@@ -66,6 +66,7 @@ export default function Layout() {
         <nav className="flex-1 space-y-1" aria-label="Main">
           <SidebarItem to="/dashboard" label="Dashboard" icon={<LayoutDashboard className="w-5 h-5" />} />
           <SidebarItem to="/flights" label="Flights" icon={<Plane className="w-5 h-5" />} />
+          <SidebarItem to="/currency" label="Currency" icon={<Shield className="w-5 h-5" />} />
           <SidebarItem to="/credentials" label="Credentials" icon={<FileText className="w-5 h-5" />} />
           <SidebarItem to="/aircraft" label="Aircraft" icon={<PlaneTakeoff className="w-5 h-5" />} />
           <SidebarItem to="/reports" label="Reports" icon={<BarChart3 className="w-5 h-5" />} />
@@ -125,6 +126,7 @@ export default function Layout() {
             </div>
             <nav className="px-4 pb-4 space-y-1" aria-label="More navigation">
               <MoreMenuItem to="/credentials" label="Credentials" icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/currency" label="Currency" icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/aircraft" label="Aircraft" icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/map" label="Route Map" icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/import" label="Import Flights" icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />

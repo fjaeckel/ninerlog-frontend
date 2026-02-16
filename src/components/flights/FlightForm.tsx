@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
-import { useCreateFlight, useUpdateFlight, useFlight } from '../../hooks/useFlights';
+import { useCreateFlight, useUpdateFlight, useFlight, useFlights } from '../../hooks/useFlights';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { useSearchContacts, useCreateContact } from '../../hooks/useContacts';
 import type { Aircraft } from '../../hooks/useAircraft';
@@ -17,8 +17,8 @@ const flightSchema = z.object({
   arrivalIcao: z.string().min(1, 'Arrival ICAO is required').max(4),
   offBlockTime: z.string().min(1, 'Off-block time is required'),
   onBlockTime: z.string().min(1, 'On-block time is required'),
-  departureTime: z.string().min(1, 'Takeoff time is required'),
-  arrivalTime: z.string().min(1, 'Landing time is required'),
+  departureTime: z.string().optional().or(z.literal('')),
+  arrivalTime: z.string().optional().or(z.literal('')),
   route: z.string().optional().or(z.literal('')),
   ifrTime: z.number().min(0),
   landings: z.number().int().min(0),
@@ -36,6 +36,7 @@ const flightSchema = z.object({
   approachesCount: z.number().int().min(0),
   isIpc: z.boolean(),
   isFlightReview: z.boolean(),
+  launchMethod: z.string().optional().or(z.literal('')),
 });
 
 type FlightFormData = z.infer<typeof flightSchema>;
@@ -51,8 +52,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const { data: existingFlight } = useFlight(flightId || '');
   const { data: aircraftList } = useAircraft();
   const createAircraft = useCreateAircraft();
+  const { data: recentFlightsData } = useFlights({ page: 1, pageSize: 1, sortBy: 'date', sortOrder: 'desc' });
 
   const isEditing = !!flightId;
+  const lastFlight = recentFlightsData?.data?.[0];
 
   // Aircraft autocomplete state
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -119,6 +122,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       approachesCount: 0,
       isIpc: false,
       isFlightReview: false,
+      launchMethod: '',
     },
   });
 
@@ -150,6 +154,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         approachesCount: existingFlight.approachesCount || 0,
         isIpc: existingFlight.isIpc || false,
         isFlightReview: existingFlight.isFlightReview || false,
+        launchMethod: existingFlight.launchMethod || '',
       });
       // Load existing crew members
       if (existingFlight.crewMembers) {
@@ -230,6 +235,22 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     }
   };
 
+  // Auto-fill from last flight
+  const handleAutoFill = () => {
+    if (!lastFlight) return;
+    setValue('aircraftReg', lastFlight.aircraftReg, { shouldValidate: true });
+    setValue('aircraftType', lastFlight.aircraftType, { shouldValidate: true });
+    if (lastFlight.departureIcao) setValue('departureIcao', lastFlight.arrivalIcao || '', { shouldValidate: true });
+    if (lastFlight.arrivalIcao) setValue('arrivalIcao', '', { shouldValidate: false });
+  };
+
+  // Determine if current aircraft is a glider/TMG (show launch method)
+  const currentAircraftClass = (aircraftList ?? []).find(
+    (ac) => ac.registration.toUpperCase() === (watch('aircraftReg') || '').toUpperCase()
+  )?.aircraftClass;
+  const showLaunchMethod = currentAircraftClass === 'TMG' || currentAircraftClass === 'GLIDER' ||
+    (currentAircraftClass && currentAircraftClass.toLowerCase().includes('glider'));
+
   const onSubmit = async (data: FlightFormData) => {
     try {
       const basePayload = {
@@ -240,8 +261,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         arrivalIcao: data.arrivalIcao.toUpperCase(),
         offBlockTime: data.offBlockTime + ':00',
         onBlockTime: data.onBlockTime + ':00',
-        departureTime: data.departureTime + ':00',
-        arrivalTime: data.arrivalTime + ':00',
+        departureTime: data.departureTime ? data.departureTime + ':00' : undefined,
+        arrivalTime: data.arrivalTime ? data.arrivalTime + ':00' : undefined,
         route: data.route || null,
         ifrTime: data.ifrTime,
         landings: data.landings,
@@ -258,6 +279,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         approachesCount: data.approachesCount,
         isIpc: data.isIpc,
         isFlightReview: data.isFlightReview,
+        launchMethod: (data.launchMethod || null) as any,
         crewMembers: crewMembers.length > 0 ? crewMembers : undefined,
       };
 
@@ -274,6 +296,19 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Auto-fill from last flight */}
+      {!isEditing && lastFlight && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleAutoFill}
+            className="btn-ghost btn-sm text-xs"
+          >
+            Fill from last flight ({lastFlight.aircraftReg}, {lastFlight.departureIcao || '?'} → {lastFlight.arrivalIcao || '?'})
+          </button>
+        </div>
+      )}
+
       {/* Basic Info */}
       <fieldset>
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Basic Information</legend>
@@ -432,7 +467,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           </div>
         </div>
 
-        {/* Off-Block → Takeoff → Landing → On-Block in a row */}
+        {/* Off-Block → On-Block → Takeoff → Landing */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           <div>
             <label htmlFor="offBlockTime" className="form-label">
@@ -450,36 +485,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             )}
           </div>
           <div>
-            <label htmlFor="departureTime" className="form-label">
-              Takeoff <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register('departureTime')}
-              type="time"
-              id="departureTime"
-              className="input"
-              title="Takeoff time (UTC)"
-            />
-            {errors.departureTime && (
-              <p className="form-error">{errors.departureTime.message}</p>
-            )}
-          </div>
-          <div>
-            <label htmlFor="arrivalTime" className="form-label">
-              Landing <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register('arrivalTime')}
-              type="time"
-              id="arrivalTime"
-              className="input"
-              title="Landing time (UTC)"
-            />
-            {errors.arrivalTime && (
-              <p className="form-error">{errors.arrivalTime.message}</p>
-            )}
-          </div>
-          <div>
             <label htmlFor="onBlockTime" className="form-label">
               On-Block <span className="text-red-500">*</span>
             </label>
@@ -493,6 +498,30 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             {errors.onBlockTime && (
               <p className="form-error">{errors.onBlockTime.message}</p>
             )}
+          </div>
+          <div>
+            <label htmlFor="departureTime" className="form-label">
+              Takeoff
+            </label>
+            <input
+              {...register('departureTime')}
+              type="time"
+              id="departureTime"
+              className="input"
+              title="Takeoff time (UTC) — optional"
+            />
+          </div>
+          <div>
+            <label htmlFor="arrivalTime" className="form-label">
+              Landing
+            </label>
+            <input
+              {...register('arrivalTime')}
+              type="time"
+              id="arrivalTime"
+              className="input"
+              title="Landing time (UTC) — optional"
+            />
           </div>
         </div>
 
@@ -559,6 +588,20 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           </div>
         </div>
       </fieldset>
+
+      {/* Launch Method — shown for glider/TMG aircraft */}
+      {showLaunchMethod && (
+        <fieldset>
+          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Launch Method</legend>
+          <select {...register('launchMethod')} id="launchMethod" className="input w-auto">
+            <option value="">Not specified</option>
+            <option value="winch">Winch Launch</option>
+            <option value="aerotow">Aerotow</option>
+            <option value="self-launch">Self-Launch</option>
+          </select>
+          <p className="form-helper mt-1">Required for SPL/glider flights</p>
+        </fieldset>
+      )}
 
       {/* People & Crew Section (Collapsible) — right after route */}
       <fieldset>

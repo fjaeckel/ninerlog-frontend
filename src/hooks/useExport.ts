@@ -23,5 +23,7 @@ export const exportFlightsCSV = () =>
 export const exportDataJSON = () =>
   downloadFile(`${API_BASE}/exports/json`, `pilotlog_backup_${new Date().toISOString().slice(0, 10)}.json`);
 
-export const exportFlightsPDF = () =>
-  downloadFile(`${API_BASE}/exports/pdf`, `pilotlog_logbook_${new Date().toISOString().slice(0, 10)}.pdf`);
+export const exportFlightsPDF = (logbookLicenseId?: string) => {
+  const params = logbookLicenseId ? `?logbookLicenseId=${logbookLicenseId}` : '';
+  return downloadFile(`${API_BASE}/exports/pdf${params}`, `pilotlog_logbook_${new Date().toISOString().slice(0, 10)}.pdf`);
+};
