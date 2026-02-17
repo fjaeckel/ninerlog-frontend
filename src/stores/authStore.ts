@@ -60,10 +60,12 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      // Only persist user profile and authentication flag — tokens stay in memory only
+      // Persist user profile, auth flag, and refresh token (for session continuity across reloads).
+      // Access token stays in memory only (short-lived, 15 min).
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        refreshToken: state.refreshToken,
       }),
     }
   )

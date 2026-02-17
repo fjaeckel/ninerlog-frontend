@@ -120,5 +120,19 @@ useAuthStore.subscribe((state, prevState) => {
 // case where the store is populated before the subscription fires)
 scheduleTokenRefresh();
 
+// ── Bootstrap refresh on page reload ──
+// After rehydration, if we have a refreshToken but no accessToken, immediately
+// fetch a new access token so the user doesn't get logged out on reload.
+{
+  const { refreshToken, accessToken, isAuthenticated } = useAuthStore.getState();
+  if (isAuthenticated && refreshToken && !accessToken) {
+    refreshAccessToken().then((success) => {
+      if (success) {
+        scheduleTokenRefresh();
+      }
+    });
+  }
+}
+
 // Export types for convenience
 export type * from './schema';
