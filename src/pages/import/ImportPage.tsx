@@ -18,9 +18,25 @@ const IMPORT_FIELDS = [
   { value: 'isDual', label: 'Dual' },
   { value: 'nightTime', label: 'Night Time' },
   { value: 'ifrTime', label: 'IFR Time' },
+  { value: 'actualInstrumentTime', label: 'Actual Instrument Time' },
+  { value: 'simulatedInstrumentTime', label: 'Simulated Instrument Time' },
   { value: 'landingsDay', label: 'Day Landings' },
   { value: 'landingsNight', label: 'Night Landings' },
+  { value: 'holds', label: 'Holds' },
+  { value: 'approachesCount', label: 'Approaches' },
+  { value: 'isIpc', label: 'IPC' },
+  { value: 'isFlightReview', label: 'Flight Review' },
+  { value: 'route', label: 'Route' },
   { value: 'remarks', label: 'Remarks' },
+  { value: 'instructorName', label: 'Instructor Name' },
+  { value: 'instructorComments', label: 'Instructor Comments' },
+  { value: 'dualGivenTime', label: 'Dual Given Time' },
+  { value: 'person1', label: 'Person 1' },
+  { value: 'person2', label: 'Person 2' },
+  { value: 'person3', label: 'Person 3' },
+  { value: 'person4', label: 'Person 4' },
+  { value: 'person5', label: 'Person 5' },
+  { value: 'person6', label: 'Person 6' },
 ];
 
 type Step = 'upload' | 'mapping' | 'preview' | 'result';
@@ -258,6 +274,7 @@ export default function ImportPage() {
                     <th className="px-3 py-2 text-left text-slate-500 font-medium">Date</th>
                     <th className="px-3 py-2 text-left text-slate-500 font-medium">Aircraft</th>
                     <th className="px-3 py-2 text-left text-slate-500 font-medium">Route</th>
+                    <th className="px-3 py-2 text-left text-slate-500 font-medium">Crew</th>
                     <th className="px-3 py-2 text-left text-slate-500 font-medium">Details</th>
                   </tr>
                 </thead>
@@ -278,6 +295,19 @@ export default function ImportPage() {
                       <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{f.flight.aircraftReg || '—'}</td>
                       <td className="px-3 py-2 text-slate-700 dark:text-slate-300">
                         {f.flight.departureIcao || '?'} → {f.flight.arrivalIcao || '?'}
+                      </td>
+                      <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
+                        {f.flight.crewMembers && f.flight.crewMembers.length > 0 ? (
+                          f.flight.crewMembers.map((cm, i) => (
+                            <span key={i} className="inline-block mr-1">
+                              <span className="font-medium text-slate-600 dark:text-slate-300">{cm.name}</span>
+                              <span className="text-slate-400 dark:text-slate-500"> ({cm.role})</span>
+                              {i < f.flight.crewMembers!.length - 1 && ', '}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
                       </td>
                       <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
                         {f.status === 'error' && f.errors?.map((e, i) => (
@@ -320,8 +350,9 @@ export default function ImportPage() {
             {result.status === 'completed' ? 'Import Complete!' :
              result.status === 'partial' ? 'Partially Imported' : 'Import Failed'}
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-md mx-auto mt-6 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 max-w-lg mx-auto mt-6 mb-8">
             <SummaryCard label="Imported" value={result.importedCount} color="green" />
+            <SummaryCard label="Contacts" value={result.contactsCreated ?? 0} color="green" />
             <SummaryCard label="Skipped" value={result.skippedCount} color="amber" />
             <SummaryCard label="Errors" value={result.errorCount} color="red" />
             <SummaryCard label="Duplicates" value={result.duplicateCount} />

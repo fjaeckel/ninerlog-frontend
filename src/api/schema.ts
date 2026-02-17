@@ -769,6 +769,183 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/reports/trends": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get monthly flight trends
+         * @description Returns monthly aggregated flight data (hours, flights, aircraft breakdown) for the specified number of months.
+         */
+        get: operations["getFlightTrends"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/stats-by-class": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get statistics by aircraft class
+         * @description Returns aggregated flight statistics grouped by aircraft class and regulatory authority.
+         */
+        get: operations["getStatsByClass"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List all contacts
+         * @description Returns all contacts (crew, instructors, etc.) for the authenticated user.
+         */
+        get: operations["listContacts"];
+        put?: never;
+        /**
+         * Create a contact
+         * @description Creates a new reusable contact for the authenticated user.
+         */
+        post: operations["createContact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contacts/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search contacts
+         * @description Search contacts by name for autocomplete.
+         */
+        get: operations["searchContacts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contacts/{contactId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a contact
+         * @description Returns a single contact by ID.
+         */
+        get: operations["getContact"];
+        /**
+         * Update a contact
+         * @description Updates an existing contact.
+         */
+        put: operations["updateContact"];
+        post?: never;
+        /**
+         * Delete a contact
+         * @description Deletes a contact by ID.
+         */
+        delete: operations["deleteContact"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/flights/delete-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete all flights
+         * @description Permanently delete all flight log entries for the authenticated user.
+         *     This also removes associated crew members and import history.
+         *     This action cannot be undone.
+         */
+        delete: operations["deleteAllFlights"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/me/data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete all user data
+         * @description Permanently delete all data for the authenticated user while keeping the account.
+         *     This removes flights, aircraft, licenses, class ratings, contacts, credentials,
+         *     import history, and notification logs. The user account itself is preserved.
+         *     This action cannot be undone.
+         */
+        delete: operations["deleteAllUserData"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/flights/recalculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recalculate all flights
+         * @description Recalculates auto-computed fields (night time, distance, solo, cross-country, etc.) for all of the authenticated user's flights.
+         */
+        post: operations["recalculateFlights"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2049,10 +2226,17 @@ export interface components {
         ImportFormat: "CSV" | "FOREFLIGHT_CSV" | "XLS" | "XLSX";
         /**
          * @description Target flight log field for column mapping.
+         *     Person fields (`person1`–`person6`) extract crew members from import rows.
+         *     During ForeFlight imports, role assignment is automatic:
+         *     - If an instructor is detected (via `instructorName` or dual-received time),
+         *       `person1` is assigned the **Instructor** role and `person2` the **Student** role.
+         *     - Otherwise, `person1` is assigned **PIC**.
+         *     - `person3`–`person6` default to **Passenger**.
+         *     Contacts are auto-created for each unique person name.
          *     Use `ignore` to skip a column during import.
          * @enum {string}
          */
-        ImportField: "date" | "aircraftReg" | "aircraftType" | "departureIcao" | "arrivalIcao" | "offBlockTime" | "onBlockTime" | "departureTime" | "arrivalTime" | "totalTime" | "isPic" | "isDual" | "nightTime" | "ifrTime" | "landingsDay" | "landingsNight" | "remarks" | "route" | "approachesCount" | "holds" | "isIpc" | "isFlightReview" | "actualInstrumentTime" | "simulatedInstrumentTime" | "ignore";
+        ImportField: "date" | "aircraftReg" | "aircraftType" | "departureIcao" | "arrivalIcao" | "offBlockTime" | "onBlockTime" | "departureTime" | "arrivalTime" | "totalTime" | "isPic" | "isDual" | "nightTime" | "ifrTime" | "landingsDay" | "landingsNight" | "remarks" | "route" | "approachesCount" | "holds" | "isIpc" | "isFlightReview" | "actualInstrumentTime" | "simulatedInstrumentTime" | "instructorName" | "instructorComments" | "dualGivenTime" | "person1" | "person2" | "person3" | "person4" | "person5" | "person6" | "ignore";
         ImportColumnMapping: {
             /**
              * @description Column header name from the uploaded file
@@ -2272,6 +2456,11 @@ export interface components {
              * @example 3
              */
             duplicateCount: number;
+            /**
+             * @description Number of new contacts auto-created from person data during import
+             * @example 2
+             */
+            contactsCreated?: number;
             /** @description IDs of the created flight log entries */
             importedFlightIds?: string[];
             /** @description Per-row errors for rows that were not imported */
@@ -2525,6 +2714,8 @@ export interface operations {
                 content: {
                     "application/json": {
                         accessToken?: string;
+                        /** @description New refresh token (rotation — old token is invalidated) */
+                        refreshToken?: string;
                         /** @description Token expiry in seconds */
                         expiresIn?: number;
                     };
@@ -3857,6 +4048,301 @@ export interface operations {
                 };
                 content: {
                     "application/pdf": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getFlightTrends: {
+        parameters: {
+            query?: {
+                /** @description Number of months to include (default 12, max 60) */
+                months?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Monthly trend data */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        trends?: {
+                            /** @description Month in YYYY-MM format */
+                            month?: string;
+                            totalHours?: number;
+                            flights?: number;
+                        }[];
+                        aircraftBreakdown?: {
+                            aircraftType?: string;
+                            hours?: number;
+                            flights?: number;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getStatsByClass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Statistics grouped by class and authority */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        byClass?: {
+                            classType?: string;
+                            totalHours?: number;
+                            flights?: number;
+                        }[];
+                        byAuthority?: {
+                            authority?: string;
+                            totalHours?: number;
+                            flights?: number;
+                        }[];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    listContacts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of contacts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Contact"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    createContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactCreate"];
+            };
+        };
+        responses: {
+            /** @description Contact created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Contact"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    searchContacts: {
+        parameters: {
+            query: {
+                /** @description Search query string */
+                q: string;
+                /** @description Maximum results (default 10) */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching contacts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Contact"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contactId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contact details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Contact"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contactId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactCreate"];
+            };
+        };
+        responses: {
+            /** @description Contact updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Contact"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contactId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contact deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteAllFlights: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deletion results */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Number of flights deleted
+                         * @example 42
+                         */
+                        deleted: number;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    deleteAllUserData: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deletion results */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example All user data deleted successfully */
+                        message: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    recalculateFlights: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Recalculation results */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Number of flights updated */
+                        updated?: number;
+                        /** @description Number of flights that failed */
+                        errors?: number;
+                        /** @description Total flights processed */
+                        total?: number;
+                    };
                 };
             };
             401: components["responses"]["Unauthorized"];

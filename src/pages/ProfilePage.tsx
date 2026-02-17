@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { useUpdateProfile, useChangePassword, useDeleteAccount } from '../hooks/useProfile';
+import { useUpdateProfile, useChangePassword, useDeleteAccount, useDeleteAllFlights, useDeleteAllUserData } from '../hooks/useProfile';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
 import { useSetup2FA, useVerify2FA, useDisable2FA } from '../hooks/useTwoFactor';
 import { ThemeSwitcher } from '../components/ui/ThemeSwitcher';
@@ -13,6 +13,8 @@ export default function ProfilePage() {
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
   const deleteAccount = useDeleteAccount();
+  const deleteAllFlights = useDeleteAllFlights();
+  const deleteAllUserData = useDeleteAllUserData();
   const { data: notifPrefs } = useNotificationPreferences();
   const updateNotifPrefs = useUpdateNotificationPreferences();
   const setup2FA = useSetup2FA();
@@ -42,6 +44,10 @@ export default function ProfilePage() {
   const [deletePassword, setDeletePassword] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [showDeleteFlightsConfirm, setShowDeleteFlightsConfirm] = useState(false);
+  const [deleteFlightsMessage, setDeleteFlightsMessage] = useState('');
+  const [showDeleteDataConfirm, setShowDeleteDataConfirm] = useState(false);
+  const [deleteDataMessage, setDeleteDataMessage] = useState('');
 
   // Recalculate state
   const [isRecalculating, setIsRecalculating] = useState(false);
@@ -489,54 +495,164 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* Delete Account */}
+      {/* Danger Zone */}
       <div className="card border-red-200">
-        <h2 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-4">Danger Zone</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-          Permanently delete your account and all associated data including licenses, flights, and tokens.
-          This action cannot be undone.
-        </p>
+        <h2 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-6">Danger Zone</h2>
 
-        {!showDeleteConfirm ? (
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300"
-          >
-            Delete Account
-          </button>
-        ) : (
-          <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
-            <p className="text-sm font-medium text-red-800 dark:text-red-300">
-              Enter your password to confirm account deletion:
-            </p>
-            <input
-              type="password"
-              value={deletePassword}
-              onChange={(e) => setDeletePassword(e.target.value)}
-              className="input"
-              placeholder="Your password"
-              aria-label="Confirm deletion password"
-            />
-            {deleteError && (
-              <p className="text-sm text-red-600 dark:text-red-400">{deleteError}</p>
-            )}
-            <div className="flex gap-3">
-              <button
-                onClick={handleDeleteAccount}
-                disabled={!deletePassword || deleteAccount.isPending}
-                className="btn-danger"
-              >
-                {deleteAccount.isPending ? 'Deleting...' : 'Permanently Delete Account'}
-              </button>
-              <button
-                onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }}
-                className="btn-secondary text-sm"
-              >
-                Cancel
-              </button>
+        {/* Delete All Flights */}
+        <div className="mb-6 pb-6 border-b border-red-100 dark:border-red-900/30">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+            Permanently delete all flight log entries and import history. Your aircraft, licenses, contacts, and account will be preserved.
+          </p>
+          {!showDeleteFlightsConfirm ? (
+            <button
+              onClick={() => setShowDeleteFlightsConfirm(true)}
+              className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300"
+            >
+              Delete All Flights
+            </button>
+          ) : (
+            <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
+              <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                Are you sure? This will permanently delete all your flights and import history.
+              </p>
+              {deleteFlightsMessage && (
+                <p className={`text-sm ${deleteFlightsMessage.includes('error') ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                  {deleteFlightsMessage}
+                </p>
+              )}
+              <div className="flex gap-3">
+                <button
+                  onClick={async () => {
+                    try {
+                      const result = await deleteAllFlights.mutateAsync();
+                      setDeleteFlightsMessage(`Deleted ${result.deleted} flights.`);
+                      setShowDeleteFlightsConfirm(false);
+                    } catch {
+                      setDeleteFlightsMessage('Failed to delete flights — error.');
+                    }
+                  }}
+                  disabled={deleteAllFlights.isPending}
+                  className="btn-danger"
+                >
+                  {deleteAllFlights.isPending ? 'Deleting...' : 'Permanently Delete All Flights'}
+                </button>
+                <button
+                  onClick={() => { setShowDeleteFlightsConfirm(false); setDeleteFlightsMessage(''); }}
+                  className="btn-secondary text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+          {!showDeleteFlightsConfirm && deleteFlightsMessage && (
+            <p className={`text-sm mt-2 ${deleteFlightsMessage.includes('error') ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+              {deleteFlightsMessage}
+            </p>
+          )}
+        </div>
+
+        {/* Delete All Data */}
+        <div className="mb-6 pb-6 border-b border-red-100 dark:border-red-900/30">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+            Permanently delete all your data including flights, aircraft, licenses, contacts, credentials, and import history. Your account will be preserved but all data will be gone.
+          </p>
+          {!showDeleteDataConfirm ? (
+            <button
+              onClick={() => setShowDeleteDataConfirm(true)}
+              className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300"
+            >
+              Delete All Data
+            </button>
+          ) : (
+            <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
+              <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                Are you sure? This will permanently delete ALL your data. Only your account login will remain.
+              </p>
+              {deleteDataMessage && (
+                <p className={`text-sm ${deleteDataMessage.includes('error') ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                  {deleteDataMessage}
+                </p>
+              )}
+              <div className="flex gap-3">
+                <button
+                  onClick={async () => {
+                    try {
+                      await deleteAllUserData.mutateAsync();
+                      setDeleteDataMessage('All data deleted successfully.');
+                      setShowDeleteDataConfirm(false);
+                    } catch {
+                      setDeleteDataMessage('Failed to delete data — error.');
+                    }
+                  }}
+                  disabled={deleteAllUserData.isPending}
+                  className="btn-danger"
+                >
+                  {deleteAllUserData.isPending ? 'Deleting...' : 'Permanently Delete All Data'}
+                </button>
+                <button
+                  onClick={() => { setShowDeleteDataConfirm(false); setDeleteDataMessage(''); }}
+                  className="btn-secondary text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+          {!showDeleteDataConfirm && deleteDataMessage && (
+            <p className={`text-sm mt-2 ${deleteDataMessage.includes('error') ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+              {deleteDataMessage}
+            </p>
+          )}
+        </div>
+
+        {/* Delete Account */}
+        <div>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+            Permanently delete your account and all associated data including licenses, flights, and tokens. This action cannot be undone.
+          </p>
+          {!showDeleteConfirm ? (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300"
+            >
+              Delete Account
+            </button>
+          ) : (
+            <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
+              <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                Enter your password to confirm account deletion:
+              </p>
+              <input
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                className="input"
+                placeholder="Your password"
+                aria-label="Confirm deletion password"
+              />
+              {deleteError && (
+                <p className="text-sm text-red-600 dark:text-red-400">{deleteError}</p>
+              )}
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={!deletePassword || deleteAccount.isPending}
+                  className="btn-danger"
+                >
+                  {deleteAccount.isPending ? 'Deleting...' : 'Permanently Delete Account'}
+                </button>
+                <button
+                  onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }}
+                  className="btn-secondary text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

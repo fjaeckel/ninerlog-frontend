@@ -26,6 +26,8 @@ describe('ProfilePage', () => {
   const mockUpdateProfile = { mutateAsync: vi.fn(), isPending: false };
   const mockChangePassword = { mutateAsync: vi.fn(), isPending: false };
   const mockDeleteAccount = { mutateAsync: vi.fn(), isPending: false };
+  const mockDeleteAllFlights = { mutateAsync: vi.fn(), isPending: false };
+  const mockDeleteAllUserData = { mutateAsync: vi.fn(), isPending: false };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -39,6 +41,8 @@ describe('ProfilePage', () => {
     vi.spyOn(useProfileHook, 'useUpdateProfile').mockReturnValue(mockUpdateProfile as any);
     vi.spyOn(useProfileHook, 'useChangePassword').mockReturnValue(mockChangePassword as any);
     vi.spyOn(useProfileHook, 'useDeleteAccount').mockReturnValue(mockDeleteAccount as any);
+    vi.spyOn(useProfileHook, 'useDeleteAllFlights').mockReturnValue(mockDeleteAllFlights as any);
+    vi.spyOn(useProfileHook, 'useDeleteAllUserData').mockReturnValue(mockDeleteAllUserData as any);
   });
 
   it('renders all profile sections', () => {
@@ -142,6 +146,72 @@ describe('ProfilePage', () => {
 
     await waitFor(() => {
       expect(mockDeleteAccount.mutateAsync).toHaveBeenCalledWith('mypassword');
+    });
+  });
+
+  it('shows Delete All Flights button', () => {
+    renderWithProviders(<ProfilePage />);
+    expect(screen.getByRole('button', { name: /delete all flights/i })).toBeInTheDocument();
+  });
+
+  it('shows Delete All Data button', () => {
+    renderWithProviders(<ProfilePage />);
+    expect(screen.getByRole('button', { name: /delete all data/i })).toBeInTheDocument();
+  });
+
+  it('shows confirmation when Delete All Flights clicked', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ProfilePage />);
+
+    await user.click(screen.getByRole('button', { name: /delete all flights/i }));
+
+    expect(screen.getByText(/permanently delete all your flights/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /permanently delete all flights/i })).toBeInTheDocument();
+  });
+
+  it('calls deleteAllFlights and shows result', async () => {
+    const user = userEvent.setup();
+    mockDeleteAllFlights.mutateAsync.mockResolvedValueOnce({ deleted: 42 });
+
+    renderWithProviders(<ProfilePage />);
+
+    await user.click(screen.getByRole('button', { name: /delete all flights/i }));
+    await user.click(screen.getByRole('button', { name: /permanently delete all flights/i }));
+
+    await waitFor(() => {
+      expect(mockDeleteAllFlights.mutateAsync).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/deleted 42 flights/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows confirmation when Delete All Data clicked', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ProfilePage />);
+
+    await user.click(screen.getByRole('button', { name: /delete all data/i }));
+
+    expect(screen.getByText(/all your data.*only your account/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /permanently delete all data/i })).toBeInTheDocument();
+  });
+
+  it('calls deleteAllUserData and shows result', async () => {
+    const user = userEvent.setup();
+    mockDeleteAllUserData.mutateAsync.mockResolvedValueOnce({ message: 'All user data deleted successfully' });
+
+    renderWithProviders(<ProfilePage />);
+
+    await user.click(screen.getByRole('button', { name: /delete all data/i }));
+    await user.click(screen.getByRole('button', { name: /permanently delete all data/i }));
+
+    await waitFor(() => {
+      expect(mockDeleteAllUserData.mutateAsync).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/all data deleted successfully/i)).toBeInTheDocument();
     });
   });
 });

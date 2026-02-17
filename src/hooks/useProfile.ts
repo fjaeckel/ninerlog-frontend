@@ -54,4 +54,39 @@ export const useDeleteAccount = () => {
   });
 };
 
+// Delete all flights
+export const useDeleteAllFlights = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (): Promise<{ deleted: number }> => {
+      const { data, error } = await apiClient.DELETE('/flights/delete-all');
+      if (error) throw error;
+      return data as { deleted: number };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['flights'] });
+      queryClient.invalidateQueries({ queryKey: ['statistics'] });
+      queryClient.invalidateQueries({ queryKey: ['currency'] });
+      queryClient.invalidateQueries({ queryKey: ['imports'] });
+    },
+  });
+};
+
+// Delete all user data (keeps account)
+export const useDeleteAllUserData = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (): Promise<{ message: string }> => {
+      const { data, error } = await apiClient.DELETE('/users/me/data');
+      if (error) throw error;
+      return data as { message: string };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+    },
+  });
+};
+
 
