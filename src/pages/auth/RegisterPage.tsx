@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRegister } from '../../hooks/useAuth';
+import { APP_NAME } from '../../lib/config';
 
 const registerSchema = z
   .object({
@@ -52,7 +53,7 @@ export default function RegisterPage() {
         {/* Logo & Tagline */}
         <div className="text-center">
           <div className="text-4xl mb-2">✈</div>
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">PilotLog</h1>
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{APP_NAME}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Create your account
           </p>

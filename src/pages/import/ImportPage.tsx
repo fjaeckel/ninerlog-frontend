@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useUploadImport, usePreviewImport, useConfirmImport } from '../../hooks/useImport';
 import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping } from '../../hooks/useImport';
+import HelpLink from '../../components/ui/HelpLink';
 
 const IMPORT_FIELDS = [
   { value: 'ignore', label: '— Skip —' },
@@ -124,8 +125,9 @@ export default function ImportPage() {
     <div className="mx-auto max-w-[960px] py-6">
       <div className="mb-6">
         <h1 className="page-title">Import Flights</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
           Import flight logs from CSV files (including ForeFlight exports)
+          <HelpLink topic="import-export" />
         </p>
       </div>
 

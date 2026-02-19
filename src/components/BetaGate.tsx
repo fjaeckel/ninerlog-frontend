@@ -1,4 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react';
+import { APP_NAME } from '../lib/config';
 
 const BETA_TOKEN_KEY = 'pilotlog_beta_token';
 
@@ -132,7 +133,7 @@ export function BetaGate({ children }: { children: ReactNode }) {
             fontWeight: 600,
             margin: '0 0 0.25rem',
           }}>
-            PilotLog Beta
+            {APP_NAME} Beta
           </h1>
           <p style={{
             color: '#94a3b8',

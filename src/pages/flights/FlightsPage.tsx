@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Pencil, Trash2, Search, X } from 'lucide-react';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
+import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
 import FlightForm from '../../components/flights/FlightForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
@@ -155,8 +156,9 @@ export default function FlightsPage() {
         <div>
           <h1 className="page-title">Flight Log</h1>
           {pagination && (
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
               {pagination.total} flight{pagination.total !== 1 ? 's' : ''} total
+              <HelpLink topic="flights" />
             </p>
           )}
         </div>

@@ -12,6 +12,12 @@
     <title>PilotLog - Pilot Logbook</title>
     <!-- Runtime environment variables (injected by docker-entrypoint.sh) -->
     <script src="/env-config.js"></script>
+    <!-- Update document title if APP_NAME is configured -->
+    <script>
+      if (window.ENV && window.ENV.VITE_APP_NAME) {
+        document.title = window.ENV.VITE_APP_NAME + ' - Pilot Logbook';
+      }
+    </script>
   </head>
   <body>
     <noscript>PilotLog requires JavaScript to run.</noscript>

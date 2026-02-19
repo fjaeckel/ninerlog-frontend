@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { useLogin } from '../../hooks/useAuth';
 import { useLogin2FA } from '../../hooks/useTwoFactor';
 import { useAuthStore } from '../../stores/authStore';
+import { APP_NAME } from '../../lib/config';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -80,7 +81,7 @@ export default function LoginPage() {
         {/* Logo & Tagline */}
         <div className="text-center">
           <div className="text-4xl mb-2">✈</div>
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">PilotLog</h1>
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{APP_NAME}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Your digital logbook, always current.
           </p>

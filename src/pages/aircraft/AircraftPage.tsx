@@ -4,6 +4,7 @@ import AircraftForm from '../../components/aircraft/AircraftForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { SkeletonGrid } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
+import HelpLink from '../../components/ui/HelpLink';
 
 const CLASS_LABELS: Record<string, string> = {
   SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
@@ -54,8 +55,9 @@ export default function AircraftPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="page-title">Aircraft</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
             Manage your fleet of aircraft
+            <HelpLink topic="aircraft" />
           </p>
         </div>
         <button

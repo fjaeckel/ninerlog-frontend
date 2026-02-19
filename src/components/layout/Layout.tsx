@@ -7,6 +7,7 @@ import {
 import { useLogout } from '../../hooks/useAuth';
 import { useAuthStore } from '../../stores/authStore';
 import AnnouncementBanner from '../ui/AnnouncementBanner';
+import { APP_NAME } from '../../lib/config';
 
 export default function Layout() {
   const { user } = useAuthStore();
@@ -37,7 +38,7 @@ export default function Layout() {
       <header className="fixed top-0 inset-x-0 h-14 lg:h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-40 flex items-center justify-between px-4 lg:px-6" role="banner">
         <Link to="/dashboard" className="flex items-center gap-2">
           <Plane className="w-5 h-5 text-brand-600" aria-hidden="true" />
-          <span className="text-lg font-bold text-brand-800 dark:text-blue-400">PilotLog</span>
+          <span className="text-lg font-bold text-brand-800 dark:text-blue-400">{APP_NAME}</span>
         </Link>
 
         <div className="flex items-center gap-3">

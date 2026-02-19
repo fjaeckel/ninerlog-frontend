@@ -6,6 +6,7 @@ import { CurrencyCard } from '../../components/currency/CurrencyCard';
 import { ChevronDown, ChevronRight, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { isPast, differenceInDays, format } from 'date-fns';
 import type { ClassRatingCurrency } from '../../types/api';
+import HelpLink from '../../components/ui/HelpLink';
 
 const CREDENTIAL_DESCRIPTIONS: Record<string, string> = {
   EASA_CLASS1_MEDICAL: 'EASA Class 1 Medical — valid for 12 months (6 months after age 40 for ATPL holders)',
@@ -63,8 +64,9 @@ export default function CurrencyPage() {
             {totalAlerts > 0 ? <ShieldAlert className="w-6 h-6 text-amber-500" /> : <ShieldCheck className="w-6 h-6 text-green-500" />}
             Currency & Compliance
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
             Track your flight currency, class rating validity, and credential status
+            <HelpLink topic="currency" />
           </p>
         </div>
         {totalAlerts > 0 && (

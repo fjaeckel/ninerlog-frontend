@@ -3,6 +3,7 @@ import { useLicenses, useDeleteLicense } from '../../hooks/useLicenses';
 import LicenseForm from '../../components/licenses/LicenseForm';
 import LicenseCard from '../../components/licenses/LicenseCard';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import HelpLink from '../../components/ui/HelpLink';
 
 export default function LicensesPage() {
   const { data: licenses, isLoading, error } = useLicenses();
@@ -66,7 +67,10 @@ export default function LicensesPage() {
   return (
     <div className="mx-auto max-w-[960px] py-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="page-title">My Licenses</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="page-title">My Licenses</h1>
+          <HelpLink topic="licenses" />
+        </div>
         <button onClick={() => setShowForm(true)} className="btn-primary">
           + Add License
         </button>

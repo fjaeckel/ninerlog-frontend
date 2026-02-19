@@ -1,4 +1,5 @@
 import type { MonthlyTrend, AircraftBreakdown } from '../hooks/useReports';
+import { APP_NAME } from './config';
 
 export function exportTrendsToCSV(monthly: MonthlyTrend[], byAircraftType: AircraftBreakdown[]) {
   const lines: string[] = [];
@@ -40,7 +41,7 @@ export function exportTrendsToPDF(monthly: MonthlyTrend[], byAircraftType: Aircr
   const html = `
 <!DOCTYPE html>
 <html><head>
-<title>PilotLog Report</title>
+<title>${APP_NAME} Report</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #1e293b; }
   h1 { font-size: 1.5rem; border-bottom: 2px solid #3b82f6; padding-bottom: 0.5rem; }
@@ -56,7 +57,7 @@ export function exportTrendsToPDF(monthly: MonthlyTrend[], byAircraftType: Aircr
   @media print { body { padding: 0; } }
 </style>
 </head><body>
-<h1>✈ PilotLog Flight Report</h1>
+<h1>✈ ${APP_NAME} Flight Report</h1>
 <p style="color:#64748b">Generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
 
 <div class="summary">
