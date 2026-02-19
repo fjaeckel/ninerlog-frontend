@@ -68,14 +68,14 @@ export default function CurrencyPage() {
           </p>
         </div>
         {totalAlerts > 0 && (
-          <span className="bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full">
+          <span className="badge-expiring">
             {totalAlerts} alert{totalAlerts !== 1 ? 's' : ''}
           </span>
         )}
       </div>
 
       {isLoading && (
-        <div className="text-center py-12 text-slate-400">Loading currency data...</div>
+        <div className="text-center py-12 text-slate-400 dark:text-slate-500">Loading currency data...</div>
       )}
 
       {/* Class Rating Currency — grouped by license */}
@@ -106,9 +106,9 @@ export default function CurrencyPage() {
                   {isExpanded ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
                   <span className="font-semibold text-slate-800 dark:text-slate-100 flex-1">
                     {license ? `${license.regulatoryAuthority} ${license.licenseType}` : ratings[0]?.regulatoryAuthority || 'License'}
-                    {license?.licenseNumber && <span className="text-sm font-normal text-slate-500 ml-2">({license.licenseNumber})</span>}
+                    {license?.licenseNumber && <span className="text-sm font-normal text-slate-500 dark:text-slate-400 ml-2">({license.licenseNumber})</span>}
                   </span>
-                  <span className="text-xs text-slate-500">{ratings.length} rating{ratings.length !== 1 ? 's' : ''}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">{ratings.length} rating{ratings.length !== 1 ? 's' : ''}</span>
                   {hasAlert && <span className="w-2 h-2 rounded-full bg-amber-500" />}
                 </button>
 
@@ -150,10 +150,10 @@ export default function CurrencyPage() {
                   : 'border-l-green-500 bg-green-50 dark:bg-green-900/20';
 
               const statusBadge = expired
-                ? { text: 'EXPIRED', cls: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300' }
+                ? { text: 'EXPIRED', cls: 'badge-expired' }
                 : expiringSoon
-                  ? { text: 'EXPIRING', cls: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' }
-                  : { text: 'VALID', cls: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300' };
+                  ? { text: 'EXPIRING', cls: 'badge-expiring' }
+                  : { text: 'VALID', cls: 'badge-current' };
 
               const description = CREDENTIAL_DESCRIPTIONS[cred.credentialType] || cred.credentialType.replace(/_/g, ' ');
 
@@ -168,7 +168,7 @@ export default function CurrencyPage() {
                         <p className="text-xs text-slate-500 dark:text-slate-400">{cred.credentialNumber}</p>
                       )}
                     </div>
-                    <span className={`text-xs font-bold px-2 py-1 rounded ${statusBadge.cls}`}>
+                    <span className={`${statusBadge.cls}`}>
                       {statusBadge.text}
                     </span>
                   </div>
@@ -180,7 +180,7 @@ export default function CurrencyPage() {
                       <p>
                         Expires: {format(new Date(cred.expiryDate), 'MMM dd, yyyy')}
                         {daysLeft !== null && (
-                          <span className={`ml-1 font-medium ${expired ? 'text-red-600 dark:text-red-400' : expiringSoon ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
+                          <span className={`ml-1 font-medium font-mono tabular-nums ${expired ? 'text-red-600 dark:text-red-400' : expiringSoon ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
                             ({expired ? `${Math.abs(daysLeft)}d ago` : `${daysLeft}d remaining`})
                           </span>
                         )}

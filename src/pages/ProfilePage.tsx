@@ -128,7 +128,7 @@ export default function ProfilePage() {
 
       {/* Update Profile */}
       <div className="card mb-6">
-        <h2 className="text-lg font-semibold mb-4">Profile Information</h2>
+        <h2 className="section-title mb-4">Profile Information</h2>
         <form onSubmit={handleUpdateProfile} className="space-y-4">
           <div>
             <label htmlFor="name" className="form-label">
@@ -173,7 +173,7 @@ export default function ProfilePage() {
 
       {/* Change Password */}
       <div className="card mb-6">
-        <h2 className="text-lg font-semibold mb-4">Change Password</h2>
+        <h2 className="section-title mb-4">Change Password</h2>
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
             <label htmlFor="currentPassword" className="form-label">
@@ -234,7 +234,7 @@ export default function ProfilePage() {
       {/* Notification Settings */}
       {notifPrefs && (
         <div className="card mb-6">
-          <h2 className="text-lg font-semibold mb-4">Notification Settings</h2>
+          <h2 className="section-title mb-4">Notification Settings</h2>
           <div className="space-y-4">
             <label className="flex items-center justify-between cursor-pointer">
               <div>
@@ -312,7 +312,7 @@ export default function ProfilePage() {
 
       {/* Two-Factor Authentication */}
       <div className="card mb-6">
-        <h2 className="text-lg font-semibold mb-4">Two-Factor Authentication</h2>
+        <h2 className="section-title mb-4">Two-Factor Authentication</h2>
 
         {recoveryCodes ? (
           // Show recovery codes after enabling
@@ -476,7 +476,7 @@ export default function ProfilePage() {
 
       {/* Flight Data Maintenance */}
       <div className="card mb-6">
-        <h2 className="text-lg font-semibold mb-4">Flight Data</h2>
+        <h2 className="section-title mb-4">Flight Data</h2>
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
           Recalculate all auto-computed fields across your flights (solo time, cross-country, distance, night time, day/night landing split, PIC/Dual).
           Useful after importing flights or changing aircraft data.
@@ -496,7 +496,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="card border-red-200">
+      <div className="card border-red-200 dark:border-red-800">
         <h2 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-6">Danger Zone</h2>
 
         {/* Delete All Flights */}
@@ -507,12 +507,12 @@ export default function ProfilePage() {
           {!showDeleteFlightsConfirm ? (
             <button
               onClick={() => setShowDeleteFlightsConfirm(true)}
-              className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300"
+              className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700"
             >
               Delete All Flights
             </button>
           ) : (
-            <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
+            <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
               <p className="text-sm font-medium text-red-800 dark:text-red-300">
                 Are you sure? This will permanently delete all your flights and import history.
               </p>
@@ -561,12 +561,12 @@ export default function ProfilePage() {
           {!showDeleteDataConfirm ? (
             <button
               onClick={() => setShowDeleteDataConfirm(true)}
-              className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300"
+              className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700"
             >
               Delete All Data
             </button>
           ) : (
-            <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
+            <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
               <p className="text-sm font-medium text-red-800 dark:text-red-300">
                 Are you sure? This will permanently delete ALL your data. Only your account login will remain.
               </p>
@@ -615,12 +615,12 @@ export default function ProfilePage() {
           {!showDeleteConfirm ? (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300"
+              className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700"
             >
               Delete Account
             </button>
           ) : (
-            <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200">
+            <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
               <p className="text-sm font-medium text-red-800 dark:text-red-300">
                 Enter your password to confirm account deletion:
               </p>

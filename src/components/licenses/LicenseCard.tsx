@@ -148,7 +148,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
           Class Ratings
         </h4>
         {ratingsLoading ? (
-          <p className="text-xs text-slate-400">Loading...</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">Loading...</p>
         ) : classRatings && classRatings.length > 0 ? (
           <div className="space-y-1.5">
             {classRatings.map((rating) => (
@@ -160,11 +160,11 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-xs text-slate-500">Issue Date</label>
+                        <label className="text-xs text-slate-500 dark:text-slate-400">Issue Date</label>
                         <input type="date" value={newIssueDate} onChange={(e) => setNewIssueDate(e.target.value)} className="input input-sm mt-0.5" />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-500">Expiry Date</label>
+                        <label className="text-xs text-slate-500 dark:text-slate-400">Expiry Date</label>
                         <input type="date" value={newExpiryDate} onChange={(e) => setNewExpiryDate(e.target.value)} className="input input-sm mt-0.5" />
                       </div>
                     </div>
@@ -184,14 +184,14 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                       <ExpiryBadge expiryDate={rating.expiryDate} />
                       <button
                         onClick={() => startEditRating(rating)}
-                        className="text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors text-xs"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors text-xs"
                         title="Edit class rating"
                       >
                         ✏
                       </button>
                       <button
                         onClick={() => handleDeleteRating(rating.id)}
-                        className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors text-xs font-bold leading-none"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors text-xs font-bold leading-none"
                         title="Remove class rating"
                       >
                         ✕
@@ -203,7 +203,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
             ))}
           </div>
         ) : (
-          <p className="text-xs text-slate-400 italic">No class ratings</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 italic">No class ratings</p>
         )}
 
         {/* Add Rating */}
@@ -258,7 +258,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
         ) : (
           <button
             onClick={() => setShowAddForm(true)}
-            className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+            className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center"
           >
             + Add Rating
           </button>

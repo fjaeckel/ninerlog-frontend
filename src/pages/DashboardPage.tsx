@@ -153,7 +153,7 @@ export default function DashboardPage() {
                 <div key={cs.class} data-testid={`class-stat-${cs.class}`}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium text-slate-700 dark:text-slate-300">{classLabels[cs.class] || cs.class}</span>
-                    <span className="text-slate-500 dark:text-slate-400">{cs.hours.toFixed(1)}h · {cs.flights} flights · {cs.landings} ldg</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{cs.hours.toFixed(1)}h · {cs.flights} flights · {cs.landings} ldg</span>
                   </div>
                   <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 dark:bg-blue-400 rounded-full" style={{ width: `${pct}%` }} />
@@ -174,7 +174,7 @@ export default function DashboardPage() {
               <div key={`${auth.authority}-${auth.licenseType}`} className="text-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                 <p className="data-lg text-slate-800 dark:text-slate-100">{auth.hours.toFixed(1)}h</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{auth.authority} {auth.licenseType}</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500">{auth.flights} flights</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-mono tabular-nums">{auth.flights} flights</p>
               </div>
             ))}
           </div>
@@ -188,7 +188,7 @@ export default function DashboardPage() {
           {totalFlights > 0 && (
             <button
               onClick={() => navigate('/flights')}
-              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium"
+              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium min-h-[44px] flex items-center"
             >
               View all →
             </button>

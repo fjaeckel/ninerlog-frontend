@@ -13,28 +13,28 @@ const STATUS_CONFIG: Record<CurrencyStatus, {
   current: {
     bg: 'bg-green-50 dark:bg-green-900/20',
     border: 'border-l-green-500',
-    badge: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+    badge: 'badge-current',
     badgeText: 'CURRENT',
     icon: '✓',
   },
   expiring: {
     bg: 'bg-amber-50 dark:bg-amber-900/20',
     border: 'border-l-amber-500',
-    badge: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+    badge: 'badge-expiring',
     badgeText: 'ATTENTION',
     icon: '⏰',
   },
   expired: {
     bg: 'bg-red-50 dark:bg-red-900/20',
     border: 'border-l-red-500',
-    badge: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+    badge: 'badge-expired',
     badgeText: 'NOT CURRENT',
     icon: '✕',
   },
   unknown: {
     bg: 'bg-slate-50 dark:bg-slate-800/40',
     border: 'border-l-slate-400',
-    badge: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+    badge: 'badge-neutral',
     badgeText: 'UNKNOWN',
     icon: '?',
   },
@@ -93,7 +93,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
             {rating.regulatoryAuthority} {rating.licenseType || ''}
           </p>
         </div>
-        <span className={`text-xs font-bold px-2 py-1 rounded ${config.badge}`}>
+        <span className={`${config.badge}`}>
           {config.badgeText}
         </span>
       </div>

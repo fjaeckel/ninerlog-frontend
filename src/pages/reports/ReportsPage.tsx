@@ -100,7 +100,7 @@ export default function ReportsPage() {
       {monthly.length > 0 ? (
         <>
           <div className="card mb-6">
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Block Hours Over Time</h2>
+            <h2 className="section-title mb-4">Block Hours Over Time</h2>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={monthly} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -132,7 +132,7 @@ export default function ReportsPage() {
 
           {/* Flights Per Month (bar chart) */}
           <div className="card mb-6">
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Flights Per Month</h2>
+            <h2 className="section-title mb-4">Flights Per Month</h2>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthly} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -167,7 +167,7 @@ export default function ReportsPage() {
       {byAircraft.length > 0 && (
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="card">
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Hours by Aircraft Type</h2>
+            <h2 className="section-title mb-4">Hours by Aircraft Type</h2>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -195,7 +195,7 @@ export default function ReportsPage() {
           </div>
 
           <div className="card">
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Aircraft Type Breakdown</h2>
+            <h2 className="section-title mb-4">Aircraft Type Breakdown</h2>
             <div className="space-y-3">
               {byAircraft.map((ac, idx) => {
                 const maxHours = byAircraft[0]?.totalHours || 1;
@@ -204,7 +204,7 @@ export default function ReportsPage() {
                   <div key={ac.aircraftType}>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="font-medium text-slate-700 dark:text-slate-300">{ac.aircraftType}</span>
-                      <span className="text-slate-500 dark:text-slate-400">
+                      <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
                         {ac.totalHours.toFixed(1)}h · {ac.totalFlights} flights
                       </span>
                     </div>

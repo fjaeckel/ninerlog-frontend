@@ -44,7 +44,16 @@ export default function LoginPage() {
 
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid email or password.');
+      const msg = err?.error || err?.message || err?.response?.data?.error || '';
+      if (msg.toLowerCase().includes('too many requests')) {
+        setError('Too many login attempts. Please wait a minute and try again.');
+      } else if (msg.toLowerCase().includes('disabled')) {
+        setError('Account disabled. Contact the administrator.');
+      } else if (msg.toLowerCase().includes('locked')) {
+        setError(msg);
+      } else {
+        setError(msg || 'Invalid email or password.');
+      }
     }
   };
 

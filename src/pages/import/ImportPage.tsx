@@ -190,7 +190,7 @@ export default function ImportPage() {
                   {' · '}{uploadData.totalRows} rows found
                 </p>
               </div>
-              <button onClick={handleReset} className="btn-ghost btn-sm text-xs">Start Over</button>
+              <button onClick={handleReset} className="btn-ghost btn-sm text-xs min-h-[44px]">Start Over</button>
             </div>
 
             <div className="space-y-2">
@@ -201,7 +201,7 @@ export default function ImportPage() {
                     <span className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300 truncate" title={col}>
                       {col}
                     </span>
-                    <span className="text-slate-400">→</span>
+                    <span className="text-slate-400 dark:text-slate-500">→</span>
                     <select
                       value={mapping?.targetField || 'ignore'}
                       onChange={(e) => updateMapping(col, e.target.value)}
@@ -226,7 +226,7 @@ export default function ImportPage() {
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-slate-700">
                       {uploadData.columns.slice(0, 8).map((col) => (
-                        <th key={col} className="px-2 py-1 text-left text-slate-500 truncate max-w-[120px]">{col}</th>
+                        <th key={col} className="px-2 py-1 text-left text-slate-500 dark:text-slate-400 truncate max-w-[120px]">{col}</th>
                       ))}
                     </tr>
                   </thead>
@@ -264,18 +264,18 @@ export default function ImportPage() {
           </div>
 
           <div className="card">
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Import Preview</h2>
+            <h2 className="section-title mb-4">Import Preview</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="px-3 py-2 text-left text-slate-500 font-medium">Row</th>
-                    <th className="px-3 py-2 text-left text-slate-500 font-medium">Status</th>
-                    <th className="px-3 py-2 text-left text-slate-500 font-medium">Date</th>
-                    <th className="px-3 py-2 text-left text-slate-500 font-medium">Aircraft</th>
-                    <th className="px-3 py-2 text-left text-slate-500 font-medium">Route</th>
-                    <th className="px-3 py-2 text-left text-slate-500 font-medium">Crew</th>
-                    <th className="px-3 py-2 text-left text-slate-500 font-medium">Details</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Row</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Status</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Date</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Aircraft</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Route</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Crew</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Details</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -285,8 +285,8 @@ export default function ImportPage() {
                       <td className="px-3 py-2">
                         <span className={`badge text-xs ${
                           f.status === 'valid' ? 'badge-current' :
-                          f.status === 'duplicate' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                          'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          f.status === 'duplicate' ? 'badge-expiring' :
+                          'badge-expired'
                         }`}>
                           {f.status}
                         </span>
@@ -306,7 +306,7 @@ export default function ImportPage() {
                             </span>
                           ))
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-slate-400 dark:text-slate-500">—</span>
                         )}
                       </td>
                       <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
@@ -322,7 +322,7 @@ export default function ImportPage() {
               </table>
             </div>
             {previewData.flights.length > 50 && (
-              <p className="text-xs text-slate-400 mt-2">Showing first 50 of {previewData.flights.length} rows</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">Showing first 50 of {previewData.flights.length} rows</p>
             )}
           </div>
 
@@ -383,7 +383,7 @@ function SummaryCard({ label, value, color }: { label: string; value: number; co
     'text-slate-800 dark:text-slate-100';
   return (
     <div className="card text-center py-3">
-      <div className={`text-2xl font-bold ${colorClass}`}>{value}</div>
+      <div className={`text-2xl font-bold font-mono tabular-nums ${colorClass}`}>{value}</div>
       <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</div>
     </div>
   );

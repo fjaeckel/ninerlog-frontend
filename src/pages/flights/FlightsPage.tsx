@@ -213,7 +213,7 @@ export default function FlightsPage() {
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+          className={`px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-colors border ${
             showFilters || activeFilterCount > 0
               ? 'border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
               : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
@@ -222,7 +222,7 @@ export default function FlightsPage() {
           Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
         </button>
         {activeFilterCount > 0 && (
-          <button onClick={clearFilters} className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
+          <button onClick={clearFilters} className="text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center">
             Clear all
           </button>
         )}
@@ -232,7 +232,7 @@ export default function FlightsPage() {
           <button
             key={field}
             onClick={() => toggleSort(field)}
-            className={`px-3 py-1 rounded-full text-xs transition-colors ${
+            className={`px-3 py-2 min-h-[44px] rounded-full text-xs transition-colors ${
               sortBy === field
                 ? 'bg-blue-100 text-blue-700 font-medium dark:bg-blue-900/30 dark:text-blue-400'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'

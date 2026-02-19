@@ -205,7 +205,7 @@ export default function MapPage() {
       {/* Airport stats table */}
       {stats.length > 0 && (
         <div className="card mt-6">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Airport Statistics</h2>
+          <h2 className="section-title mb-4">Airport Statistics</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -224,9 +224,9 @@ export default function MapPage() {
                     <tr key={s.icao} className="border-b border-slate-100 dark:border-slate-800">
                       <td className="py-2 px-3 font-mono font-medium text-slate-800 dark:text-slate-200">{s.icao}</td>
                       <td className="py-2 px-3 text-slate-600 dark:text-slate-400">{s.name}</td>
-                      <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300">{s.departures}</td>
-                      <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300">{s.arrivals}</td>
-                      <td className="py-2 px-3 text-right font-medium text-slate-800 dark:text-slate-200">{s.totalFlights}</td>
+                      <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300 font-mono tabular-nums">{s.departures}</td>
+                      <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300 font-mono tabular-nums">{s.arrivals}</td>
+                      <td className="py-2 px-3 text-right font-medium text-slate-800 dark:text-slate-200 font-mono tabular-nums">{s.totalFlights}</td>
                     </tr>
                   ))}
               </tbody>

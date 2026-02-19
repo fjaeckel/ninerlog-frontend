@@ -20,6 +20,8 @@ const MapPage = lazy(() => import('./pages/maps/MapPage'));
 const ImportPage = lazy(() => import('./pages/import/ImportPage'));
 const ExportPage = lazy(() => import('./pages/export/ExportPage'));
 const CurrencyPage = lazy(() => import('./pages/currency/CurrencyPage'));
+const AdminPage = lazy(() => import('./pages/admin/AdminPage'));
+const HelpPage = lazy(() => import('./pages/help/HelpPage'));
 
 function PageLoader() {
   return (
@@ -57,6 +59,8 @@ function App() {
           <Route path="/import" element={isAuthenticated ? <ImportPage /> : <Navigate to="/login" />} />
           <Route path="/export" element={isAuthenticated ? <ExportPage /> : <Navigate to="/login" />} />
           <Route path="/currency" element={isAuthenticated ? <CurrencyPage /> : <Navigate to="/login" />} />
+          <Route path="/admin" element={isAuthenticated ? <AdminPage /> : <Navigate to="/login" />} />
+          <Route path="/help" element={isAuthenticated ? <HelpPage /> : <Navigate to="/login" />} />
         </Route>
 
         {/* Redirect root to dashboard or login */}

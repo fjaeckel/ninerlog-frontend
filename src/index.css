@@ -1,10 +1,8 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* Override Tailwind v4 default dark mode to use class-based strategy */
 @custom-variant dark (&:where(.dark, .dark *));
-
-/* Fonts — Inter for UI, JetBrains Mono for data */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @theme {
   /* Brand primary — Aviation Blue */

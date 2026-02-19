@@ -946,6 +946,273 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/audit-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List admin audit log
+         * @description Returns the admin audit trail — a paginated list of all administrative actions
+         *     performed via the admin console. Requires admin privileges.
+         */
+        get: operations["listAdminAuditLog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List all users (privacy-preserving)
+         * @description Returns a paginated list of all user accounts with metadata only.
+         *     No flight data, credentials, or personal documents are exposed.
+         *     Requires admin privileges.
+         */
+        get: operations["listAdminUsers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/{userId}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disable a user account
+         * @description Disable a user account and revoke all tokens. Logged to audit trail.
+         */
+        post: operations["disableUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/{userId}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Re-enable a user account
+         * @description Re-enable a previously disabled user account. Logged to audit trail.
+         */
+        post: operations["enableUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/{userId}/unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Unlock a locked user account
+         * @description Clear brute-force lockout for a user account. Logged to audit trail.
+         */
+        post: operations["unlockUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/{userId}/reset-2fa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset 2FA for a user
+         * @description Disable 2FA for a user who lost their authenticator. Logged to audit trail.
+         */
+        post: operations["resetUser2fa"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * System-wide aggregate statistics
+         * @description Returns aggregate platform metrics. No individual user data exposed.
+         *     Requires admin privileges.
+         */
+        get: operations["getAdminStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/maintenance/cleanup-tokens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Clean up expired tokens
+         * @description Delete expired refresh tokens and password reset tokens. Requires admin privileges.
+         */
+        post: operations["cleanupTokens"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/maintenance/smtp-test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send SMTP test email
+         * @description Send a test email to the admin's email address to verify SMTP configuration. Requires admin privileges.
+         */
+        post: operations["smtpTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Runtime configuration (non-secret)
+         * @description Returns non-secret runtime configuration for system diagnostics.
+         *     Never exposes secrets (JWT keys, SMTP passwords, database credentials).
+         *     Requires admin privileges.
+         */
+        get: operations["getAdminConfig"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/announcements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get active announcements and user hints
+         * @description Returns active system announcements (admin-created) and auto-generated
+         *     user hints (e.g. enable 2FA, add aircraft). Requires authentication.
+         */
+        get: operations["getAnnouncements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/announcements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a system announcement
+         * @description Create a banner announcement visible to all users. Requires admin privileges.
+         */
+        post: operations["createAnnouncement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/announcements/{announcementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete an announcement
+         * @description Remove a system announcement. Requires admin privileges.
+         */
+        delete: operations["deleteAnnouncement"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -978,6 +1245,11 @@ export interface components {
              * @example false
              */
             twoFactorEnabled?: boolean;
+            /**
+             * @description Whether this user is the platform admin (computed from ADMIN_EMAIL env var, not stored in DB)
+             * @example false
+             */
+            isAdmin?: boolean;
         };
         TwoFactorSetup: {
             /**
@@ -2511,6 +2783,140 @@ export interface components {
                 totalPages: number;
             };
         };
+        AdminAuditLogEntry: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            adminUserId: string;
+            /**
+             * @description The admin action performed
+             * @example disable_user
+             */
+            action: string;
+            /**
+             * Format: uuid
+             * @description The user affected by the action (if any)
+             */
+            targetUserId?: string;
+            /** @description Additional details about the action (JSON) */
+            details?: Record<string, never>;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        PaginatedAdminAuditLog: {
+            data: components["schemas"]["AdminAuditLogEntry"][];
+            pagination: {
+                page: number;
+                pageSize: number;
+                total: number;
+                totalPages: number;
+            };
+        };
+        AdminStats: {
+            totalUsers: number;
+            totalFlights: number;
+            totalAircraft: number;
+            totalCredentials: number;
+            totalImports: number;
+            flightsThisMonth: number;
+            newUsersThisWeek: number;
+            lockedAccounts: number;
+            disabledAccounts: number;
+        };
+        Announcement: {
+            /** @description Unique identifier (UUID for admin announcements, string key for hints) */
+            id: string;
+            /** @example Scheduled maintenance on Tuesday 8pm-10pm UTC */
+            message: string;
+            /**
+             * @description Display severity:
+             *     - info: blue — neutral information
+             *     - success: green — positive suggestions (e.g. enable 2FA)
+             *     - warning: orange — important notices (e.g. maintenance)
+             *     - critical: red — urgent alerts
+             * @enum {string}
+             */
+            severity: "info" | "success" | "warning" | "critical";
+            /**
+             * Format: date-time
+             * @description When this announcement auto-expires (null = permanent until deleted)
+             */
+            expiresAt?: string;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        AdminConfig: {
+            /** @example go1.23.0 */
+            goVersion: string;
+            /**
+             * @description Human-readable uptime
+             * @example 2d 5h 30m
+             */
+            serverUptime: string;
+            /**
+             * @description Current database migration version
+             * @example 28
+             */
+            migrationVersion: number;
+            /**
+             * @description Number of airports loaded
+             * @example 29331
+             */
+            airportDatabaseSize: number;
+            /** @description Configured CORS allowed origins */
+            corsOrigins: string[];
+            /**
+             * @description Auth endpoint rate limit
+             * @example 10 req/min
+             */
+            rateLimitAuth: string;
+            /**
+             * @description Admin endpoint rate limit
+             * @example 30 req/min
+             */
+            rateLimitAdmin: string;
+            /** @description Whether SMTP is configured */
+            smtpConfigured: boolean;
+            /** @description Whether ADMIN_EMAIL is set */
+            adminEmailConfigured: boolean;
+        };
+        AdminUser: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            name: string;
+            /** Format: date-time */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description Last successful login timestamp
+             */
+            lastLoginAt?: string;
+            twoFactorEnabled: boolean;
+            /** @description Whether the account is disabled by admin */
+            disabled: boolean;
+            /** @description Whether the account is locked due to brute-force protection */
+            locked?: boolean;
+            /**
+             * Format: date-time
+             * @description When the brute-force lock expires
+             */
+            lockedUntil?: string;
+            /** @description Total number of flights logged */
+            flightCount: number;
+            /** @description Number of aircraft in database */
+            aircraftCount: number;
+        };
+        PaginatedAdminUsers: {
+            data: components["schemas"]["AdminUser"][];
+            pagination: {
+                page: number;
+                pageSize: number;
+                total: number;
+                totalPages: number;
+            };
+        };
         Error: {
             /**
              * @description Error message
@@ -2560,6 +2966,20 @@ export interface components {
                 /**
                  * @example {
                  *       "error": "Unauthorized"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Forbidden - admin access required */
+        Forbidden: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "Admin access required"
                  *     }
                  */
                 "application/json": components["schemas"]["Error"];
@@ -4346,6 +4766,354 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    listAdminAuditLog: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated audit log entries */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedAdminAuditLog"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Forbidden — admin access required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listAdminUsers: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                /** @description Search by email or name */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated user list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedAdminUsers"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    disableUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User disabled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message?: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    enableUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User enabled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message?: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    unlockUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User unlocked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message?: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    resetUser2fa: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 2FA reset */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message?: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getAdminStats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description System statistics */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminStats"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    cleanupTokens: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cleanup results */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        refreshTokensDeleted?: number;
+                        resetTokensDeleted?: number;
+                        message?: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    smtpTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Test email sent */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message?: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    getAdminConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Runtime configuration */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminConfig"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    getAnnouncements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active announcements and hints */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        announcements: components["schemas"]["Announcement"][];
+                        hints: components["schemas"]["Announcement"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    createAnnouncement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @example Scheduled maintenance on Tuesday 8pm-10pm UTC */
+                    message: string;
+                    /**
+                     * @example warning
+                     * @enum {string}
+                     */
+                    severity: "info" | "success" | "warning" | "critical";
+                    /**
+                     * Format: date-time
+                     * @description Auto-expire the announcement at this time (optional)
+                     */
+                    expiresAt?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Announcement created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Announcement"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    deleteAnnouncement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                announcementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Announcement deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
 }

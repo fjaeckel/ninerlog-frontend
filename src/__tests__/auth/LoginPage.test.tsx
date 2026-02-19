@@ -85,7 +85,7 @@ describe('LoginPage', () => {
   it('displays error message on login failure', async () => {
     const user = userEvent.setup();
     mockLogin.mutateAsync.mockRejectedValueOnce({
-      response: { data: { message: 'Invalid credentials' } },
+      error: 'Invalid credentials',
     });
     
     renderWithProviders(<LoginPage />);
@@ -96,6 +96,57 @@ describe('LoginPage', () => {
     
     await waitFor(() => {
       expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
+    });
+  });
+
+  it('displays rate limit message on 429', async () => {
+    const user = userEvent.setup();
+    mockLogin.mutateAsync.mockRejectedValueOnce({
+      error: 'Too many requests, please try again later',
+    });
+
+    renderWithProviders(<LoginPage />);
+
+    await user.type(screen.getByLabelText(/^email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /log in/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/too many login attempts/i)).toBeInTheDocument();
+    });
+  });
+
+  it('displays disabled account message', async () => {
+    const user = userEvent.setup();
+    mockLogin.mutateAsync.mockRejectedValueOnce({
+      error: 'Account disabled. Contact the administrator.',
+    });
+
+    renderWithProviders(<LoginPage />);
+
+    await user.type(screen.getByLabelText(/^email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /log in/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/account disabled/i)).toBeInTheDocument();
+    });
+  });
+
+  it('displays locked account message', async () => {
+    const user = userEvent.setup();
+    mockLogin.mutateAsync.mockRejectedValueOnce({
+      error: 'Account temporarily locked due to too many failed login attempts. Please try again later.',
+    });
+
+    renderWithProviders(<LoginPage />);
+
+    await user.type(screen.getByLabelText(/^email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /log in/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/locked/i)).toBeInTheDocument();
     });
   });
 

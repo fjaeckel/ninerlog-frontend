@@ -18,6 +18,7 @@ export interface User {
   email: string;
   name: string;
   twoFactorEnabled?: boolean;
+  isAdmin?: boolean;
   createdAt: string;
   updatedAt: string;
 }

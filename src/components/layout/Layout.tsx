@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Plane, FileText, PlaneTakeoff, BarChart3, Map,
-  Award, User, Upload, Download, Shield, LogOut, Menu, Plus
+  Award, User, Upload, Download, Shield, LogOut, Menu, Plus, ShieldCheck, HelpCircle
 } from 'lucide-react';
 import { useLogout } from '../../hooks/useAuth';
 import { useAuthStore } from '../../stores/authStore';
+import AnnouncementBanner from '../ui/AnnouncementBanner';
 
 export default function Layout() {
   const { user } = useAuthStore();
@@ -75,12 +76,17 @@ export default function Layout() {
           <SidebarItem to="/export" label="Export" icon={<Download className="w-5 h-5" />} />
         </nav>
         <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-1">
+          {user?.isAdmin && (
+            <SidebarItem to="/admin" label="Admin" icon={<ShieldCheck className="w-5 h-5" />} />
+          )}
+          <SidebarItem to="/help" label="Help" icon={<HelpCircle className="w-5 h-5" />} />
           <SidebarItem to="/profile" label="Profile & Settings" icon={<User className="w-5 h-5" />} />
         </div>
       </aside>
 
       {/* ── Main Content ── */}
       <main id="main-content" className="pt-14 lg:pt-16 pb-16 lg:pb-4 lg:ml-64 px-4 lg:px-8">
+        <AnnouncementBanner />
         <Outlet />
       </main>
 
@@ -117,7 +123,7 @@ export default function Layout() {
             onClick={() => setShowMoreMenu(false)}
             aria-hidden="true"
           />
-          <div className="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-white dark:bg-slate-800 rounded-t-2xl shadow-2xl pb-safe animate-sheet-up">
+          <div className="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-white dark:bg-slate-800 rounded-t-xl shadow-2xl pb-safe animate-sheet-up">
             <div className="flex justify-center pt-3 pb-2">
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
             </div>
@@ -130,6 +136,10 @@ export default function Layout() {
               <MoreMenuItem to="/import" label="Import" icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/export" label="Export" icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/profile" label="Profile & Settings" icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/help" label="Help" icon={<HelpCircle className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              {user?.isAdmin && (
+                <MoreMenuItem to="/admin" label="Admin" icon={<ShieldCheck className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              )}
               <div className="border-t border-slate-100 dark:border-slate-700 my-2" />
               <button
                 onClick={() => { setShowMoreMenu(false); handleLogout(); }}

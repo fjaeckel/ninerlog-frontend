@@ -365,7 +365,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             {!matchedAircraft && regUppercase.length >= 2 && !showQuickAdd && (
               <button
                 type="button"
-                className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center"
                 onClick={() => setShowQuickAdd(true)}
               >
                 New aircraft? Save "{regUppercase}" to your fleet →
@@ -624,7 +624,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 <button
                   type="button"
                   onClick={() => setCrewMembers((prev) => prev.filter((_, i) => i !== idx))}
-                  className="text-slate-400 hover:text-red-500"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-red-500"
                   aria-label={`Remove ${member.name}`}
                 >
                   <X className="w-4 h-4" />
