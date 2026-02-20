@@ -15,7 +15,7 @@ export const useThemeStore = create<ThemeState>()(
       setTheme: (theme) => set({ theme }),
     }),
     {
-      name: 'pilotlog-theme',
+      name: 'ninerlog-theme',
     }
   )
 );

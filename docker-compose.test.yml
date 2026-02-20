@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: pilotlog-frontend-test
+    container_name: ninerlog-frontend-test
     working_dir: /app
     volumes:
       - .:/app
@@ -19,7 +19,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.e2e
-    container_name: pilotlog-frontend-e2e
+    container_name: ninerlog-frontend-e2e
     working_dir: /app
     volumes:
       - .:/app
@@ -45,7 +45,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: pilotlog-frontend-dev-e2e
+    container_name: ninerlog-frontend-dev-e2e
     working_dir: /app
     volumes:
       - .:/app
@@ -63,13 +63,13 @@ services:
   # Test database for e2e tests
   postgres-test:
     image: postgres:16-alpine
-    container_name: pilotlog-frontend-test-db
+    container_name: ninerlog-frontend-test-db
     environment:
       POSTGRES_USER: testuser
       POSTGRES_PASSWORD: testpass
-      POSTGRES_DB: pilotlog_test
+      POSTGRES_DB: ninerlog_test
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U testuser -d pilotlog_test"]
+      test: ["CMD-SHELL", "pg_isready -U testuser -d ninerlog_test"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -83,14 +83,14 @@ services:
   # API service for e2e tests
   api-test:
     build:
-      context: ../pilotlog-api
+      context: ../ninerlog-api
       dockerfile: Dockerfile
-    container_name: pilotlog-api-test
+    container_name: ninerlog-api-test
     depends_on:
       postgres-test:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://testuser:testpass@postgres-test:5432/pilotlog_test?sslmode=disable
+      DATABASE_URL: postgresql://testuser:testpass@postgres-test:5432/ninerlog_test?sslmode=disable
       PORT: 3000
       GIN_MODE: test
       JWT_SECRET: test-jwt-secret

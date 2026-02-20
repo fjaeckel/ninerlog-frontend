@@ -1,4 +1,4 @@
-# Testing Guide - PilotLog Frontend
+# Testing Guide - NinerLog Frontend
 
 ## Test Suite Overview
 
@@ -124,11 +124,11 @@ For E2E tests to work with real API:
 
 ```bash
 # Terminal 1: Start backend API
-cd ../pilotlog-api
+cd ../ninerlog-api
 make run
 
 # Terminal 2: Start frontend dev server
-cd ../pilotlog-frontend
+cd ../ninerlog-frontend
 npm run dev
 
 # Terminal 3: Run E2E tests

@@ -1259,7 +1259,7 @@ export interface components {
             secret: string;
             /**
              * @description otpauth:// URI for QR code generation
-             * @example otpauth://totp/PilotLog:pilot@example.com?secret=JBSWY3DPEHPK3PXP&issuer=PilotLog
+             * @example otpauth://totp/NinerLog:pilot@example.com?secret=JBSWY3DPEHPK3PXP&issuer=NinerLog
              */
             qrUri: string;
         };

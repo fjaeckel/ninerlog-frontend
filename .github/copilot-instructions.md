@@ -1,16 +1,16 @@
-# GitHub Copilot Instructions for PilotLog Frontend
+# GitHub Copilot Instructions for NinerLog Frontend
 
-You are assisting with the PilotLog Frontend repository, a mobile-first Progressive Web App for pilot logbook management.
+You are assisting with the NinerLog Frontend repository, a mobile-first Progressive Web App for pilot logbook management.
 
 ## IMPORTANT: Design System
 
-**ALL UI code must follow the PilotLog Design System.** Before writing any UI code, consult:
+**ALL UI code must follow the NinerLog Design System.** Before writing any UI code, consult:
 
-- `../pilotlog-project/docs/design/design-system.md` — Colors, typography, spacing, tokens
-- `../pilotlog-project/docs/design/components.md` — Component specs (Button, Input, Badge, Card, etc.)
-- `../pilotlog-project/docs/design/screens.md` — Screen layouts, wireframes, states
-- `../pilotlog-project/docs/design/interactions.md` — Navigation, forms, gestures, offline UX
-- `../pilotlog-project/docs/design/handoff.md` — Implementation guide, naming, patterns
+- `../ninerlog-project/docs/design/design-system.md` — Colors, typography, spacing, tokens
+- `../ninerlog-project/docs/design/components.md` — Component specs (Button, Input, Badge, Card, etc.)
+- `../ninerlog-project/docs/design/screens.md` — Screen layouts, wireframes, states
+- `../ninerlog-project/docs/design/interactions.md` — Navigation, forms, gestures, offline UX
+- `../ninerlog-project/docs/design/handoff.md` — Implementation guide, naming, patterns
 
 ### Design System Quick Reference
 
@@ -360,7 +360,7 @@ Essential fields to include in forms:
 - Suspense for async components
 
 ### Styling
-- **Always follow the PilotLog Design System** (see `../pilotlog-project/docs/design/`)
+- **Always follow the NinerLog Design System** (see `../ninerlog-project/docs/design/`)
 - Tailwind utility classes preferred, use design system component classes
 - Use `slate-*` palette for neutrals (NEVER `gray-*`)
 - Always provide `dark:` variant classes alongside light mode
@@ -439,8 +439,8 @@ const onSubmit = async (data: FlightLogFormData) => {
 
 ## Related Repositories
 
-- **pilotlog-project**: API spec and project planning
-- **pilotlog-api**: Backend API implementation
+- **ninerlog-project**: API spec and project planning
+- **ninerlog-api**: Backend API implementation
 
 When making changes:
 - Check API spec for endpoint availability

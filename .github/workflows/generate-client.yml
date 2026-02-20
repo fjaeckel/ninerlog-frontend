@@ -32,7 +32,7 @@ jobs:
       - name: Checkout project repository for OpenAPI spec
         uses: actions/checkout@v4
         with:
-          repository: fjaeckel/pilotlog-project
+          repository: fjaeckel/ninerlog-project
           path: .openapi-spec
           sparse-checkout: |
             api-spec/openapi.yaml
@@ -67,7 +67,7 @@ jobs:
             
             This PR updates the generated TypeScript API client to match the latest OpenAPI specification.
             
-            **Triggered by**: OpenAPI spec change in pilotlog-project
+            **Triggered by**: OpenAPI spec change in ninerlog-project
             **Commit**: ${{ github.event.client_payload.sha }}
             
             ### Changes

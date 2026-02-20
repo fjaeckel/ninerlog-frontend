@@ -7,7 +7,7 @@ test.describe('Authentication Flow', () => {
   });
 
   test('should display login form', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /pilotlog/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /ninerlog/i })).toBeVisible();
     await expect(page.getByLabel(/email address/i)).toBeVisible();
     await expect(page.getByLabel(/password/i)).toBeVisible();
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();

@@ -1,9 +1,9 @@
 {
-  "name": "pilotlog-frontend",
+  "name": "ninerlog-frontend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "PilotLog - EASA/FAA Compliant Pilot Logbook (Frontend)",
+  "description": "NinerLog - EASA/FAA Compliant Pilot Logbook (Frontend)",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -17,7 +17,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "type-check": "tsc --noEmit",
     "generate:api": "bash scripts/generate-api-client.sh",
-    "generate:api:watch": "bash scripts/generate-api-client.sh && npx openapi-typescript ../pilotlog-project/api-spec/openapi.yaml -o src/api/schema.ts --watch",
+    "generate:api:watch": "bash scripts/generate-api-client.sh && npx openapi-typescript ../ninerlog-project/api-spec/openapi.yaml -o src/api/schema.ts --watch",
     "prepare": "husky"
   },
   "dependencies": {

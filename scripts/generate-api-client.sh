@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Default to project repo spec
-OPENAPI_SPEC="${1:-../pilotlog-project/api-spec/openapi.yaml}"
+OPENAPI_SPEC="${1:-../ninerlog-project/api-spec/openapi.yaml}"
 
 # Check if spec exists
 if [ ! -f "$OPENAPI_SPEC" ]; then
@@ -62,10 +62,10 @@ npm run generate:api -- /path/to/openapi.yaml
 ## Usage
 
 ```typescript
-import { PilotLogClient } from '@/api';
+import { NinerLogClient } from '@/api';
 
 // Configure client
-const client = new PilotLogClient({
+const client = new NinerLogClient({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     Authorization: `Bearer ${token}`
@@ -81,7 +81,7 @@ const { data: flights } = useQuery({
 
 ## Source
 
-Generated from: `pilotlog-project/api-spec/openapi.yaml`
+Generated from: `ninerlog-project/api-spec/openapi.yaml`
 Generator: @hey-api/openapi-ts
 EOF
 

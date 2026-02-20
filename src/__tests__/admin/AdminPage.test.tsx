@@ -19,7 +19,7 @@ const renderWithProviders = (component: React.ReactElement) => {
 
 const setAdmin = () => {
   useAuthStore.setState({
-    user: { id: 'admin-1', email: 'admin@pilotlog.app', name: 'Admin User', isAdmin: true, createdAt: '', updatedAt: '' },
+    user: { id: 'admin-1', email: 'admin@ninerlog.app', name: 'Admin User', isAdmin: true, createdAt: '', updatedAt: '' },
     isAuthenticated: true,
     accessToken: 'test-token',
     refreshToken: 'test-refresh',

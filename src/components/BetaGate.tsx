@@ -1,7 +1,7 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { APP_NAME } from '../lib/config';
 
-const BETA_TOKEN_KEY = 'pilotlog_beta_token';
+const BETA_TOKEN_KEY = 'ninerlog_beta_token';
 
 /**
  * Returns the stored beta token, or null if not set.

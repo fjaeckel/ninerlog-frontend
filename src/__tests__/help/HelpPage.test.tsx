@@ -24,7 +24,7 @@ describe('HelpPage', () => {
 
   it('shows Getting Started content by default', () => {
     renderWithProviders(<HelpPage />);
-    expect(screen.getByText('Getting Started with PilotLog')).toBeInTheDocument();
+    expect(screen.getByText('Getting Started with NinerLog')).toBeInTheDocument();
     expect(screen.getByText(/create your account/i)).toBeInTheDocument();
   });
 

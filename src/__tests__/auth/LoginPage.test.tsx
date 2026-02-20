@@ -46,7 +46,7 @@ describe('LoginPage', () => {
   it('renders login form', () => {
     renderWithProviders(<LoginPage />);
     
-    expect(screen.getByText('PilotLog')).toBeInTheDocument();
+    expect(screen.getByText('NinerLog')).toBeInTheDocument();
     expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument();

@@ -1,6 +1,6 @@
-# PilotLog Frontend
+# NinerLog Frontend
 
-Mobile-first Progressive Web App for PilotLog — an EASA/FAA compliant digital pilot logbook.
+Mobile-first Progressive Web App for NinerLog — an EASA/FAA compliant digital pilot logbook.
 
 ## Tech Stack
 
@@ -25,7 +25,7 @@ Mobile-first Progressive Web App for PilotLog — an EASA/FAA compliant digital 
 
 - Node.js 24+
 - npm 11+
-- Access to `pilotlog-project` repo (for OpenAPI spec)
+- Access to `ninerlog-project` repo (for OpenAPI spec)
 
 ## Quick Start
 
@@ -103,7 +103,7 @@ src/
 
 ## API Client Generation
 
-The TypeScript API client and types are **auto-generated** from the OpenAPI spec in `pilotlog-project/api-spec/openapi.yaml`.
+The TypeScript API client and types are **auto-generated** from the OpenAPI spec in `ninerlog-project/api-spec/openapi.yaml`.
 
 ```bash
 npm run generate:api
@@ -141,5 +141,5 @@ npm run test:e2e         # E2E tests (Playwright)
 
 ## Related Repositories
 
-- [pilotlog-project](../pilotlog-project) — OpenAPI spec & project planning
-- [pilotlog-api](../pilotlog-api) — Go backend API
+- [ninerlog-project](../ninerlog-project) — OpenAPI spec & project planning
+- [ninerlog-api](../ninerlog-api) — Go backend API

@@ -13,8 +13,8 @@ RUN npm ci
 COPY . .
 
 # Generate API client from OpenAPI spec (if available)
-RUN if [ -f "../pilotlog-project/api-spec/openapi.yaml" ]; then \
-      npm run generate:api ../pilotlog-project/api-spec/openapi.yaml || true; \
+RUN if [ -f "../ninerlog-project/api-spec/openapi.yaml" ]; then \
+      npm run generate:api ../ninerlog-project/api-spec/openapi.yaml || true; \
     fi
 
 # Build the application

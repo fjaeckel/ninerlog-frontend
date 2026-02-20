@@ -42,7 +42,7 @@ describe('BetaGate', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('PilotLog Beta')).toBeInTheDocument();
+      expect(screen.getByText('NinerLog Beta')).toBeInTheDocument();
       expect(screen.getByLabelText('Beta access code')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /enter/i })).toBeInTheDocument();
     });
@@ -86,7 +86,7 @@ describe('BetaGate', () => {
       expect(screen.getByTestId('app-content')).toBeInTheDocument();
     });
 
-    expect(localStorage.getItem('pilotlog_beta_token')).toBe('secret123');
+    expect(localStorage.getItem('ninerlog_beta_token')).toBe('secret123');
   });
 
   it('shows error for invalid code', async () => {
@@ -115,7 +115,7 @@ describe('BetaGate', () => {
   });
 
   it('auto-authenticates with valid stored token', async () => {
-    localStorage.setItem('pilotlog_beta_token', 'stored-secret');
+    localStorage.setItem('ninerlog_beta_token', 'stored-secret');
 
     let callCount = 0;
     global.fetch = vi.fn().mockImplementation((_url: string, init?: RequestInit) => {
@@ -144,7 +144,7 @@ describe('BetaGate', () => {
   });
 
   it('clears invalid stored token and shows password form', async () => {
-    localStorage.setItem('pilotlog_beta_token', 'expired-token');
+    localStorage.setItem('ninerlog_beta_token', 'expired-token');
 
     global.fetch = vi.fn().mockResolvedValue({ status: 403 });
 
@@ -155,10 +155,10 @@ describe('BetaGate', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('PilotLog Beta')).toBeInTheDocument();
+      expect(screen.getByText('NinerLog Beta')).toBeInTheDocument();
     });
 
-    expect(localStorage.getItem('pilotlog_beta_token')).toBeNull();
+    expect(localStorage.getItem('ninerlog_beta_token')).toBeNull();
   });
 
   it('disables Enter button when password is empty', async () => {

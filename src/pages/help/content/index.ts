@@ -15,12 +15,12 @@ import helpContent from '../../../i18n/locales/en/help.json';
 import { APP_NAME } from '../../../lib/config';
 
 /**
- * Replace all occurrences of "PilotLog" in help content with the configured
+ * Replace all occurrences of "NinerLog" in help content with the configured
  * APP_NAME. This allows the help text to reflect a custom product name set
  * via the VITE_APP_NAME environment variable.
  */
 function brand(text: string): string {
-  return text.replace(/PilotLog/g, APP_NAME);
+  return text.replace(/NinerLog/g, APP_NAME);
 }
 
 // Re-export individual sections for backwards-compatible named imports

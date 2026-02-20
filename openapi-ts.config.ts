@@ -2,7 +2,7 @@
 import { defineConfig } from '@hey-api/openapi-ts';
 
 export default defineConfig({
-  input: '../pilotlog-project/api-spec/openapi.yaml',
+  input: '../ninerlog-project/api-spec/openapi.yaml',
   output: './src/api',
   client: 'axios',
   plugins: [

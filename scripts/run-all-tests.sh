@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/.."
 
 echo "=================================================="
-echo "🧪 Running PilotLog Frontend Tests in Docker"
+echo "🧪 Running NinerLog Frontend Tests in Docker"
 echo "=================================================="
 echo ""
 

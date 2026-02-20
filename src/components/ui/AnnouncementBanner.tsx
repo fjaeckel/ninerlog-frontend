@@ -17,7 +17,7 @@ function linkify(text: string): React.ReactNode {
   );
 }
 
-const DISMISSED_KEY = 'pilotlog-dismissed-banners';
+const DISMISSED_KEY = 'ninerlog-dismissed-banners';
 
 function getDismissed(): Set<string> {
   try {

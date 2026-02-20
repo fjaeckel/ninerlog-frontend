@@ -111,7 +111,7 @@ npm run dev
 
 # Start with backend
 # Terminal 1: Backend API
-cd ../pilotlog-api && make run
+cd ../ninerlog-api && make run
 
 # Terminal 2: Frontend
 npm run dev
@@ -247,11 +247,11 @@ Ready for deployment to:
 
 - [TESTING.md](./TESTING.md) - Comprehensive testing guide
 - [README.md](./README.md) - Setup and usage
-- [../pilotlog-project/docs/](../pilotlog-project/docs/) - Architecture docs
+- [../ninerlog-project/docs/](../ninerlog-project/docs/) - Architecture docs
 
 ## Contributing
 
-See [CONTRIBUTING.md](../pilotlog-project/CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](../ninerlog-project/CONTRIBUTING.md) for guidelines.
 
 ---
 

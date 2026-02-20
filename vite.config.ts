@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'PilotLog',
-        short_name: 'PilotLog',
+        name: 'NinerLog',
+        short_name: 'NinerLog',
         description: 'EASA/FAA Compliant Pilot Logbook',
         theme_color: '#2563eb',
         icons: [

@@ -135,7 +135,7 @@ server {
 
     # API proxy
     location /api/ {
-        proxy_pass http://pilotlog-api:3000;
+        proxy_pass http://ninerlog-api:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
