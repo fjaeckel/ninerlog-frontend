@@ -184,5 +184,24 @@ describe('FlightForm Instrument Tracking', () => {
     expect(screen.getByLabelText(/holds/i)).toHaveValue(0);
     expect(screen.getByLabelText(/instrument proficiency check/i)).not.toBeChecked();
     expect(screen.getByLabelText(/flight review/i)).not.toBeChecked();
+    expect(screen.getByLabelText(/proficiency check \(FCL/i)).not.toBeChecked();
+  });
+
+  it('renders proficiency check checkbox', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+    await user.click(screen.getByText('Advanced Times'));
+    const checkbox = screen.getByLabelText(/proficiency check \(FCL/i);
+    expect(checkbox).toBeInTheDocument();
+    expect(checkbox).not.toBeChecked();
+  });
+
+  it('can toggle proficiency check checkbox', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+    await user.click(screen.getByText('Advanced Times'));
+    const checkbox = screen.getByLabelText(/proficiency check \(FCL/i);
+    await user.click(checkbox);
+    expect(checkbox).toBeChecked();
   });
 });

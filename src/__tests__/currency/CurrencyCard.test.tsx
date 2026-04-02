@@ -197,4 +197,26 @@ describe('CurrencyCard', () => {
     // No progress bars should be rendered
     expect(screen.queryByTestId('requirement-Total Hours')).not.toBeInTheDocument();
   });
+
+  it('renders launch method currency for SPL', () => {
+    const splRating: ClassRatingCurrency = {
+      ...baseRating,
+      licenseType: 'SPL',
+      launchMethodCurrency: [
+        { method: 'winch', launches: 8, required: 5, met: true, message: '8 / 5 winch launches' },
+        { method: 'aerotow', launches: 3, required: 5, met: false, message: '3 / 5 aerotow launches' },
+      ],
+    };
+    render(<CurrencyCard rating={splRating} />);
+    expect(screen.getByTestId('launch-method-currency')).toBeInTheDocument();
+    expect(screen.getByTestId('launch-method-winch')).toBeInTheDocument();
+    expect(screen.getByTestId('launch-method-aerotow')).toBeInTheDocument();
+    expect(screen.getByTestId('launch-method-winch')).toHaveTextContent('8 / 5');
+    expect(screen.getByTestId('launch-method-aerotow')).toHaveTextContent('3 / 5');
+  });
+
+  it('does not render launch method section when absent', () => {
+    render(<CurrencyCard rating={baseRating} />);
+    expect(screen.queryByTestId('launch-method-currency')).not.toBeInTheDocument();
+  });
 });

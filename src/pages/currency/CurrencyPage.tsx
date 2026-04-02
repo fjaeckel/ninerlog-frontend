@@ -5,8 +5,15 @@ import { useLicenses } from '../../hooks/useLicenses';
 import { CurrencyCard } from '../../components/currency/CurrencyCard';
 import { ChevronDown, ChevronRight, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { isPast, differenceInDays, format } from 'date-fns';
-import type { ClassRatingCurrency } from '../../types/api';
+import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
 import HelpLink from '../../components/ui/HelpLink';
+
+const CLASS_TYPE_LABELS: Record<string, string> = {
+  SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
+  MEP_LAND: 'MEP (Land)', MEP_SEA: 'MEP (Sea)',
+  SET_LAND: 'SET (Land)', SET_SEA: 'SET (Sea)',
+  TMG: 'TMG', IR: 'Instrument Rating', OTHER: 'Other',
+};
 
 const CREDENTIAL_DESCRIPTIONS: Record<string, string> = {
   EASA_CLASS1_MEDICAL: 'EASA Class 1 Medical — valid for 12 months (6 months after age 40 for ATPL holders)',
@@ -85,6 +92,39 @@ export default function CurrencyPage() {
         <div className="mb-8">
           <h2 className="section-title mb-4">Flight Currency</h2>
 
+          {/* FAA Flight Review (§61.56) — per-pilot, shown at top of Tier 1 */}
+          {currencyStatus.flightReview && (
+            <div
+              className={`card border-l-4 mb-4 ${
+                currencyStatus.flightReview.status === 'current' ? 'border-l-green-500 bg-green-50 dark:bg-green-900/20' :
+                currencyStatus.flightReview.status === 'expiring' ? 'border-l-amber-500 bg-amber-50 dark:bg-amber-900/20' :
+                'border-l-red-500 bg-red-50 dark:bg-red-900/20'
+              }`}
+              data-testid="flight-review-card"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100">
+                  ✈️ Flight Review (14 CFR 61.56)
+                </h3>
+                <span className={
+                  currencyStatus.flightReview.status === 'current' ? 'badge-current' :
+                  currencyStatus.flightReview.status === 'expiring' ? 'badge-expiring' :
+                  'badge-expired'
+                }>
+                  {currencyStatus.flightReview.status === 'current' ? 'CURRENT' :
+                   currencyStatus.flightReview.status === 'expiring' ? 'EXPIRING' : 'EXPIRED'}
+                </span>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{currencyStatus.flightReview.message}</p>
+              {currencyStatus.flightReview.lastCompleted && (
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                  Last completed: {currencyStatus.flightReview.lastCompleted}
+                  {currencyStatus.flightReview.expiresOn && ` · Expires: ${currencyStatus.flightReview.expiresOn}`}
+                </p>
+              )}
+            </div>
+          )}
+
           {Object.keys(ratingsByLicense).length === 0 && (
             <div className="card text-center py-8">
               <p className="text-slate-500 dark:text-slate-400 text-sm">
@@ -132,6 +172,94 @@ export default function CurrencyPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Tier 2: Passenger Currency */}
+      {!isLoading && currencyStatus && currencyStatus.passengerCurrency && currencyStatus.passengerCurrency.length > 0 && (
+        <div className="mb-8" data-testid="passenger-currency-section">
+          <h2 className="section-title mb-4">Passenger Currency</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            Separate from rating validity — determines whether you can carry passengers (rolling 90-day recency)
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {currencyStatus.passengerCurrency.map((pax: PassengerCurrencyType) => {
+              const dayOk = pax.dayStatus === 'current';
+              const nightOk = pax.nightStatus === 'current';
+              const hasNight = pax.nightPrivilege !== false;
+              const allOk = hasNight ? (dayOk && nightOk) : dayOk;
+              const classLabel = CLASS_TYPE_LABELS[pax.classType] || pax.classType;
+
+              return (
+                <div
+                  key={`pax-${pax.classType}-${pax.regulatoryAuthority}`}
+                  className={`card border-l-4 ${allOk ? 'border-l-green-500 bg-green-50 dark:bg-green-900/20' : dayOk ? 'border-l-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'border-l-red-500 bg-red-50 dark:bg-red-900/20'}`}
+                  data-testid={`passenger-currency-${pax.classType}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100">
+                      {classLabel}
+                      <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1">({pax.regulatoryAuthority})</span>
+                    </h3>
+                    <span className={allOk ? 'badge-current' : dayOk ? 'badge-expiring' : 'badge-expired'}>
+                      {allOk ? 'CURRENT' : dayOk && hasNight ? 'DAY ONLY' : dayOk ? 'CURRENT' : 'NOT CURRENT'}
+                    </span>
+                  </div>
+                  {/* Day currency bar */}
+                  <div className="space-y-1 mb-1">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {dayOk ? '✓' : '○'} Day
+                      </span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {pax.dayLandings} / {pax.dayRequired} landings
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${dayOk ? 'bg-green-500' : 'bg-red-500'}`}
+                        style={{ width: `${Math.min((pax.dayLandings / pax.dayRequired) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                  {/* Night currency bar — hidden when nightPrivilege is false */}
+                  {hasNight && (
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {nightOk ? '✓' : '○'} Night
+                      </span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {pax.nightLandings} / {pax.nightRequired} landings
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${nightOk ? 'bg-green-500' : 'bg-red-500'}`}
+                        style={{ width: `${Math.min((pax.nightLandings / pax.nightRequired) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                  )}
+                  {!hasNight && (
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1" data-testid="night-not-applicable">
+                      Night flying not applicable for this license type
+                    </p>
+                  )}
+                  {/* Passenger privilege badge (LAPL, SPL, UL) */}
+                  {pax.passengerPrivilege && (
+                    <div
+                      className={`mt-2 px-2 py-1 rounded text-xs ${pax.passengerPrivilege.eligible ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'}`}
+                      data-testid="passenger-privilege-badge"
+                    >
+                      {pax.passengerPrivilege.eligible ? '✓' : '⚠'} {pax.passengerPrivilege.message}
+                    </div>
+                  )}
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">{pax.ruleDescription}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

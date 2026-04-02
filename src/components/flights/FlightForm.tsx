@@ -36,6 +36,7 @@ const flightSchema = z.object({
   approachesCount: z.number().int().min(0),
   isIpc: z.boolean(),
   isFlightReview: z.boolean(),
+  isProficiencyCheck: z.boolean(),
   launchMethod: z.string().optional().or(z.literal('')),
 });
 
@@ -122,6 +123,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       approachesCount: 0,
       isIpc: false,
       isFlightReview: false,
+      isProficiencyCheck: false,
       launchMethod: '',
     },
   });
@@ -154,6 +156,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         approachesCount: existingFlight.approachesCount || 0,
         isIpc: existingFlight.isIpc || false,
         isFlightReview: existingFlight.isFlightReview || false,
+        isProficiencyCheck: existingFlight.isProficiencyCheck || false,
         launchMethod: existingFlight.launchMethod || '',
       });
       // Load existing crew members
@@ -279,6 +282,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         approachesCount: data.approachesCount,
         isIpc: data.isIpc,
         isFlightReview: data.isFlightReview,
+        isProficiencyCheck: data.isProficiencyCheck,
         launchMethod: (data.launchMethod || null) as any,
         crewMembers: crewMembers.length > 0 ? crewMembers : undefined,
       };
@@ -903,6 +907,15 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
                 />
                 Flight Review (BFR / 61.56)
+              </label>
+              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                <input
+                  {...register('isProficiencyCheck')}
+                  type="checkbox"
+                  id="isProficiencyCheck"
+                  className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+                />
+                Proficiency Check (FCL.740.A / §61.58)
               </label>
             </div>
           </div>

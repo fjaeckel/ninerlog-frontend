@@ -1723,6 +1723,11 @@ export interface components {
              */
             isFlightReview?: boolean;
             /**
+             * @description Whether this flight was a Proficiency Check (EASA FCL.740.A MEP/SET, FCL.625.A IR, or FAA §61.58)
+             * @example false
+             */
+            isProficiencyCheck?: boolean;
+            /**
              * @description Launch method for glider/SPL flights (winch, aerotow, or self-launch)
              * @example winch
              * @enum {string|null}
@@ -1866,6 +1871,7 @@ export interface components {
             approachesCount?: number;
             isIpc?: boolean;
             isFlightReview?: boolean;
+            isProficiencyCheck?: boolean;
             /** @enum {string|null} */
             launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
             /** @description People on board this flight */
@@ -1929,6 +1935,7 @@ export interface components {
             approachesCount?: number;
             isIpc?: boolean;
             isFlightReview?: boolean;
+            isProficiencyCheck?: boolean;
             /** @enum {string|null} */
             launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
             /** @description People on board this flight */
@@ -2341,7 +2348,81 @@ export interface components {
             notes?: string | null;
         };
         CurrencyStatusResponse: {
+            /** @description Tier 1: Rating/license currency — determines whether the pilot can fly at all in each class */
             ratings: components["schemas"]["ClassRatingCurrency"][];
+            /** @description Tier 2: Passenger currency — determines whether the pilot can carry passengers (rolling from now, separate from rating validity) */
+            passengerCurrency: components["schemas"]["PassengerCurrency"][];
+            flightReview?: components["schemas"]["FlightReviewStatus"];
+        };
+        PassengerCurrency: {
+            classType: components["schemas"]["ClassType"];
+            /** @description Authority that defines the passenger currency rules */
+            regulatoryAuthority: string;
+            /**
+             * @description Day passenger currency status
+             * @enum {string}
+             */
+            dayStatus: "current" | "expiring" | "expired" | "unknown";
+            /**
+             * @description Night passenger currency status
+             * @enum {string}
+             */
+            nightStatus: "current" | "expiring" | "expired" | "unknown";
+            /** @description Number of landings in the preceding 90 days */
+            dayLandings: number;
+            /** @description Number of night landings in the preceding 90 days */
+            nightLandings: number;
+            /**
+             * @description Required landings for day passenger currency (typically 3)
+             * @example 3
+             */
+            dayRequired: number;
+            /**
+             * @description Required night landings for night passenger currency (typically 3, 0 if night not applicable)
+             * @example 3
+             */
+            nightRequired: number;
+            /**
+             * @description Whether this license type has night flying privileges. false for Sport, Recreational, Glider (FAA), SPL, LAPL (EASA), UL.
+             * @example true
+             */
+            nightPrivilege?: boolean;
+            /** @description Human-readable passenger currency status message */
+            message?: string;
+            /**
+             * @description Regulatory reference for the passenger currency rule
+             * @example 3 takeoffs & landings in same type/class within preceding 90 days to carry passengers (EASA FCL.060(b))
+             */
+            ruleDescription?: string;
+            /** @description Informational — whether the pilot meets additional requirements to carry passengers (LAPL 10h PIC, SPL 30 launches, etc.) */
+            passengerPrivilege?: {
+                /** @description Whether the pilot is eligible to carry passengers (based on total PIC hours/launches since license issue) */
+                eligible?: boolean;
+                /**
+                 * @description Human-readable explanation of passenger privilege status
+                 * @example Eligible to carry passengers (10h PIC completed)
+                 */
+                message?: string;
+            };
+        };
+        FlightReviewStatus: {
+            /**
+             * Format: date
+             * @description Date of most recent flight review
+             */
+            lastCompleted?: string | null;
+            /**
+             * Format: date
+             * @description Date the flight review expires (24 calendar months after last completed)
+             */
+            expiresOn?: string | null;
+            /**
+             * @description Flight review currency status
+             * @enum {string}
+             */
+            status: "current" | "expiring" | "expired" | "unknown";
+            /** @description Human-readable flight review status message */
+            message: string;
         };
         ClassRatingCurrency: {
             /** Format: uuid */
@@ -2416,6 +2497,26 @@ export interface components {
             };
             /** @description Per-requirement breakdown showing progress toward each currency requirement */
             requirements?: components["schemas"]["CurrencyRequirement"][];
+            /** @description SPL launch method currency per FCL.140.S(b)(1) — 5 launches per method in 24 months */
+            launchMethodCurrency?: components["schemas"]["LaunchMethodCurrency"][];
+        };
+        LaunchMethodCurrency: {
+            /**
+             * @description Launch method (winch, aerotow, self-launch)
+             * @example winch
+             */
+            method: string;
+            /** @description Number of launches with this method in evaluation period */
+            launches: number;
+            /**
+             * @description Required number of launches (typically 5)
+             * @example 5
+             */
+            required: number;
+            /** @description Whether the requirement is met */
+            met: boolean;
+            /** @description Human-readable progress message */
+            message?: string;
         };
         CurrencyRequirement: {
             /** @description Requirement name (e.g., "Day Currency", "PIC Hours", "Refresher Training") */

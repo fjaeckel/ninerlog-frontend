@@ -252,10 +252,48 @@ export interface ClassRatingCurrency {
   ruleDescription?: string;
   progress?: CurrencyProgress;
   requirements?: CurrencyRequirement[];
+  launchMethodCurrency?: LaunchMethodCurrency[];
+}
+
+export interface LaunchMethodCurrency {
+  method: string;
+  launches: number;
+  required: number;
+  met: boolean;
+  message: string;
 }
 
 export interface CurrencyStatusResponse {
   ratings: ClassRatingCurrency[];
+  passengerCurrency: PassengerCurrency[];
+  flightReview?: FlightReviewStatus;
+}
+
+export interface PassengerCurrency {
+  classType: ClassType;
+  regulatoryAuthority: string;
+  dayStatus: CurrencyStatus;
+  nightStatus: CurrencyStatus;
+  dayLandings: number;
+  nightLandings: number;
+  dayRequired: number;
+  nightRequired: number;
+  nightPrivilege: boolean;
+  message: string;
+  ruleDescription: string;
+  passengerPrivilege?: PassengerPrivilege;
+}
+
+export interface PassengerPrivilege {
+  eligible: boolean;
+  message: string;
+}
+
+export interface FlightReviewStatus {
+  lastCompleted?: string | null;
+  expiresOn?: string | null;
+  status: CurrencyStatus;
+  message: string;
 }
 
 // ============ Crew & Contact Types ============
