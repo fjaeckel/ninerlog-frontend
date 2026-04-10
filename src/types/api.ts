@@ -19,6 +19,7 @@ export interface User {
   name: string;
   twoFactorEnabled?: boolean;
   isAdmin?: boolean;
+  timeDisplayFormat?: 'hm' | 'decimal';
   createdAt: string;
   updatedAt: string;
 }
@@ -179,13 +180,15 @@ export interface PaginatedFlights {
 export interface Statistics {
   licenseId: string;
   totalFlights: number;
-  totalHours: number;
-  picHours: number;
-  dualHours: number;
-  nightHours: number;
-  ifrHours: number;
+  totalMinutes: number;
+  picMinutes: number;
+  dualMinutes: number;
+  nightMinutes: number;
+  ifrMinutes: number;
   landingsDay: number;
   landingsNight: number;
+  soloMinutes?: number;
+  crossCountryMinutes?: number;
 }
 
 export interface StatisticsParams {

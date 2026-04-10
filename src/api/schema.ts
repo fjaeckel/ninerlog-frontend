@@ -1250,6 +1250,13 @@ export interface components {
              * @example false
              */
             isAdmin?: boolean;
+            /**
+             * @description User's preferred time display format. "hm" for hours and minutes (1h 30m), "decimal" for decimal hours (1.5h).
+             * @default hm
+             * @example hm
+             * @enum {string}
+             */
+            timeDisplayFormat: "hm" | "decimal";
         };
         TwoFactorSetup: {
             /**
@@ -1570,9 +1577,8 @@ export interface components {
              */
             arrivalTime?: string | null;
             /**
-             * Format: float
-             * @description Total block time in hours (off-block to on-block)
-             * @example 2.5
+             * @description Total block time in minutes (off-block to on-block)
+             * @example 150
              */
             totalTime: number;
             /**
@@ -1586,27 +1592,23 @@ export interface components {
              */
             isDual: boolean;
             /**
-             * Format: float
-             * @description Pilot-in-command block time in hours (computed from isPic and totalTime)
-             * @example 2.5
+             * @description Pilot-in-command block time in minutes (computed from isPic and totalTime)
+             * @example 150
              */
             picTime: number;
             /**
-             * Format: float
-             * @description Dual instruction block time in hours (computed from isDual and totalTime)
+             * @description Dual instruction block time in minutes (computed from isDual and totalTime)
              * @example 0
              */
             dualTime: number;
             /**
-             * Format: float
-             * @description Night block time in hours. Auto-calculated from departure/arrival times and airport sunset/sunrise data.
-             * @example 0.5
+             * @description Night block time in minutes. Auto-calculated from departure/arrival times and airport sunset/sunrise data.
+             * @example 30
              */
             nightTime: number;
             /**
-             * Format: float
-             * @description Instrument block time in hours
-             * @example 1
+             * @description Instrument block time in minutes
+             * @example 60
              */
             ifrTime: number;
             /**
@@ -1640,15 +1642,13 @@ export interface components {
              */
             route?: string | null;
             /**
-             * Format: float
-             * @description Solo time in hours. Auto-calculated when no crew and not dual instruction.
-             * @example 1.5
+             * @description Solo time in minutes. Auto-calculated when no crew and not dual instruction.
+             * @example 90
              */
             soloTime: number;
             /**
-             * Format: float
-             * @description Cross-country time in hours. Auto-calculated when departure ≠ arrival.
-             * @example 2.5
+             * @description Cross-country time in minutes. Auto-calculated when departure ≠ arrival.
+             * @example 150
              */
             crossCountryTime: number;
             /**
@@ -1667,39 +1667,33 @@ export interface components {
             /** @description Instructor comments about the flight */
             instructorComments?: string | null;
             /**
-             * Format: float
-             * @description Second-in-command time in hours. Auto-calculated when SIC crew role assigned.
+             * @description Second-in-command time in minutes. Auto-calculated when SIC crew role assigned.
              * @example 0
              */
             sicTime?: number;
             /**
-             * Format: float
-             * @description Dual instruction given time in hours. Auto-calculated when user acts as instructor.
+             * @description Dual instruction given time in minutes. Auto-calculated when user acts as instructor.
              * @example 0
              */
             dualGivenTime?: number;
             /**
-             * Format: float
-             * @description Simulated flight time in hours (FTD/FSTD)
+             * @description Simulated flight time in minutes (FTD/FSTD)
              * @example 0
              */
             simulatedFlightTime?: number;
             /**
-             * Format: float
-             * @description Ground training time in hours
+             * @description Ground training time in minutes
              * @example 0
              */
             groundTrainingTime?: number;
             /**
-             * Format: float
-             * @description Actual instrument flight time in hours (under IMC or simulated IMC with view-limiting device)
-             * @example 0.5
+             * @description Actual instrument flight time in minutes (under IMC or simulated IMC with view-limiting device)
+             * @example 30
              */
             actualInstrumentTime?: number;
             /**
-             * Format: float
-             * @description Simulated instrument time in hours (FSTD/FTD/ATD)
-             * @example 0.3
+             * @description Simulated instrument time in minutes (FSTD/FTD/ATD)
+             * @example 18
              */
             simulatedInstrumentTime?: number;
             /**
@@ -1791,27 +1785,23 @@ export interface components {
              */
             arrivalTime?: string;
             /**
-             * Format: float
-             * @description Total block time calculated from offBlockTime and onBlockTime. This field is computed by the server and should not be provided by the client.
-             * @example 2.5
+             * @description Total block time in minutes calculated from offBlockTime and onBlockTime. This field is computed by the server and should not be provided by the client.
+             * @example 150
              */
             readonly totalTime?: number;
             /**
-             * Format: float
-             * @description Pilot-in-command time in hours. Computed by server — equals totalTime when isPic is true, 0 otherwise.
-             * @example 2.5
+             * @description Pilot-in-command time in minutes. Computed by server — equals totalTime when isPic is true, 0 otherwise.
+             * @example 150
              */
             readonly picTime?: number;
             /**
-             * Format: float
-             * @description Dual instruction time in hours. Computed by server — equals totalTime when isDual is true, 0 otherwise.
+             * @description Dual instruction time in minutes. Computed by server — equals totalTime when isDual is true, 0 otherwise.
              * @example 0
              */
             readonly dualTime?: number;
             /**
-             * Format: float
              * @default 0
-             * @example 1
+             * @example 60
              */
             ifrTime: number;
             /**
@@ -1834,15 +1824,9 @@ export interface components {
              * @example EDDF,EDDS,EDDM
              */
             route?: string | null;
-            /**
-             * Format: float
-             * @description Solo time in hours. Auto-calculated by the server.
-             */
+            /** @description Solo time in minutes. Auto-calculated by the server. */
             readonly soloTime?: number;
-            /**
-             * Format: float
-             * @description Cross-country time in hours. Auto-calculated by the server.
-             */
+            /** @description Cross-country time in minutes. Auto-calculated by the server. */
             readonly crossCountryTime?: number;
             /**
              * Format: float
@@ -1855,17 +1839,11 @@ export interface components {
             remarks?: string | null;
             instructorName?: string | null;
             instructorComments?: string | null;
-            /** Format: float */
             sicTime?: number;
-            /** Format: float */
             dualGivenTime?: number;
-            /** Format: float */
             simulatedFlightTime?: number;
-            /** Format: float */
             groundTrainingTime?: number;
-            /** Format: float */
             actualInstrumentTime?: number;
-            /** Format: float */
             simulatedInstrumentTime?: number;
             holds?: number;
             approachesCount?: number;
@@ -1904,9 +1882,7 @@ export interface components {
              * @description Landing time in UTC
              */
             arrivalTime?: string | null;
-            /** Format: float */
             totalTime?: number;
-            /** Format: float */
             ifrTime?: number;
             /** @description Total number of landings */
             landings?: number;
@@ -1919,17 +1895,11 @@ export interface components {
             remarks?: string | null;
             instructorName?: string | null;
             instructorComments?: string | null;
-            /** Format: float */
             sicTime?: number;
-            /** Format: float */
             dualGivenTime?: number;
-            /** Format: float */
             simulatedFlightTime?: number;
-            /** Format: float */
             groundTrainingTime?: number;
-            /** Format: float */
             actualInstrumentTime?: number;
-            /** Format: float */
             simulatedInstrumentTime?: number;
             holds?: number;
             approachesCount?: number;
@@ -1953,35 +1923,30 @@ export interface components {
              */
             totalFlights: number;
             /**
-             * Format: float
-             * @description Total block hours
-             * @example 385.5
+             * @description Total block time in minutes
+             * @example 23130
              */
-            totalHours: number;
+            totalMinutes: number;
             /**
-             * Format: float
-             * @description Total PIC block hours
-             * @example 320
+             * @description Total PIC block time in minutes
+             * @example 19200
              */
-            picHours: number;
+            picMinutes: number;
             /**
-             * Format: float
-             * @description Total dual instruction block hours
-             * @example 45.5
+             * @description Total dual instruction block time in minutes
+             * @example 2730
              */
-            dualHours: number;
+            dualMinutes: number;
             /**
-             * Format: float
-             * @description Total night block hours
-             * @example 15.5
+             * @description Total night block time in minutes
+             * @example 930
              */
-            nightHours: number;
+            nightMinutes: number;
             /**
-             * Format: float
-             * @description Total IFR block hours
-             * @example 30
+             * @description Total IFR block time in minutes
+             * @example 1800
              */
-            ifrHours: number;
+            ifrMinutes: number;
             /**
              * @description Total day landings
              * @example 450
@@ -1993,17 +1958,15 @@ export interface components {
              */
             landingsNight: number;
             /**
-             * Format: float
-             * @description Total solo hours
-             * @example 120
+             * @description Total solo time in minutes
+             * @example 7200
              */
-            soloHours?: number;
+            soloMinutes?: number;
             /**
-             * Format: float
-             * @description Total cross-country hours
-             * @example 200
+             * @description Total cross-country time in minutes
+             * @example 12000
              */
-            crossCountryHours?: number;
+            crossCountryMinutes?: number;
         };
         Currency: {
             /**
@@ -2452,31 +2415,16 @@ export interface components {
             message?: string;
             /** @description Progress metrics toward currency requirements (authority-specific) */
             progress?: {
-                /**
-                 * Format: float
-                 * @description Total hours in class in the evaluation period
-                 */
-                totalHours?: number;
-                /**
-                 * Format: float
-                 * @description PIC hours in class in the evaluation period
-                 */
-                picHours?: number;
-                /**
-                 * Format: float
-                 * @description IFR hours in the evaluation period
-                 */
-                ifrHours?: number;
-                /**
-                 * Format: float
-                 * @description Hours with instructor (dual received) in the evaluation period
-                 */
-                instructorHours?: number;
-                /**
-                 * Format: float
-                 * @description Night hours in the evaluation period
-                 */
-                nightHours?: number;
+                /** @description Total time in class in minutes in the evaluation period */
+                totalMinutes?: number;
+                /** @description PIC time in class in minutes in the evaluation period */
+                picMinutes?: number;
+                /** @description IFR time in minutes in the evaluation period */
+                ifrMinutes?: number;
+                /** @description Time with instructor (dual received) in minutes in the evaluation period */
+                instructorMinutes?: number;
+                /** @description Night time in minutes in the evaluation period */
+                nightMinutes?: number;
                 /** @description Total landings in class in the evaluation period */
                 landings?: number;
                 dayLandings?: number;
@@ -2487,11 +2435,8 @@ export interface components {
                 approaches?: number;
                 /** @description Number of holding procedures in the evaluation period */
                 holds?: number;
-                /**
-                 * Format: float
-                 * @description Required hours for currency (authority-specific)
-                 */
-                requiredHours?: number;
+                /** @description Required time in minutes for currency (authority-specific) */
+                requiredMinutes?: number;
                 /** @description Required landings for currency */
                 requiredLandings?: number;
             };
@@ -3458,6 +3403,11 @@ export interface operations {
                     name?: string;
                     /** Format: email */
                     email?: string;
+                    /**
+                     * @description Preferred time display format
+                     * @enum {string}
+                     */
+                    timeDisplayFormat?: "hm" | "decimal";
                 };
             };
         };
@@ -4596,12 +4546,12 @@ export interface operations {
                         trends?: {
                             /** @description Month in YYYY-MM format */
                             month?: string;
-                            totalHours?: number;
+                            totalMinutes?: number;
                             flights?: number;
                         }[];
                         aircraftBreakdown?: {
                             aircraftType?: string;
-                            hours?: number;
+                            minutes?: number;
                             flights?: number;
                         }[];
                     };
@@ -4628,12 +4578,12 @@ export interface operations {
                     "application/json": {
                         byClass?: {
                             classType?: string;
-                            totalHours?: number;
+                            totalMinutes?: number;
                             flights?: number;
                         }[];
                         byAuthority?: {
                             authority?: string;
-                            totalHours?: number;
+                            totalMinutes?: number;
                             flights?: number;
                         }[];
                     };

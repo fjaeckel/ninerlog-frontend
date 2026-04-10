@@ -4,11 +4,11 @@ import { useAuthStore } from '../stores/authStore';
 export interface MonthlyTrend {
   month: string;
   totalFlights: number;
-  totalHours: number;
-  picHours: number;
-  dualHours: number;
-  nightHours: number;
-  ifrHours: number;
+  totalMinutes: number;
+  picMinutes: number;
+  dualMinutes: number;
+  nightMinutes: number;
+  ifrMinutes: number;
   landingsDay: number;
   landingsNight: number;
 }
@@ -16,7 +16,7 @@ export interface MonthlyTrend {
 export interface AircraftBreakdown {
   aircraftType: string;
   totalFlights: number;
-  totalHours: number;
+  totalMinutes: number;
 }
 
 export interface TrendsData {

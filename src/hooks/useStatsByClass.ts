@@ -5,8 +5,8 @@ import { API_BASE_URL as API_BASE } from '../lib/config';
 interface ClassStat {
   class: string;
   flights: number;
-  hours: number;
-  picHours: number;
+  minutes: number;
+  picMinutes: number;
   landings: number;
 }
 
@@ -14,7 +14,7 @@ interface AuthorityStat {
   authority: string;
   licenseType: string;
   flights: number;
-  hours: number;
+  minutes: number;
 }
 
 export interface StatsByClassResponse {
