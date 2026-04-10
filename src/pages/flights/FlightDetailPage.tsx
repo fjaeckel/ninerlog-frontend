@@ -7,6 +7,8 @@ import FlightForm from '../../components/flights/FlightForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
+import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
+import { useAuthStore } from '../../stores/authStore';
 
 export default function FlightDetailPage() {
   const { flightId } = useParams<{ flightId: string }>();
@@ -180,7 +182,7 @@ export default function FlightDetailPage() {
               <div key={label} className="flex justify-between">
                 <dt className="text-slate-500 dark:text-slate-400">{label}</dt>
                 <dd className={`font-medium ${value > 0 || text ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'} ${!text ? 'font-mono tabular-nums' : ''}`}>
-                  {text ?? `${value.toFixed(1)}h`}
+                  {text ?? formatDuration(value, (useAuthStore.getState().user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')}
                 </dd>
               </div>
             ))}

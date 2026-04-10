@@ -8,6 +8,7 @@ import { useAllCurrencyStatus } from '../hooks/useCurrency';
 import { useStatsByClass } from '../hooks/useStatsByClass';
 import { CurrencyCard } from '../components/currency/CurrencyCard';
 import { StatCard } from '../components/ui/StatCard';
+import { formatDuration, type TimeDisplayFormat } from '../lib/duration';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -103,8 +104,8 @@ export default function DashboardPage() {
 
       {/* Stats grid */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
-        <StatCard label="Total Hours" value={statistics?.totalHours?.toFixed(1) ?? '0.0'} unit="h" />
-        <StatCard label="PIC Hours" value={statistics?.picHours?.toFixed(1) ?? '0.0'} unit="h" />
+        <StatCard label="Total Time" value={statistics ? formatDuration(statistics.totalMinutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm') : '0h 0m'} />
+        <StatCard label="PIC Time" value={statistics ? formatDuration(statistics.picMinutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm') : '0h 0m'} />
         <StatCard label="Total Flights" value={String(statistics?.totalFlights ?? totalFlights)} />
         <StatCard
           label="Landings"
@@ -114,20 +115,20 @@ export default function DashboardPage() {
       </div>
 
       {/* Hours breakdown */}
-      {statistics && statistics.totalHours > 0 && (
+      {statistics && statistics.totalMinutes > 0 && (
         <div className="card mb-6">
-          <h2 className="section-title mb-4">Block Hours Breakdown</h2>
+          <h2 className="section-title mb-4">Block Time Breakdown</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             {[
-              { label: 'PIC', value: statistics.picHours },
-              { label: 'Dual', value: statistics.dualHours },
-              { label: 'Solo', value: statistics.soloHours ?? 0 },
-              { label: 'Cross-Country', value: statistics.crossCountryHours ?? 0 },
-              { label: 'Night', value: statistics.nightHours },
-              { label: 'IFR', value: statistics.ifrHours },
+              { label: 'PIC', value: statistics.picMinutes },
+              { label: 'Dual', value: statistics.dualMinutes },
+              { label: 'Solo', value: statistics.soloMinutes ?? 0 },
+              { label: 'Cross-Country', value: statistics.crossCountryMinutes ?? 0 },
+              { label: 'Night', value: statistics.nightMinutes },
+              { label: 'IFR', value: statistics.ifrMinutes },
             ].map(({ label, value }) => (
               <div key={label}>
-                <p className="data-lg text-slate-800 dark:text-slate-100">{value.toFixed(1)}</p>
+                <p className="data-lg text-slate-800 dark:text-slate-100">{formatDuration(value, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</p>
               </div>
             ))}
@@ -135,14 +136,14 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Hours by Aircraft Class */}
+      {/* Time by Aircraft Class */}
       {classStat && classStat.byClass.length > 0 && (
         <div className="card mb-6">
-          <h2 className="section-title mb-4">Hours by Aircraft Class</h2>
+          <h2 className="section-title mb-4">Time by Aircraft Class</h2>
           <div className="space-y-2">
             {classStat.byClass.map((cs) => {
-              const maxHours = Math.max(...classStat.byClass.map((c) => c.hours), 1);
-              const pct = (cs.hours / maxHours) * 100;
+              const maxMinutes = Math.max(...classStat.byClass.map((c) => c.minutes), 1);
+              const pct = (cs.minutes / maxMinutes) * 100;
               const classLabels: Record<string, string> = {
                 SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
                 MEP_LAND: 'MEP (Land)', MEP_SEA: 'MEP (Sea)',
@@ -153,7 +154,7 @@ export default function DashboardPage() {
                 <div key={cs.class} data-testid={`class-stat-${cs.class}`}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium text-slate-700 dark:text-slate-300">{classLabels[cs.class] || cs.class}</span>
-                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{cs.hours.toFixed(1)}h · {cs.flights} flights · {cs.landings} ldg</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{formatDuration(cs.minutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')} · {cs.flights} flights · {cs.landings} ldg</span>
                   </div>
                   <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 dark:bg-blue-400 rounded-full" style={{ width: `${pct}%` }} />
@@ -165,14 +166,14 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Hours by Authority */}
+      {/* Time by Authority */}
       {classStat && classStat.byAuthority.length > 0 && (
         <div className="card mb-6">
-          <h2 className="section-title mb-4">Hours by Authority</h2>
+          <h2 className="section-title mb-4">Time by Authority</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {classStat.byAuthority.map((auth) => (
               <div key={`${auth.authority}-${auth.licenseType}`} className="text-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                <p className="data-lg text-slate-800 dark:text-slate-100">{auth.hours.toFixed(1)}h</p>
+                <p className="data-lg text-slate-800 dark:text-slate-100">{formatDuration(auth.minutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{auth.authority} {auth.licenseType}</p>
                 <p className="text-xs text-slate-400 dark:text-slate-500 font-mono tabular-nums">{auth.flights} flights</p>
               </div>
@@ -209,7 +210,7 @@ export default function DashboardPage() {
                   <span className="ml-3 text-sm text-slate-500 dark:text-slate-400">{flight.aircraftReg}</span>
                 </div>
                 <div className="text-right">
-                  <span className="data-sm text-slate-800 dark:text-slate-100">{flight.totalTime.toFixed(1)}h</span>
+                  <span className="data-sm text-slate-800 dark:text-slate-100">{formatDuration(flight.totalTime, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')}</span>
                   <span className="ml-3 text-sm text-slate-500 dark:text-slate-400">{flight.date}</span>
                 </div>
               </button>

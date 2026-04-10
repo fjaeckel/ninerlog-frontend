@@ -9,6 +9,8 @@ import { exportTrendsToCSV, exportTrendsToPDF } from '../../lib/exportReports';
 import { StatCard } from '../../components/ui/StatCard';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
+import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
+import { useAuthStore } from '../../stores/authStore';
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#ec4899', '#6366f1'];
 
@@ -17,6 +19,8 @@ type TimeRange = 6 | 12 | 24;
 export default function ReportsPage() {
   const [months, setMonths] = useState<TimeRange>(12);
   const { data: trends, isLoading, error } = useTrends(months);
+  const { user } = useAuthStore();
+  const fmt = (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm';
 
   if (isLoading) {
     return (
@@ -40,7 +44,7 @@ export default function ReportsPage() {
   const monthly = trends?.monthly ?? [];
   const byAircraft = trends?.byAircraftType ?? [];
 
-  const totalHours = monthly.reduce((s, m) => s + m.totalHours, 0);
+  const totalMinutes = monthly.reduce((s, m) => s + m.totalMinutes, 0);
   const totalFlights = monthly.reduce((s, m) => s + m.totalFlights, 0);
 
   const handleExportCSV = () => {
@@ -91,16 +95,16 @@ export default function ReportsPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <StatCard label="Flights" value={totalFlights.toString()} />
-        <StatCard label="Total Hours" value={totalHours.toFixed(1)} unit="h" />
+        <StatCard label="Total Time" value={formatDuration(totalMinutes, fmt)} />
         <StatCard label="Aircraft Types" value={byAircraft.length.toString()} />
-        <StatCard label="Avg Hours/Month" value={monthly.length > 0 ? (totalHours / monthly.length).toFixed(1) : '0'} unit="h" />
+        <StatCard label="Avg Time/Month" value={monthly.length > 0 ? formatDuration(Math.round(totalMinutes / monthly.length), fmt) : '0h 0m'} />
       </div>
 
       {/* Block Hours Over Time */}
       {monthly.length > 0 ? (
         <>
           <div className="card mb-6">
-            <h2 className="section-title mb-4">Block Hours Over Time</h2>
+            <h2 className="section-title mb-4">Block Time Over Time</h2>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={monthly} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -120,11 +124,11 @@ export default function ReportsPage() {
                       const [y, m] = String(v).split('-');
                       return `${['January','February','March','April','May','June','July','August','September','October','November','December'][parseInt(m) - 1]} ${y}`;
                     }}
-                    formatter={(value: unknown) => [(Number(value)).toFixed(1) + 'h', '']}
+                    formatter={(value: unknown) => [formatDuration(Number(value), fmt), '']}
                   />
                   <Legend />
-                  <Area type="monotone" dataKey="picHours" name="PIC" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-                  <Area type="monotone" dataKey="dualHours" name="Dual" stackId="1" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
+                  <Area type="monotone" dataKey="picMinutes" name="PIC" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
+                  <Area type="monotone" dataKey="dualMinutes" name="Dual" stackId="1" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -167,13 +171,13 @@ export default function ReportsPage() {
       {byAircraft.length > 0 && (
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="card">
-            <h2 className="section-title mb-4">Hours by Aircraft Type</h2>
+            <h2 className="section-title mb-4">Time by Aircraft Type</h2>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={byAircraft}
-                    dataKey="totalHours"
+                    dataKey="totalMinutes"
                     nameKey="aircraftType"
                     cx="50%"
                     cy="50%"
@@ -187,7 +191,7 @@ export default function ReportsPage() {
                   </Pie>
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc', fontSize: '13px' }}
-                    formatter={(value: unknown) => [Number(value).toFixed(1) + 'h', 'Hours']}
+                    formatter={(value: unknown) => [formatDuration(Number(value), fmt), 'Time']}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -198,14 +202,14 @@ export default function ReportsPage() {
             <h2 className="section-title mb-4">Aircraft Type Breakdown</h2>
             <div className="space-y-3">
               {byAircraft.map((ac, idx) => {
-                const maxHours = byAircraft[0]?.totalHours || 1;
-                const pct = (ac.totalHours / maxHours) * 100;
+                const maxMinutes = byAircraft[0]?.totalMinutes || 1;
+                const pct = (ac.totalMinutes / maxMinutes) * 100;
                 return (
                   <div key={ac.aircraftType}>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="font-medium text-slate-700 dark:text-slate-300">{ac.aircraftType}</span>
                       <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
-                        {ac.totalHours.toFixed(1)}h · {ac.totalFlights} flights
+                        {formatDuration(ac.totalMinutes, fmt)} · {ac.totalFlights} flights
                       </span>
                     </div>
                     <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">

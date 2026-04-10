@@ -6,6 +6,8 @@ import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { useCreateFlight, useUpdateFlight, useFlight, useFlights } from '../../hooks/useFlights';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { useSearchContacts, useCreateContact } from '../../hooks/useContacts';
+import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
+import { useAuthStore } from '../../stores/authStore';
 import type { Aircraft } from '../../hooks/useAircraft';
 import type { CrewRole, FlightCrewMemberInput } from '../../types/api';
 
@@ -54,6 +56,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const { data: aircraftList } = useAircraft();
   const createAircraft = useCreateAircraft();
   const { data: recentFlightsData } = useFlights({ page: 1, pageSize: 1, sortBy: 'date', sortOrder: 'desc' });
+  const { user } = useAuthStore();
+  const fmt = (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm';
 
   const isEditing = !!flightId;
   const lastFlight = recentFlightsData?.data?.[0];
@@ -714,7 +718,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               Total Block Time
             </label>
             <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-              {existingFlight.totalTime.toFixed(1)}h
+              {formatDuration(existingFlight.totalTime, fmt)}
             </div>
             <p className="form-helper">Computed from block times</p>
           </div>
@@ -737,13 +741,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <div>
               <label className="form-label">Solo Time</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-                {existingFlight.soloTime.toFixed(1)}h
+                {formatDuration(existingFlight.soloTime, fmt)}h
               </div>
             </div>
             <div>
               <label className="form-label">Cross-Country</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-                {existingFlight.crossCountryTime.toFixed(1)}h
+                {formatDuration(existingFlight.crossCountryTime, fmt)}h
               </div>
             </div>
             <div>
@@ -755,7 +759,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <div>
               <label className="form-label">Night Time</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-                {existingFlight.nightTime.toFixed(1)}h
+                {formatDuration(existingFlight.nightTime, fmt)}h
               </div>
             </div>
             <div>
@@ -788,11 +792,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 {...register('ifrTime', { valueAsNumber: true })}
                 type="number"
                 id="ifrTime"
-                step="0.1"
+                step="1"
                 min="0"
                 className="input"
               />
-              <p className="form-helper">Hours</p>
+              <p className="form-helper">Minutes</p>
             </div>
             <div>
               <label htmlFor="simulatedFlightTime" className="form-label">Simulated Flight</label>
@@ -800,11 +804,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 {...register('simulatedFlightTime', { valueAsNumber: true })}
                 type="number"
                 id="simulatedFlightTime"
-                step="0.1"
+                step="1"
                 min="0"
                 className="input"
               />
-              <p className="form-helper">Hours (FTD/FSTD)</p>
+              <p className="form-helper">Minutes (FTD/FSTD)</p>
             </div>
             <div>
               <label htmlFor="groundTrainingTime" className="form-label">Ground Training</label>
@@ -812,25 +816,25 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 {...register('groundTrainingTime', { valueAsNumber: true })}
                 type="number"
                 id="groundTrainingTime"
-                step="0.1"
+                step="1"
                 min="0"
                 className="input"
               />
-              <p className="form-helper">Hours</p>
+              <p className="form-helper">Minutes</p>
             </div>
             {isEditing && existingFlight && (
               <>
                 <div>
                   <label className="form-label">SIC Time</label>
                   <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-                    {existingFlight.sicTime?.toFixed(1) || '0.0'}h
+                    {formatDuration(existingFlight.sicTime || 0, fmt)}h
                   </div>
                   <p className="form-helper">Auto from crew roles</p>
                 </div>
                 <div>
                   <label className="form-label">Dual Given</label>
                   <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-                    {existingFlight.dualGivenTime?.toFixed(1) || '0.0'}h
+                    {formatDuration(existingFlight.dualGivenTime || 0, fmt)}h
                   </div>
                   <p className="form-helper">Auto from instructor role</p>
                 </div>
@@ -848,11 +852,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   {...register('actualInstrumentTime', { valueAsNumber: true })}
                   type="number"
                   id="actualInstrumentTime"
-                  step="0.1"
+                  step="1"
                   min="0"
                   className="input"
                 />
-                <p className="form-helper">Hours (IMC)</p>
+                <p className="form-helper">Minutes (IMC)</p>
               </div>
               <div>
                 <label htmlFor="simulatedInstrumentTime" className="form-label">Simulated Instrument</label>
@@ -860,7 +864,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   {...register('simulatedInstrumentTime', { valueAsNumber: true })}
                   type="number"
                   id="simulatedInstrumentTime"
-                  step="0.1"
+                  step="1"
                   min="0"
                   className="input"
                 />

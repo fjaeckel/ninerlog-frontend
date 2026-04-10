@@ -1,25 +1,26 @@
 import type { MonthlyTrend, AircraftBreakdown } from '../hooks/useReports';
 import { APP_NAME } from './config';
+import { formatDuration } from './duration';
 
 export function exportTrendsToCSV(monthly: MonthlyTrend[], byAircraftType: AircraftBreakdown[]) {
   const lines: string[] = [];
 
   // Monthly trends section
   lines.push('Monthly Flight Trends');
-  lines.push('Month,Flights,Total Hours,PIC Hours,Dual Hours,Night Hours,IFR Hours,Day Landings,Night Landings');
+  lines.push('Month,Flights,Total Minutes,PIC Minutes,Dual Minutes,Night Minutes,IFR Minutes,Day Landings,Night Landings');
   for (const m of monthly) {
     lines.push(
-      [m.month, m.totalFlights, m.totalHours.toFixed(1), m.picHours.toFixed(1),
-       m.dualHours.toFixed(1), m.nightHours.toFixed(1), m.ifrHours.toFixed(1),
+      [m.month, m.totalFlights, m.totalMinutes, m.picMinutes,
+       m.dualMinutes, m.nightMinutes, m.ifrMinutes,
        m.landingsDay, m.landingsNight].join(',')
     );
   }
 
   lines.push('');
-  lines.push('Hours by Aircraft Type');
-  lines.push('Aircraft Type,Flights,Total Hours');
+  lines.push('Time by Aircraft Type');
+  lines.push('Aircraft Type,Flights,Total Minutes');
   for (const a of byAircraftType) {
-    lines.push([a.aircraftType, a.totalFlights, a.totalHours.toFixed(1)].join(','));
+    lines.push([a.aircraftType, a.totalFlights, a.totalMinutes].join(','));
   }
 
   const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -32,11 +33,11 @@ export function exportTrendsToCSV(monthly: MonthlyTrend[], byAircraftType: Aircr
 }
 
 export function exportTrendsToPDF(monthly: MonthlyTrend[], byAircraftType: AircraftBreakdown[]) {
-  // Simple printable HTML report opened in a new window
-  const totalHours = monthly.reduce((s, m) => s + m.totalHours, 0);
+  const totalMinutes = monthly.reduce((s, m) => s + m.totalMinutes, 0);
   const totalFlights = monthly.reduce((s, m) => s + m.totalFlights, 0);
-  const totalPIC = monthly.reduce((s, m) => s + m.picHours, 0);
-  const totalDual = monthly.reduce((s, m) => s + m.dualHours, 0);
+  const totalPICMinutes = monthly.reduce((s, m) => s + m.picMinutes, 0);
+  const totalDualMinutes = monthly.reduce((s, m) => s + m.dualMinutes, 0);
+  const fmt = (m: number) => formatDuration(m, 'hm');
 
   const html = `
 <!DOCTYPE html>
@@ -62,24 +63,24 @@ export function exportTrendsToPDF(monthly: MonthlyTrend[], byAircraftType: Aircr
 
 <div class="summary">
   <div class="stat"><div class="stat-value">${totalFlights}</div><div class="stat-label">Total Flights</div></div>
-  <div class="stat"><div class="stat-value">${totalHours.toFixed(1)}</div><div class="stat-label">Total Hours</div></div>
-  <div class="stat"><div class="stat-value">${totalPIC.toFixed(1)}</div><div class="stat-label">PIC Hours</div></div>
-  <div class="stat"><div class="stat-value">${totalDual.toFixed(1)}</div><div class="stat-label">Dual Hours</div></div>
+  <div class="stat"><div class="stat-value">${fmt(totalMinutes)}</div><div class="stat-label">Total Time</div></div>
+  <div class="stat"><div class="stat-value">${fmt(totalPICMinutes)}</div><div class="stat-label">PIC Time</div></div>
+  <div class="stat"><div class="stat-value">${fmt(totalDualMinutes)}</div><div class="stat-label">Dual Time</div></div>
 </div>
 
 <h2>Monthly Trends</h2>
 <table>
   <thead><tr><th>Month</th><th>Flights</th><th>Total</th><th>PIC</th><th>Dual</th><th>Night</th><th>IFR</th><th>Ldg Day</th><th>Ldg Night</th></tr></thead>
   <tbody>
-    ${monthly.map(m => `<tr><td>${m.month}</td><td>${m.totalFlights}</td><td>${m.totalHours.toFixed(1)}</td><td>${m.picHours.toFixed(1)}</td><td>${m.dualHours.toFixed(1)}</td><td>${m.nightHours.toFixed(1)}</td><td>${m.ifrHours.toFixed(1)}</td><td>${m.landingsDay}</td><td>${m.landingsNight}</td></tr>`).join('')}
+    ${monthly.map(m => `<tr><td>${m.month}</td><td>${m.totalFlights}</td><td>${fmt(m.totalMinutes)}</td><td>${fmt(m.picMinutes)}</td><td>${fmt(m.dualMinutes)}</td><td>${fmt(m.nightMinutes)}</td><td>${fmt(m.ifrMinutes)}</td><td>${m.landingsDay}</td><td>${m.landingsNight}</td></tr>`).join('')}
   </tbody>
 </table>
 
-<h2>Hours by Aircraft Type</h2>
+<h2>Time by Aircraft Type</h2>
 <table>
-  <thead><tr><th>Aircraft Type</th><th>Flights</th><th>Hours</th></tr></thead>
+  <thead><tr><th>Aircraft Type</th><th>Flights</th><th>Time</th></tr></thead>
   <tbody>
-    ${byAircraftType.map(a => `<tr><td>${a.aircraftType}</td><td>${a.totalFlights}</td><td>${a.totalHours.toFixed(1)}</td></tr>`).join('')}
+    ${byAircraftType.map(a => `<tr><td>${a.aircraftType}</td><td>${a.totalFlights}</td><td>${fmt(a.totalMinutes)}</td></tr>`).join('')}
   </tbody>
 </table>
 

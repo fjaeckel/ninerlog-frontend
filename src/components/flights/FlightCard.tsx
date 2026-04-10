@@ -1,6 +1,8 @@
 import { format } from 'date-fns';
 import { Pencil, Trash2 } from 'lucide-react';
 import type { components } from '../../api/schema';
+import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
+import { useAuthStore } from '../../stores/authStore';
 
 type Flight = components['schemas']['Flight'];
 
@@ -13,6 +15,7 @@ interface FlightCardProps {
 
 export default function FlightCard({ flight, onEdit, onDelete, onClick }: FlightCardProps) {
   const totalLandings = flight.landingsDay + flight.landingsNight;
+  const fmt = (useAuthStore.getState().user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm';
 
   return (
     <div
@@ -21,7 +24,7 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
       role="button"
       tabIndex={0}
-      aria-label={`Flight ${flight.departureIcao || '—'} to ${flight.arrivalIcao || '—'} on ${format(new Date(flight.date), 'MMM dd, yyyy')}, ${flight.totalTime.toFixed(1)} hours`}
+      aria-label={`Flight ${flight.departureIcao || '—'} to ${flight.arrivalIcao || '—'} on ${format(new Date(flight.date), 'MMM dd, yyyy')}, ${formatDuration(flight.totalTime, fmt)}`}
     >
       <div className="flex justify-between items-start mb-3">
         <div>
@@ -44,7 +47,7 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
           </p>
         </div>
         <span className="badge-info font-semibold">
-          {flight.totalTime.toFixed(1)}h
+          {formatDuration(flight.totalTime, fmt)}
         </span>
       </div>
 
@@ -59,12 +62,12 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
         </div>
         {flight.picTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">PIC:</span> <span className="font-mono tabular-nums">{flight.picTime.toFixed(1)}h</span>
+            <span className="text-slate-500 dark:text-slate-400">PIC:</span> <span className="font-mono tabular-nums">{formatDuration(flight.picTime, fmt)}</span>
           </div>
         )}
         {flight.dualTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">Dual:</span> <span className="font-mono tabular-nums">{flight.dualTime.toFixed(1)}h</span>
+            <span className="text-slate-500 dark:text-slate-400">Dual:</span> <span className="font-mono tabular-nums">{formatDuration(flight.dualTime, fmt)}</span>
           </div>
         )}
         {!flight.isPic && !flight.isDual && (
@@ -74,12 +77,12 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
         )}
         {flight.nightTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">Night:</span> <span className="font-mono tabular-nums">{flight.nightTime.toFixed(1)}h</span>
+            <span className="text-slate-500 dark:text-slate-400">Night:</span> <span className="font-mono tabular-nums">{formatDuration(flight.nightTime, fmt)}</span>
           </div>
         )}
         {flight.ifrTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">IFR:</span> <span className="font-mono tabular-nums">{flight.ifrTime.toFixed(1)}h</span>
+            <span className="text-slate-500 dark:text-slate-400">IFR:</span> <span className="font-mono tabular-nums">{formatDuration(flight.ifrTime, fmt)}</span>
           </div>
         )}
         {totalLandings > 0 && (
