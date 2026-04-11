@@ -80,6 +80,17 @@ This is the **frontend web application** built with React and TypeScript. It pro
 
 **ALL CODE MUST BE TESTED.** Testing is not optional.
 
+### Mandatory Verification Before Completion
+
+**ALWAYS run ALL tests (unit + e2e) before declaring any task complete or pushing code.**
+
+1. Run unit tests: `npx vitest run`
+2. Run e2e tests: `npx playwright test` (if applicable)
+3. Run type checking: `npx tsc --noEmit`
+4. All must pass with zero failures before any commit or verification.
+5. If any test fails, fix the failure before proceeding.
+6. Never skip tests or mark a task as done without a green test run.
+
 ### Unit Tests (Vitest + React Testing Library)
 - **Required for**: All components, hooks, utilities, and state management
 - **Coverage target**: Minimum 90% code coverage

@@ -206,7 +206,7 @@ describe('ImportPage', () => {
           aircraftReg: 'D-EABC',
           departureIcao: 'EDDF',
           arrivalIcao: 'EDDH',
-          totalTime: 1.5,
+          totalTime: 90,
           crewMembers: [
             { name: 'Max Instructor', role: 'Instructor' },
             { name: 'Student Pilot', role: 'Student' },

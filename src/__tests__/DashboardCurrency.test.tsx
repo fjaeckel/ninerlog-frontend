@@ -45,7 +45,7 @@ describe('DashboardPage Currency Integration', () => {
 
     // Mock statistics
     vi.spyOn(useStatisticsHook, 'useLicenseStatistics').mockReturnValue({
-      data: { totalFlights: 10, totalHours: 50, picHours: 40, dualHours: 10, nightHours: 5, ifrHours: 3, soloHours: 30, crossCountryHours: 25, landingsDay: 20, landingsNight: 5 },
+      data: { totalFlights: 10, totalMinutes: 50, picMinutes: 40, dualMinutes: 10, nightMinutes: 5, ifrMinutes: 3, soloMinutes: 30, crossCountryMinutes: 25, landingsDay: 20, landingsNight: 5 },
       isLoading: false, error: null,
     } as any);
 
@@ -69,8 +69,8 @@ describe('DashboardPage Currency Integration', () => {
             message: 'EASA SEP_LAND current — all revalidation requirements met',
             expiryDate: '2027-06-15',
             requirements: [
-              { name: 'Total Hours', met: true, current: 15, required: 12, unit: 'hours', message: '15.0 / 12.0 hours' },
-              { name: 'PIC Hours', met: true, current: 8, required: 6, unit: 'hours', message: '8.0 / 6.0 PIC hours' },
+              { name: 'Total Time', met: true, current: 15, required: 12, unit: 'minutes', message: '900 / 720 minutes in class' },
+              { name: 'PIC Time', met: true, current: 8, required: 6, unit: 'minutes', message: '480 / 360 PIC minutes' },
             ],
           },
         ],
@@ -101,7 +101,7 @@ describe('DashboardPage Currency Integration', () => {
             classRatingId: 'cr-2', classType: 'IR', licenseId: 'lic-1',
             regulatoryAuthority: 'EASA', licenseType: 'PPL', status: 'expiring',
             message: 'EASA IR — IFR hour requirement not met', requirements: [
-              { name: 'IFR Hours', met: false, current: 5, required: 10, unit: 'hours', message: '5.0 / 10.0 IFR hours' },
+              { name: 'IFR Time', met: false, current: 5, required: 10, unit: 'minutes', message: '5.0 / 10.0 IFR hours' },
             ],
           },
         ],
@@ -163,8 +163,8 @@ describe('DashboardPage Currency Integration', () => {
       // Currency card
       expect(screen.getByText('NOT CURRENT')).toBeInTheDocument();
       // Stats cards
-      expect(screen.getByText('Total Hours')).toBeInTheDocument();
-      expect(screen.getByText('PIC Hours')).toBeInTheDocument();
+      expect(screen.getByText('Total Time')).toBeInTheDocument();
+      expect(screen.getByText('PIC Time')).toBeInTheDocument();
       expect(screen.getByText('Total Flights')).toBeInTheDocument();
     });
   });

@@ -18,20 +18,20 @@ const mockFlight: Flight = {
   arrivalTime: '16:00:00',
   offBlockTime: '14:15:00',
   onBlockTime: '16:10:00',
-  totalTime: 1.5,
+  totalTime: 90,
   isPic: true,
   isDual: false,
-  picTime: 1.5,
+  picTime: 90,
   dualTime: 0,
-  nightTime: 0.5,
+  nightTime: 30,
   ifrTime: 0,
   landingsDay: 2,
   landingsNight: 1,
   allLandings: 3,
   takeoffsDay: 2,
   takeoffsNight: 1,
-  soloTime: 1.5,
-  crossCountryTime: 1.5,
+  soloTime: 90,
+  crossCountryTime: 90,
   distance: 185.3,
   remarks: 'Training flight',
   sicTime: 0,
@@ -71,7 +71,7 @@ describe('FlightCard', () => {
       />
     );
 
-    const badges = screen.getAllByText('1.5h');
+    const badges = screen.getAllByText('1h 30m');
     expect(badges.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -112,7 +112,7 @@ describe('FlightCard', () => {
       />
     );
 
-    expect(screen.getByText('0.5h')).toBeInTheDocument();
+    expect(screen.getByText('0h 30m')).toBeInTheDocument();
   });
 
   it('renders landing counts', () => {

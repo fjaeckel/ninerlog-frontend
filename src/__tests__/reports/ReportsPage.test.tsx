@@ -99,7 +99,7 @@ describe('ReportsPage', () => {
 
     renderWithProviders(<ReportsPage />);
     expect(screen.getByText('8')).toBeInTheDocument(); // total flights
-    expect(screen.getByText('12.7')).toBeInTheDocument(); // total hours
+    expect(screen.getByText(/12h 42m/)).toBeInTheDocument(); // total time
     expect(screen.getByText('2')).toBeInTheDocument(); // aircraft types
   });
 
@@ -130,9 +130,9 @@ describe('ReportsPage', () => {
     } as any);
 
     renderWithProviders(<ReportsPage />);
-    expect(screen.getByText('Block Hours Over Time')).toBeInTheDocument();
+    expect(screen.getByText('Block Time Over Time')).toBeInTheDocument();
     expect(screen.getByText('Flights Per Month')).toBeInTheDocument();
-    expect(screen.getByText('Hours by Aircraft Type')).toBeInTheDocument();
+    expect(screen.getByText('Time by Aircraft Type')).toBeInTheDocument();
     expect(screen.getByText('Aircraft Type Breakdown')).toBeInTheDocument();
   });
 
@@ -144,8 +144,8 @@ describe('ReportsPage', () => {
     renderWithProviders(<ReportsPage />);
     expect(screen.getByText('C172')).toBeInTheDocument();
     expect(screen.getByText('PA28')).toBeInTheDocument();
-    expect(screen.getByText(/10\.0h/)).toBeInTheDocument();
-    expect(screen.getByText(/2\.7h/)).toBeInTheDocument();
+    expect(screen.getAllByText(/10h 0m/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/2h 42m/).length).toBeGreaterThan(0);
   });
 
   it('renders empty state when no data', () => {

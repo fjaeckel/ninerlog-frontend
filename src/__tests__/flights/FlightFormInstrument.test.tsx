@@ -90,8 +90,8 @@ describe('FlightForm Instrument Tracking', () => {
     // Expand advanced section and fill instrument fields
     await user.click(screen.getByText('Advanced Times'));
 
-    fireEvent.change(screen.getByLabelText(/actual instrument/i), { target: { value: '0.5' } });
-    fireEvent.change(screen.getByLabelText(/simulated instrument/i), { target: { value: '0.3' } });
+    fireEvent.change(screen.getByLabelText(/actual instrument/i), { target: { value: '30' } });
+    fireEvent.change(screen.getByLabelText(/simulated instrument/i), { target: { value: '18' } });
     fireEvent.change(screen.getByLabelText(/approaches/i), { target: { value: '2' } });
     fireEvent.change(screen.getByLabelText(/holds/i), { target: { value: '1' } });
     await user.click(screen.getByLabelText(/instrument proficiency check/i));
@@ -102,8 +102,8 @@ describe('FlightForm Instrument Tracking', () => {
     await waitFor(() => {
       expect(mockCreate.mutateAsync).toHaveBeenCalledWith(
         expect.objectContaining({
-          actualInstrumentTime: 0.5,
-          simulatedInstrumentTime: 0.3,
+          actualInstrumentTime: 30,
+          simulatedInstrumentTime: 18,
           approachesCount: 2,
           holds: 1,
           isIpc: true,
@@ -127,23 +127,23 @@ describe('FlightForm Instrument Tracking', () => {
       onBlockTime: '16:55:00',
       departureTime: '14:30:00',
       arrivalTime: '16:45:00',
-      totalTime: 2.7,
+      totalTime: 162,
       isPic: true,
       isDual: false,
-      picTime: 2.7,
+      picTime: 162,
       dualTime: 0,
       nightTime: 0,
-      ifrTime: 0.8,
-      soloTime: 2.7,
-      crossCountryTime: 2.7,
+      ifrTime: 48,
+      soloTime: 162,
+      crossCountryTime: 162,
       distance: 185,
       landingsDay: 1,
       landingsNight: 0,
       allLandings: 1,
       takeoffsDay: 1,
       takeoffsNight: 0,
-      actualInstrumentTime: 0.5,
-      simulatedInstrumentTime: 0.3,
+      actualInstrumentTime: 30,
+      simulatedInstrumentTime: 18,
       holds: 1,
       approachesCount: 2,
       isIpc: true,
@@ -163,8 +163,8 @@ describe('FlightForm Instrument Tracking', () => {
     await user.click(screen.getByText('Advanced Times'));
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/actual instrument/i)).toHaveValue(0.5);
-      expect(screen.getByLabelText(/simulated instrument/i)).toHaveValue(0.3);
+      expect(screen.getByLabelText(/actual instrument/i)).toHaveValue(30);
+      expect(screen.getByLabelText(/simulated instrument/i)).toHaveValue(18);
       expect(screen.getByLabelText(/approaches/i)).toHaveValue(2);
       expect(screen.getByLabelText(/holds/i)).toHaveValue(1);
       expect(screen.getByLabelText(/instrument proficiency check/i)).toBeChecked();
