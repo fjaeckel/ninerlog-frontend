@@ -316,7 +316,7 @@ export default function ImportPage() {
                           <span key={i} className="text-red-600 dark:text-red-400">{e.field}: {e.message}; </span>
                         ))}
                         {f.status === 'duplicate' && <span>Already logged</span>}
-                        {f.status === 'valid' && f.flight.totalTime && `${f.flight.totalTime}h`}
+                        {f.status === 'valid' && f.flight.totalTime != null && `${Math.floor(f.flight.totalTime / 60)}h ${f.flight.totalTime % 60}m`}
                       </td>
                     </tr>
                   ))}

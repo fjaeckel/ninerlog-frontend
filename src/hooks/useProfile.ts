@@ -11,7 +11,7 @@ export const useUpdateProfile = () => {
   const { updateUser } = useAuthStore();
 
   return useMutation({
-    mutationFn: async (data: { name?: string; email?: string }): Promise<User> => {
+    mutationFn: async (data: { name?: string; email?: string; timeDisplayFormat?: string }): Promise<User> => {
       const { data: result, error } = await apiClient.PATCH('/users/me', {
         body: data as any,
       });
@@ -19,7 +19,7 @@ export const useUpdateProfile = () => {
       return result as User;
     },
     onSuccess: (data) => {
-      updateUser({ name: data.name, email: data.email });
+      updateUser({ name: data.name, email: data.email, timeDisplayFormat: data.timeDisplayFormat as any });
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });

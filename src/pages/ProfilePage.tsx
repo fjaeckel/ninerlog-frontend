@@ -126,6 +126,48 @@ export default function ProfilePage() {
         <ThemeSwitcher variant="full" />
       </div>
 
+      {/* Time Display Format */}
+      <div className="card mb-6">
+        <h2 className="section-title mb-4">Time Display</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Choose how flight durations are displayed throughout the app.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={async () => {
+              try {
+                await updateProfile.mutateAsync({ timeDisplayFormat: 'hm' } as any);
+                updateUser({ timeDisplayFormat: 'hm' });
+              } catch { /* ignore */ }
+            }}
+            className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${
+              (user?.timeDisplayFormat || 'hm') === 'hm'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+            }`}
+          >
+            <p className="font-semibold text-slate-800 dark:text-slate-100">1h 30m</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Hours & Minutes</p>
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                await updateProfile.mutateAsync({ timeDisplayFormat: 'decimal' } as any);
+                updateUser({ timeDisplayFormat: 'decimal' });
+              } catch { /* ignore */ }
+            }}
+            className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${
+              user?.timeDisplayFormat === 'decimal'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+            }`}
+          >
+            <p className="font-semibold text-slate-800 dark:text-slate-100">1.5h</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Decimal Hours</p>
+          </button>
+        </div>
+      </div>
+
       {/* Update Profile */}
       <div className="card mb-6">
         <h2 className="section-title mb-4">Profile Information</h2>
