@@ -6,6 +6,7 @@ import { useNotificationPreferences, useUpdateNotificationPreferences } from '..
 import { useSetup2FA, useVerify2FA, useDisable2FA } from '../hooks/useTwoFactor';
 import { ThemeSwitcher } from '../components/ui/ThemeSwitcher';
 import { API_BASE_URL as API_BASE } from '../lib/config';
+import { extractApiError, extractApiStatus } from '../lib/errors';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuthStore();
@@ -59,8 +60,13 @@ export default function ProfilePage() {
     try {
       await updateProfile.mutateAsync({ name, email });
       setProfileMessage('Profile updated successfully.');
-    } catch {
-      setProfileMessage('Failed to update profile.');
+    } catch (err: unknown) {
+      const status = extractApiStatus(err);
+      if (status === 409) {
+        setProfileMessage('This email is already in use by another account.');
+      } else {
+        setProfileMessage(extractApiError(err, 'Failed to update profile.'));
+      }
     }
   };
 
@@ -72,8 +78,8 @@ export default function ProfilePage() {
       setPasswordMessage('New passwords do not match.');
       return;
     }
-    if (newPassword.length < 8) {
-      setPasswordMessage('New password must be at least 8 characters.');
+    if (newPassword.length < 12) {
+      setPasswordMessage('New password must be at least 12 characters.');
       return;
     }
 

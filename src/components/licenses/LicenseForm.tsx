@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateLicense, useUpdateLicense, useLicenses } from '../../hooks/useLicenses';
+import { extractApiError } from '../../lib/errors';
 import type { LicenseCreate, LicenseUpdate } from '../../types/api';
 
 const licenseSchema = z.object({
@@ -25,6 +26,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
   const createLicense = useCreateLicense();
   const updateLicense = useUpdateLicense();
   const { data: licenses } = useLicenses();
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const isEditing = !!licenseId;
   const existingLicense = licenses?.find((l) => l.id === licenseId);
@@ -63,6 +65,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
 
   const onSubmit = async (data: LicenseFormData) => {
     try {
+      setApiError(null);
       if (isEditing && licenseId) {
         const updateData: LicenseUpdate = {
           regulatoryAuthority: data.regulatoryAuthority,
@@ -85,12 +88,17 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
       }
       onClose();
     } catch (error) {
-      console.error('Failed to save license:', error);
+      setApiError(extractApiError(error, 'Failed to save license. Please try again.'));
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      {apiError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+          {apiError}
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="regulatoryAuthority" className="form-label">

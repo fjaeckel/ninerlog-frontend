@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRegister } from '../../hooks/useAuth';
 import { APP_NAME } from '../../lib/config';
+import { extractApiError, extractApiStatus } from '../../lib/errors';
 
 const registerSchema = z
   .object({
@@ -42,8 +43,13 @@ export default function RegisterPage() {
         name: data.name,
       });
       navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      const status = extractApiStatus(err);
+      if (status === 409) {
+        setError('An account with this email already exists.');
+      } else {
+        setError(extractApiError(err, 'Registration failed. Please try again.'));
+      }
     }
   };
 

@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateCredential, useUpdateCredential, useCredential } from '../../hooks/useCredentials';
+import { extractApiError } from '../../lib/errors';
 
 const CREDENTIAL_TYPES = [
   { value: 'EASA_CLASS1_MEDICAL', label: 'EASA Class 1 Medical' },
@@ -26,7 +27,15 @@ const credentialSchema = z.object({
   expiryDate: z.string().optional().or(z.literal('')),
   issuingAuthority: z.string().min(1, 'Issuing authority is required'),
   notes: z.string().optional().or(z.literal('')),
-});
+}).refine(
+  (data) => {
+    if (data.expiryDate && data.issueDate) {
+      return new Date(data.expiryDate) > new Date(data.issueDate);
+    }
+    return true;
+  },
+  { message: 'Expiry date must be after issue date', path: ['expiryDate'] }
+);
 
 type CredentialFormData = z.infer<typeof credentialSchema>;
 
@@ -40,6 +49,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
   const updateCredential = useUpdateCredential();
   const { data: existingCredential } = useCredential(credentialId || '');
   const isEditing = !!credentialId;
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const {
     register,
@@ -73,6 +83,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
 
   const onSubmit = async (data: CredentialFormData) => {
     try {
+      setApiError(null);
       const payload = {
         credentialType: data.credentialType as any,
         credentialNumber: data.credentialNumber || null,
@@ -89,12 +100,17 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
       }
       onClose();
     } catch (error) {
-      console.error('Failed to save credential:', error);
+      setApiError(extractApiError(error, 'Failed to save credential. Please try again.'));
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {apiError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+          {apiError}
+        </div>
+      )}
       <div>
         <label htmlFor="credentialType" className="form-label">
           Type <span className="text-red-500">*</span>
