@@ -46,3 +46,24 @@ export function extractApiStatus(err: unknown): number | undefined {
   }
   return undefined;
 }
+
+/**
+ * Extract field-level error details from an API error response.
+ * The API may return a `details` array of `{ field, message }` objects.
+ * Returns a map of field name → error message for inline form display.
+ */
+export function extractApiFieldErrors(err: unknown): Record<string, string> {
+  const result: Record<string, string> = {};
+  if (err && typeof err === 'object') {
+    // openapi-fetch: { details: [{ field: "email", message: "..." }] }
+    const details = (err as any).details ?? (err as any).response?.data?.details;
+    if (Array.isArray(details)) {
+      for (const d of details) {
+        if (d && typeof d.field === 'string' && typeof d.message === 'string') {
+          result[d.field] = d.message;
+        }
+      }
+    }
+  }
+  return result;
+}

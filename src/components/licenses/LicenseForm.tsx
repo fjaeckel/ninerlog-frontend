@@ -36,6 +36,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
   } = useForm<LicenseFormData>({
     resolver: zodResolver(licenseSchema),
     defaultValues: existingLicense ? {
@@ -62,6 +63,13 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
       });
     }
   }, [existingLicense, reset]);
+
+  // Clear API error when user modifies any field
+  const watchedFields = watch();
+  useEffect(() => {
+    if (apiError) setApiError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedFields]);
 
   const onSubmit = async (data: LicenseFormData) => {
     try {

@@ -57,8 +57,25 @@ export default function ProfilePage() {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setProfileMessage('');
+
+    // Client-side validation
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedName || trimmedName.length < 1) {
+      setProfileMessage('Name is required.');
+      return;
+    }
+    if (trimmedName.length > 255) {
+      setProfileMessage('Name must not exceed 255 characters.');
+      return;
+    }
+    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setProfileMessage('Please enter a valid email address.');
+      return;
+    }
+
     try {
-      await updateProfile.mutateAsync({ name, email });
+      await updateProfile.mutateAsync({ name: trimmedName, email: trimmedEmail });
       setProfileMessage('Profile updated successfully.');
     } catch (err: unknown) {
       const status = extractApiStatus(err);

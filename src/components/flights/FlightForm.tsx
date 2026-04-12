@@ -7,6 +7,7 @@ import { useCreateFlight, useUpdateFlight, useFlight, useFlights } from '../../h
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { useSearchContacts, useCreateContact } from '../../hooks/useContacts';
 import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
+import { extractApiError } from '../../lib/errors';
 import { useAuthStore } from '../../stores/authStore';
 import type { Aircraft } from '../../hooks/useAircraft';
 import type { CrewRole, FlightCrewMemberInput } from '../../types/api';
@@ -67,7 +68,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddMake, setQuickAddMake] = useState('');
   const [quickAddModel, setQuickAddModel] = useState('');
+  const [quickAddError, setQuickAddError] = useState<string | null>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  // Form error state
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Collapsible section state
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -238,7 +243,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       setQuickAddMake('');
       setQuickAddModel('');
     } catch (error) {
-      console.error('Failed to quick-add aircraft:', error);
+      setQuickAddError(extractApiError(error, 'Failed to quick-add aircraft.'));
     }
   };
 
@@ -298,12 +303,17 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       }
       onClose();
     } catch (error) {
-      console.error('Failed to save flight:', error);
+      setApiError(extractApiError(error, 'Failed to save flight. Please try again.'));
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {apiError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+          {apiError}
+        </div>
+      )}
       {/* Auto-fill from last flight */}
       {!isEditing && lastFlight && (
         <div className="flex justify-end">

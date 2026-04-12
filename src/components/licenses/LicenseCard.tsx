@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { License } from '../../stores/licenseStore';
 import { format, isPast, differenceInDays } from 'date-fns';
 import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateClassRating } from '../../hooks/useClassRatings';
+import { extractApiError } from '../../lib/errors';
 
 const CLASS_TYPE_OPTIONS = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
@@ -53,6 +54,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
   const [newClassType, setNewClassType] = useState<string>(CLASS_TYPE_OPTIONS[0]);
   const [newIssueDate, setNewIssueDate] = useState('');
   const [newExpiryDate, setNewExpiryDate] = useState('');
+  const [ratingError, setRatingError] = useState<string | null>(null);
 
   const handleAddRating = async () => {
     if (!newClassType || !newIssueDate) return;
@@ -70,15 +72,16 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
       setNewIssueDate('');
       setNewExpiryDate('');
     } catch (err) {
-      console.error('Failed to add class rating:', err);
+      setRatingError(extractApiError(err, 'Failed to add class rating.'));
     }
   };
 
   const handleDeleteRating = async (ratingId: string) => {
     try {
+      setRatingError(null);
       await deleteRating.mutateAsync({ licenseId: license.id, ratingId });
     } catch (err) {
-      console.error('Failed to delete class rating:', err);
+      setRatingError(extractApiError(err, 'Failed to delete class rating.'));
     }
   };
 
@@ -103,7 +106,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
       setNewIssueDate('');
       setNewExpiryDate('');
     } catch (err) {
-      console.error('Failed to update class rating:', err);
+      setRatingError(extractApiError(err, 'Failed to update class rating.'));
     }
   };
 
@@ -144,6 +147,11 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
 
       {/* Class Ratings */}
       <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
+        {ratingError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-3 py-2 rounded-lg text-xs mb-2">
+            {ratingError}
+          </div>
+        )}
         <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
           Class Ratings
         </h4>

@@ -56,6 +56,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
   } = useForm<CredentialFormData>({
     resolver: zodResolver(credentialSchema),
     defaultValues: {
@@ -80,6 +81,13 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
       });
     }
   }, [existingCredential, isEditing, reset]);
+
+  // Clear API error when user modifies any field
+  const watchedFields = watch();
+  useEffect(() => {
+    if (apiError) setApiError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedFields]);
 
   const onSubmit = async (data: CredentialFormData) => {
     try {

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateAircraft, useUpdateAircraft, useAircraftById } from '../../hooks/useAircraft';
+import { extractApiError } from '../../lib/errors';
 
 const AIRCRAFT_CLASSES = [
   { value: 'SEP_LAND', label: 'SEP (Land) — Single Engine Piston' },
@@ -41,6 +42,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
   const isEditing = !!aircraftId;
 
   const [isCustomClass, setIsCustomClass] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const {
     register,
@@ -107,12 +109,17 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       }
       onClose();
     } catch (error) {
-      console.error('Failed to save aircraft:', error);
+      setApiError(extractApiError(error, 'Failed to save aircraft. Please try again.'));
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {apiError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+          {apiError}
+        </div>
+      )}
       {/* Registration & Type */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
