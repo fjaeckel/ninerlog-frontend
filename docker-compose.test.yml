@@ -28,6 +28,7 @@ services:
       - NODE_ENV=test
       - CI=true
       - VITE_API_BASE_URL=http://api-test:3000/api/v1
+      - VITE_API_PROXY_TARGET=http://api-test:3000
       - HOME=/root
     command: npm run test:e2e
     profiles:
@@ -52,6 +53,7 @@ services:
       - /app/node_modules
     environment:
       - VITE_API_BASE_URL=http://api-test:3000/api/v1
+      - VITE_API_PROXY_TARGET=http://api-test:3000
     ports:
       - "5174:5173"
     command: npm run dev -- --host 0.0.0.0
