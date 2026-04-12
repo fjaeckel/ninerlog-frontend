@@ -718,7 +718,7 @@ export interface paths {
         };
         /**
          * Export flights as CSV
-         * @description Export all flight data as a CSV file compatible with common logbook formats
+         * @description Export all flight data as a CSV file. Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), and standard (ForeFlight-compatible) formats.
          */
         get: operations["exportFlightsCSV"];
         put?: never;
@@ -757,8 +757,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Export flights as EASA-style PDF logbook
-         * @description Export all flight data as a formatted PDF document in EASA FCL.050 logbook layout with totals summary
+         * Export flights as PDF logbook
+         * @description Export all flight data as a formatted PDF document. Supports EASA AMC1 FCL.050, FAA (ASA/Jeppesen), and summary formats.
          */
         get: operations["exportFlightsPDF"];
         put?: never;
@@ -1727,6 +1727,28 @@ export interface components {
              * @enum {string|null}
              */
             launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
+            /**
+             * @description Name of the pilot-in-command for this flight (EASA AMC1 FCL.050 Col 12). Auto-set to "Self" when isPic=true, or to instructorName when isDual=true.
+             * @example Self
+             */
+            picName?: string | null;
+            /**
+             * @description Multi-pilot time in minutes (EASA AMC1 FCL.050 Col 10). Time operated on multi-pilot aircraft.
+             * @example 0
+             */
+            multiPilotTime?: number;
+            /**
+             * @description FSTD type designation (e.g., "FNPT II", "FFS A320", "FTD Level 5", "BATD", "AATD"). Required by EASA AMC1 FCL.050 Col 22 and FAA §61.51(b)(1)(iv).
+             * @example FNPT II
+             */
+            fstdType?: string | null;
+            /** @description Structured instrument approach details (FAA §61.51(g)(3)) — type, airport, and runway for each approach */
+            approaches?: components["schemas"]["ApproachEntry"][];
+            /**
+             * @description Instructor endorsements, skill test references, examiner notes. EASA AMC1 FCL.050 Col 24 / FAA §61.51(h). Separate from pilot remarks.
+             * @example Skill test passed
+             */
+            endorsements?: string | null;
             /** @description People on board this flight with their roles */
             crewMembers?: components["schemas"]["FlightCrewMember"][];
             /**
@@ -1852,6 +1874,16 @@ export interface components {
             isProficiencyCheck?: boolean;
             /** @enum {string|null} */
             launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
+            /** @description Name of the PIC. Auto-set to "Self" when isPic=true, or to instructorName when isDual=true. */
+            picName?: string | null;
+            /** @description Multi-pilot time in minutes (EASA AMC1 FCL.050 Col 10) */
+            multiPilotTime?: number;
+            /** @description FSTD type designation (e.g., "FNPT II", "FFS A320") */
+            fstdType?: string | null;
+            /** @description Structured instrument approach details */
+            approaches?: components["schemas"]["ApproachEntryInput"][];
+            /** @description Instructor endorsements, skill test references */
+            endorsements?: string | null;
             /** @description People on board this flight */
             crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
         };
@@ -1908,6 +1940,15 @@ export interface components {
             isProficiencyCheck?: boolean;
             /** @enum {string|null} */
             launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
+            /** @description Name of the PIC */
+            picName?: string | null;
+            /** @description Multi-pilot time in minutes */
+            multiPilotTime?: number;
+            /** @description FSTD type designation */
+            fstdType?: string | null;
+            approaches?: components["schemas"]["ApproachEntryInput"][];
+            /** @description Instructor endorsements, skill test references */
+            endorsements?: string | null;
             /** @description People on board this flight */
             crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
         };
@@ -2118,7 +2159,10 @@ export interface components {
             credentialNumber?: string | null;
             /** Format: date */
             issueDate: string;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description Must be after issueDate when provided
+             */
             expiryDate?: string | null;
             issuingAuthority: string;
             notes?: string | null;
@@ -2128,7 +2172,10 @@ export interface components {
             credentialNumber?: string | null;
             /** Format: date */
             issueDate?: string;
-            /** Format: date */
+            /**
+             * Format: date
+             * @description Must be after issueDate when provided
+             */
             expiryDate?: string | null;
             issuingAuthority?: string;
             notes?: string | null;
@@ -2265,6 +2312,31 @@ export interface components {
          * @enum {string}
          */
         CrewRole: "PIC" | "SIC" | "Instructor" | "Student" | "Passenger" | "SafetyPilot" | "Examiner";
+        /**
+         * @description Type of instrument approach procedure
+         * @enum {string}
+         */
+        ApproachType: "ILS" | "LOC" | "VOR" | "RNAV/GPS" | "NDB" | "LDA" | "SDF" | "PAR" | "ASR" | "Visual" | "Circling" | "Other" | "Unknown";
+        ApproachEntry: {
+            type: components["schemas"]["ApproachType"];
+            /**
+             * @description ICAO code of the airport where the approach was performed
+             * @example EDDF
+             */
+            airport?: string | null;
+            /**
+             * @description Runway designation for the approach
+             * @example 09L
+             */
+            runway?: string | null;
+        };
+        ApproachEntryInput: {
+            type: components["schemas"]["ApproachType"];
+            /** @description ICAO code of the airport */
+            airport?: string | null;
+            /** @description Runway designation */
+            runway?: string | null;
+        };
         FlightCrewMember: {
             /** Format: uuid */
             id: string;
@@ -3081,7 +3153,7 @@ export interface operations {
                     email: string;
                     /**
                      * Format: password
-                     * @description Must be at least 8 characters
+                     * @description Must be at least 12 characters
                      * @example SecurePass123!
                      */
                     password: string;
@@ -3207,7 +3279,7 @@ export interface operations {
                     currentPassword: string;
                     /**
                      * Format: password
-                     * @description The new password (minimum 8 characters)
+                     * @description The new password (minimum 12 characters)
                      */
                     newPassword: string;
                 };
@@ -4460,7 +4532,10 @@ export interface operations {
     };
     exportFlightsCSV: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description CSV column format — easa, faa, or standard (ForeFlight-compatible default) */
+                format?: "easa" | "faa" | "standard";
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -4505,6 +4580,8 @@ export interface operations {
             query?: {
                 /** @description Filter flights for a specific logbook license */
                 logbookLicenseId?: string;
+                /** @description PDF format — easa (AMC1 FCL.050 two-page spread), faa (ASA/Jeppesen layout), or summary (simplified totals) */
+                format?: "easa" | "faa" | "summary";
             };
             header?: never;
             path?: never;
