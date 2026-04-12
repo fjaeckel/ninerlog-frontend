@@ -41,6 +41,11 @@ const flightSchema = z.object({
   isFlightReview: z.boolean(),
   isProficiencyCheck: z.boolean(),
   launchMethod: z.string().optional().or(z.literal('')),
+  // Phase 6c regulatory compliance fields
+  picName: z.string().optional().or(z.literal('')),
+  multiPilotTime: z.number().min(0),
+  fstdType: z.string().optional().or(z.literal('')),
+  endorsements: z.string().optional().or(z.literal('')),
 });
 
 type FlightFormData = z.infer<typeof flightSchema>;
@@ -134,6 +139,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       isFlightReview: false,
       isProficiencyCheck: false,
       launchMethod: '',
+      picName: '',
+      multiPilotTime: 0,
+      fstdType: '',
+      endorsements: '',
     },
   });
 
@@ -167,6 +176,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isFlightReview: existingFlight.isFlightReview || false,
         isProficiencyCheck: existingFlight.isProficiencyCheck || false,
         launchMethod: existingFlight.launchMethod || '',
+        picName: existingFlight.picName || '',
+        multiPilotTime: existingFlight.multiPilotTime || 0,
+        fstdType: existingFlight.fstdType || '',
+        endorsements: existingFlight.endorsements || '',
       });
       // Load existing crew members
       if (existingFlight.crewMembers) {
@@ -293,6 +306,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isFlightReview: data.isFlightReview,
         isProficiencyCheck: data.isProficiencyCheck,
         launchMethod: (data.launchMethod || null) as any,
+        picName: data.picName || null,
+        multiPilotTime: data.multiPilotTime,
+        fstdType: data.fstdType || null,
+        endorsements: data.endorsements || null,
         crewMembers: crewMembers.length > 0 ? crewMembers : undefined,
       };
 
@@ -424,6 +441,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 placeholder="Model (e.g. 172 Skyhawk)"
               />
             </div>
+            {quickAddError && (
+              <p className="text-sm text-red-600 dark:text-red-400 mt-1">{quickAddError}</p>
+            )}
             <div className="flex gap-2 mt-2">
               <button
                 type="button"
@@ -932,13 +952,53 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 Proficiency Check (FCL.740.A / §61.58)
               </label>
             </div>
+
+            {/* FSTD Type — shown when simulated flight time > 0 */}
+            {(watch('simulatedFlightTime') > 0 || watch('fstdType')) && (
+              <div className="mt-3">
+                <label htmlFor="fstdType" className="form-label">FSTD Type</label>
+                <input
+                  {...register('fstdType')}
+                  id="fstdType"
+                  className="input"
+                  placeholder="e.g. FNPT II, FFS A320, BATD"
+                />
+                <p className="form-helper">FSTD type designation (EASA AMC1 Col 22 / FAA §61.51)</p>
+              </div>
+            )}
+
+            {/* Multi-Pilot Time */}
+            <div className="mt-3">
+              <label htmlFor="multiPilotTime" className="form-label">Multi-Pilot Time</label>
+              <input
+                {...register('multiPilotTime', { valueAsNumber: true })}
+                type="number"
+                id="multiPilotTime"
+                step="1"
+                min="0"
+                className="input"
+              />
+              <p className="form-helper">Minutes on multi-pilot aircraft (EASA AMC1 Col 10)</p>
+            </div>
           </div>
           </>
         )}
       </fieldset>
 
-      {/* Remarks & Comments */}
+      {/* PIC Name, Remarks & Endorsements */}
       <div className="space-y-4">
+        <div>
+          <label htmlFor="picName" className="form-label">
+            PIC Name
+          </label>
+          <input
+            {...register('picName')}
+            id="picName"
+            className="input"
+            placeholder="Auto-filled: Self (PIC) or instructor name (Dual)"
+          />
+          <p className="form-helper">Name of pilot-in-command (EASA AMC1 Col 12). Auto-set if left empty.</p>
+        </div>
         <div>
           <label htmlFor="remarks" className="form-label">
             Remarks
@@ -950,6 +1010,19 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             className="input"
             placeholder="Training flight, touch and go practice, etc."
           />
+        </div>
+        <div>
+          <label htmlFor="endorsements" className="form-label">
+            Endorsements
+          </label>
+          <textarea
+            {...register('endorsements')}
+            id="endorsements"
+            rows={2}
+            className="input"
+            placeholder="Instructor endorsements, skill test references, examiner notes"
+          />
+          <p className="form-helper">EASA AMC1 Col 24 / FAA §61.51(h) — separate from pilot remarks</p>
         </div>
       </div>
 
