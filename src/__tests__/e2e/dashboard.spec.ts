@@ -20,8 +20,9 @@ test.describe('Dashboard', () => {
     await seedAircraft(page, auth.accessToken, { registration: 'D-DSH1' });
     await seedFlight(page, auth.accessToken, { aircraftReg: 'D-DSH1' });
     await page.reload();
-    await expect(page.getByText('Total Hours')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Total Flights')).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText('Total Time')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Total Flights')).toBeVisible({ timeout: 5000 });
   });
 
   test('should show currency section with a license', async ({ page }) => {

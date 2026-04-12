@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, login, seedLicense, seedClassRating, type AuthContext } from './helpers';
+import { createTestUser, login, seedLicense, type AuthContext } from './helpers';
 
 test.describe('Licenses', () => {
   let auth: AuthContext;

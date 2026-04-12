@@ -1,7 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { registerAndLogin, login, createTestUser, type AuthContext } from './helpers';
-
-const TEST_PASSWORD = 'TestPassword123!';
+import { registerAndLogin, login, createTestUser } from './helpers';
 
 test.describe('Authentication', () => {
   test('should display login form', async ({ page }) => {
