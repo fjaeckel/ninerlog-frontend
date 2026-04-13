@@ -2,6 +2,22 @@
 
 You are assisting with the NinerLog Frontend repository, a mobile-first Progressive Web App for pilot logbook management.
 
+## Critical Cross-Repo Workflow Rules
+
+### API-First Development
+- **ALWAYS update the OpenAPI spec first** (`ninerlog-project/api-spec/openapi.yaml`) before making any API changes.
+- **ALWAYS regenerate API clients** in both `ninerlog-api` (`bash scripts/generate-server-types.sh`) and `ninerlog-frontend` (`bash scripts/generate-api-client.sh`) from the OpenAPI changes before implementing features.
+
+### Pre-Commit / Pre-Push Checklist
+- **ALWAYS run ALL unit tests** in both `ninerlog-api` (`go test ./...`) and `ninerlog-frontend` (`npx vitest run`) before committing and pushing.
+- **ALWAYS run ALL e2e test suites** in both `ninerlog-api` (`bash scripts/run-e2e-tests.sh`) and `ninerlog-frontend` (`npx playwright test`) before committing and pushing.
+- Do NOT commit or push if any tests fail — fix regressions first or document them.
+
+### Regression Handling
+- When regressions are found, **NEVER work around them in tests**.
+- **ALWAYS document regressions** in `ninerlog-project/REGRESSIONS.md` so they can be planned into the roadmap later.
+- Regressions should be tracked as real issues, not hidden behind test workarounds.
+
 ## IMPORTANT: Design System
 
 **ALL UI code must follow the NinerLog Design System.** Before writing any UI code, consult:
