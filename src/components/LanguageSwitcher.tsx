@@ -1,8 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { supportedLanguages, languageNames, type SupportedLanguage } from '../i18n';
+import { supportedLanguages, languageNames } from '../i18n';
 
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation('settings');
+
+  const currentLang = supportedLanguages.find(
+    (l) => i18n.language === l || i18n.language.startsWith(l),
+  ) ?? 'en';
 
   return (
     <div className="card mb-6">
@@ -10,21 +14,17 @@ export function LanguageSwitcher() {
       <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
         {t('language.description')}
       </p>
-      <div className="flex gap-3">
+      <select
+        value={currentLang}
+        onChange={(e) => i18n.changeLanguage(e.target.value)}
+        className="input w-full"
+      >
         {supportedLanguages.map((lang) => (
-          <button
-            key={lang}
-            onClick={() => i18n.changeLanguage(lang)}
-            className={`flex-1 px-4 py-3 rounded-lg border-2 text-sm font-medium transition-colors ${
-              i18n.language === lang || (i18n.language.startsWith(lang) && !supportedLanguages.includes(i18n.language as SupportedLanguage))
-                ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-500'
-                : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
-            }`}
-          >
+          <option key={lang} value={lang}>
             {languageNames[lang]}
-          </button>
+          </option>
         ))}
-      </div>
+      </select>
     </div>
   );
 }
