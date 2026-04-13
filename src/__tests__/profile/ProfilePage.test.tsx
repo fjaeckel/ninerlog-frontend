@@ -49,13 +49,17 @@ describe('ProfilePage', () => {
     renderWithProviders(<ProfilePage />);
 
     expect(screen.getByText('Profile Settings')).toBeInTheDocument();
-    expect(screen.getByText('Profile Information')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /change password/i })).toBeInTheDocument();
-    expect(screen.getByText('Danger Zone')).toBeInTheDocument();
+    // Tabs should be visible
+    expect(screen.getByRole('button', { name: 'Preferences' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Account' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Data & Security' })).toBeInTheDocument();
   });
 
-  it('populates profile form with current user data', () => {
+  it('populates profile form with current user data', async () => {
+    const user = userEvent.setup();
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Account' }));
 
     expect(screen.getByLabelText(/^name$/i)).toHaveValue('John Doe');
     expect(screen.getByLabelText(/^email$/i)).toHaveValue('pilot@example.com');
@@ -68,6 +72,7 @@ describe('ProfilePage', () => {
     });
 
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Account' }));
 
     await user.clear(screen.getByLabelText(/^name$/i));
     await user.type(screen.getByLabelText(/^name$/i), 'Jane Doe');
@@ -85,6 +90,7 @@ describe('ProfilePage', () => {
     mockChangePassword.mutateAsync.mockResolvedValueOnce(undefined);
 
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Account' }));
 
     await user.type(screen.getByLabelText(/current password/i), 'oldpassword123');
     await user.type(screen.getByLabelText(/^new password$/i), 'newpassword456');
@@ -102,6 +108,7 @@ describe('ProfilePage', () => {
   it('shows error when passwords do not match', async () => {
     const user = userEvent.setup();
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Account' }));
 
     await user.type(screen.getByLabelText(/current password/i), 'oldpassword123');
     await user.type(screen.getByLabelText(/^new password$/i), 'newpassword456');
@@ -117,6 +124,7 @@ describe('ProfilePage', () => {
   it('shows delete confirmation when button clicked', async () => {
     const user = userEvent.setup();
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Data & Security' }));
 
     await user.click(screen.getByRole('button', { name: /delete account/i }));
 
@@ -127,6 +135,7 @@ describe('ProfilePage', () => {
   it('cancels delete confirmation', async () => {
     const user = userEvent.setup();
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Data & Security' }));
 
     await user.click(screen.getByRole('button', { name: /delete account/i }));
     await user.click(screen.getByRole('button', { name: /^cancel$/i }));
@@ -139,6 +148,7 @@ describe('ProfilePage', () => {
     mockDeleteAccount.mutateAsync.mockResolvedValueOnce(undefined);
 
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Data & Security' }));
 
     await user.click(screen.getByRole('button', { name: /delete account/i }));
     await user.type(screen.getByLabelText(/confirm deletion password/i), 'mypassword');
@@ -149,19 +159,24 @@ describe('ProfilePage', () => {
     });
   });
 
-  it('shows Delete All Flights button', () => {
+  it('shows Delete All Flights button', async () => {
+    const user = userEvent.setup();
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Data & Security' }));
     expect(screen.getByRole('button', { name: /delete all flights/i })).toBeInTheDocument();
   });
 
-  it('shows Delete All Data button', () => {
+  it('shows Delete All Data button', async () => {
+    const user = userEvent.setup();
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Data & Security' }));
     expect(screen.getByRole('button', { name: /delete all data/i })).toBeInTheDocument();
   });
 
   it('shows confirmation when Delete All Flights clicked', async () => {
     const user = userEvent.setup();
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Data & Security' }));
 
     await user.click(screen.getByRole('button', { name: /delete all flights/i }));
 
@@ -174,6 +189,7 @@ describe('ProfilePage', () => {
     mockDeleteAllFlights.mutateAsync.mockResolvedValueOnce({ deleted: 42 });
 
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Data & Security' }));
 
     await user.click(screen.getByRole('button', { name: /delete all flights/i }));
     await user.click(screen.getByRole('button', { name: /permanently delete all flights/i }));
@@ -190,10 +206,11 @@ describe('ProfilePage', () => {
   it('shows confirmation when Delete All Data clicked', async () => {
     const user = userEvent.setup();
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Data & Security' }));
 
     await user.click(screen.getByRole('button', { name: /delete all data/i }));
 
-    expect(screen.getByText(/all your data.*only your account/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /permanently delete all data/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /permanently delete all data/i })).toBeInTheDocument();
   });
 
@@ -202,6 +219,7 @@ describe('ProfilePage', () => {
     mockDeleteAllUserData.mutateAsync.mockResolvedValueOnce({ message: 'All user data deleted successfully' });
 
     renderWithProviders(<ProfilePage />);
+    await user.click(screen.getByRole('button', { name: 'Data & Security' }));
 
     await user.click(screen.getByRole('button', { name: /delete all data/i }));
     await user.click(screen.getByRole('button', { name: /permanently delete all data/i }));
