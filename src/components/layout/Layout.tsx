@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Plane, FileText, PlaneTakeoff, BarChart3, Map,
   Award, User, Upload, Download, Shield, LogOut, Menu, Plus, ShieldCheck, HelpCircle
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useLogout } from '../../hooks/useAuth';
 import { useAuthStore } from '../../stores/authStore';
 import AnnouncementBanner from '../ui/AnnouncementBanner';
@@ -14,6 +15,7 @@ export default function Layout() {
   const logout = useLogout();
   const navigate = useNavigate();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const { t } = useTranslation(['nav', 'common']);
 
   const handleLogout = async () => {
     await logout.mutateAsync();
@@ -31,7 +33,7 @@ export default function Layout() {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
       >
-        Skip to content
+        {t('common:skipToContent')}
       </a>
 
       {/* ── App Header ── */}
@@ -46,7 +48,7 @@ export default function Layout() {
           <button
             onClick={() => navigate('/profile')}
             className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
-            aria-label="Profile"
+            aria-label={t('common:profileAlt')}
           >
             <span className="hidden sm:inline">{user?.name || user?.email}</span>
             <span className="w-9 h-9 min-w-[44px] min-h-[44px] rounded-full bg-brand-800 text-white flex items-center justify-center text-xs font-medium">
@@ -57,7 +59,7 @@ export default function Layout() {
             onClick={handleLogout}
             className="btn-ghost btn-sm min-h-[44px] text-slate-500 hover:text-red-600 dark:text-slate-400"
           >
-            Logout
+            {t('common:logout')}
           </button>
         </div>
       </header>
@@ -65,23 +67,23 @@ export default function Layout() {
       {/* ── Desktop Sidebar ── */}
       <aside className="fixed left-0 top-16 bottom-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 hidden lg:flex lg:flex-col z-30" aria-label="Desktop navigation">
         <nav className="flex-1 space-y-1" aria-label="Main">
-          <SidebarItem to="/dashboard" label="Dashboard" icon={<LayoutDashboard className="w-5 h-5" />} />
-          <SidebarItem to="/flights" label="Flights" icon={<Plane className="w-5 h-5" />} />
-          <SidebarItem to="/aircraft" label="Aircraft" icon={<PlaneTakeoff className="w-5 h-5" />} />
-          <SidebarItem to="/currency" label="Currency" icon={<Shield className="w-5 h-5" />} />
-          <SidebarItem to="/licenses" label="Licenses" icon={<Award className="w-5 h-5" />} />
-          <SidebarItem to="/credentials" label="Credentials" icon={<FileText className="w-5 h-5" />} />
-          <SidebarItem to="/reports" label="Reports" icon={<BarChart3 className="w-5 h-5" />} />
-          <SidebarItem to="/map" label="Map" icon={<Map className="w-5 h-5" />} />
-          <SidebarItem to="/import" label="Import" icon={<Upload className="w-5 h-5" />} />
-          <SidebarItem to="/export" label="Export" icon={<Download className="w-5 h-5" />} />
+          <SidebarItem to="/dashboard" label={t('nav:dashboard')} icon={<LayoutDashboard className="w-5 h-5" />} />
+          <SidebarItem to="/flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
+          <SidebarItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} />
+          <SidebarItem to="/currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} />
+          <SidebarItem to="/licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} />
+          <SidebarItem to="/credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} />
+          <SidebarItem to="/reports" label={t('nav:reports')} icon={<BarChart3 className="w-5 h-5" />} />
+          <SidebarItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} />
+          <SidebarItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} />
+          <SidebarItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} />
         </nav>
         <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-1">
           {user?.isAdmin && (
-            <SidebarItem to="/admin" label="Admin" icon={<ShieldCheck className="w-5 h-5" />} />
+            <SidebarItem to="/admin" label={t('nav:admin')} icon={<ShieldCheck className="w-5 h-5" />} />
           )}
-          <SidebarItem to="/help" label="Help" icon={<HelpCircle className="w-5 h-5" />} />
-          <SidebarItem to="/profile" label="Profile & Settings" icon={<User className="w-5 h-5" />} />
+          <SidebarItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} />
+          <SidebarItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} />
         </div>
       </aside>
 
@@ -93,26 +95,26 @@ export default function Layout() {
 
       {/* ── Mobile Bottom Nav ── */}
       <nav className="fixed bottom-0 inset-x-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-40 flex items-center justify-around lg:hidden pb-safe" aria-label="Mobile navigation">
-        <BottomNavItem to="/dashboard" label="Home" icon={<LayoutDashboard className="w-5 h-5" />} />
-        <BottomNavItem to="/flights" label="Flights" icon={<Plane className="w-5 h-5" />} />
+        <BottomNavItem to="/dashboard" label={t('nav:home')} icon={<LayoutDashboard className="w-5 h-5" />} />
+        <BottomNavItem to="/flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
         <Link
           to="/flights"
           state={{ openForm: true }}
           className="flex flex-col items-center justify-center -mt-3"
-          aria-label="Add Flight"
+          aria-label={t('nav:addFlight')}
         >
           <span className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition-colors">
             <Plus className="w-6 h-6" />
           </span>
         </Link>
-        <BottomNavItem to="/reports" label="Reports" icon={<BarChart3 className="w-5 h-5" />} />
+        <BottomNavItem to="/reports" label={t('nav:reports')} icon={<BarChart3 className="w-5 h-5" />} />
         <button
           onClick={() => setShowMoreMenu(true)}
           className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-xs text-slate-400 dark:text-slate-500 transition-colors"
           aria-label="More menu"
         >
           <Menu className="w-5 h-5 mb-0.5" />
-          <span>More</span>
+          <span>{t('nav:more')}</span>
         </button>
       </nav>
 
@@ -129,17 +131,17 @@ export default function Layout() {
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
             </div>
             <nav className="px-4 pb-4 space-y-1" aria-label="More navigation">
-              <MoreMenuItem to="/aircraft" label="Aircraft" icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/currency" label="Currency" icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/licenses" label="Licenses" icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/credentials" label="Credentials" icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/map" label="Map" icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/import" label="Import" icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/export" label="Export" icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/profile" label="Profile & Settings" icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/help" label="Help" icon={<HelpCircle className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               {user?.isAdmin && (
-                <MoreMenuItem to="/admin" label="Admin" icon={<ShieldCheck className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+                <MoreMenuItem to="/admin" label={t('nav:admin')} icon={<ShieldCheck className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               )}
               <div className="border-t border-slate-100 dark:border-slate-700 my-2" />
               <button
@@ -147,7 +149,7 @@ export default function Layout() {
                 className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
                 <LogOut className="w-5 h-5" />
-                Logout
+                {t('common:logout')}
               </button>
             </nav>
           </div>
