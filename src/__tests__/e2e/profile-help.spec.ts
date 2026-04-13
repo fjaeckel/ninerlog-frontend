@@ -134,8 +134,8 @@ test.describe('Notification Settings', () => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
     await expect(page.getByText('Notification Settings')).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Email Notifications')).toBeVisible();
-    await expect(page.getByText('Currency Warnings')).toBeVisible();
-    await expect(page.getByText('Credential Warnings')).toBeVisible();
+    await expect(page.getByText('Medical Expiry')).toBeVisible();
+    await expect(page.getByText('Passenger Currency')).toBeVisible();
   });
 
   test('should toggle notification preferences', async ({ page }) => {
