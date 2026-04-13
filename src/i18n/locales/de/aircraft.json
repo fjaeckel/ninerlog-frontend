@@ -1,0 +1,31 @@
+{
+  "title": "Flugzeuge",
+  "addAircraft": "Flugzeug hinzufügen",
+  "editAircraft": "Flugzeug bearbeiten",
+  "updateAircraft": "Flugzeug aktualisieren",
+  "saveAircraft": "Flugzeug speichern",
+  "noAircraft": "Noch keine Flugzeuge eingetragen.",
+  "addFirst": "Fügen Sie Ihr erstes Flugzeug hinzu.",
+  "deleteConfirm": "Möchten Sie dieses Flugzeug wirklich löschen?",
+  "deleteAircraft": "Flugzeug löschen",
+  "fields": {
+    "registration": "Kennzeichen",
+    "type": "Muster",
+    "make": "Hersteller",
+    "model": "Modell",
+    "aircraftClass": "Flugzeugklasse",
+    "isComplex": "Komplex",
+    "isHighPerformance": "Hochleistung",
+    "isTailwheel": "Spornrad",
+    "isActive": "Aktiv"
+  },
+  "classes": {
+    "SEP_LAND": "SEP (Land)",
+    "SEP_SEA": "SEP (See)",
+    "MEP_LAND": "MEP (Land)",
+    "MEP_SEA": "MEP (See)",
+    "SET": "SET",
+    "TMG": "TMG",
+    "OTHER": "Sonstige"
+  }
+}

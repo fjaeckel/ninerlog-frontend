@@ -1,0 +1,46 @@
+{
+  "greeting": {
+    "morning": "Guten Morgen",
+    "afternoon": "Guten Tag",
+    "evening": "Guten Abend"
+  },
+  "logFlight": "+ Flug eintragen",
+  "flightCurrency": "Flug-Gültigkeit",
+  "credentialAlert": {
+    "expired": "vor {{days}} Tagen abgelaufen",
+    "expiresSoon": "läuft in {{days}} Tagen ab"
+  },
+  "stats": {
+    "totalTime": "Gesamtzeit",
+    "picTime": "PIC-Zeit",
+    "totalFlights": "Flüge gesamt",
+    "landings": "Landungen",
+    "day": "Tag",
+    "night": "Nacht"
+  },
+  "blockTimeBreakdown": "Blockzeit-Aufteilung",
+  "breakdownLabels": {
+    "pic": "PIC",
+    "dual": "Dual",
+    "solo": "Solo",
+    "crossCountry": "Überlandflug",
+    "night": "Nacht",
+    "ifr": "IFR"
+  },
+  "timeByClass": "Zeit nach Flugzeugklasse",
+  "classLabels": {
+    "SEP_LAND": "SEP (Land)",
+    "SEP_SEA": "SEP (See)",
+    "MEP_LAND": "MEP (Land)",
+    "MEP_SEA": "MEP (See)",
+    "SET": "SET",
+    "TMG": "TMG",
+    "IR": "IR",
+    "OTHER": "Sonstige"
+  },
+  "timeByAuthority": "Zeit nach Behörde",
+  "recentFlights": "Letzte Flüge",
+  "noFlights": "Noch keine Flüge eingetragen",
+  "logFirstFlight": "Ersten Flug eintragen",
+  "startJourney": "Beginnen Sie Ihr digitales Flugbuch mit dem Eintrag Ihres ersten Fluges."
+}

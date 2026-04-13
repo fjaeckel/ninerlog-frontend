@@ -1,0 +1,49 @@
+{
+  "title": "Lizenzen",
+  "addLicense": "Lizenz hinzufügen",
+  "editLicense": "Lizenz bearbeiten",
+  "updateLicense": "Lizenz aktualisieren",
+  "noLicenses": "Noch keine Lizenzen eingetragen.",
+  "addFirst": "Fügen Sie Ihre erste Pilotenlizenz hinzu.",
+  "deleteLicense": "Lizenz löschen",
+  "deleteConfirm": "Möchten Sie diese Lizenz wirklich löschen? Alle zugehörigen Klassenberechtigungen werden ebenfalls gelöscht.",
+  "fields": {
+    "regulatoryAuthority": "Aufsichtsbehörde",
+    "licenseType": "Lizenztyp",
+    "licenseNumber": "Lizenznummer",
+    "issueDate": "Ausstellungsdatum",
+    "issuingAuthority": "Ausstellende Behörde",
+    "requiresSeparateLogbook": "Separates Flugbuch erforderlich"
+  },
+  "classRatings": "Klassenberechtigungen",
+  "addClassRating": "Klassenberechtigung hinzufügen",
+  "editClassRating": "Klassenberechtigung bearbeiten",
+  "deleteClassRating": "Klassenberechtigung löschen",
+  "classRatingFields": {
+    "classType": "Klassentyp",
+    "issueDate": "Ausstellungsdatum",
+    "expiryDate": "Ablaufdatum",
+    "variant": "Variante"
+  },
+  "authorities": {
+    "EASA": "EASA",
+    "FAA": "FAA",
+    "LBA": "LBA",
+    "DULV": "DULV",
+    "DAeC": "DAeC"
+  },
+  "licenseTypes": {
+    "PPL": "PPL",
+    "CPL": "CPL",
+    "ATPL": "ATPL",
+    "LAPL": "LAPL",
+    "SPL": "SPL",
+    "UL": "UL",
+    "Private": "Private",
+    "Commercial": "Commercial",
+    "ATP": "ATP",
+    "Sport": "Sport",
+    "Recreational": "Recreational",
+    "Glider": "Glider"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "title": "Berichte",
+  "flightReports": "Flugberichte",
+  "timeRange": "Zeitraum",
+  "months6": "6 Monate",
+  "months12": "12 Monate",
+  "months24": "24 Monate",
+  "allTime": "Gesamtzeitraum",
+  "blockHoursOverTime": "Blockstunden im Zeitverlauf",
+  "flightsPerMonth": "Flüge pro Monat",
+  "hoursByAircraftType": "Stunden nach Flugzeugmuster",
+  "exportCsv": "CSV exportieren",
+  "exportPdf": "PDF exportieren",
+  "noData": "Nicht genügend Daten für die Anzeige von Berichten.",
+  "map": {
+    "title": "Flugkarte",
+    "routes": "Flugrouten",
+    "airports": "Flugplätze",
+    "heatmap": "Aktivitäts-Heatmap",
+    "statistics": "Flugplatz-Statistiken",
+    "noRoutes": "Noch keine Flugrouten vorhanden.",
+    "flightCount": "{{count}} Flüge"
+  },
+  "export": {
+    "title": "Exportieren",
+    "format": "Format",
+    "easaLogbook": "EASA-Flugbuch (AMC1 FCL.050)",
+    "faaLogbook": "FAA-Flugbuch",
+    "summaryReport": "Zusammenfassungsbericht",
+    "standardCsv": "Standard-CSV",
+    "download": "Herunterladen",
+    "downloading": "Wird heruntergeladen...",
+    "preview": "Spaltenvorschau"
+  }
+}
