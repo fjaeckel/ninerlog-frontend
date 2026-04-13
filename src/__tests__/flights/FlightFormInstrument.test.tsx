@@ -51,7 +51,7 @@ describe('FlightForm Instrument Tracking', () => {
 
     expect(screen.getByLabelText(/actual instrument/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/simulated instrument/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/approaches/i)).toBeInTheDocument();
+    expect(screen.getByText('Approaches')).toBeInTheDocument();
     expect(screen.getByLabelText(/holds/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/instrument proficiency check/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/flight review/i)).toBeInTheDocument();
@@ -62,7 +62,7 @@ describe('FlightForm Instrument Tracking', () => {
 
     expect(screen.queryByLabelText(/actual instrument/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/simulated instrument/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/approaches/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Add Approach/)).not.toBeInTheDocument();
   });
 
   it('submits instrument tracking data with flight', async () => {
@@ -92,7 +92,10 @@ describe('FlightForm Instrument Tracking', () => {
 
     fireEvent.change(screen.getByLabelText(/actual instrument/i), { target: { value: '30' } });
     fireEvent.change(screen.getByLabelText(/simulated instrument/i), { target: { value: '18' } });
-    fireEvent.change(screen.getByLabelText(/approaches/i), { target: { value: '2' } });
+    // Add 2 approaches via structured entry
+    const addButton = screen.getByText('Add Approach');
+    await user.click(addButton); // first approach (defaults to ILS)
+    await user.click(addButton); // second approach
     fireEvent.change(screen.getByLabelText(/holds/i), { target: { value: '1' } });
     await user.click(screen.getByLabelText(/instrument proficiency check/i));
     await user.click(screen.getByLabelText(/flight review/i));
@@ -104,7 +107,9 @@ describe('FlightForm Instrument Tracking', () => {
         expect.objectContaining({
           actualInstrumentTime: 30,
           simulatedInstrumentTime: 18,
-          approachesCount: 2,
+          approaches: expect.arrayContaining([
+            expect.objectContaining({ type: 'ILS' }),
+          ]),
           holds: 1,
           isIpc: true,
           isFlightReview: true,
@@ -146,6 +151,7 @@ describe('FlightForm Instrument Tracking', () => {
       simulatedInstrumentTime: 18,
       holds: 1,
       approachesCount: 2,
+      approaches: [{type: 'ILS', airport: 'EDDS', runway: '25'}, {type: 'VOR', airport: 'EDDF'}],
       isIpc: true,
       isFlightReview: false,
       remarks: null,
@@ -165,7 +171,7 @@ describe('FlightForm Instrument Tracking', () => {
     await waitFor(() => {
       expect(screen.getByLabelText(/actual instrument/i)).toHaveValue(30);
       expect(screen.getByLabelText(/simulated instrument/i)).toHaveValue(18);
-      expect(screen.getByLabelText(/approaches/i)).toHaveValue(2);
+      expect(screen.getByText('2')).toBeInTheDocument(); // approaches count badge
       expect(screen.getByLabelText(/holds/i)).toHaveValue(1);
       expect(screen.getByLabelText(/instrument proficiency check/i)).toBeChecked();
       expect(screen.getByLabelText(/flight review/i)).not.toBeChecked();
@@ -180,7 +186,7 @@ describe('FlightForm Instrument Tracking', () => {
 
     expect(screen.getByLabelText(/actual instrument/i)).toHaveValue(0);
     expect(screen.getByLabelText(/simulated instrument/i)).toHaveValue(0);
-    expect(screen.getByLabelText(/approaches/i)).toHaveValue(0);
+    expect(screen.getByText('Approaches')).toBeInTheDocument(); // structured approach entry
     expect(screen.getByLabelText(/holds/i)).toHaveValue(0);
     expect(screen.getByLabelText(/instrument proficiency check/i)).not.toBeChecked();
     expect(screen.getByLabelText(/flight review/i)).not.toBeChecked();
