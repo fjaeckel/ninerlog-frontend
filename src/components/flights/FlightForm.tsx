@@ -98,6 +98,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const [crewMembers, setCrewMembers] = useState<FlightCrewMemberInput[]>([]);
   const [crewNameInput, setCrewNameInput] = useState('');
   const [crewRoleInput, setCrewRoleInput] = useState<CrewRole>('Passenger');
+
+  // Structured approaches state
+  interface ApproachInput { type: string; airport: string; runway: string }
+  const APPROACH_TYPES = ['ILS', 'LOC', 'VOR', 'RNAV/GPS', 'NDB', 'LDA', 'SDF', 'PAR', 'ASR', 'Visual', 'Circling', 'Other'] as const;
+  const [approaches, setApproaches] = useState<ApproachInput[]>([]);
   const [crewSearch, setCrewSearch] = useState('');
   const { data: contactResults } = useSearchContacts(crewSearch);
   const createContact = useCreateContact();
@@ -187,6 +192,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           contactId: m.contactId || null,
           name: m.name,
           role: m.role as CrewRole,
+        })));
+      }
+      // Load existing approaches
+      if (existingFlight.approaches && existingFlight.approaches.length > 0) {
+        setApproaches(existingFlight.approaches.map((a: { type: string; airport?: string | null; runway?: string | null }) => ({
+          type: a.type,
+          airport: a.airport || '',
+          runway: a.runway || '',
         })));
       }
     }
@@ -301,7 +314,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         actualInstrumentTime: data.actualInstrumentTime,
         simulatedInstrumentTime: data.simulatedInstrumentTime,
         holds: data.holds,
-        approachesCount: data.approachesCount,
+        approaches: approaches.length > 0 ? approaches.map(a => ({
+          type: a.type as any,
+          airport: a.airport || null,
+          runway: a.runway || null,
+        })) : undefined,
         isIpc: data.isIpc,
         isFlightReview: data.isFlightReview,
         isProficiencyCheck: data.isProficiencyCheck,
@@ -898,18 +915,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   min="0"
                   className="input"
                 />
-                <p className="form-helper">Hours (hood/foggles)</p>
-              </div>
-              <div>
-                <label htmlFor="approachesCount" className="form-label">Approaches</label>
-                <input
-                  {...register('approachesCount', { valueAsNumber: true })}
-                  type="number"
-                  id="approachesCount"
-                  min="0"
-                  className="input"
-                />
-                <p className="form-helper">Instrument approaches</p>
+                <p className="form-helper">Minutes (hood/foggles)</p>
               </div>
               <div>
                 <label htmlFor="holds" className="form-label">Holds</label>
@@ -923,6 +929,62 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 <p className="form-helper">Holding procedures</p>
               </div>
             </div>
+
+            {/* Approaches — own subsection */}
+            <div className="mt-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Approaches {approaches.length > 0 && <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full">{approaches.length}</span>}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setApproaches([...approaches, { type: 'ILS', airport: '', runway: '' }])}
+                  className="btn-ghost btn-sm text-xs flex items-center gap-1"
+                >
+                  <Plus size={12} /> Add Approach
+                </button>
+              </div>
+              {approaches.length === 0 && (
+                <p className="text-xs text-slate-400 dark:text-slate-500 italic">No approaches logged. Click "Add Approach" to record instrument approaches.</p>
+              )}
+              {approaches.length > 0 && (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-[1fr_80px_64px_28px] gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium px-0.5">
+                    <span>Type</span><span>Airport</span><span>Runway</span><span></span>
+                  </div>
+                  {approaches.map((appr, idx) => (
+                    <div key={idx} className="grid grid-cols-[1fr_80px_64px_28px] gap-2 items-center">
+                      <select
+                        value={appr.type}
+                        onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], type: e.target.value }; setApproaches(a); }}
+                        className="input text-sm py-1.5"
+                      >
+                        {APPROACH_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                      <input
+                        value={appr.airport}
+                        onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], airport: e.target.value.toUpperCase() }; setApproaches(a); }}
+                        className="input text-sm py-1.5"
+                        placeholder="ICAO"
+                        maxLength={4}
+                      />
+                      <input
+                        value={appr.runway}
+                        onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], runway: e.target.value }; setApproaches(a); }}
+                        className="input text-sm py-1.5"
+                        placeholder="Rwy"
+                        maxLength={4}
+                      />
+                      <button type="button" onClick={() => setApproaches(approaches.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="form-helper mt-2">Type, airport & runway per approach (FAA §61.51(g)(3))</p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4 mt-3">
               <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
                 <input
