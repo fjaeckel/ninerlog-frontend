@@ -1150,6 +1150,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/maintenance/trigger-notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trigger notification check
+         * @description Immediately run the notification checker for all users, bypassing the
+         *     check-hour gating. Used for testing and manual maintenance.
+         *     Requires admin privileges.
+         */
+        post: operations["triggerNotifications"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/config": {
         parameters: {
             query?: never;
@@ -1277,6 +1299,13 @@ export interface components {
              * @enum {string}
              */
             timeDisplayFormat: "hm" | "decimal";
+            /**
+             * @description User's preferred language for the interface.
+             * @default en
+             * @example en
+             * @enum {string}
+             */
+            preferredLocale: "en" | "de";
         };
         TwoFactorSetup: {
             /**
@@ -3549,6 +3578,11 @@ export interface operations {
                      * @enum {string}
                      */
                     timeDisplayFormat?: "hm" | "decimal";
+                    /**
+                     * @description Preferred language for the interface
+                     * @enum {string}
+                     */
+                    preferredLocale?: "en" | "de";
                 };
             };
         };
@@ -5217,6 +5251,30 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Test email sent */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message?: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    triggerNotifications: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Notification check triggered */
             200: {
                 headers: {
                     [name: string]: unknown;

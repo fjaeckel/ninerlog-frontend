@@ -8,6 +8,7 @@ import { ThemeSwitcher } from '../components/ui/ThemeSwitcher';
 import { API_BASE_URL as API_BASE } from '../lib/config';
 import { extractApiError, extractApiStatus } from '../lib/errors';
 import { NotificationHistory } from '../components/NotificationHistory';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuthStore();
@@ -149,6 +150,9 @@ export default function ProfilePage() {
       <div className="card mb-6">
         <ThemeSwitcher variant="full" />
       </div>
+
+      {/* Language */}
+      <LanguageSwitcher />
 
       {/* Time Display Format */}
       <div className="card mb-6">
