@@ -4,6 +4,7 @@ import type { components } from '../api/schema';
 
 type NotificationPreferences = components['schemas']['NotificationPreferences'];
 type NotificationPreferencesUpdate = components['schemas']['NotificationPreferencesUpdate'];
+type NotificationHistoryResponse = components['schemas']['NotificationHistoryResponse'];
 
 export const useNotificationPreferences = () => {
   return useQuery({
@@ -28,6 +29,19 @@ export const useUpdateNotificationPreferences = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notificationPreferences'] });
+    },
+  });
+};
+
+export const useNotificationHistory = (limit = 20, offset = 0) => {
+  return useQuery({
+    queryKey: ['notificationHistory', limit, offset],
+    queryFn: async (): Promise<NotificationHistoryResponse> => {
+      const { data, error } = await apiClient.GET('/users/me/notifications/history', {
+        params: { query: { limit, offset } },
+      });
+      if (error) throw error;
+      return data as NotificationHistoryResponse;
     },
   });
 };

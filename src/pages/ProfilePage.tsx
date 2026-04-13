@@ -7,6 +7,7 @@ import { useSetup2FA, useVerify2FA, useDisable2FA } from '../hooks/useTwoFactor'
 import { ThemeSwitcher } from '../components/ui/ThemeSwitcher';
 import { API_BASE_URL as API_BASE } from '../lib/config';
 import { extractApiError, extractApiStatus } from '../lib/errors';
+import { NotificationHistory } from '../components/NotificationHistory';
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuthStore();
@@ -314,35 +315,74 @@ export default function ProfilePage() {
               />
             </label>
 
-            <label className="flex items-center justify-between cursor-pointer">
-              <div>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Currency Warnings</span>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Alerts when landing currency is about to expire</p>
+            {/* Credentials Group */}
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Credentials</h3>
+              <div className="space-y-2">
+                {([
+                  { cat: 'credential_medical' as const, label: 'Medical Expiry', desc: 'Class 1, Class 2, LAPL medical certificates' },
+                  { cat: 'credential_language' as const, label: 'Language Proficiency', desc: 'ICAO language proficiency levels' },
+                  { cat: 'credential_security' as const, label: 'Security Clearance', desc: 'ZÜP, ZUBB and other security clearances' },
+                  { cat: 'credential_other' as const, label: 'Other Credentials', desc: 'All other credential types' },
+                ] as const).map(({ cat, label, desc }) => (
+                  <label key={cat} className="flex items-center justify-between cursor-pointer">
+                    <div>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{desc}</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={notifPrefs.enabledCategories.includes(cat)}
+                      disabled={!notifPrefs.emailEnabled}
+                      onChange={(e) => {
+                        const cats = e.target.checked
+                          ? [...notifPrefs.enabledCategories, cat]
+                          : notifPrefs.enabledCategories.filter((c) => c !== cat);
+                        updateNotifPrefs.mutate({ enabledCategories: cats });
+                      }}
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                    />
+                  </label>
+                ))}
               </div>
-              <input
-                type="checkbox"
-                checked={notifPrefs.currencyWarnings}
-                disabled={!notifPrefs.emailEnabled}
-                onChange={(e) => updateNotifPrefs.mutate({ currencyWarnings: e.target.checked })}
-                className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
-              />
-            </label>
+            </div>
 
-            <label className="flex items-center justify-between cursor-pointer">
-              <div>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Credential Warnings</span>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Alerts when medicals, language certs, or clearances expire</p>
+            {/* Ratings & Currency Group */}
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Ratings & Currency</h3>
+              <div className="space-y-2">
+                {([
+                  { cat: 'rating_expiry' as const, label: 'Class Rating Expiry', desc: 'SEP, MEP, TMG rating expiry dates' },
+                  { cat: 'currency_passenger' as const, label: 'Passenger Currency', desc: '3 T&L in 90 days for carrying passengers' },
+                  { cat: 'currency_night' as const, label: 'Night Currency', desc: 'Night landing recency requirements' },
+                  { cat: 'currency_instrument' as const, label: 'Instrument Currency', desc: 'Approaches, holds, and IFR recency' },
+                  { cat: 'currency_flight_review' as const, label: 'Flight Review', desc: 'FAA §61.56 flight review / proficiency check' },
+                  { cat: 'currency_revalidation' as const, label: 'EASA Revalidation', desc: 'Rating revalidation requirements progress' },
+                ] as const).map(({ cat, label, desc }) => (
+                  <label key={cat} className="flex items-center justify-between cursor-pointer">
+                    <div>
+                      <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{desc}</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={notifPrefs.enabledCategories.includes(cat)}
+                      disabled={!notifPrefs.emailEnabled}
+                      onChange={(e) => {
+                        const cats = e.target.checked
+                          ? [...notifPrefs.enabledCategories, cat]
+                          : notifPrefs.enabledCategories.filter((c) => c !== cat);
+                        updateNotifPrefs.mutate({ enabledCategories: cats });
+                      }}
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                    />
+                  </label>
+                ))}
               </div>
-              <input
-                type="checkbox"
-                checked={notifPrefs.credentialWarnings}
-                disabled={!notifPrefs.emailEnabled}
-                onChange={(e) => updateNotifPrefs.mutate({ credentialWarnings: e.target.checked })}
-                className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
-              />
-            </label>
+            </div>
 
-            <div>
+            {/* Warning Schedule */}
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Warning Schedule</span>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Days before expiry to send warnings</p>
               <div className="flex gap-2">
@@ -355,8 +395,8 @@ export default function ProfilePage() {
                       disabled={!notifPrefs.emailEnabled}
                       onClick={() => {
                         const newDays = active
-                          ? notifPrefs.warningDays.filter((d) => d !== day)
-                          : [...notifPrefs.warningDays, day].sort((a, b) => b - a);
+                          ? notifPrefs.warningDays.filter((d: number) => d !== day)
+                          : [...notifPrefs.warningDays, day].sort((a: number, b: number) => b - a);
                         updateNotifPrefs.mutate({ warningDays: newDays });
                       }}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
@@ -371,9 +411,34 @@ export default function ProfilePage() {
                 })}
               </div>
             </div>
+
+            {/* Check Hour */}
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+              <label className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Daily Check Time (UTC)</span>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Hour when daily notification check runs</p>
+                </div>
+                <select
+                  value={notifPrefs.checkHour}
+                  disabled={!notifPrefs.emailEnabled}
+                  onChange={(e) => updateNotifPrefs.mutate({ checkHour: parseInt(e.target.value, 10) })}
+                  className="input w-24 text-sm disabled:opacity-50"
+                >
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i}>
+                      {String(i).padStart(2, '0')}:00
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
           </div>
         </div>
       )}
+
+      {/* Notification History */}
+      <NotificationHistory />
 
       {/* Two-Factor Authentication */}
       <div className="card mb-6">

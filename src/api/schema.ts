@@ -216,6 +216,26 @@ export interface paths {
         patch: operations["updateNotificationPreferences"];
         trace?: never;
     };
+    "/users/me/notifications/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get notification history
+         * @description Get the authenticated user's notification history (sent notifications)
+         */
+        get: operations["getNotificationHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/licenses": {
         parameters: {
             query?: never;
@@ -2078,15 +2098,21 @@ export interface components {
              */
             emailEnabled: boolean;
             /**
-             * @description Email warnings when currency is about to expire
-             * @example true
+             * @description List of enabled notification categories
+             * @example [
+             *       "credential_medical",
+             *       "credential_language",
+             *       "credential_security",
+             *       "credential_other",
+             *       "rating_expiry",
+             *       "currency_passenger",
+             *       "currency_night",
+             *       "currency_instrument",
+             *       "currency_flight_review",
+             *       "currency_revalidation"
+             *     ]
              */
-            currencyWarnings: boolean;
-            /**
-             * @description Email warnings when credentials (medicals, etc.) are about to expire
-             * @example true
-             */
-            credentialWarnings: boolean;
+            enabledCategories: components["schemas"]["NotificationCategory"][];
             /**
              * @description Days before expiry to send warnings
              * @example [
@@ -2096,12 +2122,55 @@ export interface components {
              *     ]
              */
             warningDays: number[];
+            /**
+             * @description Preferred hour (UTC) for daily notification check (0-23)
+             * @example 8
+             */
+            checkHour: number;
         };
         NotificationPreferencesUpdate: {
             emailEnabled?: boolean;
-            currencyWarnings?: boolean;
-            credentialWarnings?: boolean;
+            enabledCategories?: components["schemas"]["NotificationCategory"][];
             warningDays?: number[];
+            checkHour?: number;
+        };
+        /**
+         * @description Notification category for granular control:
+         *     - credential_medical: Medical certificate expiry
+         *     - credential_language: Language proficiency expiry
+         *     - credential_security: Security clearance expiry
+         *     - credential_other: Other credential expiry
+         *     - rating_expiry: Class rating expiry date approaching
+         *     - currency_passenger: Passenger carrying currency (e.g., 3 T&L in 90 days)
+         *     - currency_night: Night currency
+         *     - currency_instrument: Instrument currency
+         *     - currency_flight_review: Flight review / proficiency check due
+         *     - currency_revalidation: EASA revalidation requirements approaching expiry
+         * @enum {string}
+         */
+        NotificationCategory: "credential_medical" | "credential_language" | "credential_security" | "credential_other" | "rating_expiry" | "currency_passenger" | "currency_night" | "currency_instrument" | "currency_flight_review" | "currency_revalidation";
+        NotificationHistoryEntry: {
+            /** Format: uuid */
+            id: string;
+            category: components["schemas"]["NotificationCategory"];
+            /** @description Email subject line */
+            subject: string;
+            /** @description Type of item that triggered the notification (e.g., credential, rating) */
+            referenceType?: string | null;
+            /** @description Human-readable description of the reference item */
+            referenceDescription?: string | null;
+            /** @description Days before expiry when notification was sent */
+            daysBeforeExpiry?: number | null;
+            /**
+             * Format: date-time
+             * @description When the notification was sent
+             */
+            sentAt: string;
+        };
+        NotificationHistoryResponse: {
+            items: components["schemas"]["NotificationHistoryEntry"][];
+            /** @description Total number of notification history entries */
+            total: number;
         };
         /**
          * @description Credential type:
@@ -3541,6 +3610,32 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getNotificationHistory: {
+        parameters: {
+            query?: {
+                /** @description Maximum number of results to return */
+                limit?: number;
+                /** @description Number of results to skip */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Notification history */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationHistoryResponse"];
+                };
+            };
             401: components["responses"]["Unauthorized"];
         };
     };
