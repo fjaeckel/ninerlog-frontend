@@ -1,0 +1,31 @@
+{
+  "title": "Aircraft",
+  "addAircraft": "Add Aircraft",
+  "editAircraft": "Edit Aircraft",
+  "updateAircraft": "Update Aircraft",
+  "saveAircraft": "Save Aircraft",
+  "noAircraft": "No aircraft added yet.",
+  "addFirst": "Add your first aircraft to get started.",
+  "deleteConfirm": "Are you sure you want to delete this aircraft?",
+  "deleteAircraft": "Delete Aircraft",
+  "fields": {
+    "registration": "Registration",
+    "type": "Type",
+    "make": "Make",
+    "model": "Model",
+    "aircraftClass": "Aircraft Class",
+    "isComplex": "Complex",
+    "isHighPerformance": "High Performance",
+    "isTailwheel": "Tailwheel",
+    "isActive": "Active"
+  },
+  "classes": {
+    "SEP_LAND": "SEP (Land)",
+    "SEP_SEA": "SEP (Sea)",
+    "MEP_LAND": "MEP (Land)",
+    "MEP_SEA": "MEP (Sea)",
+    "SET": "SET",
+    "TMG": "TMG",
+    "OTHER": "Other"
+  }
+}

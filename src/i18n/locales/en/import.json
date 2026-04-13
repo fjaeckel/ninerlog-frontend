@@ -1,0 +1,20 @@
+{
+  "title": "Import",
+  "uploadCsv": "Upload CSV",
+  "selectFile": "Select File",
+  "dragAndDrop": "Drag & drop a CSV file here, or click to browse",
+  "supportedFormats": "Supported formats: CSV (comma, semicolon, or tab separated)",
+  "columnMapping": "Column Mapping",
+  "mapColumns": "Map your CSV columns to NinerLog fields",
+  "sourceColumn": "Source Column",
+  "targetField": "Target Field",
+  "skip": "Skip",
+  "preview": "Preview",
+  "previewRows": "Preview (first {{count}} rows)",
+  "importing": "Importing...",
+  "importFlights": "Import Flights",
+  "importSuccess": "Successfully imported {{count}} flights.",
+  "importFailed": "Import failed. Please check your file format.",
+  "rowsDetected": "{{count}} rows detected",
+  "duplicateWarning": "Some flights may be duplicates of existing entries."
+}

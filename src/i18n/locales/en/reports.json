@@ -1,0 +1,35 @@
+{
+  "title": "Reports",
+  "flightReports": "Flight Reports",
+  "timeRange": "Time Range",
+  "months6": "6 Months",
+  "months12": "12 Months",
+  "months24": "24 Months",
+  "allTime": "All Time",
+  "blockHoursOverTime": "Block Hours Over Time",
+  "flightsPerMonth": "Flights Per Month",
+  "hoursByAircraftType": "Hours by Aircraft Type",
+  "exportCsv": "Export CSV",
+  "exportPdf": "Export PDF",
+  "noData": "Not enough data to display reports.",
+  "map": {
+    "title": "Flight Map",
+    "routes": "Flight Routes",
+    "airports": "Airports",
+    "heatmap": "Activity Heatmap",
+    "statistics": "Airport Statistics",
+    "noRoutes": "No flight routes to display yet.",
+    "flightCount": "{{count}} flights"
+  },
+  "export": {
+    "title": "Export",
+    "format": "Format",
+    "easaLogbook": "EASA Logbook (AMC1 FCL.050)",
+    "faaLogbook": "FAA Logbook",
+    "summaryReport": "Summary Report",
+    "standardCsv": "Standard CSV",
+    "download": "Download",
+    "downloading": "Downloading...",
+    "preview": "Column Preview"
+  }
+}

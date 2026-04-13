@@ -1,0 +1,49 @@
+{
+  "title": "Licenses",
+  "addLicense": "Add License",
+  "editLicense": "Edit License",
+  "updateLicense": "Update License",
+  "noLicenses": "No licenses added yet.",
+  "addFirst": "Add your first pilot license to get started.",
+  "deleteLicense": "Delete License",
+  "deleteConfirm": "Are you sure you want to delete this license? All associated class ratings will also be deleted.",
+  "fields": {
+    "regulatoryAuthority": "Regulatory Authority",
+    "licenseType": "License Type",
+    "licenseNumber": "License Number",
+    "issueDate": "Issue Date",
+    "issuingAuthority": "Issuing Authority",
+    "requiresSeparateLogbook": "Requires Separate Logbook"
+  },
+  "classRatings": "Class Ratings",
+  "addClassRating": "Add Class Rating",
+  "editClassRating": "Edit Class Rating",
+  "deleteClassRating": "Delete Class Rating",
+  "classRatingFields": {
+    "classType": "Class Type",
+    "issueDate": "Issue Date",
+    "expiryDate": "Expiry Date",
+    "variant": "Variant"
+  },
+  "authorities": {
+    "EASA": "EASA",
+    "FAA": "FAA",
+    "LBA": "LBA",
+    "DULV": "DULV",
+    "DAeC": "DAeC"
+  },
+  "licenseTypes": {
+    "PPL": "PPL",
+    "CPL": "CPL",
+    "ATPL": "ATPL",
+    "LAPL": "LAPL",
+    "SPL": "SPL",
+    "UL": "UL",
+    "Private": "Private",
+    "Commercial": "Commercial",
+    "ATP": "ATP",
+    "Sport": "Sport",
+    "Recreational": "Recreational",
+    "Glider": "Glider"
+  }
+}

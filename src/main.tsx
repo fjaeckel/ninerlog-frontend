@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { BetaGate } from './components/BetaGate';
 import App from './App';
 import './index.css';
+import './i18n'; // i18n initialization — must be imported before App
 
 const queryClient = new QueryClient({
   defaultOptions: {

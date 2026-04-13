@@ -1,0 +1,46 @@
+{
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
+  },
+  "logFlight": "+ Log Flight",
+  "flightCurrency": "Flight Currency",
+  "credentialAlert": {
+    "expired": "expired {{days}} days ago",
+    "expiresSoon": "expires in {{days}} days"
+  },
+  "stats": {
+    "totalTime": "Total Time",
+    "picTime": "PIC Time",
+    "totalFlights": "Total Flights",
+    "landings": "Landings",
+    "day": "day",
+    "night": "night"
+  },
+  "blockTimeBreakdown": "Block Time Breakdown",
+  "breakdownLabels": {
+    "pic": "PIC",
+    "dual": "Dual",
+    "solo": "Solo",
+    "crossCountry": "Cross-Country",
+    "night": "Night",
+    "ifr": "IFR"
+  },
+  "timeByClass": "Time by Aircraft Class",
+  "classLabels": {
+    "SEP_LAND": "SEP (Land)",
+    "SEP_SEA": "SEP (Sea)",
+    "MEP_LAND": "MEP (Land)",
+    "MEP_SEA": "MEP (Sea)",
+    "SET": "SET",
+    "TMG": "TMG",
+    "IR": "IR",
+    "OTHER": "Other"
+  },
+  "timeByAuthority": "Time by Authority",
+  "recentFlights": "Recent Flights",
+  "noFlights": "No flights logged yet",
+  "logFirstFlight": "Log Your First Flight",
+  "startJourney": "Start your digital logbook journey by recording your first flight."
+}

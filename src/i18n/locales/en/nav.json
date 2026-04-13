@@ -1,0 +1,18 @@
+{
+  "dashboard": "Dashboard",
+  "flights": "Flights",
+  "aircraft": "Aircraft",
+  "currency": "Currency",
+  "licenses": "Licenses",
+  "credentials": "Credentials",
+  "reports": "Reports",
+  "map": "Map",
+  "import": "Import",
+  "export": "Export",
+  "admin": "Admin",
+  "help": "Help",
+  "profileSettings": "Profile & Settings",
+  "home": "Home",
+  "addFlight": "Add Flight",
+  "more": "More"
+}
