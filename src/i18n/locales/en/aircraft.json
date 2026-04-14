@@ -41,5 +41,23 @@
     "SET": "SET",
     "TMG": "TMG",
     "OTHER": "Other"
+  },
+  "form": {
+    "selectClass": "Select class",
+    "customClass": "Custom →",
+    "pickFromList": "← Pick from list",
+    "characteristics": "Characteristics",
+    "activeInFleet": "Active in fleet",
+    "classHelper": "Used for currency tracking. Choose a standard class or enter a custom value.",
+    "failedToSave": "Failed to save aircraft. Please try again."
+  },
+  "classOptions": {
+    "SEP_LAND": "SEP (Land) — Single Engine Piston",
+    "SEP_SEA": "SEP (Sea) — Single Engine Piston",
+    "MEP_LAND": "MEP (Land) — Multi Engine Piston",
+    "MEP_SEA": "MEP (Sea) — Multi Engine Piston",
+    "SET_LAND": "SET (Land) — Single Engine Turboprop",
+    "SET_SEA": "SET (Sea) — Single Engine Turboprop",
+    "TMG": "TMG — Touring Motor Glider"
   }
 }

@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { Pencil, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { components } from '../../api/schema';
 import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
 import { useAuthStore } from '../../stores/authStore';
@@ -14,6 +15,7 @@ interface FlightCardProps {
 }
 
 export default function FlightCard({ flight, onEdit, onDelete, onClick }: FlightCardProps) {
+  const { t } = useTranslation('flights');
   const totalLandings = flight.landingsDay + flight.landingsNight;
   const fmt = (useAuthStore.getState().user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm';
 
@@ -53,21 +55,21 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
         <div>
-          <span className="text-slate-500 dark:text-slate-400">Aircraft:</span>{' '}
+          <span className="text-slate-500 dark:text-slate-400">{t('fields.aircraftReg')}:</span>{' '}
           <span className="font-medium text-slate-700 dark:text-slate-200">{flight.aircraftReg}</span>
         </div>
         <div>
-          <span className="text-slate-500 dark:text-slate-400">Type:</span>{' '}
+          <span className="text-slate-500 dark:text-slate-400">{t('fields.aircraftType')}:</span>{' '}
           <span className="font-medium text-slate-700 dark:text-slate-200">{flight.aircraftType}</span>
         </div>
         {flight.picTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">PIC:</span> <span className="font-mono tabular-nums">{formatDuration(flight.picTime, fmt)}</span>
+            <span className="text-slate-500 dark:text-slate-400">{t('fields.picTime')}:</span> <span className="font-mono tabular-nums">{formatDuration(flight.picTime, fmt)}</span>
           </div>
         )}
         {flight.dualTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">Dual:</span> <span className="font-mono tabular-nums">{formatDuration(flight.dualTime, fmt)}</span>
+            <span className="text-slate-500 dark:text-slate-400">{t('fields.dualTime')}:</span> <span className="font-mono tabular-nums">{formatDuration(flight.dualTime, fmt)}</span>
           </div>
         )}
         {!flight.isPic && !flight.isDual && (
@@ -77,17 +79,17 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
         )}
         {flight.nightTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">Night:</span> <span className="font-mono tabular-nums">{formatDuration(flight.nightTime, fmt)}</span>
+            <span className="text-slate-500 dark:text-slate-400">{t('fields.nightTime')}:</span> <span className="font-mono tabular-nums">{formatDuration(flight.nightTime, fmt)}</span>
           </div>
         )}
         {flight.ifrTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">IFR:</span> <span className="font-mono tabular-nums">{formatDuration(flight.ifrTime, fmt)}</span>
+            <span className="text-slate-500 dark:text-slate-400">{t('fields.ifrTime')}:</span> <span className="font-mono tabular-nums">{formatDuration(flight.ifrTime, fmt)}</span>
           </div>
         )}
         {totalLandings > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">Landings:</span> <span className="font-mono tabular-nums">{flight.landingsDay}D / {flight.landingsNight}N</span>
+            <span className="text-slate-500 dark:text-slate-400">{t('fields.landings')}:</span> <span className="font-mono tabular-nums">{flight.landingsDay}D / {flight.landingsNight}N</span>
           </div>
         )}
       </div>

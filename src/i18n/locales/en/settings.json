@@ -72,7 +72,23 @@
     "checkHour": "Daily Check Time (UTC)",
     "checkHourDesc": "Hour when daily notification check runs",
     "history": "Notification History",
-    "noHistory": "No notifications sent yet."
+    "noHistory": "No notifications sent yet.",
+    "categoryLabels": {
+      "credential_medical": "Medical",
+      "credential_language": "Language",
+      "credential_security": "Security",
+      "credential_other": "Credential",
+      "rating_expiry": "Rating Expiry",
+      "currency_passenger": "Passenger",
+      "currency_night": "Night",
+      "currency_instrument": "Instrument",
+      "currency_flight_review": "Flight Review",
+      "currency_revalidation": "Revalidation"
+    },
+    "daysBeforeExpiry": "{{days}}d before expiry",
+    "page": "Page {{page}} of {{totalPages}}",
+    "previous": "Previous",
+    "next": "Next"
   },
   "twoFactor": {
     "title": "Two-Factor Authentication",

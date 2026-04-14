@@ -80,8 +80,8 @@ describe('FlightForm Instrument Tracking', () => {
     // Fill required fields
     await user.type(screen.getByLabelText(/aircraft registration/i), 'D-EFGH');
     fireEvent.change(screen.getByLabelText(/date/i), { target: { value: '2026-02-15' } });
-    await user.type(screen.getByLabelText(/departure icao/i), 'EDDF');
-    await user.type(screen.getByLabelText(/arrival icao/i), 'EDDH');
+    await user.type(screen.getByLabelText(/departure.*icao/i), 'EDDF');
+    await user.type(screen.getByLabelText(/arrival.*icao/i), 'EDDH');
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
     fireEvent.change(screen.getByLabelText('Takeoff'), { target: { value: '14:30' } });
     fireEvent.change(screen.getByLabelText('Landing'), { target: { value: '16:45' } });

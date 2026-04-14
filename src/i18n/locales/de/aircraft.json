@@ -41,5 +41,23 @@
     "SET_SEA": "SET (See)",
     "TMG": "TMG",
     "OTHER": "Sonstige"
+  },
+  "form": {
+    "selectClass": "Klasse wählen",
+    "customClass": "Eigene →",
+    "pickFromList": "← Aus Liste wählen",
+    "characteristics": "Eigenschaften",
+    "activeInFleet": "Aktiv in der Flotte",
+    "classHelper": "Für Gültigkeitstracking. Wählen Sie eine Standardklasse oder geben Sie einen eigenen Wert ein.",
+    "failedToSave": "Flugzeug konnte nicht gespeichert werden."
+  },
+  "classOptions": {
+    "SEP_LAND": "SEP (Land) — Einmotorig Kolben",
+    "SEP_SEA": "SEP (See) — Einmotorig Kolben",
+    "MEP_LAND": "MEP (Land) — Mehrmotorig Kolben",
+    "MEP_SEA": "MEP (See) — Mehrmotorig Kolben",
+    "SET_LAND": "SET (Land) — Einmotorig Turboprop",
+    "SET_SEA": "SET (See) — Einmotorig Turboprop",
+    "TMG": "TMG — Reisemotorsegler"
   }
 }

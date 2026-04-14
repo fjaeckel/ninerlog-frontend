@@ -1,41 +1,35 @@
+import { useTranslation } from 'react-i18next';
 import type { ClassRatingCurrency, CurrencyRequirement, CurrencyStatus } from '../../types/api';
 
-const CLASS_TYPE_LABELS: Record<string, string> = {
-  SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
-  MEP_LAND: 'MEP (Land)', MEP_SEA: 'MEP (Sea)',
-  SET_LAND: 'SET (Land)', SET_SEA: 'SET (Sea)',
-  TMG: 'TMG', IR: 'Instrument Rating', OTHER: 'Other',
-};
-
 const STATUS_CONFIG: Record<CurrencyStatus, {
-  bg: string; border: string; badge: string; badgeText: string; icon: string;
+  bg: string; border: string; badge: string; badgeKey: string; icon: string;
 }> = {
   current: {
     bg: 'bg-green-50 dark:bg-green-900/20',
     border: 'border-l-green-500',
     badge: 'badge-current',
-    badgeText: 'CURRENT',
+    badgeKey: 'status.current',
     icon: '✓',
   },
   expiring: {
     bg: 'bg-amber-50 dark:bg-amber-900/20',
     border: 'border-l-amber-500',
     badge: 'badge-expiring',
-    badgeText: 'ATTENTION',
+    badgeKey: 'status.attention',
     icon: '⏰',
   },
   expired: {
     bg: 'bg-red-50 dark:bg-red-900/20',
     border: 'border-l-red-500',
     badge: 'badge-expired',
-    badgeText: 'NOT CURRENT',
+    badgeKey: 'status.notCurrent',
     icon: '✕',
   },
   unknown: {
     bg: 'bg-slate-50 dark:bg-slate-800/40',
     border: 'border-l-slate-400',
     badge: 'badge-neutral',
-    badgeText: 'UNKNOWN',
+    badgeKey: 'status.unknown',
     icon: '?',
   },
 };
@@ -74,8 +68,9 @@ interface CurrencyCardProps {
 }
 
 export function CurrencyCard({ rating }: CurrencyCardProps) {
+  const { t } = useTranslation('currency');
   const config = STATUS_CONFIG[rating.status];
-  const label = CLASS_TYPE_LABELS[rating.classType] || rating.classType;
+  const label = t(`classTypes.${rating.classType}`, { defaultValue: rating.classType });
 
   return (
     <div
@@ -94,7 +89,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
           </p>
         </div>
         <span className={`${config.badge}`}>
-          {config.badgeText}
+          {t(config.badgeKey).toUpperCase()}
         </span>
       </div>
 
@@ -115,14 +110,14 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
       {/* Launch method currency (SPL FCL.140.S(b)(1)) */}
       {rating.launchMethodCurrency && rating.launchMethodCurrency.length > 0 && (
         <div className="mt-3 space-y-1" data-testid="launch-method-currency">
-          <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Launch Method Currency</p>
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('launchMethod')}</p>
           {rating.launchMethodCurrency.map((lmc) => (
             <div key={lmc.method} className="flex justify-between items-center text-xs" data-testid={`launch-method-${lmc.method}`}>
               <span className="text-slate-700 dark:text-slate-300">
                 {lmc.met ? '✓' : '○'} {lmc.method}
               </span>
               <span className="text-slate-500 dark:text-slate-400">
-                {lmc.launches} / {lmc.required} launches
+                {t('launchesCount', { current: lmc.launches, required: lmc.required })}
               </span>
             </div>
           ))}
@@ -132,7 +127,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
       {/* Expiry date */}
       {rating.expiryDate && (
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-3 text-right">
-          Expires: {rating.expiryDate}
+          {t('expiresLabel', { date: rating.expiryDate })}
         </p>
       )}
     </div>

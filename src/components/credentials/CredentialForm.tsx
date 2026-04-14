@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -45,6 +46,7 @@ interface CredentialFormProps {
 }
 
 export default function CredentialForm({ credentialId, onClose }: CredentialFormProps) {
+  const { t } = useTranslation('credentials');
   const createCredential = useCreateCredential();
   const updateCredential = useUpdateCredential();
   const { data: existingCredential } = useCredential(credentialId || '');
@@ -108,7 +110,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
       }
       onClose();
     } catch (error) {
-      setApiError(extractApiError(error, 'Failed to save credential. Please try again.'));
+      setApiError(extractApiError(error, t('form.failedToSave')));
     }
   };
 
@@ -121,15 +123,15 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
       )}
       <div>
         <label htmlFor="credentialType" className="form-label">
-          Type <span className="text-red-500">*</span>
+          {t('fields.credentialType')} <span className="text-red-500">*</span>
         </label>
         <select {...register('credentialType')} id="credentialType" className={`input ${errors.credentialType ? 'input-error' : ''}`}
           aria-invalid={!!errors.credentialType}
           aria-describedby={errors.credentialType ? 'err-credentialType' : undefined}
         >
-          <option value="">Select type</option>
+          <option value="">{t('form.selectType')}</option>
           {CREDENTIAL_TYPES.map((type) => (
-            <option key={type.value} value={type.value}>{type.label}</option>
+            <option key={type.value} value={type.value}>{t(`types.${type.value}`)}</option>
           ))}
         </select>
         {errors.credentialType && (
@@ -139,7 +141,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
 
       <div>
         <label htmlFor="credentialNumber" className="form-label">
-          Number / Reference
+          {t('form.numberReference')}
         </label>
         <input
           {...register('credentialNumber')}
@@ -153,7 +155,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="issueDate" className="form-label">
-            Issue Date <span className="text-red-500">*</span>
+            {t('fields.issueDate')} <span className="text-red-500">*</span>
           </label>
           <input {...register('issueDate')} type="date" id="issueDate" className={`input ${errors.issueDate ? 'input-error' : ''}`}
             aria-invalid={!!errors.issueDate}
@@ -165,7 +167,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
         </div>
         <div>
           <label htmlFor="expiryDate" className="form-label">
-            Expiry Date
+            {t('fields.expiryDate')}
           </label>
           <input {...register('expiryDate')} type="date" id="expiryDate" className="input" />
         </div>
@@ -173,7 +175,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
 
       <div>
         <label htmlFor="issuingAuthority" className="form-label">
-          Issuing Authority <span className="text-red-500">*</span>
+          {t('fields.issuingAuthority')} <span className="text-red-500">*</span>
         </label>
         <input
           {...register('issuingAuthority')}
@@ -190,7 +192,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
       </div>
 
       <div>
-        <label htmlFor="notes" className="form-label">Notes</label>
+        <label htmlFor="notes" className="form-label">{t('fields.notes')}</label>
         <textarea
           {...register('notes')}
           id="notes"
@@ -202,10 +204,10 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
 
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={isSubmitting} className="btn-primary flex-1">
-          {isSubmitting ? 'Saving...' : isEditing ? 'Update' : 'Add Credential'}
+          {isSubmitting ? t('common:saving') : isEditing ? t('form.update') : t('addCredential')}
         </button>
         <button type="button" onClick={onClose} className="btn-secondary flex-1">
-          Cancel
+          {t('common:cancel')}
         </button>
       </div>
     </form>

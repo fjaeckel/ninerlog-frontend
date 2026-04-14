@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,14 +7,9 @@ import { useCreateAircraft, useUpdateAircraft, useAircraftById } from '../../hoo
 import { extractApiError } from '../../lib/errors';
 
 const AIRCRAFT_CLASSES = [
-  { value: 'SEP_LAND', label: 'SEP (Land) — Single Engine Piston' },
-  { value: 'SEP_SEA', label: 'SEP (Sea) — Single Engine Piston' },
-  { value: 'MEP_LAND', label: 'MEP (Land) — Multi Engine Piston' },
-  { value: 'MEP_SEA', label: 'MEP (Sea) — Multi Engine Piston' },
-  { value: 'SET_LAND', label: 'SET (Land) — Single Engine Turboprop' },
-  { value: 'SET_SEA', label: 'SET (Sea) — Single Engine Turboprop' },
-  { value: 'TMG', label: 'TMG — Touring Motor Glider' },
-];
+  'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
+  'SET_LAND', 'SET_SEA', 'TMG',
+] as const;
 
 const aircraftSchema = z.object({
   registration: z.string().min(1, 'Registration is required').max(20),
@@ -36,6 +32,7 @@ interface AircraftFormProps {
 }
 
 export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps) {
+  const { t } = useTranslation('aircraft');
   const createAircraft = useCreateAircraft();
   const updateAircraft = useUpdateAircraft();
   const { data: existingAircraft } = useAircraftById(aircraftId || '');
@@ -69,7 +66,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
   useEffect(() => {
     if (existingAircraft && isEditing) {
       const acClass = existingAircraft.aircraftClass || '';
-      const isKnown = AIRCRAFT_CLASSES.some((c) => c.value === acClass);
+      const isKnown = AIRCRAFT_CLASSES.some((c) => c === acClass);
       setIsCustomClass(acClass !== '' && !isKnown);
 
       reset({
@@ -109,7 +106,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       }
       onClose();
     } catch (error) {
-      setApiError(extractApiError(error, 'Failed to save aircraft. Please try again.'));
+      setApiError(extractApiError(error, t('form.failedToSave')));
     }
   };
 
@@ -124,7 +121,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="registration" className="form-label">
-            Registration <span className="text-red-500">*</span>
+            {t('fields.registration')} <span className="text-red-500">*</span>
           </label>
           <input
             {...register('registration')}
@@ -141,7 +138,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         </div>
         <div>
           <label htmlFor="type" className="form-label">
-            Type <span className="text-red-500">*</span>
+            {t('fields.type')} <span className="text-red-500">*</span>
           </label>
           <input
             {...register('type')}
@@ -162,7 +159,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="make" className="form-label">
-            Make <span className="text-red-500">*</span>
+            {t('fields.make')} <span className="text-red-500">*</span>
           </label>
           <input
             {...register('make')}
@@ -179,7 +176,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         </div>
         <div>
           <label htmlFor="model" className="form-label">
-            Model <span className="text-red-500">*</span>
+            {t('fields.model')} <span className="text-red-500">*</span>
           </label>
           <input
             {...register('model')}
@@ -199,7 +196,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       {/* Aircraft Class */}
       <div>
         <label htmlFor="aircraftClass" className="form-label">
-          Aircraft Class
+          {t('fields.aircraftClass')}
         </label>
         {isCustomClass ? (
           <div className="flex gap-2">
@@ -215,7 +212,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
               onClick={() => { setIsCustomClass(false); setValue('aircraftClass', ''); }}
               className="btn-ghost btn-sm text-xs whitespace-nowrap"
             >
-              ← Pick from list
+              {t('form.pickFromList')}
             </button>
           </div>
         ) : (
@@ -228,9 +225,9 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
                 register('aircraftClass').onChange(e);
               }}
             >
-              <option value="">Select class</option>
+              <option value="">{t('form.selectClass')}</option>
               {AIRCRAFT_CLASSES.map((cr) => (
-                <option key={cr.value} value={cr.value}>{cr.label}</option>
+                <option key={cr} value={cr}>{t(`classOptions.${cr}`)}</option>
               ))}
             </select>
             <button
@@ -238,35 +235,35 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
               onClick={() => { setIsCustomClass(true); setValue('aircraftClass', ''); }}
               className="btn-ghost btn-sm text-xs whitespace-nowrap"
             >
-              Custom →
+              {t('form.customClass')}
             </button>
           </div>
         )}
-        <p className="form-helper">Used for currency tracking. Choose a standard class or enter a custom value.</p>
+        <p className="form-helper">{t('form.classHelper')}</p>
       </div>
 
       {/* Boolean Flags */}
       <div className="space-y-3">
-        <label className="form-label">Characteristics</label>
+        <label className="form-label">{t('form.characteristics')}</label>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
             <input {...register('isComplex')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
-            Complex
+            {t('fields.isComplex')}
           </label>
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
             <input {...register('isHighPerformance')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
-            High Performance
+            {t('fields.isHighPerformance')}
           </label>
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
             <input {...register('isTailwheel')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
-            Tailwheel
+            {t('fields.isTailwheel')}
           </label>
         </div>
       </div>
 
       {/* Notes */}
       <div>
-        <label htmlFor="notes" className="form-label">Notes</label>
+        <label htmlFor="notes" className="form-label">{t('common:notes', { defaultValue: 'Notes' })}</label>
         <textarea
           {...register('notes')}
           id="notes"
@@ -281,7 +278,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         <div>
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
             <input {...register('isActive')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
-            Active in fleet
+            {t('form.activeInFleet')}
           </label>
         </div>
       )}
@@ -289,10 +286,10 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       {/* Buttons */}
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={isSubmitting} className="btn-primary flex-1">
-          {isSubmitting ? 'Saving...' : isEditing ? 'Update Aircraft' : 'Add Aircraft'}
+          {isSubmitting ? t('common:saving') : isEditing ? t('updateAircraft') : t('addAircraft')}
         </button>
         <button type="button" onClick={onClose} className="btn-secondary flex-1">
-          Cancel
+          {t('common:cancel')}
         </button>
       </div>
     </form>

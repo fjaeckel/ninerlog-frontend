@@ -92,8 +92,8 @@ describe('FlightForm', () => {
   it('renders route and time fields including block times', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    expect(screen.getByLabelText(/departure icao/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/arrival icao/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/departure.*icao/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/arrival.*icao/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/off-block/i)).toBeInTheDocument();
     expect(screen.getByLabelText('Takeoff')).toBeInTheDocument();
     expect(screen.getByLabelText('Landing')).toBeInTheDocument();
@@ -116,7 +116,7 @@ describe('FlightForm', () => {
   it('renders landing fields', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    expect(screen.getByLabelText(/total landings/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^landings$/i)).toBeInTheDocument();
   });
 
   it('validates required fields', async () => {
@@ -153,8 +153,8 @@ describe('FlightForm', () => {
     await user.clear(screen.getByLabelText(/^date/i));
     await user.type(screen.getByLabelText(/^date/i), '2026-01-15');
     await user.type(screen.getByLabelText(/aircraft registration/i), 'D-EFGH');
-    await user.type(screen.getByLabelText(/departure icao/i), 'EDDF');
-    await user.type(screen.getByLabelText(/arrival icao/i), 'EDDH');
+    await user.type(screen.getByLabelText(/departure.*icao/i), 'EDDF');
+    await user.type(screen.getByLabelText(/arrival.*icao/i), 'EDDH');
     // Fill required time fields via fireEvent (time inputs)
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
     fireEvent.change(screen.getByLabelText('Takeoff'), { target: { value: '14:30' } });
@@ -200,8 +200,8 @@ describe('FlightForm', () => {
     await user.clear(screen.getByLabelText(/^date/i));
     await user.type(screen.getByLabelText(/^date/i), '2026-01-15');
     await user.type(screen.getByLabelText(/aircraft registration/i), 'd-efgh');
-    await user.type(screen.getByLabelText(/departure icao/i), 'eddf');
-    await user.type(screen.getByLabelText(/arrival icao/i), 'eddh');
+    await user.type(screen.getByLabelText(/departure.*icao/i), 'eddf');
+    await user.type(screen.getByLabelText(/arrival.*icao/i), 'eddh');
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
     fireEvent.change(screen.getByLabelText('Takeoff'), { target: { value: '14:30' } });
     fireEvent.change(screen.getByLabelText('Landing'), { target: { value: '16:00' } });

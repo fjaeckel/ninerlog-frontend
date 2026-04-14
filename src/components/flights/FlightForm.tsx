@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -56,6 +57,7 @@ interface FlightFormProps {
 }
 
 export default function FlightForm({ flightId, onClose }: FlightFormProps) {
+  const { t } = useTranslation('flights');
   const createFlight = useCreateFlight();
   const updateFlight = useUpdateFlight();
   const { data: existingFlight } = useFlight(flightId || '');
@@ -269,7 +271,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       setQuickAddMake('');
       setQuickAddModel('');
     } catch (error) {
-      setQuickAddError(extractApiError(error, 'Failed to quick-add aircraft.'));
+      setQuickAddError(extractApiError(error, t('form.failedToQuickAdd')));
     }
   };
 
@@ -337,7 +339,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       }
       onClose();
     } catch (error) {
-      setApiError(extractApiError(error, 'Failed to save flight. Please try again.'));
+      setApiError(extractApiError(error, t('form.failedToSave')));
     }
   };
 
@@ -356,18 +358,18 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             onClick={handleAutoFill}
             className="btn-ghost btn-sm text-xs"
           >
-            Fill from last flight ({lastFlight.aircraftReg}, {lastFlight.departureIcao || '?'} → {lastFlight.arrivalIcao || '?'})
+            {t('form.fillFromLastFlight', { aircraft: lastFlight.aircraftReg, from: lastFlight.departureIcao || '?', to: lastFlight.arrivalIcao || '?' })}
           </button>
         </div>
       )}
 
       {/* Basic Info */}
       <fieldset>
-        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Basic Information</legend>
+        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('sections.basic')}</legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="date" className="form-label">
-              Date <span className="text-red-500">*</span>
+              {t('fields.date')} <span className="text-red-500">*</span>
             </label>
             <input {...register('date')} type="date" id="date" className="input" />
             {errors.date && (
@@ -377,7 +379,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
           <div className="relative" ref={suggestionsRef}>
             <label htmlFor="aircraftReg" className="form-label">
-              Aircraft Registration <span className="text-red-500">*</span>
+              {t('fields.aircraftReg')} <span className="text-red-500">*</span>
             </label>
             <input
               {...register('aircraftReg')}
@@ -420,7 +422,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center"
                 onClick={() => setShowQuickAdd(true)}
               >
-                New aircraft? Save "{regUppercase}" to your fleet →
+                {t('form.quickAddPrompt', { reg: regUppercase })}
               </button>
             )}
           </div>
@@ -433,7 +435,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         {showQuickAdd && (
           <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
-              Quick-add "{regUppercase}" to your aircraft fleet
+              {t('form.quickAddTitle', { reg: regUppercase })}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <input
@@ -468,14 +470,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 disabled={!quickAddMake || !quickAddModel || createAircraft.isPending}
                 className="btn-primary btn-sm text-xs"
               >
-                {createAircraft.isPending ? 'Saving...' : 'Save Aircraft'}
+                {createAircraft.isPending ? t('common:saving') : t('form.quickAddSave')}
               </button>
               <button
                 type="button"
                 onClick={() => setShowQuickAdd(false)}
                 className="btn-ghost btn-sm text-xs"
               >
-                Skip
+                {t('form.skip')}
               </button>
             </div>
           </div>
@@ -484,13 +486,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
       {/* Route & Times */}
       <fieldset>
-        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Route & Times (UTC)</legend>
+        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.routeAndTimesUtc')}</legend>
 
         {/* Departure → Arrival ICAO side by side */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <label htmlFor="departureIcao" className="form-label">
-              Departure ICAO <span className="text-red-500">*</span>
+              {t('fields.departureIcao')} <span className="text-red-500">*</span>
             </label>
             <input
               {...register('departureIcao')}
@@ -506,7 +508,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           </div>
           <div>
             <label htmlFor="arrivalIcao" className="form-label">
-              Arrival ICAO <span className="text-red-500">*</span>
+              {t('fields.arrivalIcao')} <span className="text-red-500">*</span>
             </label>
             <input
               {...register('arrivalIcao')}
@@ -526,14 +528,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           <div>
             <label htmlFor="offBlockTime" className="form-label">
-              Off-Block <span className="text-red-500">*</span>
+              {t('detail.offBlock')} <span className="text-red-500">*</span>
             </label>
             <input
               {...register('offBlockTime')}
               type="time"
               id="offBlockTime"
               className="input"
-              title="Chocks off / engine start (UTC)"
+              title={t('form.offBlockTooltip')}
             />
             {errors.offBlockTime && (
               <p className="form-error">{errors.offBlockTime.message}</p>
@@ -541,14 +543,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           </div>
           <div>
             <label htmlFor="onBlockTime" className="form-label">
-              On-Block <span className="text-red-500">*</span>
+              {t('detail.onBlock')} <span className="text-red-500">*</span>
             </label>
             <input
               {...register('onBlockTime')}
               type="time"
               id="onBlockTime"
               className="input"
-              title="Chocks on / engine shutdown (UTC)"
+              title={t('form.onBlockTooltip')}
             />
             {errors.onBlockTime && (
               <p className="form-error">{errors.onBlockTime.message}</p>
@@ -556,26 +558,26 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           </div>
           <div>
             <label htmlFor="departureTime" className="form-label">
-              Takeoff
+              {t('detail.takeoff')}
             </label>
             <input
               {...register('departureTime')}
               type="time"
               id="departureTime"
               className="input"
-              title="Takeoff time (UTC) — optional"
+              title={t('form.takeoffTooltip')}
             />
           </div>
           <div>
             <label htmlFor="arrivalTime" className="form-label">
-              Landing
+              {t('detail.landing')}
             </label>
             <input
               {...register('arrivalTime')}
               type="time"
               id="arrivalTime"
               className="input"
-              title="Landing time (UTC) — optional"
+              title={t('form.landingTooltip')}
             />
           </div>
         </div>
@@ -583,7 +585,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         {/* Route waypoints */}
         <div>
           <label htmlFor="route" className="form-label">
-            Route (waypoints)
+            {t('fields.route')}
           </label>
           <input
             {...register('route')}
@@ -592,17 +594,17 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             className="input uppercase"
             placeholder="EDDF,EDDS,EDDM"
           />
-          <p className="form-helper">Comma-separated ICAO codes for VFR/IFR flight plans</p>
+          <p className="form-helper">{t('form.commaSeparatedIcao')}</p>
         </div>
       </fieldset>
 
       {/* Takeoffs & Landings — right after route */}
       <fieldset>
-        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Takeoffs & Landings</legend>
+        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.takeoffsAndLandings')}</legend>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
             <label htmlFor="takeoffsDay" className="form-label">
-              Day Takeoffs
+              {t('fields.dayTakeoffs')}
             </label>
             <input
               {...register('takeoffsDay', { setValueAs: (v: string) => (v === '' ? undefined : Number(v)) })}
@@ -612,11 +614,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               className="input"
               placeholder="Auto"
             />
-            <p className="form-helper">Auto-calculated if empty</p>
+            <p className="form-helper">{t('form.autoCalculated')}</p>
           </div>
           <div>
               <label htmlFor="takeoffsNight" className="form-label">
-                Night Takeoffs
+                {t('fields.nightTakeoffs')}
               </label>
               <input
                 {...register('takeoffsNight', { setValueAs: (v: string) => (v === '' ? undefined : Number(v)) })}
@@ -626,11 +628,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 className="input"
                 placeholder="Auto"
               />
-              <p className="form-helper">Auto-calculated if empty</p>
+              <p className="form-helper">{t('form.autoCalculated')}</p>
             </div>
           <div>
             <label htmlFor="landings" className="form-label">
-              Total Landings
+              {t('fields.landings')}
             </label>
             <input
               {...register('landings', { valueAsNumber: true })}
@@ -639,7 +641,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               min="0"
               className="input"
             />
-            <p className="form-helper">Day/night split auto-calculated</p>
+            <p className="form-helper">{t('form.dayNightSplitAuto')}</p>
           </div>
         </div>
       </fieldset>
@@ -647,14 +649,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       {/* Launch Method — shown for glider/TMG aircraft */}
       {showLaunchMethod && (
         <fieldset>
-          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Launch Method</legend>
+          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('fields.launchMethod')}</legend>
           <select {...register('launchMethod')} id="launchMethod" className="input w-auto">
-            <option value="">Not specified</option>
-            <option value="winch">Winch Launch</option>
-            <option value="aerotow">Aerotow</option>
-            <option value="self-launch">Self-Launch</option>
+            <option value="">{t('form.notSpecified')}</option>
+            <option value="winch">{t('form.winchLaunch')}</option>
+            <option value="aerotow">{t('form.aerotow')}</option>
+            <option value="self-launch">{t('form.selfLaunch')}</option>
           </select>
-          <p className="form-helper mt-1">Required for SPL/glider flights</p>
+          <p className="form-helper mt-1">{t('form.requiredForSpl')}</p>
         </fieldset>
       )}
 
@@ -666,7 +668,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3 w-full text-left"
         >
           {expandedSections.people ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          People on Board
+          {t('form.peopleOnBoard')}
           {crewMembers.length > 0 && <span className="badge-info text-xs ml-2">{crewMembers.length}</span>}
         </button>
         {expandedSections.people && (
@@ -694,7 +696,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   type="text"
                   value={crewNameInput}
                   onChange={(e) => { setCrewNameInput(e.target.value); setCrewSearch(e.target.value); }}
-                  placeholder="Person name"
+                  placeholder={t('form.personName')}
                   className="input text-sm"
                 />
                 {contactResults && contactResults.length > 0 && crewNameInput.length >= 2 && (
@@ -717,13 +719,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 onChange={(e) => setCrewRoleInput(e.target.value as CrewRole)}
                 className="input text-sm w-auto"
               >
-                <option value="PIC">PIC</option>
-                <option value="SIC">SIC</option>
-                <option value="Instructor">Instructor</option>
-                <option value="Student">Student</option>
-                <option value="Passenger">Passenger</option>
-                <option value="SafetyPilot">Safety Pilot</option>
-                <option value="Examiner">Examiner</option>
+                <option value="PIC">{t('crewRoles.PIC')}</option>
+                <option value="SIC">{t('crewRoles.SIC')}</option>
+                <option value="Instructor">{t('crewRoles.Instructor')}</option>
+                <option value="Student">{t('crewRoles.Student')}</option>
+                <option value="Passenger">{t('crewRoles.Passenger')}</option>
+                <option value="SafetyPilot">{t('crewRoles.SafetyPilot')}</option>
+                <option value="Examiner">{t('crewRoles.Examiner')}</option>
               </select>
               <button
                 type="button"
@@ -738,19 +740,19 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 }}
                 className="btn-secondary btn-sm text-xs"
               >
-                <Plus className="w-3.5 h-3.5" /> Add
+                <Plus className="w-3.5 h-3.5" /> {t('common:add')}
               </button>
             </div>
 
             {/* Instructor fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
               <div>
-                <label htmlFor="instructorName" className="form-label">Instructor Name</label>
-                <input {...register('instructorName')} id="instructorName" className="input text-sm" placeholder="Instructor name" />
+                <label htmlFor="instructorName" className="form-label">{t('fields.instructorName')}</label>
+                <input {...register('instructorName')} id="instructorName" className="input text-sm" placeholder={t('fields.instructorName')} />
               </div>
               <div>
-                <label htmlFor="instructorComments" className="form-label">Instructor Comments</label>
-                <input {...register('instructorComments')} id="instructorComments" className="input text-sm" placeholder="Instructor remarks" />
+                <label htmlFor="instructorComments" className="form-label">{t('fields.instructorComments', { defaultValue: 'Instructor Comments' })}</label>
+                <input {...register('instructorComments')} id="instructorComments" className="input text-sm" placeholder={t('form.instructorRemarks')} />
               </div>
             </div>
           </div>
@@ -762,12 +764,12 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div>
             <label className="form-label">
-              Total Block Time
+              {t('detail.totalBlockTime')}
             </label>
             <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
               {formatDuration(existingFlight.totalTime, fmt)}
             </div>
-            <p className="form-helper">Computed from block times</p>
+            <p className="form-helper">{t('form.computedFromBlockTimes')}</p>
           </div>
         </div>
       )}
@@ -777,44 +779,44 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       {/* Auto-Calculated Values (edit mode) */}
       {isEditing && existingFlight && (
         <fieldset>
-          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Auto-Calculated Values</legend>
+          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.autoCalculatedValues')}</legend>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
-              <label className="form-label">All Landings</label>
+              <label className="form-label">{t('form.allLandings')}</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
                 {existingFlight.allLandings}
               </div>
             </div>
             <div>
-              <label className="form-label">Solo Time</label>
+              <label className="form-label">{t('fields.soloTime')}</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
                 {formatDuration(existingFlight.soloTime, fmt)}h
               </div>
             </div>
             <div>
-              <label className="form-label">Cross-Country</label>
+              <label className="form-label">{t('fields.crossCountryTime')}</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
                 {formatDuration(existingFlight.crossCountryTime, fmt)}h
               </div>
             </div>
             <div>
-              <label className="form-label">Distance</label>
+              <label className="form-label">{t('fields.distance')}</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
                 {existingFlight.distance.toFixed(1)} NM
               </div>
             </div>
             <div>
-              <label className="form-label">Night Time</label>
+              <label className="form-label">{t('fields.nightTime')}</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
                 {formatDuration(existingFlight.nightTime, fmt)}h
               </div>
             </div>
             <div>
-              <label className="form-label">Function</label>
+              <label className="form-label">{t('form.function')}</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
                 {existingFlight.isPic ? 'PIC' : existingFlight.isDual ? 'Dual' : '—'}
               </div>
-              <p className="form-helper">Auto from crew</p>
+              <p className="form-helper">{t('form.autoFromCrew')}</p>
             </div>
           </div>
         </fieldset>
@@ -828,13 +830,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3 w-full text-left"
         >
           {expandedSections.advanced ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          Advanced Times
+          {t('sections.advancedTimes')}
         </button>
         {expandedSections.advanced && (
           <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
-              <label htmlFor="ifrTime" className="form-label">IFR Time</label>
+              <label htmlFor="ifrTime" className="form-label">{t('fields.ifrTime')}</label>
               <input
                 {...register('ifrTime', { valueAsNumber: true })}
                 type="number"
@@ -846,7 +848,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               <p className="form-helper">Minutes</p>
             </div>
             <div>
-              <label htmlFor="simulatedFlightTime" className="form-label">Simulated Flight</label>
+              <label htmlFor="simulatedFlightTime" className="form-label">{t('fields.simulatedFlightTime')}</label>
               <input
                 {...register('simulatedFlightTime', { valueAsNumber: true })}
                 type="number"
@@ -855,10 +857,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 min="0"
                 className="input"
               />
-              <p className="form-helper">Minutes (FTD/FSTD)</p>
+              <p className="form-helper">{t('form.minutesFtd')}</p>
             </div>
             <div>
-              <label htmlFor="groundTrainingTime" className="form-label">Ground Training</label>
+              <label htmlFor="groundTrainingTime" className="form-label">{t('fields.groundTrainingTime')}</label>
               <input
                 {...register('groundTrainingTime', { valueAsNumber: true })}
                 type="number"
@@ -867,23 +869,23 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 min="0"
                 className="input"
               />
-              <p className="form-helper">Minutes</p>
+              <p className="form-helper">{t('form.minutes')}</p>
             </div>
             {isEditing && existingFlight && (
               <>
                 <div>
-                  <label className="form-label">SIC Time</label>
+                  <label className="form-label">{t('fields.sicTime')}</label>
                   <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
                     {formatDuration(existingFlight.sicTime || 0, fmt)}h
                   </div>
-                  <p className="form-helper">Auto from crew roles</p>
+                  <p className="form-helper">{t('form.autoFromCrew', { defaultValue: 'Auto from crew roles' })}</p>
                 </div>
                 <div>
-                  <label className="form-label">Dual Given</label>
+                  <label className="form-label">{t('detail.dualGiven')}</label>
                   <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
                     {formatDuration(existingFlight.dualGivenTime || 0, fmt)}h
                   </div>
-                  <p className="form-helper">Auto from instructor role</p>
+                  <p className="form-helper">{t('form.autoFromInstructorRole')}</p>
                 </div>
               </>
             )}
@@ -891,10 +893,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
           {/* Instrument Tracking */}
           <div className="mt-4">
-            <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Instrument Tracking</h4>
+            <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">{t('form.instrumentTracking')}</h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
-                <label htmlFor="actualInstrumentTime" className="form-label">Actual Instrument</label>
+                <label htmlFor="actualInstrumentTime" className="form-label">{t('fields.actualInstrumentTime')}</label>
                 <input
                   {...register('actualInstrumentTime', { valueAsNumber: true })}
                   type="number"
@@ -903,10 +905,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   min="0"
                   className="input"
                 />
-                <p className="form-helper">Minutes (IMC)</p>
+                <p className="form-helper">{t('form.minutesImc')}</p>
               </div>
               <div>
-                <label htmlFor="simulatedInstrumentTime" className="form-label">Simulated Instrument</label>
+                <label htmlFor="simulatedInstrumentTime" className="form-label">{t('fields.simulatedInstrumentTime')}</label>
                 <input
                   {...register('simulatedInstrumentTime', { valueAsNumber: true })}
                   type="number"
@@ -915,10 +917,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   min="0"
                   className="input"
                 />
-                <p className="form-helper">Minutes (hood/foggles)</p>
+                <p className="form-helper">{t('form.minutesHood')}</p>
               </div>
               <div>
-                <label htmlFor="holds" className="form-label">Holds</label>
+                <label htmlFor="holds" className="form-label">{t('fields.holds')}</label>
                 <input
                   {...register('holds', { valueAsNumber: true })}
                   type="number"
@@ -926,7 +928,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   min="0"
                   className="input"
                 />
-                <p className="form-helper">Holding procedures</p>
+                <p className="form-helper">{t('form.holdingProcedures')}</p>
               </div>
             </div>
 
@@ -934,23 +936,23 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <div className="mt-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Approaches {approaches.length > 0 && <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full">{approaches.length}</span>}
+                  {t('fields.approaches')} {approaches.length > 0 && <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full">{approaches.length}</span>}
                 </span>
                 <button
                   type="button"
                   onClick={() => setApproaches([...approaches, { type: 'ILS', airport: '', runway: '' }])}
                   className="btn-ghost btn-sm text-xs flex items-center gap-1"
                 >
-                  <Plus size={12} /> Add Approach
+                  <Plus size={12} /> {t('addApproach')}
                 </button>
               </div>
               {approaches.length === 0 && (
-                <p className="text-xs text-slate-400 dark:text-slate-500 italic">No approaches logged. Click "Add Approach" to record instrument approaches.</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 italic">{t('form.noApproachesLogged')}</p>
               )}
               {approaches.length > 0 && (
                 <div className="space-y-2">
                   <div className="grid grid-cols-[1fr_80px_64px_28px] gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium px-0.5">
-                    <span>Type</span><span>Airport</span><span>Runway</span><span></span>
+                    <span>{t('approachType')}</span><span>{t('approachAirport')}</span><span>{t('approachRunway')}</span><span></span>
                   </div>
                   {approaches.map((appr, idx) => (
                     <div key={idx} className="grid grid-cols-[1fr_80px_64px_28px] gap-2 items-center">
@@ -982,7 +984,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   ))}
                 </div>
               )}
-              <p className="form-helper mt-2">Type, airport & runway per approach (FAA §61.51(g)(3))</p>
+              <p className="form-helper mt-2">{t('form.approachHelper')}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-3">
@@ -993,7 +995,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   id="isIpc"
                   className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
                 />
-                Instrument Proficiency Check (IPC)
+                {t('form.ipcLabel')}
               </label>
               <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
                 <input
@@ -1002,7 +1004,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   id="isFlightReview"
                   className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
                 />
-                Flight Review (BFR / 61.56)
+                {t('form.flightReviewLabel')}
               </label>
               <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
                 <input
@@ -1011,27 +1013,27 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   id="isProficiencyCheck"
                   className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
                 />
-                Proficiency Check (FCL.740.A / §61.58)
+                {t('form.proficiencyCheckLabel')}
               </label>
             </div>
 
             {/* FSTD Type — shown when simulated flight time > 0 */}
             {(watch('simulatedFlightTime') > 0 || watch('fstdType')) && (
               <div className="mt-3">
-                <label htmlFor="fstdType" className="form-label">FSTD Type</label>
+                <label htmlFor="fstdType" className="form-label">{t('fields.fstdType')}</label>
                 <input
                   {...register('fstdType')}
                   id="fstdType"
                   className="input"
                   placeholder="e.g. FNPT II, FFS A320, BATD"
                 />
-                <p className="form-helper">FSTD type designation (EASA AMC1 Col 22 / FAA §61.51)</p>
+                <p className="form-helper">{t('form.fstdHelper')}</p>
               </div>
             )}
 
             {/* Multi-Pilot Time */}
             <div className="mt-3">
-              <label htmlFor="multiPilotTime" className="form-label">Multi-Pilot Time</label>
+              <label htmlFor="multiPilotTime" className="form-label">{t('fields.multiPilotTime')}</label>
               <input
                 {...register('multiPilotTime', { valueAsNumber: true })}
                 type="number"
@@ -1040,7 +1042,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 min="0"
                 className="input"
               />
-              <p className="form-helper">Minutes on multi-pilot aircraft (EASA AMC1 Col 10)</p>
+              <p className="form-helper">{t('form.multiPilotHelper')}</p>
             </div>
           </div>
           </>
@@ -1051,50 +1053,50 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       <div className="space-y-4">
         <div>
           <label htmlFor="picName" className="form-label">
-            PIC Name
+            {t('fields.picName')}
           </label>
           <input
             {...register('picName')}
             id="picName"
             className="input"
-            placeholder="Auto-filled: Self (PIC) or instructor name (Dual)"
+            placeholder={t('form.picNamePlaceholder')}
           />
-          <p className="form-helper">Name of pilot-in-command (EASA AMC1 Col 12). Auto-set if left empty.</p>
+          <p className="form-helper">{t('form.picNameHelper')}</p>
         </div>
         <div>
           <label htmlFor="remarks" className="form-label">
-            Remarks
+            {t('fields.remarks')}
           </label>
           <textarea
             {...register('remarks')}
             id="remarks"
             rows={2}
             className="input"
-            placeholder="Training flight, touch and go practice, etc."
+            placeholder={t('form.trainingFlightPlaceholder')}
           />
         </div>
         <div>
           <label htmlFor="endorsements" className="form-label">
-            Endorsements
+            {t('fields.endorsements')}
           </label>
           <textarea
             {...register('endorsements')}
             id="endorsements"
             rows={2}
             className="input"
-            placeholder="Instructor endorsements, skill test references, examiner notes"
+            placeholder={t('form.endorsementsPlaceholder')}
           />
-          <p className="form-helper">EASA AMC1 Col 24 / FAA §61.51(h) — separate from pilot remarks</p>
+          <p className="form-helper">{t('form.endorsementsHelper')}</p>
         </div>
       </div>
 
       {/* Submit */}
       <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
         <button type="submit" disabled={isSubmitting} className="btn-primary flex-1">
-          {isSubmitting ? 'Saving...' : isEditing ? 'Update Flight' : 'Log Flight'}
+          {isSubmitting ? t('saving') : isEditing ? t('updateFlight') : t('logFlight')}
         </button>
         <button type="button" onClick={onClose} className="btn-secondary flex-1">
-          Cancel
+          {t('common:cancel')}
         </button>
       </div>
     </form>

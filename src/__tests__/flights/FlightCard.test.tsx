@@ -99,7 +99,7 @@ describe('FlightCard', () => {
       />
     );
 
-    expect(screen.getByText(/PIC:/)).toBeInTheDocument();
+    expect(screen.getByText(/PIC Time:/)).toBeInTheDocument();
   });
 
   it('renders night time when greater than 0', () => {

@@ -39,5 +39,18 @@
   "tier2Description": "Determines whether you can carry passengers. You can still fly solo without passenger currency.",
   "flightReviewRequired": "Flight review required",
   "lastCompleted": "Last completed: {{date}}",
-  "viewDetails": "View Details"
+  "viewDetails": "View Details",
+  "classTypes": {
+    "SEP_LAND": "SEP (Land)",
+    "SEP_SEA": "SEP (Sea)",
+    "MEP_LAND": "MEP (Land)",
+    "MEP_SEA": "MEP (Sea)",
+    "SET_LAND": "SET (Land)",
+    "SET_SEA": "SET (Sea)",
+    "TMG": "TMG",
+    "IR": "Instrument Rating",
+    "OTHER": "Other"
+  },
+  "expiresLabel": "Expires: {{date}}",
+  "launchesCount": "{{current}} / {{required}} launches"
 }

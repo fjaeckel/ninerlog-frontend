@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,6 +24,7 @@ interface LicenseFormProps {
 }
 
 export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
+  const { t } = useTranslation('licenses');
   const createLicense = useCreateLicense();
   const updateLicense = useUpdateLicense();
   const { data: licenses } = useLicenses();
@@ -96,7 +98,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
       }
       onClose();
     } catch (error) {
-      setApiError(extractApiError(error, 'Failed to save license. Please try again.'));
+      setApiError(extractApiError(error, t('form.failedToSave')));
     }
   };
 
@@ -110,7 +112,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="regulatoryAuthority" className="form-label">
-            Regulatory Authority <span className="text-red-500">*</span>
+            {t('fields.regulatoryAuthority')} <span className="text-red-500">*</span>
           </label>
           <input
             {...register('regulatoryAuthority')}
@@ -135,7 +137,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
 
         <div>
           <label htmlFor="licenseType" className="form-label">
-            License Type <span className="text-red-500">*</span>
+            {t('fields.licenseType')} <span className="text-red-500">*</span>
           </label>
           <input
             {...register('licenseType')}
@@ -162,7 +164,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
 
       <div>
         <label htmlFor="licenseNumber" className="form-label">
-          License Number <span className="text-red-500">*</span>
+          {t('fields.licenseNumber')} <span className="text-red-500">*</span>
         </label>
         <input
           {...register('licenseNumber')}
@@ -178,7 +180,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
 
       <div>
         <label htmlFor="issuingAuthority" className="form-label">
-          Issuing Authority <span className="text-red-500">*</span>
+          {t('fields.issuingAuthority')} <span className="text-red-500">*</span>
         </label>
         <input
           {...register('issuingAuthority')}
@@ -194,7 +196,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
 
       <div>
         <label htmlFor="issueDate" className="form-label">
-          Issue Date <span className="text-red-500">*</span>
+          {t('fields.issueDate')} <span className="text-red-500">*</span>
         </label>
         <input
           {...register('issueDate')}
@@ -215,7 +217,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
           className="rounded border-slate-300 dark:border-slate-600"
         />
         <label htmlFor="requiresSeparateLogbook" className="text-sm text-slate-700 dark:text-slate-300">
-          Requires separate logbook
+          {t('form.requiresSeparateLogbook')}
         </label>
       </div>
 
@@ -225,14 +227,14 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
           disabled={isSubmitting}
           className="btn-primary flex-1"
         >
-          {isSubmitting ? 'Saving...' : isEditing ? 'Update License' : 'Add License'}
+          {isSubmitting ? t('common:saving') : isEditing ? t('updateLicense') : t('addLicense')}
         </button>
         <button
           type="button"
           onClick={onClose}
           className="btn-secondary flex-1"
         >
-          Cancel
+          {t('common:cancel')}
         </button>
       </div>
     </form>

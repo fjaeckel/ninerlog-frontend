@@ -47,9 +47,9 @@ describe('CredentialForm', () => {
 
     expect(screen.getByText('EASA Class 1 Medical')).toBeInTheDocument();
     expect(screen.getByText('FAA Class 3 Medical')).toBeInTheDocument();
-    expect(screen.getByText('Language Proficiency ICAO Level 4')).toBeInTheDocument();
+    expect(screen.getByText('ICAO Language Level 4')).toBeInTheDocument();
     expect(screen.getByText(/ZÜP/)).toBeInTheDocument();
-    expect(screen.getByText(/ZüBB/)).toBeInTheDocument();
+    expect(screen.getByText(/ZUBB/)).toBeInTheDocument();
   });
 
   it('validates required fields', async () => {

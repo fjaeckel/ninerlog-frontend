@@ -72,7 +72,23 @@
     "checkHour": "Tägliche Prüfzeit (UTC)",
     "checkHourDesc": "Uhrzeit der täglichen Benachrichtigungsprüfung",
     "history": "Benachrichtigungsverlauf",
-    "noHistory": "Noch keine Benachrichtigungen gesendet."
+    "noHistory": "Noch keine Benachrichtigungen gesendet.",
+    "categoryLabels": {
+      "credential_medical": "Medical",
+      "credential_language": "Sprache",
+      "credential_security": "Sicherheit",
+      "credential_other": "Nachweis",
+      "rating_expiry": "Berechtigungsablauf",
+      "currency_passenger": "Passagier",
+      "currency_night": "Nacht",
+      "currency_instrument": "Instrumentenflug",
+      "currency_flight_review": "Flugüberprüfung",
+      "currency_revalidation": "Verlängerung"
+    },
+    "daysBeforeExpiry": "{{days}}T vor Ablauf",
+    "page": "Seite {{page}} von {{totalPages}}",
+    "previous": "Zurück",
+    "next": "Weiter"
   },
   "twoFactor": {
     "title": "Zwei-Faktor-Authentifizierung",

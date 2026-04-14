@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { License } from '../../stores/licenseStore';
 import { format, isPast, differenceInDays } from 'date-fns';
 import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateClassRating } from '../../hooks/useClassRatings';
@@ -9,31 +10,20 @@ const CLASS_TYPE_OPTIONS = [
   'SET_LAND', 'SET_SEA', 'TMG', 'IR', 'OTHER',
 ] as const;
 
-const CLASS_TYPE_LABELS: Record<string, string> = {
-  SEP_LAND: 'SEP (Land)',
-  SEP_SEA: 'SEP (Sea)',
-  MEP_LAND: 'MEP (Land)',
-  MEP_SEA: 'MEP (Sea)',
-  SET_LAND: 'SET (Land)',
-  SET_SEA: 'SET (Sea)',
-  TMG: 'TMG',
-  IR: 'IR',
-  OTHER: 'Other',
-};
-
 function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
+  const { t } = useTranslation('licenses');
   if (!expiryDate) {
-    return <span className="text-xs text-slate-400">No expiry</span>;
+    return <span className="text-xs text-slate-400">{t('card.noExpiry')}</span>;
   }
   const expiry = new Date(expiryDate);
   const expired = isPast(expiry);
   const daysLeft = differenceInDays(expiry, new Date());
 
   if (expired) {
-    return <span className="text-xs font-medium text-red-600 dark:text-red-400">Expired</span>;
+    return <span className="text-xs font-medium text-red-600 dark:text-red-400">{t('card.expired')}</span>;
   }
   if (daysLeft <= 30) {
-    return <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Expires in {daysLeft}d</span>;
+    return <span className="text-xs font-medium text-amber-600 dark:text-amber-400">{t('card.expiresInDays', { days: daysLeft })}</span>;
   }
   return <span className="text-xs text-green-600 dark:text-green-400">{format(expiry, 'MMM dd, yyyy')}</span>;
 }
@@ -45,6 +35,7 @@ interface LicenseCardProps {
 }
 
 export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardProps) {
+  const { t } = useTranslation('licenses');
   const { data: classRatings, isLoading: ratingsLoading } = useClassRatings(license.id);
   const createRating = useCreateClassRating();
   const deleteRating = useDeleteClassRating();
@@ -72,7 +63,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
       setNewIssueDate('');
       setNewExpiryDate('');
     } catch (err) {
-      setRatingError(extractApiError(err, 'Failed to add class rating.'));
+      setRatingError(extractApiError(err, t('card.failedToAdd')));
     }
   };
 
@@ -81,7 +72,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
       setRatingError(null);
       await deleteRating.mutateAsync({ licenseId: license.id, ratingId });
     } catch (err) {
-      setRatingError(extractApiError(err, 'Failed to delete class rating.'));
+      setRatingError(extractApiError(err, t('card.failedToDelete')));
     }
   };
 
@@ -106,7 +97,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
       setNewIssueDate('');
       setNewExpiryDate('');
     } catch (err) {
-      setRatingError(extractApiError(err, 'Failed to update class rating.'));
+      setRatingError(extractApiError(err, t('card.failedToUpdate')));
     }
   };
 
@@ -126,20 +117,20 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
 
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-slate-400">Regulatory Authority</span>
+          <span className="text-slate-500 dark:text-slate-400">{t('card.regulatoryAuthority')}</span>
           <span className="font-medium text-slate-700 dark:text-slate-300">{license.regulatoryAuthority}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-slate-400">Issuing Authority</span>
+          <span className="text-slate-500 dark:text-slate-400">{t('card.issuingAuthority')}</span>
           <span className="font-medium text-slate-700 dark:text-slate-300">{license.issuingAuthority}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-slate-400">Issued</span>
+          <span className="text-slate-500 dark:text-slate-400">{t('card.issued')}</span>
           <span className="text-slate-700 dark:text-slate-300">{format(new Date(license.issueDate), 'MMM dd, yyyy')}</span>
         </div>
         {license.requiresSeparateLogbook && (
           <div className="flex justify-between">
-            <span className="text-slate-500 dark:text-slate-400">Separate Logbook</span>
+            <span className="text-slate-500 dark:text-slate-400">{t('card.separateLogbook')}</span>
             <span className="badge-info text-[10px]">YES</span>
           </div>
         )}
@@ -153,10 +144,10 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
           </div>
         )}
         <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-          Class Ratings
+          {t('classRatings')}
         </h4>
         {ratingsLoading ? (
-          <p className="text-xs text-slate-400 dark:text-slate-500">Loading...</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">{t('common:loading')}</p>
         ) : classRatings && classRatings.length > 0 ? (
           <div className="space-y-1.5">
             {classRatings.map((rating) => (
@@ -164,43 +155,43 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                 {editingRatingId === rating.id ? (
                   <div className="space-y-2 rounded-md border border-blue-200 dark:border-blue-700 p-2 bg-blue-50/50 dark:bg-blue-900/20">
                     <div className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                      {CLASS_TYPE_LABELS[rating.classType] || rating.classType}
+                      {t(`classTypeLabels.${rating.classType}`, { defaultValue: rating.classType })}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-xs text-slate-500 dark:text-slate-400">Issue Date</label>
+                        <label className="text-xs text-slate-500 dark:text-slate-400">{t('fields.issueDate')}</label>
                         <input type="date" value={newIssueDate} onChange={(e) => setNewIssueDate(e.target.value)} className="input input-sm mt-0.5" />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-500 dark:text-slate-400">Expiry Date</label>
+                        <label className="text-xs text-slate-500 dark:text-slate-400">{t('classRatingFields.expiryDate')}</label>
                         <input type="date" value={newExpiryDate} onChange={(e) => setNewExpiryDate(e.target.value)} className="input input-sm mt-0.5" />
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <button onClick={handleUpdateRating} disabled={!newIssueDate || updateRating.isPending} className="btn-primary btn-sm flex-1 text-xs">
-                        {updateRating.isPending ? 'Saving...' : 'Save'}
+                        {updateRating.isPending ? t('common:saving') : t('common:save')}
                       </button>
-                      <button onClick={() => setEditingRatingId(null)} className="btn-secondary btn-sm flex-1 text-xs">Cancel</button>
+                      <button onClick={() => setEditingRatingId(null)} className="btn-secondary btn-sm flex-1 text-xs">{t('common:cancel')}</button>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium text-slate-700 dark:text-slate-300">
-                      {CLASS_TYPE_LABELS[rating.classType] || rating.classType}
+                      {t(`classTypeLabels.${rating.classType}`, { defaultValue: rating.classType })}
                     </span>
                     <div className="flex items-center gap-2">
                       <ExpiryBadge expiryDate={rating.expiryDate} />
                       <button
                         onClick={() => startEditRating(rating)}
                         className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors text-xs"
-                        title="Edit class rating"
+                        title={t('card.editRating')}
                       >
                         ✏
                       </button>
                       <button
                         onClick={() => handleDeleteRating(rating.id)}
                         className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors text-xs font-bold leading-none"
-                        title="Remove class rating"
+                        title={t('card.removeRating')}
                       >
                         ✕
                       </button>
@@ -211,26 +202,26 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
             ))}
           </div>
         ) : (
-          <p className="text-xs text-slate-400 dark:text-slate-500 italic">No class ratings</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 italic">{t('card.noClassRatings')}</p>
         )}
 
         {/* Add Rating */}
         {showAddForm ? (
           <div className="mt-3 space-y-2 rounded-md border border-slate-200 dark:border-slate-600 p-3 bg-slate-50 dark:bg-slate-800/50">
             <div>
-              <label className="text-xs text-slate-500 dark:text-slate-400">Class Type</label>
+              <label className="text-xs text-slate-500 dark:text-slate-400">{t('card.classType')}</label>
               <select
                 value={newClassType}
                 onChange={(e) => setNewClassType(e.target.value)}
                 className="input input-sm mt-0.5"
               >
                 {CLASS_TYPE_OPTIONS.map((ct) => (
-                  <option key={ct} value={ct}>{CLASS_TYPE_LABELS[ct]}</option>
+                  <option key={ct} value={ct}>{t(`classTypeLabels.${ct}`, { defaultValue: ct })}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-xs text-slate-500 dark:text-slate-400">Issue Date</label>
+              <label className="text-xs text-slate-500 dark:text-slate-400">{t('fields.issueDate')}</label>
               <input
                 type="date"
                 value={newIssueDate}
@@ -239,7 +230,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
               />
             </div>
             <div>
-              <label className="text-xs text-slate-500 dark:text-slate-400">Expiry Date (optional)</label>
+              <label className="text-xs text-slate-500 dark:text-slate-400">{t('card.expiryDateOptional')}</label>
               <input
                 type="date"
                 value={newExpiryDate}
@@ -253,13 +244,13 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                 disabled={!newIssueDate || createRating.isPending}
                 className="btn-primary btn-sm flex-1"
               >
-                {createRating.isPending ? 'Saving...' : 'Save'}
+                {createRating.isPending ? t('common:saving') : t('common:save')}
               </button>
               <button
                 onClick={() => setShowAddForm(false)}
                 className="btn-secondary btn-sm flex-1"
               >
-                Cancel
+                {t('common:cancel')}
               </button>
             </div>
           </div>
@@ -268,20 +259,20 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
             onClick={() => setShowAddForm(true)}
             className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center"
           >
-            + Add Rating
+            {t('card.addRating')}
           </button>
         )}
       </div>
 
       <div className="flex gap-2 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
         <button onClick={onEdit} className="btn-secondary btn-sm flex-1">
-          Edit
+          {t('common:edit')}
         </button>
         <button
           onClick={onDelete}
           className="btn-secondary btn-sm flex-1 hover:bg-red-50 hover:text-red-700 hover:border-red-200 dark:hover:bg-red-900/20 dark:hover:text-red-400"
         >
-          Delete
+          {t('common:delete')}
         </button>
       </div>
     </div>

@@ -60,8 +60,8 @@ describe('FlightForm People Section', () => {
     const user = userEvent.setup();
     render(<FlightForm onClose={mockOnClose} />);
     await user.click(screen.getByText('Advanced Times'));
-    expect(screen.getByLabelText('Simulated Flight')).toBeInTheDocument();
-    expect(screen.getByLabelText('Ground Training')).toBeInTheDocument();
+    expect(screen.getByLabelText('Simulated Flight Time')).toBeInTheDocument();
+    expect(screen.getByLabelText('Ground Training Time')).toBeInTheDocument();
   });
 
   it('renders Remarks field', () => {

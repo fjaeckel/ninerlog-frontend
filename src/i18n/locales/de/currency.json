@@ -39,5 +39,18 @@
   "tier2Description": "Bestimmt, ob Sie Passagiere mitnehmen dürfen. Alleinflug ist auch ohne Passagier-Gültigkeit möglich.",
   "flightReviewRequired": "Flugüberprüfung erforderlich",
   "lastCompleted": "Zuletzt durchgeführt: {{date}}",
-  "viewDetails": "Details anzeigen"
+  "viewDetails": "Details anzeigen",
+  "classTypes": {
+    "SEP_LAND": "SEP (Land)",
+    "SEP_SEA": "SEP (See)",
+    "MEP_LAND": "MEP (Land)",
+    "MEP_SEA": "MEP (See)",
+    "SET_LAND": "SET (Land)",
+    "SET_SEA": "SET (See)",
+    "TMG": "TMG",
+    "IR": "Instrumentenberechtigung",
+    "OTHER": "Sonstige"
+  },
+  "expiresLabel": "Gültig bis: {{date}}",
+  "launchesCount": "{{current}} / {{required}} Starts"
 }

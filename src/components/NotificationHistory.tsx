@@ -1,18 +1,6 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNotificationHistory } from '../hooks/useNotifications';
-
-const CATEGORY_LABELS: Record<string, string> = {
-  credential_medical: 'Medical',
-  credential_language: 'Language',
-  credential_security: 'Security',
-  credential_other: 'Credential',
-  rating_expiry: 'Rating Expiry',
-  currency_passenger: 'Passenger',
-  currency_night: 'Night',
-  currency_instrument: 'Instrument',
-  currency_flight_review: 'Flight Review',
-  currency_revalidation: 'Revalidation',
-};
 
 const CATEGORY_COLORS: Record<string, string> = {
   credential_medical: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
@@ -28,6 +16,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export function NotificationHistory() {
+  const { t } = useTranslation('settings');
   const [page, setPage] = useState(0);
   const pageSize = 10;
   const { data, isLoading } = useNotificationHistory(pageSize, page * pageSize);
@@ -35,8 +24,8 @@ export function NotificationHistory() {
   if (isLoading) {
     return (
       <div className="card mb-6">
-        <h2 className="section-title mb-4">Notification History</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">Loading...</p>
+        <h2 className="section-title mb-4">{t('notifications.history')}</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t('common:loading')}</p>
       </div>
     );
   }
@@ -44,8 +33,8 @@ export function NotificationHistory() {
   if (!data || data.total === 0) {
     return (
       <div className="card mb-6">
-        <h2 className="section-title mb-4">Notification History</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">No notifications sent yet.</p>
+        <h2 className="section-title mb-4">{t('notifications.history')}</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t('notifications.noHistory')}</p>
       </div>
     );
   }
@@ -54,7 +43,7 @@ export function NotificationHistory() {
 
   return (
     <div className="card mb-6">
-      <h2 className="section-title mb-4">Notification History</h2>
+      <h2 className="section-title mb-4">{t('notifications.history')}</h2>
       <div className="space-y-2">
         {data.items.map((entry) => (
           <div
@@ -66,14 +55,14 @@ export function NotificationHistory() {
                 CATEGORY_COLORS[entry.category] || 'bg-slate-100 text-slate-600'
               }`}
             >
-              {CATEGORY_LABELS[entry.category] || entry.category}
+              {t(`notifications.categories.${entry.category}`, { defaultValue: entry.category })}
             </span>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-slate-700 dark:text-slate-300 truncate">{entry.subject}</p>
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                 <span>{new Date(entry.sentAt).toLocaleDateString()}</span>
                 {entry.daysBeforeExpiry != null && (
-                  <span>• {entry.daysBeforeExpiry}d before expiry</span>
+                  <span>• {t('notifications.daysBeforeExpiry', { days: entry.daysBeforeExpiry })}</span>
                 )}
                 {entry.referenceType && (
                   <span>• {entry.referenceType}</span>
@@ -92,10 +81,10 @@ export function NotificationHistory() {
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             className="text-sm text-blue-600 dark:text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Previous
+            {t('notifications.previous')}
           </button>
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            Page {page + 1} of {totalPages}
+            {t('notifications.page', { page: page + 1, totalPages })}
           </span>
           <button
             type="button"
@@ -103,7 +92,7 @@ export function NotificationHistory() {
             onClick={() => setPage((p) => p + 1)}
             className="text-sm text-blue-600 dark:text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Next
+            {t('notifications.next')}
           </button>
         </div>
       )}

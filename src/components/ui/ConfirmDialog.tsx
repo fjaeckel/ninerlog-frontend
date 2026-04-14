@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/cn';
 import { AlertTriangle } from 'lucide-react';
 
@@ -20,11 +21,14 @@ export function ConfirmDialog({
   onCancel,
   title,
   description,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel: confirmLabelProp,
+  cancelLabel: cancelLabelProp,
   variant = 'danger',
   isLoading = false,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation('common');
+  const confirmLabel = confirmLabelProp ?? t('confirm');
+  const cancelLabel = cancelLabelProp ?? t('cancel');
   const [mounted, setMounted] = useState(false);
   const confirmRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -131,7 +135,7 @@ export function ConfirmDialog({
               )}
               disabled={isLoading}
             >
-              {isLoading ? 'Deleting...' : confirmLabel}
+              {isLoading ? t('common:deleting') : confirmLabel}
             </button>
           </div>
         </div>

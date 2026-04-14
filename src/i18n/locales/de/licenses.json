@@ -45,5 +45,38 @@
     "Sport": "Sport",
     "Recreational": "Recreational",
     "Glider": "Glider"
+  },
+  "form": {
+    "requiresSeparateLogbook": "Separates Flugbuch erforderlich",
+    "failedToSave": "Lizenz konnte nicht gespeichert werden."
+  },
+  "card": {
+    "regulatoryAuthority": "Aufsichtsbehörde",
+    "issuingAuthority": "Ausstellende Behörde",
+    "issued": "Ausgestellt",
+    "separateLogbook": "Separates Flugbuch",
+    "noClassRatings": "Keine Klassenberechtigungen",
+    "addRating": "+ Berechtigung hinzufügen",
+    "classType": "Klassentyp",
+    "expiryDateOptional": "Ablaufdatum (optional)",
+    "failedToAdd": "Klassenberechtigung konnte nicht hinzugefügt werden.",
+    "failedToDelete": "Klassenberechtigung konnte nicht gelöscht werden.",
+    "failedToUpdate": "Klassenberechtigung konnte nicht aktualisiert werden.",
+    "editRating": "Klassenberechtigung bearbeiten",
+    "removeRating": "Klassenberechtigung entfernen",
+    "noExpiry": "Kein Ablaufdatum",
+    "expired": "Abgelaufen",
+    "expiresInDays": "Läuft in {{days}}T ab"
+  },
+  "classTypeLabels": {
+    "SEP_LAND": "SEP (Land)",
+    "SEP_SEA": "SEP (See)",
+    "MEP_LAND": "MEP (Land)",
+    "MEP_SEA": "MEP (See)",
+    "SET_LAND": "SET (Land)",
+    "SET_SEA": "SET (See)",
+    "TMG": "TMG",
+    "IR": "IR",
+    "OTHER": "Sonstige"
   }
 }
