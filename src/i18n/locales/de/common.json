@@ -165,7 +165,18 @@
     "config": {
       "title": "Laufzeitkonfiguration",
       "subtitle": "Nicht-geheime Serverkonfiguration. Geheimnisse werden nie offengelegt.",
-      "loadingConfig": "Konfiguration laden..."
+      "loadingConfig": "Konfiguration laden...",
+      "goVersion": "Go-Version",
+      "serverUptime": "Server-Betriebszeit",
+      "migrationVersion": "Migrations-Version",
+      "airportDatabase": "Flughafen-Datenbank",
+      "corsOrigins": "CORS-Ursprünge",
+      "rateLimitAuth": "Rate Limit (Auth)",
+      "rateLimitAdmin": "Rate Limit (Admin)",
+      "smtp": "SMTP",
+      "adminEmail": "Admin-E-Mail",
+      "configured": "Konfiguriert",
+      "notConfigured": "Nicht konfiguriert"
     },
     "announcements": {
       "createTitle": "Ankündigung erstellen",
@@ -178,7 +189,8 @@
       "publish": "Ankündigung veröffentlichen",
       "creating": "Erstellen...",
       "activeTitle": "Aktive Ankündigungen",
-      "noAnnouncements": "Keine aktiven Ankündigungen."
+      "noAnnouncements": "Keine aktiven Ankündigungen.",
+      "expires": "Läuft ab"
     }
   }
 }

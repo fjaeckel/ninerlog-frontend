@@ -52,5 +52,20 @@
     "OTHER": "Other"
   },
   "expiresLabel": "Expires: {{date}}",
-  "launchesCount": "{{current}} / {{required}} launches"
+  "launchesCount": "{{current}} / {{required}} launches",
+  "ruleDescriptions": {
+    "easa_sep_tmg": "Requires 12h total flight time + 6h as PIC + 12 takeoffs & landings + 1h refresher training with instructor within the 12 months preceding the expiry date of the rating (EASA FCL.740.A(b)(1))",
+    "easa_mep_set": "Requires proficiency check, or 10 route sectors + 1h refresher training with instructor within the 12 months preceding the expiry date (EASA FCL.740.A(b)(2))",
+    "easa_ir": "Requires 10h IFR flight time + annual proficiency check within the 12 months preceding the expiry date (EASA FCL.625.A)",
+    "easa_lapl": "Requires 12h flight time + 12 takeoffs & landings + 1h training flight with instructor within the last 24 months (EASA FCL.140.A)",
+    "easa_spl": "Requires 5h PIC flight time + 15 launches + 2 training flights with instructor within the last 24 months (EASA FCL.140.S)",
+    "easa_spl_tmg": "Requires 12h flight time + 12 takeoffs & landings on TMG within the last 24 months (EASA FCL.140.S(b)(2))",
+    "easa_pax": "3 takeoffs & landings in same type/class within preceding 90 days to carry passengers (EASA FCL.060(b))",
+    "faa_pax_day_night": "3 takeoffs & landings in preceding 90 days for day passenger currency; 3 full-stop night takeoffs & landings in preceding 90 days for night passenger currency (14 CFR 61.57(a)/(b))",
+    "faa_ir": "Requires 6 instrument approaches + holding procedures within the preceding 6 calendar months (14 CFR 61.57(c))",
+    "faa_glider": "Requires 3 launches & landings in preceding 90 days (14 CFR 61.57(a))",
+    "faa_flight_review": "Flight review required every 24 calendar months (14 CFR 61.56)",
+    "ul_luftpersv": "Requires 12h flight time + 12 takeoffs & landings + 1h training flight with instructor in 24 months (LuftPersV §45)",
+    "ul_pax": "Passenger authorization required — 3 takeoffs & landings in 90 days (Passagierberechtigung)"
+  }
 }

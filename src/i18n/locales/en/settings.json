@@ -136,5 +136,18 @@
   "language": {
     "title": "Language",
     "description": "Choose your preferred language for the interface."
+  },
+  "dateFormat": {
+    "title": "Date Format",
+    "description": "Choose how dates are displayed throughout the app.",
+    "european": "European",
+    "us": "US",
+    "iso": "ISO 8601"
+  },
+  "decimalSeparator": {
+    "title": "Decimal Separator",
+    "description": "Choose the decimal separator for number formatting (e.g. decimal hours).",
+    "comma": "Comma (1,5h)",
+    "dot": "Dot (1.5h)"
   }
 }

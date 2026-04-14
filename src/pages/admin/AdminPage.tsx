@@ -7,6 +7,7 @@ import {
   useAdminStats, useAdminAuditLog, useCleanupTokens, useSmtpTest, useAdminConfig,
 } from '../../hooks/useAdmin';
 import { useCreateAnnouncement, useDeleteAnnouncement, useAnnouncements } from '../../hooks/useAnnouncements';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import type { AdminUser } from '../../hooks/useAdmin';
 
 type Tab = 'dashboard' | 'users' | 'audit' | 'maintenance' | 'announcements' | 'config';
@@ -98,6 +99,7 @@ function DashboardTab() {
 
 function UsersTab() {
   const { t } = useTranslation('common');
+  const { fmtDate } = useFormatPrefs();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -155,7 +157,7 @@ function UsersTab() {
               <th className="px-4 py-3 font-medium text-slate-500">{t('admin.users.actions')}</th>
             </tr></thead>
             <tbody>
-              {isLoading && <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-400">Loading...</td></tr>}
+              {isLoading && <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-400">{t('common:loading')}</td></tr>}
               {data?.data?.map((u) => (
                 <tr key={u.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td className="px-4 py-3"><div className="font-medium text-slate-700 dark:text-slate-200">{u.name}</div><div className="text-xs text-slate-400">{u.email}</div></td>
@@ -163,7 +165,7 @@ function UsersTab() {
                   <td className="px-4 py-3">{u.twoFactorEnabled ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.enabled')}</span> : <span className="text-slate-400 text-xs">{t('admin.users.off')}</span>}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{u.flightCount}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{u.aircraftCount}</td>
-                  <td className="px-4 py-3 text-xs text-slate-400">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : '\u2014'}</td>
+                  <td className="px-4 py-3 text-xs text-slate-400">{u.lastLoginAt ? fmtDate(u.lastLoginAt) : '—'}</td>
                   <td className="px-4 py-3"><div className="flex gap-1 flex-wrap">
                     {u.disabled
                       ? <button onClick={() => setConfirmAction({ type: 'enable', user: u })} className="btn-ghost btn-sm text-xs text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" title="Enable account"><CheckCircle className="w-3.5 h-3.5" /></button>
@@ -209,6 +211,7 @@ function UsersTab() {
 
 function AuditLogTab() {
   const { t } = useTranslation('common');
+  const { fmtDateTime } = useFormatPrefs();
   const [page, setPage] = useState(1);
   const { data, isLoading } = useAdminAuditLog(page, 20);
 
@@ -223,10 +226,10 @@ function AuditLogTab() {
             <th className="px-4 py-3 font-medium text-slate-500">{t('admin.audit.targetUser')}</th>
           </tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">Loading...</td></tr>}
+            {isLoading && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">{t('common:loading')}</td></tr>}
             {data?.data?.map((entry) => (
               <tr key={entry.id} className="border-b border-slate-100 dark:border-slate-800">
-                <td className="px-4 py-3 text-xs text-slate-500">{new Date(entry.createdAt).toLocaleString()}</td>
+                <td className="px-4 py-3 text-xs text-slate-500">{fmtDateTime(entry.createdAt)}</td>
                 <td className="px-4 py-3"><span className="badge badge-current text-xs">{entry.action}</span></td>
                 <td className="px-4 py-3 text-xs text-slate-400 font-mono">{entry.adminUserId.slice(0, 8)}...</td>
                 <td className="px-4 py-3 text-xs text-slate-400 font-mono">{entry.targetUserId ? `${entry.targetUserId.slice(0, 8)}...` : '\u2014'}</td>
@@ -240,8 +243,8 @@ function AuditLogTab() {
         <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
           <span className="text-xs text-slate-400">Page {data.pagination.page} of {data.pagination.totalPages}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="btn-secondary btn-sm text-xs">Previous</button>
-            <button disabled={page >= data.pagination.totalPages} onClick={() => setPage(p => p + 1)} className="btn-secondary btn-sm text-xs">Next</button>
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="btn-secondary btn-sm text-xs">{t('admin.users.previous')}</button>
+            <button disabled={page >= data.pagination.totalPages} onClick={() => setPage(p => p + 1)} className="btn-secondary btn-sm text-xs">{t('admin.users.next')}</button>
           </div>
         </div>)}
     </div>
@@ -301,24 +304,24 @@ function ConfigTab() {
   if (!data) return null;
 
   const rows: { label: string; value: React.ReactNode }[] = [
-    { label: 'Go Version', value: data.goVersion },
-    { label: 'Server Uptime', value: data.serverUptime },
-    { label: 'Migration Version', value: data.migrationVersion },
-    { label: 'Airport Database', value: `${data.airportDatabaseSize.toLocaleString()} airports` },
-    { label: 'CORS Origins', value: data.corsOrigins.join(', ') },
-    { label: 'Rate Limit (Auth)', value: data.rateLimitAuth },
-    { label: 'Rate Limit (Admin)', value: data.rateLimitAdmin },
+    { label: t('admin.config.goVersion'), value: data.goVersion },
+    { label: t('admin.config.serverUptime'), value: data.serverUptime },
+    { label: t('admin.config.migrationVersion'), value: data.migrationVersion },
+    { label: t('admin.config.airportDatabase'), value: `${data.airportDatabaseSize.toLocaleString()} airports` },
+    { label: t('admin.config.corsOrigins'), value: data.corsOrigins.join(', ') },
+    { label: t('admin.config.rateLimitAuth'), value: data.rateLimitAuth },
+    { label: t('admin.config.rateLimitAdmin'), value: data.rateLimitAdmin },
     {
-      label: 'SMTP',
+      label: t('admin.config.smtp'),
       value: data.smtpConfigured
-        ? <span className="text-green-600 dark:text-green-400 font-medium">Configured</span>
-        : <span className="text-amber-600 dark:text-amber-400 font-medium">Not configured</span>,
+        ? <span className="text-green-600 dark:text-green-400 font-medium">{t('admin.config.configured')}</span>
+        : <span className="text-amber-600 dark:text-amber-400 font-medium">{t('admin.config.notConfigured')}</span>,
     },
     {
-      label: 'Admin Email',
+      label: t('admin.config.adminEmail'),
       value: data.adminEmailConfigured
-        ? <span className="text-green-600 dark:text-green-400 font-medium">Configured</span>
-        : <span className="text-amber-600 dark:text-amber-400 font-medium">Not configured</span>,
+        ? <span className="text-green-600 dark:text-green-400 font-medium">{t('admin.config.configured')}</span>
+        : <span className="text-amber-600 dark:text-amber-400 font-medium">{t('admin.config.notConfigured')}</span>,
     },
   ];
 
@@ -340,6 +343,7 @@ function ConfigTab() {
 
 function AnnouncementsTab() {
   const { t } = useTranslation('common');
+  const { fmtDateTime } = useFormatPrefs();
   const { data, isLoading } = useAnnouncements();
   const createAnnouncement = useCreateAnnouncement();
   const deleteAnnouncement = useDeleteAnnouncement();
@@ -416,7 +420,7 @@ function AnnouncementsTab() {
               <div key={a.id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
                 <span className={`badge text-xs ${sc?.color || 'bg-slate-100 text-slate-700'}`}>{a.severity}</span>
                 <span className="flex-1 text-sm text-slate-700 dark:text-slate-300">{a.message}</span>
-                {a.expiresAt && <span className="text-xs text-slate-400">expires {new Date(a.expiresAt).toLocaleString()}</span>}
+                {a.expiresAt && <span className="text-xs text-slate-400">{t('admin.announcements.expires')} {fmtDateTime(a.expiresAt)}</span>}
                 <button onClick={() => handleDelete(a.id)} className="btn-ghost btn-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" title="Delete"><Trash2 className="w-4 h-4" /></button>
               </div>
             );

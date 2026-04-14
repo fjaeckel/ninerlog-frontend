@@ -165,7 +165,18 @@
     "config": {
       "title": "Runtime Configuration",
       "subtitle": "Non-secret server configuration. Secrets are never exposed.",
-      "loadingConfig": "Loading configuration..."
+      "loadingConfig": "Loading configuration...",
+      "goVersion": "Go Version",
+      "serverUptime": "Server Uptime",
+      "migrationVersion": "Migration Version",
+      "airportDatabase": "Airport Database",
+      "corsOrigins": "CORS Origins",
+      "rateLimitAuth": "Rate Limit (Auth)",
+      "rateLimitAdmin": "Rate Limit (Admin)",
+      "smtp": "SMTP",
+      "adminEmail": "Admin Email",
+      "configured": "Configured",
+      "notConfigured": "Not configured"
     },
     "announcements": {
       "createTitle": "Create Announcement",
@@ -178,7 +189,8 @@
       "publish": "Publish Announcement",
       "creating": "Creating...",
       "activeTitle": "Active Announcements",
-      "noAnnouncements": "No active announcements."
+      "noAnnouncements": "No active announcements.",
+      "expires": "Expires"
     }
   }
 }

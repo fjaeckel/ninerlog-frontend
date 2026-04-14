@@ -136,5 +136,18 @@
   "language": {
     "title": "Sprache",
     "description": "Wählen Sie Ihre bevorzugte Sprache für die Benutzeroberfläche."
+  },
+  "dateFormat": {
+    "title": "Datumsformat",
+    "description": "Wählen Sie, wie Datumsangaben in der App angezeigt werden.",
+    "european": "Europäisch",
+    "us": "US-Format",
+    "iso": "ISO 8601"
+  },
+  "decimalSeparator": {
+    "title": "Dezimaltrennzeichen",
+    "description": "Wählen Sie das Dezimaltrennzeichen für Zahlenformatierung (z.B. Dezimalstunden).",
+    "comma": "Komma (1,5h)",
+    "dot": "Punkt (1.5h)"
   }
 }

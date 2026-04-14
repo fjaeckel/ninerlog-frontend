@@ -52,5 +52,20 @@
     "OTHER": "Sonstige"
   },
   "expiresLabel": "Gültig bis: {{date}}",
-  "launchesCount": "{{current}} / {{required}} Starts"
+  "launchesCount": "{{current}} / {{required}} Starts",
+  "ruleDescriptions": {
+    "easa_sep_tmg": "Erfordert 12h Gesamtflugzeit + 6h als PIC + 12 Starts & Landungen + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum der Berechtigung (EASA FCL.740.A(b)(1))",
+    "easa_mep_set": "Erfordert Befähigungsüberprüfung oder 10 Streckenabschnitte + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum (EASA FCL.740.A(b)(2))",
+    "easa_ir": "Erfordert 10h IFR-Flugzeit + jährliche Befähigungsüberprüfung innerhalb der 12 Monate vor dem Ablaufdatum (EASA FCL.625.A)",
+    "easa_lapl": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer in den letzten 24 Monaten (EASA FCL.140.A)",
+    "easa_spl": "Erfordert 5h PIC-Flugzeit + 15 Starts + 2 Übungsflüge mit Fluglehrer in den letzten 24 Monaten (EASA FCL.140.S)",
+    "easa_spl_tmg": "Erfordert 12h Flugzeit + 12 Starts & Landungen auf TMG in den letzten 24 Monaten (EASA FCL.140.S(b)(2))",
+    "easa_pax": "3 Starts & Landungen in gleicher Muster/Klasse in den vorangegangenen 90 Tagen für Passagiermitnahme (EASA FCL.060(b))",
+    "faa_pax_day_night": "3 Starts & Landungen in 90 Tagen für Tag-Passagiergültigkeit; 3 Voll-Stop-Nachtlandungen in 90 Tagen für Nacht-Passagiergültigkeit (14 CFR 61.57(a)/(b))",
+    "faa_ir": "Erfordert 6 Instrumentenanflüge + Warteverfahren innerhalb der vorangegangenen 6 Kalendermonate (14 CFR 61.57(c))",
+    "faa_glider": "Erfordert 3 Starts & Landungen in den vorangegangenen 90 Tagen (14 CFR 61.57(a))",
+    "faa_flight_review": "Flugüberprüfung alle 24 Kalendermonate erforderlich (14 CFR 61.56)",
+    "ul_luftpersv": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer in 24 Monaten (LuftPersV §45)",
+    "ul_pax": "Passagierberechtigung erforderlich — 3 Starts & Landungen in 90 Tagen"
+  }
 }

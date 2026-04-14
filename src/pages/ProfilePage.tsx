@@ -188,6 +188,50 @@ export default function ProfilePage() {
           <LanguageSwitcher />
 
           <div className="card">
+            <h2 className="section-title mb-4">{t('dateFormat.title')}</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+              {t('dateFormat.description')}
+            </p>
+            <div className="flex gap-3">
+              {([
+                { value: 'DD.MM.YYYY' as const, label: '14.04.2026', desc: t('dateFormat.european') },
+                { value: 'MM/DD/YYYY' as const, label: '04/14/2026', desc: t('dateFormat.us') },
+                { value: 'YYYY-MM-DD' as const, label: '2026-04-14', desc: t('dateFormat.iso') },
+              ] as const).map(({ value, label, desc }) => (
+                <button
+                  key={value}
+                  onClick={async () => { try { await updateProfile.mutateAsync({ dateFormat: value } as any); updateUser({ dateFormat: value }); } catch { /* ignore */ } }}
+                  className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${(user?.dateFormat || 'DD.MM.YYYY') === value ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
+                >
+                  <p className="font-semibold text-slate-800 dark:text-slate-100">{label}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 className="section-title mb-4">{t('decimalSeparator.title')}</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+              {t('decimalSeparator.description')}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={async () => { try { await updateProfile.mutateAsync({ decimalSeparator: 'comma' } as any); updateUser({ decimalSeparator: 'comma' }); } catch { /* ignore */ } }}
+                className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${(user?.decimalSeparator || 'comma') === 'comma' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
+              >
+                <p className="font-semibold text-slate-800 dark:text-slate-100">{t('decimalSeparator.comma')}</p>
+              </button>
+              <button
+                onClick={async () => { try { await updateProfile.mutateAsync({ decimalSeparator: 'dot' } as any); updateUser({ decimalSeparator: 'dot' }); } catch { /* ignore */ } }}
+                className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${user?.decimalSeparator === 'dot' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
+              >
+                <p className="font-semibold text-slate-800 dark:text-slate-100">{t('decimalSeparator.dot')}</p>
+              </button>
+            </div>
+          </div>
+
+          <div className="card">
             <h2 className="section-title mb-4">{t('timeDisplay.title')}</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
               {t('timeDisplay.description')}
