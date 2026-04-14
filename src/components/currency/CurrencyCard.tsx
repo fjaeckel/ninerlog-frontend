@@ -36,12 +36,17 @@ const STATUS_CONFIG: Record<CurrencyStatus, {
 };
 
 function RequirementBar({ req }: { req: CurrencyRequirement }) {
+  const { fmtDuration } = useFormatPrefs();
   const pct = req.required > 0 ? Math.min((req.current / req.required) * 100, 100) : 0;
   const barColor = req.met
     ? 'bg-green-500 dark:bg-green-400'
     : pct >= 50
       ? 'bg-amber-500 dark:bg-amber-400'
       : 'bg-red-500 dark:bg-red-400';
+
+  const displayMessage = req.unit === 'minutes'
+    ? `${fmtDuration(req.current)} / ${fmtDuration(req.required)}`
+    : req.message;
 
   return (
     <div className="space-y-1" data-testid={`requirement-${req.name}`}>
@@ -50,7 +55,7 @@ function RequirementBar({ req }: { req: CurrencyRequirement }) {
           {req.met ? '✓' : '○'} {req.name}
         </span>
         <span className="text-slate-500 dark:text-slate-400">
-          {req.message}
+          {displayMessage}
         </span>
       </div>
       <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
