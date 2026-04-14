@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { HelpCircle, Plane, Award, FileText, PlaneTakeoff, Upload, Shield, BarChart3, User, ShieldCheck, BookOpen, Search, X } from 'lucide-react';
@@ -23,6 +24,7 @@ const sections = [
 ];
 
 export default function HelpPage() {
+  const { t } = useTranslation('common');
   const [searchParams] = useSearchParams();
   const topicFromUrl = searchParams.get('topic');
 
@@ -70,9 +72,9 @@ export default function HelpPage() {
       <div className="mb-6 print:hidden">
         <div className="flex items-center gap-2">
           <HelpCircle className="w-6 h-6 text-blue-600" />
-          <h1 className="page-title">Help Base</h1>
+          <h1 className="page-title">{t('help.title')}</h1>
         </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Learn how to use {APP_NAME} — guides for every feature.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('help.subtitle', { appName: APP_NAME })}</p>
       </div>
 
       {/* Search bar — hidden on print */}
@@ -83,12 +85,12 @@ export default function HelpPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search help topics..."
+            placeholder={t('help.searchPlaceholder')}
             className="input pl-10 pr-10 w-full"
-            aria-label="Search help topics"
+            aria-label={t('help.searchAriaLabel')}
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label="Clear search">
+            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label={t('help.clearSearch')}>
               <X className="w-4 h-4" />
             </button>
           )}
@@ -98,9 +100,9 @@ export default function HelpPage() {
       {/* Search results */}
       {searchResults !== null ? (
         <div className="space-y-3 print:hidden">
-          <p className="text-sm text-slate-500">{searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"</p>
+          <p className="text-sm text-slate-500">{t('help.resultCount', { count: searchResults.length, query: searchQuery })}</p>
           {searchResults.length === 0 && (
-            <div className="card text-center py-8 text-slate-400">No help topics match your search.</div>
+            <div className="card text-center py-8 text-slate-400">{t('help.noResults')}</div>
           )}
           {searchResults.map((s) => (
             <button
@@ -136,7 +138,7 @@ export default function HelpPage() {
           <div className="flex-1 min-w-0">
             {/* Mobile topic selector — hidden on print */}
             <div className="lg:hidden mb-4 print:hidden">
-              <select value={active} onChange={(e) => setActive(e.target.value)} className="input w-full" aria-label="Select help topic">
+              <select value={active} onChange={(e) => setActive(e.target.value)} className="input w-full" aria-label={t('help.selectTopic')}>
                 {sections.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
               </select>
             </div>

@@ -37,7 +37,7 @@ describe('CurrencyPage', () => {
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
     renderWithProviders(<CurrencyPage />);
-    expect(screen.getByText('Currency & Compliance')).toBeInTheDocument();
+    expect(screen.getByText('Currency & Recency')).toBeInTheDocument();
   });
 
   it('shows currency cards grouped by license', async () => {
@@ -58,7 +58,7 @@ describe('CurrencyPage', () => {
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
     renderWithProviders(<CurrencyPage />);
-    expect(screen.getByText('Flight Currency')).toBeInTheDocument();
+    expect(screen.getByText('Rating & License Currency')).toBeInTheDocument();
     expect(screen.getByText('SEP (Land)')).toBeInTheDocument();
     expect(screen.getByText('CURRENT')).toBeInTheDocument();
     expect(screen.getByText('Requires 12h total + 6h PIC...')).toBeInTheDocument();
@@ -135,9 +135,9 @@ describe('CurrencyPage', () => {
     } as any);
 
     renderWithProviders(<CurrencyPage />);
-    expect(screen.getByText('Credentials & Medicals')).toBeInTheDocument();
+    expect(screen.getByText('Credentials')).toBeInTheDocument();
     expect(screen.getByText('EASA CLASS2 MEDICAL')).toBeInTheDocument();
-    expect(screen.getByText('EXPIRING')).toBeInTheDocument();
+    expect(screen.getByText('Expiring Soon')).toBeInTheDocument();
     expect(screen.getByText(/EASA Class 2 Medical/)).toBeInTheDocument();
   });
 
@@ -158,7 +158,7 @@ describe('CurrencyPage', () => {
     } as any);
 
     renderWithProviders(<CurrencyPage />);
-    expect(screen.getByText('VALID')).toBeInTheDocument();
+    expect(screen.getByText('Valid')).toBeInTheDocument();
   });
 
   it('shows empty state when no class ratings', () => {
@@ -175,7 +175,7 @@ describe('CurrencyPage', () => {
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: undefined, isLoading: true, error: null } as any);
 
     renderWithProviders(<CurrencyPage />);
-    expect(screen.getByText('Loading currency data...')).toBeInTheDocument();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
   it('counts alerts from both ratings and credentials', () => {
@@ -222,7 +222,7 @@ describe('CurrencyPage', () => {
     renderWithProviders(<CurrencyPage />);
     expect(screen.getByText('Passenger Currency')).toBeInTheDocument();
     expect(screen.getByTestId('passenger-currency-SEP_LAND')).toBeInTheDocument();
-    expect(screen.getByText('DAY ONLY')).toBeInTheDocument();
+    expect(screen.getByText('Day Only')).toBeInTheDocument();
     expect(screen.getByText(/FCL.060/)).toBeInTheDocument();
   });
 
@@ -248,7 +248,7 @@ describe('CurrencyPage', () => {
     expect(screen.getByTestId('passenger-currency-section')).toBeInTheDocument();
     // The badge should say CURRENT
     const paxCard = screen.getByTestId('passenger-currency-SEP_LAND');
-    expect(paxCard).toHaveTextContent('CURRENT');
+    expect(paxCard).toHaveTextContent('Current');
   });
 
   it('hides passenger currency section when empty', () => {
@@ -288,7 +288,7 @@ describe('CurrencyPage', () => {
 
     renderWithProviders(<CurrencyPage />);
     // Both sections should be visible
-    expect(screen.getByText('Flight Currency')).toBeInTheDocument();
+    expect(screen.getByText('Rating & License Currency')).toBeInTheDocument();
     expect(screen.getByText('Passenger Currency')).toBeInTheDocument();
   });
 
@@ -311,7 +311,7 @@ describe('CurrencyPage', () => {
     renderWithProviders(<CurrencyPage />);
     expect(screen.getByTestId('flight-review-card')).toBeInTheDocument();
     expect(screen.getByText(/Flight Review/)).toBeInTheDocument();
-    expect(screen.getByText('CURRENT')).toBeInTheDocument();
+    expect(screen.getByText('Current')).toBeInTheDocument();
     expect(screen.getByTestId('flight-review-card')).toHaveTextContent('2025-06-15');
   });
 
@@ -331,7 +331,7 @@ describe('CurrencyPage', () => {
 
     renderWithProviders(<CurrencyPage />);
     expect(screen.getByTestId('flight-review-card')).toBeInTheDocument();
-    expect(screen.getByText('EXPIRED')).toBeInTheDocument();
+    expect(screen.getByText('Expired')).toBeInTheDocument();
   });
 
   it('does not show flight review card for EASA pilots', () => {
@@ -373,7 +373,7 @@ describe('CurrencyPage', () => {
     renderWithProviders(<CurrencyPage />);
     expect(screen.getByTestId('passenger-currency-SEP_LAND')).toBeInTheDocument();
     expect(screen.getByTestId('night-not-applicable')).toBeInTheDocument();
-    expect(screen.getByText('CURRENT')).toBeInTheDocument();
+    expect(screen.getByText('Current')).toBeInTheDocument();
   });
 
   it('shows night currency bar when nightPrivilege is true (PPL)', () => {
@@ -398,7 +398,7 @@ describe('CurrencyPage', () => {
     renderWithProviders(<CurrencyPage />);
     expect(screen.getByTestId('passenger-currency-SEP_LAND')).toBeInTheDocument();
     expect(screen.queryByTestId('night-not-applicable')).not.toBeInTheDocument();
-    expect(screen.getByText('DAY ONLY')).toBeInTheDocument();
+    expect(screen.getByText('Day Only')).toBeInTheDocument();
   });
 
   it('shows passenger privilege badge when present', () => {

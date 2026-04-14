@@ -1,5 +1,11 @@
 {
   "title": "Profil & Einstellungen",
+  "tabs": {
+    "preferences": "Einstellungen",
+    "account": "Konto",
+    "notifications": "Benachrichtigungen",
+    "data": "Daten & Sicherheit"
+  },
   "timeDisplay": {
     "title": "Zeitanzeige",
     "description": "Wählen Sie, wie Flugzeiten in der App angezeigt werden.",
@@ -16,7 +22,10 @@
     "saveChanges": "Änderungen speichern",
     "updateSuccess": "Profil erfolgreich aktualisiert.",
     "emailInUse": "Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet.",
-    "updateFailed": "Profil konnte nicht aktualisiert werden."
+    "updateFailed": "Profil konnte nicht aktualisiert werden.",
+    "nameRequired": "Name ist erforderlich.",
+    "nameTooLong": "Name darf maximal 255 Zeichen lang sein.",
+    "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein."
   },
   "changePassword": {
     "title": "Passwort ändern",

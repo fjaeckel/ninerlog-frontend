@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLicenses, useDeleteLicense } from '../../hooks/useLicenses';
 import LicenseForm from '../../components/licenses/LicenseForm';
 import LicenseCard from '../../components/licenses/LicenseCard';
@@ -11,6 +12,7 @@ export default function LicensesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingLicense, setEditingLicense] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const { t } = useTranslation('licenses');
 
   const handleDelete = async (id: string) => {
     setDeleteTarget(id);
@@ -57,8 +59,8 @@ export default function LicensesPage() {
       <div className="mx-auto max-w-[960px] py-6">
         <div className="card text-center py-12">
           <div className="text-4xl mb-3">⚠</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Something went wrong</h2>
-          <p className="text-slate-500 dark:text-slate-400">Error loading licenses. Please try again.</p>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('error')}</h2>
+          <p className="text-slate-500 dark:text-slate-400">{t('errorLoading')}</p>
         </div>
       </div>
     );
@@ -68,11 +70,11 @@ export default function LicensesPage() {
     <div className="mx-auto max-w-[960px] py-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <h1 className="page-title">My Licenses</h1>
+          <h1 className="page-title">{t('title')}</h1>
           <HelpLink topic="licenses" />
         </div>
         <button onClick={() => setShowForm(true)} className="btn-primary">
-          + Add License
+          {t('addLicense')}
         </button>
       </div>
 
@@ -83,7 +85,7 @@ export default function LicensesPage() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 id="license-form-title" className="text-xl font-semibold text-slate-800 dark:text-slate-100">
-                  {editingLicense ? 'Edit License' : 'Add License'}
+                  {editingLicense ? t('editLicense') : t('addLicense')}
                 </h2>
                 <button
                   onClick={handleCloseForm}
@@ -102,12 +104,12 @@ export default function LicensesPage() {
       {licenses && licenses.length === 0 ? (
         <div className="card text-center py-12">
           <div className="text-5xl mb-4">🏅</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Add your first license</h2>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('addFirst')}</h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-            Get started by adding your pilot license to track flights and currency.
+            {t('noLicenses')}
           </p>
           <button onClick={() => setShowForm(true)} className="btn-primary">
-            + Add License
+            {t('addLicense')}
           </button>
         </div>
       ) : (
@@ -127,9 +129,9 @@ export default function LicensesPage() {
         open={!!deleteTarget}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        title="Delete license?"
-        description="This license and its associated flight data references will be permanently removed. This action cannot be undone."
-        confirmLabel="Delete License"
+        title={t('deleteLicense')}
+        description={t('deleteConfirm')}
+        confirmLabel={t('deleteLicense')}
         variant="danger"
         isLoading={deleteLicense.isPending}
       />    </div>

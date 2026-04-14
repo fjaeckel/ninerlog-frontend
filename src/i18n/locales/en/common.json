@@ -65,5 +65,108 @@
     "areYouSure": "Are you sure?",
     "cannotBeUndone": "This action cannot be undone.",
     "typeToConfirm": "Type '{{word}}' to confirm"
+  },
+  "help": {
+    "title": "Help Base",
+    "subtitle": "Learn how to use {{appName}} — guides for every feature.",
+    "searchPlaceholder": "Search help topics...",
+    "searchAriaLabel": "Search help topics",
+    "clearSearch": "Clear search",
+    "resultCount_one": "{{count}} result for \"{{query}}\"",
+    "resultCount_other": "{{count}} results for \"{{query}}\"",
+    "noResults": "No help topics match your search.",
+    "selectTopic": "Select help topic"
+  },
+  "admin": {
+    "title": "Admin Console",
+    "subtitle": "Platform management — privacy-preserving.",
+    "accessDenied": "Access Denied",
+    "noPrivileges": "You do not have admin privileges.",
+    "tabs": {
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "auditLog": "Audit Log",
+      "maintenance": "Maintenance",
+      "announcements": "Announcements",
+      "config": "Config"
+    },
+    "dashboard": {
+      "loadingStats": "Loading stats...",
+      "totalUsers": "Total Users",
+      "totalFlights": "Total Flights",
+      "totalAircraft": "Total Aircraft",
+      "totalCredentials": "Total Credentials",
+      "totalImports": "Total Imports",
+      "flightsThisMonth": "Flights This Month",
+      "newUsersWeek": "New Users (7d)",
+      "lockedAccounts": "Locked Accounts",
+      "disabledAccounts": "Disabled Accounts"
+    },
+    "users": {
+      "searchPlaceholder": "Search by email or name...",
+      "searchAriaLabel": "Search users",
+      "search": "Search",
+      "clear": "Clear",
+      "user": "User",
+      "status": "Status",
+      "twoFA": "2FA",
+      "flights": "Flights",
+      "aircraft": "Aircraft",
+      "lastLogin": "Last Login",
+      "actions": "Actions",
+      "disabled": "Disabled",
+      "locked": "Locked",
+      "active": "Active",
+      "enabled": "Enabled",
+      "off": "Off",
+      "noUsers": "No users found",
+      "previous": "Previous",
+      "next": "Next",
+      "confirmAction": "Confirm: {{action}} User",
+      "disableConfirm": "Disable account for {{email}}? They will not be able to log in.",
+      "enableConfirm": "Re-enable account for {{email}}?",
+      "unlockConfirm": "Unlock account for {{email}}?",
+      "reset2faConfirm": "Reset 2FA for {{email}}?",
+      "auditTrailNote": "This action will be logged to the admin audit trail.",
+      "disable": "Disable",
+      "enable": "Enable",
+      "unlock": "Unlock",
+      "reset2fa": "Reset 2FA"
+    },
+    "audit": {
+      "timestamp": "Timestamp",
+      "action": "Action",
+      "admin": "Admin",
+      "targetUser": "Target User",
+      "noEntries": "No audit log entries"
+    },
+    "maintenance": {
+      "tokenCleanup": "Token Cleanup",
+      "tokenCleanupDesc": "Delete expired and revoked refresh tokens and used password reset tokens from the database.",
+      "cleanUpButton": "Clean Up Expired Tokens",
+      "cleaning": "Cleaning...",
+      "smtpTest": "SMTP Test",
+      "smtpTestDesc": "Send a test email to your admin email address to verify SMTP configuration is working.",
+      "sendTestEmail": "Send Test Email",
+      "sending": "Sending..."
+    },
+    "config": {
+      "title": "Runtime Configuration",
+      "subtitle": "Non-secret server configuration. Secrets are never exposed.",
+      "loadingConfig": "Loading configuration..."
+    },
+    "announcements": {
+      "createTitle": "Create Announcement",
+      "createDesc": "Announcements appear as banners for all users. Auto-hints (2FA, first flight) are system-generated.",
+      "message": "Message",
+      "messagePlaceholder": "e.g. Scheduled maintenance on Tuesday at 8pm UTC",
+      "severity": "Severity",
+      "expireAfter": "Auto-expire after (hours)",
+      "expirePlaceholder": "Leave empty for permanent",
+      "publish": "Publish Announcement",
+      "creating": "Creating...",
+      "activeTitle": "Active Announcements",
+      "noAnnouncements": "No active announcements."
+    }
   }
 }

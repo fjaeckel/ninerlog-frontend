@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import { useLicenses } from '../hooks/useLicenses';
 import { useFlights } from '../hooks/useFlights';
@@ -14,6 +15,7 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const { data: licenses } = useLicenses();
   const navigate = useNavigate();
+  const { t } = useTranslation(['dashboard', 'common']);
 
   // Use the first license for statistics (per-license endpoint still works)
   const firstLicense = licenses?.[0];
@@ -35,7 +37,7 @@ export default function DashboardPage() {
 
   // Greeting based on time of day
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const greeting = hour < 12 ? t('dashboard:greeting.morning') : hour < 18 ? t('dashboard:greeting.afternoon') : t('dashboard:greeting.evening');
 
   return (
     <div className="mx-auto max-w-[1280px] py-6">
@@ -46,7 +48,7 @@ export default function DashboardPage() {
           onClick={() => navigate('/flights', { state: { openForm: true } })}
           className="btn-primary hidden sm:inline-flex"
         >
-          + Log Flight
+          {t('dashboard:logFlight')}
         </button>
       </div>
 
@@ -55,7 +57,7 @@ export default function DashboardPage() {
         <div className="mb-6" data-testid="currency-section">
           <h2 className="section-title mb-3 flex items-center gap-2">
             <span>🛡</span>
-            Flight Currency
+            {t('dashboard:flightCurrency')}
           </h2>
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             {currencyStatus.ratings.map((rating) => (
@@ -92,7 +94,7 @@ export default function DashboardPage() {
                   <span className={isExpired ? 'text-red-800 dark:text-red-300' : 'text-amber-800 dark:text-amber-300'}>
                     {isExpired ? '⚠ ' : '⏰ '}
                     <strong>{cred.credentialType.replace(/_/g, ' ')}</strong>
-                    {isExpired ? ` expired ${Math.abs(days)} days ago` : ` expires in ${days} days`}
+                    {' '}{isExpired ? t('dashboard:credentialAlert.expired', { days: Math.abs(days) }) : t('dashboard:credentialAlert.expiresSoon', { days })}
                   </span>
                   <span className="text-xs opacity-60">View →</span>
                 </div>
@@ -104,28 +106,28 @@ export default function DashboardPage() {
 
       {/* Stats grid */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
-        <StatCard label="Total Time" value={statistics ? formatDuration(statistics.totalMinutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm') : '0h 0m'} />
-        <StatCard label="PIC Time" value={statistics ? formatDuration(statistics.picMinutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm') : '0h 0m'} />
-        <StatCard label="Total Flights" value={String(statistics?.totalFlights ?? totalFlights)} />
+        <StatCard label={t('dashboard:stats.totalTime')} value={statistics ? formatDuration(statistics.totalMinutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm') : '0h 0m'} />
+        <StatCard label={t('dashboard:stats.picTime')} value={statistics ? formatDuration(statistics.picMinutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm') : '0h 0m'} />
+        <StatCard label={t('dashboard:stats.totalFlights')} value={String(statistics?.totalFlights ?? totalFlights)} />
         <StatCard
-          label="Landings"
+          label={t('dashboard:stats.landings')}
           value={String((statistics?.landingsDay ?? 0) + (statistics?.landingsNight ?? 0))}
-          detail={`${statistics?.landingsDay ?? 0} day / ${statistics?.landingsNight ?? 0} night`}
+          detail={`${statistics?.landingsDay ?? 0} ${t('dashboard:stats.day')} / ${statistics?.landingsNight ?? 0} ${t('dashboard:stats.night')}`}
         />
       </div>
 
       {/* Hours breakdown */}
       {statistics && statistics.totalMinutes > 0 && (
         <div className="card mb-6">
-          <h2 className="section-title mb-4">Block Time Breakdown</h2>
+          <h2 className="section-title mb-4">{t('dashboard:blockTimeBreakdown')}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             {[
-              { label: 'PIC', value: statistics.picMinutes },
-              { label: 'Dual', value: statistics.dualMinutes },
-              { label: 'Solo', value: statistics.soloMinutes ?? 0 },
-              { label: 'Cross-Country', value: statistics.crossCountryMinutes ?? 0 },
-              { label: 'Night', value: statistics.nightMinutes },
-              { label: 'IFR', value: statistics.ifrMinutes },
+              { label: t('dashboard:breakdownLabels.pic'), value: statistics.picMinutes },
+              { label: t('dashboard:breakdownLabels.dual'), value: statistics.dualMinutes },
+              { label: t('dashboard:breakdownLabels.solo'), value: statistics.soloMinutes ?? 0 },
+              { label: t('dashboard:breakdownLabels.crossCountry'), value: statistics.crossCountryMinutes ?? 0 },
+              { label: t('dashboard:breakdownLabels.night'), value: statistics.nightMinutes },
+              { label: t('dashboard:breakdownLabels.ifr'), value: statistics.ifrMinutes },
             ].map(({ label, value }) => (
               <div key={label}>
                 <p className="data-lg text-slate-800 dark:text-slate-100">{formatDuration(value, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')}</p>
@@ -139,22 +141,17 @@ export default function DashboardPage() {
       {/* Time by Aircraft Class */}
       {classStat && classStat.byClass.length > 0 && (
         <div className="card mb-6">
-          <h2 className="section-title mb-4">Time by Aircraft Class</h2>
+          <h2 className="section-title mb-4">{t('dashboard:timeByClass')}</h2>
           <div className="space-y-2">
             {classStat.byClass.map((cs) => {
               const maxMinutes = Math.max(...classStat.byClass.map((c) => c.minutes), 1);
               const pct = (cs.minutes / maxMinutes) * 100;
-              const classLabels: Record<string, string> = {
-                SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
-                MEP_LAND: 'MEP (Land)', MEP_SEA: 'MEP (Sea)',
-                SET_LAND: 'SET (Land)', SET_SEA: 'SET (Sea)',
-                TMG: 'TMG', IR: 'IR', Unclassified: 'Unclassified',
-              };
+              const classLabel = t(`dashboard:classLabels.${cs.class}`, { defaultValue: cs.class });
               return (
                 <div key={cs.class} data-testid={`class-stat-${cs.class}`}>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-slate-700 dark:text-slate-300">{classLabels[cs.class] || cs.class}</span>
-                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{formatDuration(cs.minutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')} · {cs.flights} flights · {cs.landings} ldg</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{classLabel}</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{formatDuration(cs.minutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')} · {cs.flights} {t('common:flights')} · {cs.landings} {t('common:ldg')}</span>
                   </div>
                   <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 dark:bg-blue-400 rounded-full" style={{ width: `${pct}%` }} />
@@ -169,13 +166,13 @@ export default function DashboardPage() {
       {/* Time by Authority */}
       {classStat && classStat.byAuthority.length > 0 && (
         <div className="card mb-6">
-          <h2 className="section-title mb-4">Time by Authority</h2>
+          <h2 className="section-title mb-4">{t('dashboard:timeByAuthority')}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {classStat.byAuthority.map((auth) => (
               <div key={`${auth.authority}-${auth.licenseType}`} className="text-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                 <p className="data-lg text-slate-800 dark:text-slate-100">{formatDuration(auth.minutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{auth.authority} {auth.licenseType}</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 font-mono tabular-nums">{auth.flights} flights</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-mono tabular-nums">{auth.flights} {t('common:flights')}</p>
               </div>
             ))}
           </div>
@@ -185,7 +182,7 @@ export default function DashboardPage() {
       {/* Recent Flights */}
       <div className="card mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="section-title">Recent Flights</h2>
+          <h2 className="section-title">{t('dashboard:recentFlights')}</h2>
           {totalFlights > 0 && (
             <button
               onClick={() => navigate('/flights')}
@@ -219,12 +216,12 @@ export default function DashboardPage() {
         ) : (
           <div className="text-center py-8">
             <div className="text-4xl mb-3">✈</div>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">No flights logged yet</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">{t('dashboard:noFlights')}</p>
             <button
               onClick={() => navigate('/flights', { state: { openForm: true } })}
               className="btn-primary"
             >
-              Log Your First Flight
+              {t('dashboard:logFirstFlight')}
             </button>
           </div>
         )}

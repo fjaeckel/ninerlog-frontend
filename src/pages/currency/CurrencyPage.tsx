@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAllCurrencyStatus } from '../../hooks/useCurrency';
 import { useCredentials } from '../../hooks/useCredentials';
 import { useLicenses } from '../../hooks/useLicenses';
@@ -34,6 +35,7 @@ export default function CurrencyPage() {
   const { data: credentials, isLoading: credentialsLoading } = useCredentials();
   const { data: licenses } = useLicenses();
   const [expandedLicenses, setExpandedLicenses] = useState<Record<string, boolean>>({});
+  const { t } = useTranslation('currency');
 
   const toggleLicense = (licenseId: string) => {
     setExpandedLicenses((prev) => ({ ...prev, [licenseId]: !prev[licenseId] }));
@@ -69,28 +71,28 @@ export default function CurrencyPage() {
         <div>
           <h1 className="page-title flex items-center gap-2">
             {totalAlerts > 0 ? <ShieldAlert className="w-6 h-6 text-amber-500" /> : <ShieldCheck className="w-6 h-6 text-green-500" />}
-            Currency & Compliance
+            {t('title')}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-            Track your flight currency, class rating validity, and credential status
+            {t('subtitle')}
             <HelpLink topic="currency" />
           </p>
         </div>
         {totalAlerts > 0 && (
           <span className="badge-expiring">
-            {totalAlerts} alert{totalAlerts !== 1 ? 's' : ''}
+            {t('alerts', { count: totalAlerts })}
           </span>
         )}
       </div>
 
       {isLoading && (
-        <div className="text-center py-12 text-slate-400 dark:text-slate-500">Loading currency data...</div>
+        <div className="text-center py-12 text-slate-400 dark:text-slate-500">{t('loading')}</div>
       )}
 
       {/* Class Rating Currency — grouped by license */}
       {!isLoading && currencyStatus && (
         <div className="mb-8">
-          <h2 className="section-title mb-4">Flight Currency</h2>
+          <h2 className="section-title mb-4">{t('ratingCurrency')}</h2>
 
           {/* FAA Flight Review (§61.56) — per-pilot, shown at top of Tier 1 */}
           {currencyStatus.flightReview && (
@@ -104,15 +106,14 @@ export default function CurrencyPage() {
             >
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100">
-                  ✈️ Flight Review (14 CFR 61.56)
+                  ✈️ {t('flightReview')}
                 </h3>
                 <span className={
                   currencyStatus.flightReview.status === 'current' ? 'badge-current' :
                   currencyStatus.flightReview.status === 'expiring' ? 'badge-expiring' :
                   'badge-expired'
                 }>
-                  {currencyStatus.flightReview.status === 'current' ? 'CURRENT' :
-                   currencyStatus.flightReview.status === 'expiring' ? 'EXPIRING' : 'EXPIRED'}
+                  {t(`status.${currencyStatus.flightReview.status}`)}
                 </span>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-300">{currencyStatus.flightReview.message}</p>
@@ -128,7 +129,7 @@ export default function CurrencyPage() {
           {Object.keys(ratingsByLicense).length === 0 && (
             <div className="card text-center py-8">
               <p className="text-slate-500 dark:text-slate-400 text-sm">
-                No class ratings found. Add class ratings to your licenses to track currency.
+                {t('noRatings')}
               </p>
             </div>
           )}
@@ -178,9 +179,9 @@ export default function CurrencyPage() {
       {/* Tier 2: Passenger Currency */}
       {!isLoading && currencyStatus && currencyStatus.passengerCurrency && currencyStatus.passengerCurrency.length > 0 && (
         <div className="mb-8" data-testid="passenger-currency-section">
-          <h2 className="section-title mb-4">Passenger Currency</h2>
+          <h2 className="section-title mb-4">{t('passengerCurrency')}</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-            Separate from rating validity — determines whether you can carry passengers (rolling 90-day recency)
+            {t('passengerCurrencyDesc')}
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             {currencyStatus.passengerCurrency.map((pax: PassengerCurrencyType) => {
@@ -202,7 +203,7 @@ export default function CurrencyPage() {
                       <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1">({pax.regulatoryAuthority})</span>
                     </h3>
                     <span className={allOk ? 'badge-current' : dayOk ? 'badge-expiring' : 'badge-expired'}>
-                      {allOk ? 'CURRENT' : dayOk && hasNight ? 'DAY ONLY' : dayOk ? 'CURRENT' : 'NOT CURRENT'}
+                      {allOk ? t('status.current') : dayOk && hasNight ? t('status.dayOnly') : dayOk ? t('status.current') : t('status.notCurrent')}
                     </span>
                   </div>
                   {/* Day currency bar */}
@@ -243,7 +244,7 @@ export default function CurrencyPage() {
                   )}
                   {!hasNight && (
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1" data-testid="night-not-applicable">
-                      Night flying not applicable for this license type
+                      {t('nightNotApplicable')}
                     </p>
                   )}
                   {/* Passenger privilege badge (LAPL, SPL, UL) */}
@@ -266,7 +267,7 @@ export default function CurrencyPage() {
       {/* Credentials Section */}
       {!isLoading && credentials && credentials.length > 0 && (
         <div className="mb-8">
-          <h2 className="section-title mb-4">Credentials & Medicals</h2>
+          <h2 className="section-title mb-4">{t('credentials')}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {credentials.map((cred) => {
               const expired = cred.expiryDate ? isPast(new Date(cred.expiryDate)) : false;
@@ -280,10 +281,10 @@ export default function CurrencyPage() {
                   : 'border-l-green-500 bg-green-50 dark:bg-green-900/20';
 
               const statusBadge = expired
-                ? { text: 'EXPIRED', cls: 'badge-expired' }
+                ? { text: t('status.expired'), cls: 'badge-expired' }
                 : expiringSoon
-                  ? { text: 'EXPIRING', cls: 'badge-expiring' }
-                  : { text: 'VALID', cls: 'badge-current' };
+                  ? { text: t('status.expiring'), cls: 'badge-expiring' }
+                  : { text: t('status.valid'), cls: 'badge-current' };
 
               const description = CREDENTIAL_DESCRIPTIONS[cred.credentialType] || cred.credentialType.replace(/_/g, ' ');
 
@@ -304,14 +305,14 @@ export default function CurrencyPage() {
                   </div>
 
                   <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                    {cred.issuingAuthority && <p>Issuing Authority: {cred.issuingAuthority}</p>}
-                    <p>Issued: {cred.issueDate}</p>
+                    {cred.issuingAuthority && <p>{t('issuingAuthority')}: {cred.issuingAuthority}</p>}
+                    <p>{t('issued')}: {cred.issueDate}</p>
                     {cred.expiryDate && (
                       <p>
-                        Expires: {format(new Date(cred.expiryDate), 'MMM dd, yyyy')}
+                        {t('expiresLabel')}: {format(new Date(cred.expiryDate), 'MMM dd, yyyy')}
                         {daysLeft !== null && (
                           <span className={`ml-1 font-medium font-mono tabular-nums ${expired ? 'text-red-600 dark:text-red-400' : expiringSoon ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
-                            ({expired ? `${Math.abs(daysLeft)}d ago` : `${daysLeft}d remaining`})
+                            ({expired ? t('expiredAgo', { days: Math.abs(daysLeft) }) : t('expiresIn', { days: daysLeft })})
                           </span>
                         )}
                       </p>
@@ -331,7 +332,7 @@ export default function CurrencyPage() {
       {!isLoading && (!credentials || credentials.length === 0) && (
         <div className="card text-center py-8 mb-8">
           <p className="text-slate-500 dark:text-slate-400 text-sm">
-            No credentials found. Add medicals and certificates from the Credentials page.
+            {t('noCredentials')}
           </p>
         </div>
       )}

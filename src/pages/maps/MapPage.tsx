@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import { useFlightRoutes, useAirportStats } from '../../hooks/useMaps';
 import { SkeletonList } from '../../components/ui/Skeleton';
@@ -19,6 +20,7 @@ function FitBounds({ positions }: { positions: [number, number][] }) {
 type MapView = 'routes' | 'heatmap';
 
 export default function MapPage() {
+  const { t } = useTranslation('reports');
   const { data: routeData, isLoading: routesLoading } = useFlightRoutes();
   const { data: airportStats, isLoading: statsLoading } = useAirportStats();
   const [view, setView] = useState<MapView>('routes');
@@ -38,8 +40,8 @@ export default function MapPage() {
     return (
       <div className="mx-auto max-w-[1280px] py-6">
         <ErrorState
-          title="Failed to load map data"
-          message="An error occurred while loading your flight routes. Please try again."
+          title={t('map.failedToLoad', 'Failed to load map data')}
+          message={t('map.failedToLoadMessage', 'An error occurred while loading your flight routes. Please try again.')}
         />
       </div>
     );
@@ -72,11 +74,11 @@ export default function MapPage() {
     <div className="mx-auto max-w-[1280px] py-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="page-title">Route Map</h1>
+          <h1 className="page-title">{t('map.title')}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             {hasData
-              ? `${routes.length} routes · ${stats.length} airports`
-              : 'Log flights with ICAO codes to see your routes'}
+              ? `${routes.length} ${t('map.routes', 'routes')} · ${stats.length} ${t('map.airports', 'airports')}`
+              : t('map.noRoutes')}
           </p>
         </div>
         <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -98,16 +100,16 @@ export default function MapPage() {
                 : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
           >
-            Activity
+            {t('map.heatmap')}
           </button>
         </div>
       </div>
 
       {!hasData ? (
         <div className="card text-center py-12">
-          <p className="text-slate-500 dark:text-slate-400 mb-2">No flight routes to display yet.</p>
+          <p className="text-slate-500 dark:text-slate-400 mb-2">{t('map.noRoutes')}</p>
           <p className="text-sm text-slate-400 dark:text-slate-500">
-            Log flights with departure and arrival ICAO codes to see your routes on the map.
+            {t('map.noRoutesHint', 'Log flights with departure and arrival ICAO codes to see your routes on the map.')}
           </p>
         </div>
       ) : (
@@ -205,7 +207,7 @@ export default function MapPage() {
       {/* Airport stats table */}
       {stats.length > 0 && (
         <div className="card mt-6">
-          <h2 className="section-title mb-4">Airport Statistics</h2>
+          <h2 className="section-title mb-4">{t('map.statistics')}</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

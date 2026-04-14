@@ -1,5 +1,9 @@
 {
   "title": "Gültigkeit & Recency",
+  "subtitle": "Ihre Flug-Recency und Gültigkeitsstatus",
+  "loading": "Laden...",
+  "alerts_one": "{{count}} Warnung",
+  "alerts_other": "{{count}} Warnungen",
   "ratingCurrency": "Berechtigungs- & Lizenz-Gültigkeit",
   "passengerCurrency": "Passagier-Gültigkeit",
   "flightReview": "Flugüberprüfung",
@@ -12,7 +16,9 @@
     "expired": "Abgelaufen",
     "notCurrent": "Nicht gültig",
     "unknown": "Unbekannt",
-    "attention": "Achtung"
+    "attention": "Achtung",
+    "valid": "Gültig",
+    "dayOnly": "Nur tagsüber"
   },
   "expiresIn": "Läuft in {{days}} Tagen ab",
   "expiredAgo": "Vor {{days}} Tagen abgelaufen",

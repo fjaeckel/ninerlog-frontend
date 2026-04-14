@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import { useUpdateProfile, useChangePassword, useDeleteAccount, useDeleteAllFlights, useDeleteAllUserData } from '../hooks/useProfile';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
@@ -11,6 +12,7 @@ import { NotificationHistory } from '../components/NotificationHistory';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 export default function ProfilePage() {
+  const { t } = useTranslation('settings');
   const { user, updateUser } = useAuthStore();
   const navigate = useNavigate();
   const updateProfile = useUpdateProfile();
@@ -67,27 +69,27 @@ export default function ProfilePage() {
     const trimmedName = name.trim();
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedName || trimmedName.length < 1) {
-      setProfileMessage('Name is required.');
+      setProfileMessage(t('profileInfo.nameRequired'));
       return;
     }
     if (trimmedName.length > 255) {
-      setProfileMessage('Name must not exceed 255 characters.');
+      setProfileMessage(t('profileInfo.nameTooLong'));
       return;
     }
     if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      setProfileMessage('Please enter a valid email address.');
+      setProfileMessage(t('profileInfo.invalidEmail'));
       return;
     }
 
     try {
       await updateProfile.mutateAsync({ name: trimmedName, email: trimmedEmail });
-      setProfileMessage('Profile updated successfully.');
+      setProfileMessage(t('profileInfo.updateSuccess'));
     } catch (err: unknown) {
       const status = extractApiStatus(err);
       if (status === 409) {
-        setProfileMessage('This email is already in use by another account.');
+        setProfileMessage(t('profileInfo.emailInUse'));
       } else {
-        setProfileMessage(extractApiError(err, 'Failed to update profile.'));
+        setProfileMessage(extractApiError(err, t('profileInfo.updateFailed')));
       }
     }
   };
@@ -97,22 +99,22 @@ export default function ProfilePage() {
     setPasswordMessage('');
 
     if (newPassword !== confirmPassword) {
-      setPasswordMessage('New passwords do not match.');
+      setPasswordMessage(t('changePassword.noMatch'));
       return;
     }
     if (newPassword.length < 12) {
-      setPasswordMessage('New password must be at least 12 characters.');
+      setPasswordMessage(t('changePassword.tooShort'));
       return;
     }
 
     try {
       await changePassword.mutateAsync({ currentPassword, newPassword });
-      setPasswordMessage('Password changed successfully.');
+      setPasswordMessage(t('changePassword.success'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch {
-      setPasswordMessage('Failed to change password. Check your current password.');
+      setPasswordMessage(t('changePassword.failed'));
     }
   };
 
@@ -122,7 +124,7 @@ export default function ProfilePage() {
       await deleteAccount.mutateAsync(deletePassword);
       navigate('/login');
     } catch {
-      setDeleteError('Failed to delete account. Check your password.');
+      setDeleteError(t('dangerZone.deleteAccountFailed'));
     }
   };
 
@@ -147,15 +149,15 @@ export default function ProfilePage() {
 
 
   const tabs = [
-    { id: 'preferences' as const, label: 'Preferences' },
-    { id: 'account' as const, label: 'Account' },
-    { id: 'notifications' as const, label: 'Notifications' },
-    { id: 'data' as const, label: 'Data & Security' },
+    { id: 'preferences' as const, label: t('tabs.preferences') },
+    { id: 'account' as const, label: t('tabs.account') },
+    { id: 'notifications' as const, label: t('tabs.notifications') },
+    { id: 'data' as const, label: t('tabs.data') },
   ];
 
   return (
     <div className="max-w-[640px] mx-auto px-4 py-8">
-      <h1 className="page-title mb-6">Profile Settings</h1>
+      <h1 className="page-title mb-6">{t('title')}</h1>
 
       {/* Tab Navigation */}
       <div className="flex border-b border-slate-200 dark:border-slate-700 mb-6 overflow-x-auto">
@@ -186,24 +188,24 @@ export default function ProfilePage() {
           <LanguageSwitcher />
 
           <div className="card">
-            <h2 className="section-title mb-4">Time Display</h2>
+            <h2 className="section-title mb-4">{t('timeDisplay.title')}</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-              Choose how flight durations are displayed throughout the app.
+              {t('timeDisplay.description')}
             </p>
             <div className="flex gap-3">
               <button
                 onClick={async () => { try { await updateProfile.mutateAsync({ timeDisplayFormat: 'hm' } as any); updateUser({ timeDisplayFormat: 'hm' }); } catch { /* ignore */ } }}
                 className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${(user?.timeDisplayFormat || 'hm') === 'hm' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
               >
-                <p className="font-semibold text-slate-800 dark:text-slate-100">1h 30m</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Hours & Minutes</p>
+                <p className="font-semibold text-slate-800 dark:text-slate-100">{t('timeDisplay.hmExample')}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('timeDisplay.hm')}</p>
               </button>
               <button
                 onClick={async () => { try { await updateProfile.mutateAsync({ timeDisplayFormat: 'decimal' } as any); updateUser({ timeDisplayFormat: 'decimal' }); } catch { /* ignore */ } }}
                 className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${user?.timeDisplayFormat === 'decimal' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
               >
-                <p className="font-semibold text-slate-800 dark:text-slate-100">1.5h</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Decimal Hours</p>
+                <p className="font-semibold text-slate-800 dark:text-slate-100">{t('timeDisplay.decimalExample')}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('timeDisplay.decimal')}</p>
               </button>
             </div>
           </div>
@@ -217,82 +219,82 @@ export default function ProfilePage() {
         <div className="space-y-6">
           {/* Profile Information */}
           <div className="card">
-            <h2 className="section-title mb-4">Profile Information</h2>
+            <h2 className="section-title mb-4">{t('profileInfo.title')}</h2>
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <div>
-                <label htmlFor="name" className="form-label">Name</label>
+                <label htmlFor="name" className="form-label">{t('profileInfo.name')}</label>
                 <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} className="input mt-1" required />
               </div>
               <div>
-                <label htmlFor="email" className="form-label">Email</label>
+                <label htmlFor="email" className="form-label">{t('profileInfo.email')}</label>
                 <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input mt-1" required />
               </div>
               {profileMessage && (
                 <p className={`text-sm ${profileMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{profileMessage}</p>
               )}
               <button type="submit" disabled={updateProfile.isPending} className="btn-primary">
-                {updateProfile.isPending ? 'Saving...' : 'Save Changes'}
+                {updateProfile.isPending ? t('profileInfo.saving') : t('profileInfo.saveChanges')}
               </button>
             </form>
           </div>
 
           {/* Change Password */}
           <div className="card">
-            <h2 className="section-title mb-4">Change Password</h2>
+            <h2 className="section-title mb-4">{t('changePassword.title')}</h2>
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div>
-                <label htmlFor="currentPassword" className="form-label">Current Password</label>
+                <label htmlFor="currentPassword" className="form-label">{t('changePassword.currentPassword')}</label>
                 <input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="input mt-1" required />
               </div>
               <div>
-                <label htmlFor="newPassword" className="form-label">New Password</label>
+                <label htmlFor="newPassword" className="form-label">{t('changePassword.newPassword')}</label>
                 <input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="input mt-1" minLength={12} required />
               </div>
               <div>
-                <label htmlFor="confirmPassword" className="form-label">Confirm New Password</label>
+                <label htmlFor="confirmPassword" className="form-label">{t('changePassword.confirmNewPassword')}</label>
                 <input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="input mt-1" minLength={12} required />
               </div>
               {passwordMessage && (
                 <p className={`text-sm ${passwordMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{passwordMessage}</p>
               )}
               <button type="submit" disabled={changePassword.isPending} className="btn-primary">
-                {changePassword.isPending ? 'Changing...' : 'Change Password'}
+                {changePassword.isPending ? t('changePassword.changing') : t('changePassword.change')}
               </button>
             </form>
           </div>
 
           {/* Two-Factor Authentication */}
           <div className="card">
-            <h2 className="section-title mb-4">Two-Factor Authentication</h2>
+            <h2 className="section-title mb-4">{t('twoFactor.title')}</h2>
             {recoveryCodes ? (
               <div className="space-y-4">
                 <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                  <p className="text-sm font-medium text-green-800 dark:text-green-300 mb-2">2FA Enabled Successfully!</p>
-                  <p className="text-xs text-green-700 dark:text-green-400 mb-3">Save these recovery codes in a safe place. Each can only be used once.</p>
+                  <p className="text-sm font-medium text-green-800 dark:text-green-300 mb-2">{t('twoFactor.enabledSuccess')}</p>
+                  <p className="text-xs text-green-700 dark:text-green-400 mb-3">{t('twoFactor.saveRecoveryCodes')}</p>
                   <div className="grid grid-cols-2 gap-1 font-mono text-sm bg-white dark:bg-slate-900 p-3 rounded border">
                     {recoveryCodes.map((code, i) => (<div key={i} className="text-slate-700 dark:text-slate-300">{code}</div>))}
                   </div>
                 </div>
-                <button onClick={() => { setRecoveryCodes(null); setTwoFASetupData(null); }} className="btn-primary w-full">I've saved my codes</button>
+                <button onClick={() => { setRecoveryCodes(null); setTwoFASetupData(null); }} className="btn-primary w-full">{t('twoFactor.savedCodes')}</button>
               </div>
             ) : twoFASetupData ? (
               <div className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">Scan the QR code with your authenticator app, then enter the 6-digit code below.</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{t('twoFactor.scanQr')}</p>
                 <div className="flex justify-center p-4 bg-white dark:bg-slate-900 rounded-lg border">
                   <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(twoFASetupData.qrUri)}`} alt="2FA QR Code" className="w-48 h-48" />
                 </div>
                 <div>
-                  <label className="form-label">Manual entry key</label>
+                  <label className="form-label">{t('twoFactor.manualKey')}</label>
                   <code className="block text-xs bg-slate-100 dark:bg-slate-800 p-2 rounded font-mono break-all select-all">{twoFASetupData.secret}</code>
                 </div>
                 <div>
-                  <label htmlFor="twoFACode" className="form-label">Verification Code</label>
+                  <label htmlFor="twoFACode" className="form-label">{t('twoFactor.verificationCode')}</label>
                   <input id="twoFACode" type="text" value={twoFACode} onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, '').slice(0, 6))} className="input font-mono text-center text-lg tracking-widest" placeholder="000000" maxLength={6} inputMode="numeric" />
                 </div>
                 {twoFAMessage && <p className="text-sm text-red-600 dark:text-red-400">{twoFAMessage}</p>}
                 <div className="flex gap-3">
-                  <button onClick={async () => { setTwoFAMessage(''); try { const result = await verify2FA.mutateAsync(twoFACode); setRecoveryCodes(result.recoveryCodes); updateUser({ twoFactorEnabled: true }); setTwoFACode(''); } catch { setTwoFAMessage('Invalid code. Check your authenticator and try again.'); } }} disabled={twoFACode.length !== 6 || verify2FA.isPending} className="btn-primary flex-1">
-                    {verify2FA.isPending ? 'Verifying...' : 'Verify & Enable'}
+                  <button onClick={async () => { setTwoFAMessage(''); try { const result = await verify2FA.mutateAsync(twoFACode); setRecoveryCodes(result.recoveryCodes); updateUser({ twoFactorEnabled: true }); setTwoFACode(''); } catch { setTwoFAMessage(t('twoFactor.invalidCode')); } }} disabled={twoFACode.length !== 6 || verify2FA.isPending} className="btn-primary flex-1">
+                    {verify2FA.isPending ? t('twoFactor.verifying') : t('twoFactor.verifyAndEnable')}
                   </button>
                   <button onClick={() => { setTwoFASetupData(null); setTwoFACode(''); setTwoFAMessage(''); }} className="btn-secondary flex-1">Cancel</button>
                 </div>
@@ -302,20 +304,20 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-3">
                   <span className="text-green-600 text-lg">🛡</span>
                   <div>
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">2FA is enabled</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Your account is protected with TOTP authentication</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('twoFactor.enabled')}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('twoFactor.enabledDesc')}</p>
                   </div>
                 </div>
                 {!showDisable2FA ? (
-                  <button onClick={() => setShowDisable2FA(true)} className="btn-secondary text-sm text-red-600">Disable 2FA</button>
+                  <button onClick={() => setShowDisable2FA(true)} className="btn-secondary text-sm text-red-600">{t('twoFactor.disable')}</button>
                 ) : (
                   <div className="space-y-3 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                    <p className="text-sm text-red-800 dark:text-red-300">Enter your password to disable 2FA:</p>
+                    <p className="text-sm text-red-800 dark:text-red-300">{t('twoFactor.disablePrompt')}</p>
                     <input type="password" value={twoFADisablePassword} onChange={(e) => setTwoFADisablePassword(e.target.value)} className="input" placeholder="Your password" />
                     {twoFAMessage && <p className="text-sm text-red-600 dark:text-red-400">{twoFAMessage}</p>}
                     <div className="flex gap-3">
-                      <button onClick={async () => { setTwoFAMessage(''); try { await disable2FA.mutateAsync(twoFADisablePassword); updateUser({ twoFactorEnabled: false }); setShowDisable2FA(false); setTwoFADisablePassword(''); } catch { setTwoFAMessage('Incorrect password.'); } }} disabled={!twoFADisablePassword || disable2FA.isPending} className="btn-danger">
-                        {disable2FA.isPending ? 'Disabling...' : 'Disable 2FA'}
+                      <button onClick={async () => { setTwoFAMessage(''); try { await disable2FA.mutateAsync(twoFADisablePassword); updateUser({ twoFactorEnabled: false }); setShowDisable2FA(false); setTwoFADisablePassword(''); } catch { setTwoFAMessage(t('twoFactor.incorrectPassword')); } }} disabled={!twoFADisablePassword || disable2FA.isPending} className="btn-danger">
+                        {disable2FA.isPending ? t('twoFactor.disabling') : t('twoFactor.disable')}
                       </button>
                       <button onClick={() => { setShowDisable2FA(false); setTwoFADisablePassword(''); setTwoFAMessage(''); }} className="btn-secondary text-sm">Cancel</button>
                     </div>
@@ -326,7 +328,7 @@ export default function ProfilePage() {
               <div className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Add an extra layer of security with a time-based one-time password (TOTP) from an authenticator app.</p>
                 <button onClick={async () => { try { const data = await setup2FA.mutateAsync(); setTwoFASetupData(data); } catch { setTwoFAMessage('Failed to start 2FA setup.'); } }} disabled={setup2FA.isPending} className="btn-primary">
-                  {setup2FA.isPending ? 'Setting up...' : 'Enable 2FA'}
+                  {setup2FA.isPending ? t('twoFactor.settingUp') : t('twoFactor.enable')}
                 </button>
               </div>
             )}
@@ -341,25 +343,25 @@ export default function ProfilePage() {
         <div className="space-y-6">
           {notifPrefs && (
             <div className="card">
-              <h2 className="section-title mb-4">Email Notifications</h2>
+              <h2 className="section-title mb-4">{t('notifications.title')}</h2>
               <div className="space-y-4">
                 <label className="flex items-center justify-between cursor-pointer">
                   <div>
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Email Notifications</span>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Master switch for all email alerts</p>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('notifications.emailNotifications')}</span>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('notifications.masterSwitch')}</p>
                   </div>
                   <input type="checkbox" checked={notifPrefs.emailEnabled} onChange={(e) => updateNotifPrefs.mutate({ emailEnabled: e.target.checked })} className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
                 </label>
 
                 {/* Credentials Group */}
                 <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Credentials</h3>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">{t('notifications.credentials')}</h3>
                   <div className="space-y-2">
                     {([
-                      { cat: 'credential_medical' as const, label: 'Medical Expiry', desc: 'Class 1, Class 2, LAPL medical certificates' },
-                      { cat: 'credential_language' as const, label: 'Language Proficiency', desc: 'ICAO language proficiency levels' },
-                      { cat: 'credential_security' as const, label: 'Security Clearance', desc: 'ZÜP, ZUBB and other security clearances' },
-                      { cat: 'credential_other' as const, label: 'Other Credentials', desc: 'All other credential types' },
+                      { cat: 'credential_medical' as const, label: t('notifications.categories.credential_medical'), desc: t('notifications.categories.credential_medical_desc') },
+                      { cat: 'credential_language' as const, label: t('notifications.categories.credential_language'), desc: t('notifications.categories.credential_language_desc') },
+                      { cat: 'credential_security' as const, label: t('notifications.categories.credential_security'), desc: t('notifications.categories.credential_security_desc') },
+                      { cat: 'credential_other' as const, label: t('notifications.categories.credential_other'), desc: t('notifications.categories.credential_other_desc') },
                     ] as const).map(({ cat, label, desc }) => (
                       <label key={cat} className="flex items-center justify-between cursor-pointer">
                         <div>
@@ -374,15 +376,15 @@ export default function ProfilePage() {
 
                 {/* Ratings & Currency Group */}
                 <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Ratings & Currency</h3>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">{t('notifications.ratingsAndCurrency')}</h3>
                   <div className="space-y-2">
                     {([
-                      { cat: 'rating_expiry' as const, label: 'Class Rating Expiry', desc: 'SEP, MEP, TMG rating expiry dates' },
-                      { cat: 'currency_passenger' as const, label: 'Passenger Currency', desc: '3 T&L in 90 days for carrying passengers' },
-                      { cat: 'currency_night' as const, label: 'Night Currency', desc: 'Night landing recency requirements' },
-                      { cat: 'currency_instrument' as const, label: 'Instrument Currency', desc: 'Approaches, holds, and IFR recency' },
-                      { cat: 'currency_flight_review' as const, label: 'Flight Review', desc: 'FAA §61.56 flight review / proficiency check' },
-                      { cat: 'currency_revalidation' as const, label: 'EASA Revalidation', desc: 'Rating revalidation requirements progress' },
+                      { cat: 'rating_expiry' as const, label: t('notifications.categories.rating_expiry'), desc: t('notifications.categories.rating_expiry_desc') },
+                      { cat: 'currency_passenger' as const, label: t('notifications.categories.currency_passenger'), desc: t('notifications.categories.currency_passenger_desc') },
+                      { cat: 'currency_night' as const, label: t('notifications.categories.currency_night'), desc: t('notifications.categories.currency_night_desc') },
+                      { cat: 'currency_instrument' as const, label: t('notifications.categories.currency_instrument'), desc: t('notifications.categories.currency_instrument_desc') },
+                      { cat: 'currency_flight_review' as const, label: t('notifications.categories.currency_flight_review'), desc: t('notifications.categories.currency_flight_review_desc') },
+                      { cat: 'currency_revalidation' as const, label: t('notifications.categories.currency_revalidation'), desc: t('notifications.categories.currency_revalidation_desc') },
                     ] as const).map(({ cat, label, desc }) => (
                       <label key={cat} className="flex items-center justify-between cursor-pointer">
                         <div>
@@ -397,8 +399,8 @@ export default function ProfilePage() {
 
                 {/* Warning Schedule */}
                 <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Warning Schedule</span>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Days before expiry to send warnings</p>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('notifications.warningSchedule')}</span>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{t('notifications.warningDays')}</p>
                   <div className="flex gap-2">
                     {[30, 14, 7, 3, 1].map((day) => {
                       const active = notifPrefs.warningDays.includes(day);
@@ -415,8 +417,8 @@ export default function ProfilePage() {
                 <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
                   <label className="flex items-center justify-between">
                     <div>
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Daily Check Time (UTC)</span>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Hour when daily notification check runs</p>
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('notifications.checkHour')}</span>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{t('notifications.checkHourDesc')}</p>
                     </div>
                     <select value={notifPrefs.checkHour} disabled={!notifPrefs.emailEnabled} onChange={(e) => updateNotifPrefs.mutate({ checkHour: parseInt(e.target.value, 10) })} className="input w-24 text-sm disabled:opacity-50">
                       {Array.from({ length: 24 }, (_, i) => (<option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>))}
@@ -438,12 +440,12 @@ export default function ProfilePage() {
         <div className="space-y-6">
           {/* Flight Data Maintenance */}
           <div className="card">
-            <h2 className="section-title mb-4">Flight Data</h2>
+            <h2 className="section-title mb-4">{t('flightData.title')}</h2>
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-              Recalculate all auto-computed fields across your flights (solo time, cross-country, distance, night time, day/night landing split, PIC/Dual).
+              {t('flightData.recalculateDesc')}
             </p>
             <button onClick={handleRecalculate} disabled={isRecalculating} className="btn-secondary">
-              {isRecalculating ? 'Recalculating...' : 'Recalculate All Flights'}
+              {isRecalculating ? t('flightData.recalculating') : t('flightData.recalculate')}
             </button>
             {recalcMessage && (
               <p className={`text-sm mt-2 ${recalcMessage.includes('error') ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>{recalcMessage}</p>
@@ -452,19 +454,19 @@ export default function ProfilePage() {
 
           {/* Danger Zone */}
           <div className="card border-red-200 dark:border-red-800">
-            <h2 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-6">Danger Zone</h2>
+            <h2 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-6">{t('dangerZone.title')}</h2>
 
             {/* Delete All Flights */}
             <div className="mb-6 pb-6 border-b border-red-100 dark:border-red-900/30">
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">Permanently delete all flight log entries and import history.</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{t('dangerZone.deleteFlightsDesc')}</p>
               {!showDeleteFlightsConfirm ? (
-                <button onClick={() => setShowDeleteFlightsConfirm(true)} className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700">Delete All Flights</button>
+                <button onClick={() => setShowDeleteFlightsConfirm(true)} className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700">{t('dangerZone.deleteFlights')}</button>
               ) : (
                 <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                  <p className="text-sm font-medium text-red-800 dark:text-red-300">Are you sure? This will permanently delete all your flights and import history.</p>
+                  <p className="text-sm font-medium text-red-800 dark:text-red-300">{t('dangerZone.deleteFlightsConfirm')}</p>
                   {deleteFlightsMessage && <p className={`text-sm ${deleteFlightsMessage.includes('error') ? 'text-red-600' : 'text-green-600'}`}>{deleteFlightsMessage}</p>}
                   <div className="flex gap-3">
-                    <button onClick={async () => { try { const result = await deleteAllFlights.mutateAsync(); setDeleteFlightsMessage(`Deleted ${result.deleted} flights.`); setShowDeleteFlightsConfirm(false); } catch { setDeleteFlightsMessage('Failed to delete flights — error.'); } }} disabled={deleteAllFlights.isPending} className="btn-danger">{deleteAllFlights.isPending ? 'Deleting...' : 'Permanently Delete All Flights'}</button>
+                    <button onClick={async () => { try { const result = await deleteAllFlights.mutateAsync(); setDeleteFlightsMessage(`Deleted ${result.deleted} flights.`); setShowDeleteFlightsConfirm(false); } catch { setDeleteFlightsMessage('Failed to delete flights — error.'); } }} disabled={deleteAllFlights.isPending} className="btn-danger">{deleteAllFlights.isPending ? t('common:deleting') : t('dangerZone.deleteFlightsButton')}</button>
                     <button onClick={() => { setShowDeleteFlightsConfirm(false); setDeleteFlightsMessage(''); }} className="btn-secondary text-sm">Cancel</button>
                   </div>
                 </div>
@@ -474,15 +476,15 @@ export default function ProfilePage() {
 
             {/* Delete All Data */}
             <div className="mb-6 pb-6 border-b border-red-100 dark:border-red-900/30">
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">Permanently delete all your data including flights, aircraft, licenses, contacts, credentials, and import history.</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{t('dangerZone.deleteDataDesc')}</p>
               {!showDeleteDataConfirm ? (
-                <button onClick={() => setShowDeleteDataConfirm(true)} className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700">Delete All Data</button>
+                <button onClick={() => setShowDeleteDataConfirm(true)} className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700">{t('dangerZone.deleteData')}</button>
               ) : (
                 <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                  <p className="text-sm font-medium text-red-800 dark:text-red-300">Are you sure? This will permanently delete ALL your data.</p>
+                  <p className="text-sm font-medium text-red-800 dark:text-red-300">{t('dangerZone.deleteDataConfirm')}</p>
                   {deleteDataMessage && <p className={`text-sm ${deleteDataMessage.includes('error') ? 'text-red-600' : 'text-green-600'}`}>{deleteDataMessage}</p>}
                   <div className="flex gap-3">
-                    <button onClick={async () => { try { await deleteAllUserData.mutateAsync(); setDeleteDataMessage('All data deleted successfully.'); setShowDeleteDataConfirm(false); } catch { setDeleteDataMessage('Failed to delete data — error.'); } }} disabled={deleteAllUserData.isPending} className="btn-danger">{deleteAllUserData.isPending ? 'Deleting...' : 'Permanently Delete All Data'}</button>
+                    <button onClick={async () => { try { await deleteAllUserData.mutateAsync(); setDeleteDataMessage('All data deleted successfully.'); setShowDeleteDataConfirm(false); } catch { setDeleteDataMessage('Failed to delete data — error.'); } }} disabled={deleteAllUserData.isPending} className="btn-danger">{deleteAllUserData.isPending ? t('common:deleting') : t('dangerZone.deleteDataButton')}</button>
                     <button onClick={() => { setShowDeleteDataConfirm(false); setDeleteDataMessage(''); }} className="btn-secondary text-sm">Cancel</button>
                   </div>
                 </div>
@@ -492,16 +494,16 @@ export default function ProfilePage() {
 
             {/* Delete Account */}
             <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">Permanently delete your account and all associated data. This cannot be undone.</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{t('dangerZone.deleteAccountDesc')}</p>
               {!showDeleteConfirm ? (
-                <button onClick={() => setShowDeleteConfirm(true)} className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700">Delete Account</button>
+                <button onClick={() => setShowDeleteConfirm(true)} className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700">{t('dangerZone.deleteAccount')}</button>
               ) : (
                 <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                  <p className="text-sm font-medium text-red-800 dark:text-red-300">Enter your password to confirm account deletion:</p>
+                  <p className="text-sm font-medium text-red-800 dark:text-red-300">{t('dangerZone.deleteAccountPrompt')}</p>
                   <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="input" placeholder="Your password" aria-label="Confirm deletion password" />
                   {deleteError && <p className="text-sm text-red-600 dark:text-red-400">{deleteError}</p>}
                   <div className="flex gap-3">
-                    <button onClick={handleDeleteAccount} disabled={!deletePassword || deleteAccount.isPending} className="btn-danger">{deleteAccount.isPending ? 'Deleting...' : 'Permanently Delete Account'}</button>
+                    <button onClick={handleDeleteAccount} disabled={!deletePassword || deleteAccount.isPending} className="btn-danger">{deleteAccount.isPending ? t('common:deleting') : t('dangerZone.deleteAccountButton')}</button>
                     <button onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }} className="btn-secondary text-sm">Cancel</button>
                   </div>
                 </div>

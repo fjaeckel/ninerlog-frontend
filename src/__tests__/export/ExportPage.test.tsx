@@ -19,7 +19,7 @@ const renderWithProviders = (component: React.ReactElement) => {
 describe('ExportPage', () => {
   it('renders export page with title', () => {
     renderWithProviders(<ExportPage />);
-    expect(screen.getByText('Export Data')).toBeInTheDocument();
+    expect(screen.getByText('Export')).toBeInTheDocument();
   });
 
   it('renders CSV export card', () => {

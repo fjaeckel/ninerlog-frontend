@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { useLogin } from '../../hooks/useAuth';
 import { useLogin2FA } from '../../hooks/useTwoFactor';
 import { useAuthStore } from '../../stores/authStore';
@@ -16,6 +17,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const login = useLogin();
   const login2FA = useLogin2FA();
@@ -47,13 +49,13 @@ export default function LoginPage() {
     } catch (err: any) {
       const msg = err?.error || err?.message || err?.response?.data?.error || '';
       if (msg.toLowerCase().includes('too many requests')) {
-        setError('Too many login attempts. Please wait a minute and try again.');
+        setError(t('auth:login.rateLimited'));
       } else if (msg.toLowerCase().includes('disabled')) {
-        setError('Account disabled. Contact the administrator.');
+        setError(t('auth:login.accountDisabled'));
       } else if (msg.toLowerCase().includes('locked')) {
         setError(msg);
       } else {
-        setError(msg || 'Invalid email or password.');
+        setError(msg || t('auth:login.invalidCredentials'));
       }
     }
   };
@@ -71,7 +73,7 @@ export default function LoginPage() {
       setAuth(result.user, result.accessToken, result.refreshToken, result.expiresIn);
       navigate('/dashboard');
     } catch {
-      setError('Invalid 2FA code. Try again.');
+      setError(t('auth:twoFactor.invalidCode'));
     }
   };
 
@@ -83,7 +85,7 @@ export default function LoginPage() {
           <div className="text-4xl mb-2">✈</div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{APP_NAME}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Your digital logbook, always current.
+            {t('auth:login.tagline')}
           </p>
         </div>
 
@@ -92,9 +94,9 @@ export default function LoginPage() {
           <div className="card p-6 space-y-5">
             <div className="text-center">
               <span className="text-3xl">🔐</span>
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mt-2">Two-Factor Authentication</h2>
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mt-2">{t('auth:twoFactor.title')}</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Enter the 6-digit code from your authenticator app
+                {t('auth:twoFactor.enterCode')}
               </p>
             </div>
 
@@ -105,7 +107,7 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label htmlFor="twoFACode" className="form-label">Authentication Code</label>
+              <label htmlFor="twoFACode" className="form-label">{t('auth:twoFactor.codeLabel')}</label>
               <input
                 id="twoFACode"
                 type="text"
@@ -118,7 +120,7 @@ export default function LoginPage() {
                 autoFocus
               />
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                Or enter a recovery code
+                {t('auth:twoFactor.recoveryHint')}
               </p>
             </div>
 
@@ -127,14 +129,14 @@ export default function LoginPage() {
               disabled={twoFACode.length < 6 || login2FA.isPending}
               className="btn-primary w-full btn-lg"
             >
-              {login2FA.isPending ? 'Verifying...' : 'Verify'}
+              {login2FA.isPending ? t('auth:twoFactor.verifying') : t('auth:twoFactor.verify')}
             </button>
 
             <button
               onClick={() => { setTwoFactorToken(null); setTwoFACode(''); setError(null); }}
               className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 w-full text-center"
             >
-              ← Back to login
+              ← {t('auth:twoFactor.backToLogin')}
             </button>
           </div>
         ) : (
@@ -150,7 +152,7 @@ export default function LoginPage() {
 
           <div>
             <label htmlFor="email" className="form-label">
-              Email
+              {t('auth:login.email')}
             </label>
             <input
               {...register('email')}
@@ -167,7 +169,7 @@ export default function LoginPage() {
 
           <div>
             <label htmlFor="password" className="form-label">
-              Password
+              {t('auth:login.password')}
             </label>
             <input
               {...register('password')}
@@ -187,7 +189,7 @@ export default function LoginPage() {
               to="/reset-password"
               className="text-sm text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
             >
-              Forgot password?
+              {t('auth:login.forgotPassword')}
             </Link>
           </div>
 
@@ -196,16 +198,16 @@ export default function LoginPage() {
             disabled={isSubmitting || login.isPending}
             className="btn-primary w-full btn-lg"
           >
-            {isSubmitting || login.isPending ? 'Signing in...' : 'Log In'}
+            {isSubmitting || login.isPending ? t('auth:login.signingIn') : t('auth:login.logIn')}
           </button>
 
           <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-            Don't have an account?{' '}
+            {t('auth:login.noAccount')}{' '}
             <Link
               to="/register"
               className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
             >
-              Create one
+              {t('auth:login.createOne')}
             </Link>
           </p>
         </form>

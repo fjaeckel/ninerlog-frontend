@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUploadImport, usePreviewImport, useConfirmImport } from '../../hooks/useImport';
 import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping } from '../../hooks/useImport';
 import HelpLink from '../../components/ui/HelpLink';
@@ -43,6 +44,7 @@ const IMPORT_FIELDS = [
 type Step = 'upload' | 'mapping' | 'preview' | 'result';
 
 export default function ImportPage() {
+  const { t } = useTranslation('import');
   const [step, setStep] = useState<Step>('upload');
   const [uploadData, setUploadData] = useState<ImportUploadResponse | null>(null);
   const [mappings, setMappings] = useState<ImportColumnMapping[]>([]);
@@ -124,9 +126,9 @@ export default function ImportPage() {
   return (
     <div className="mx-auto max-w-[960px] py-6">
       <div className="mb-6">
-        <h1 className="page-title">Import Flights</h1>
+        <h1 className="page-title">{t('importFlights')}</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-          Import flight logs from CSV files (including ForeFlight exports)
+          {t('supportedFormats', 'Import flight logs from CSV files (including ForeFlight exports)')}
           <HelpLink topic="import-export" />
         </p>
       </div>
@@ -143,7 +145,7 @@ export default function ImportPage() {
                   : 'text-slate-400 dark:text-slate-500'
               }`}
             >
-              {i + 1}. {s === 'upload' ? 'Upload' : s === 'mapping' ? 'Map Columns' : s === 'preview' ? 'Preview' : 'Done'}
+              {i + 1}. {s === 'upload' ? t('uploadCsv', 'Upload') : s === 'mapping' ? t('mapColumns', 'Map Columns') : s === 'preview' ? t('preview') : t('done', 'Done')}
             </span>
           </div>
         ))}
@@ -159,9 +161,9 @@ export default function ImportPage() {
       {step === 'upload' && (
         <div className="card text-center py-12">
           <div className="text-5xl mb-4">📂</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Upload Flight Log File</h2>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('uploadCsv', 'Upload Flight Log File')}</h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-            Supports CSV files including ForeFlight logbook exports. Maximum file size: 10 MB.
+            {t('supportedFormats', 'Supports CSV files including ForeFlight logbook exports. Maximum file size: 10 MB.')}
           </p>
           <input
             ref={fileInputRef}
@@ -175,7 +177,7 @@ export default function ImportPage() {
             disabled={upload.isPending}
             className="btn-primary"
           >
-            {upload.isPending ? 'Uploading...' : 'Choose File'}
+            {upload.isPending ? t('importing', 'Uploading...') : t('selectFile', 'Choose File')}
           </button>
         </div>
       )}
@@ -186,10 +188,10 @@ export default function ImportPage() {
           <div className="card">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Column Mapping</h2>
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t('columnMapping')}</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                  {uploadData.format === 'FOREFLIGHT_CSV' ? '✈ ForeFlight format detected — mappings pre-filled' : 'Map each column to a flight log field'}
-                  {' · '}{uploadData.totalRows} rows found
+                  {uploadData.format === 'FOREFLIGHT_CSV' ? '✈ ForeFlight format detected — mappings pre-filled' : t('mapColumns', 'Map each column to a flight log field')}
+                  {' · '}{t('rowsDetected', { count: uploadData.totalRows })}
                 </p>
               </div>
               <button onClick={handleReset} className="btn-ghost btn-sm text-xs min-h-[44px]">Start Over</button>
@@ -222,7 +224,7 @@ export default function ImportPage() {
           {/* Preview rows */}
           {uploadData.previewRows.length > 0 && (
             <div className="card">
-              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Preview (first {uploadData.previewRows.length} rows)</h3>
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('previewRows', { count: uploadData.previewRows.length })}</h3>
               <div className="overflow-x-auto">
                 <table className="text-xs w-full">
                   <thead>
@@ -266,7 +268,7 @@ export default function ImportPage() {
           </div>
 
           <div className="card">
-            <h2 className="section-title mb-4">Import Preview</h2>
+            <h2 className="section-title mb-4">{t('preview', 'Import Preview')}</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -349,8 +351,8 @@ export default function ImportPage() {
             {result.status === 'completed' ? '✅' : result.status === 'partial' ? '⚠' : '❌'}
           </div>
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
-            {result.status === 'completed' ? 'Import Complete!' :
-             result.status === 'partial' ? 'Partially Imported' : 'Import Failed'}
+            {result.status === 'completed' ? t('importSuccess', { count: result.importedCount }) :
+             result.status === 'partial' ? t('partialImport', 'Partially Imported') : t('importFailed')}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 max-w-lg mx-auto mt-6 mb-8">
             <SummaryCard label="Imported" value={result.importedCount} color="green" />
@@ -371,7 +373,7 @@ export default function ImportPage() {
               </div>
             </div>
           )}
-          <button onClick={handleReset} className="btn-primary">Import Another File</button>
+          <button onClick={handleReset} className="btn-primary">{t('importAnother', 'Import Another File')}</button>
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { Pencil, Trash2, Search, X } from 'lucide-react';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
@@ -14,6 +15,7 @@ import type { operations } from '../../api/schema';
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
 
 export default function FlightsPage() {
+  const { t } = useTranslation(['flights', 'common']);
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<'date' | 'totalTime' | 'createdAt'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -142,8 +144,8 @@ export default function FlightsPage() {
       <div className="mx-auto max-w-[960px] py-6">
         <div className="card text-center py-12">
           <div className="text-4xl mb-3">⚠</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Something went wrong</h2>
-          <p className="text-slate-500 dark:text-slate-400">Error loading flights. Please try again.</p>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('flights:errorTitle')}</h2>
+          <p className="text-slate-500 dark:text-slate-400">{t('flights:errorDescription')}</p>
         </div>
       </div>
     );
@@ -156,29 +158,29 @@ export default function FlightsPage() {
     <div className="mx-auto max-w-[960px] py-6">
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h1 className="page-title">Flight Log</h1>
+          <h1 className="page-title">{t('flights:pageTitle')}</h1>
           {pagination && (
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-              {pagination.total} flight{pagination.total !== 1 ? 's' : ''} total
+              {t('flights:flightsTotal', { count: pagination.total })}
               <HelpLink topic="flights" />
             </p>
           )}
         </div>
         <button onClick={() => setShowForm(true)} className="btn-primary">
-          + Log Flight
+          + {t('flights:logFlight')}
         </button>
       </div>
 
       {/* Logbook Selector — only shown if separate-logbook licenses exist */}
       {separateLogbookLicenses.length > 0 && (
         <div className="mb-4 flex items-center gap-2">
-          <label className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Logbook:</label>
+          <label className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">{t('flights:logbook')}</label>
           <select
             value={logbookLicenseId}
             onChange={(e) => { setLogbookLicenseId(e.target.value); setPage(1); }}
             className="input text-sm py-1.5 w-auto"
           >
-            <option value="">All flights</option>
+            <option value="">{t('flights:allFlights')}</option>
             {separateLogbookLicenses.map((lic) => (
               <option key={lic.id} value={lic.id}>
                 {lic.regulatoryAuthority} {lic.licenseType} — {lic.licenseNumber}
@@ -196,15 +198,15 @@ export default function FlightsPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search flights — registration, type, ICAO, remarks..."
+            placeholder={t('flights:searchPlaceholder')}
             className="input pl-10 pr-10"
-            aria-label="Search flights"
+            aria-label={t('flights:searchPlaceholder')}
           />
           {search && (
             <button
               onClick={() => setSearch('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-3"
-              aria-label="Clear search"
+              aria-label={t('flights:clearSearch')}
             >
               <X className="w-4 h-4" />
             </button>
@@ -223,15 +225,15 @@ export default function FlightsPage() {
               : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
           }`}
         >
-          Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+          {t('flights:filters')}{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
         </button>
         {activeFilterCount > 0 && (
           <button onClick={clearFilters} className="text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center">
-            Clear all
+            {t('flights:clearAll')}
           </button>
         )}
         <div className="flex-1" />
-        <span className="text-xs text-slate-500 dark:text-slate-400">Sort:</span>
+        <span className="text-xs text-slate-500 dark:text-slate-400">{t('flights:sort')}</span>
         {(['date', 'totalTime', 'createdAt'] as const).map((field) => (
           <button
             key={field}
@@ -242,7 +244,7 @@ export default function FlightsPage() {
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
             }`}
           >
-            {field === 'date' ? 'Date' : field === 'totalTime' ? 'Hours' : 'Added'}
+            {field === 'date' ? t('flights:sortDate') : field === 'totalTime' ? t('flights:sortHours') : t('flights:sortAdded')}
             {sortBy === field && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
           </button>
         ))}
@@ -253,7 +255,7 @@ export default function FlightsPage() {
         <div className="card mb-4 p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Date From</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterDateFrom')}</label>
               <input
                 type="date"
                 value={startDate}
@@ -262,7 +264,7 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Date To</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterDateTo')}</label>
               <input
                 type="date"
                 value={endDate}
@@ -271,7 +273,7 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Aircraft Reg</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterAircraftReg')}</label>
               <input
                 type="text"
                 value={aircraftReg}
@@ -281,7 +283,7 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Departure ICAO</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterDepartureIcao')}</label>
               <input
                 type="text"
                 value={departureIcao}
@@ -292,7 +294,7 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Arrival ICAO</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterArrivalIcao')}</label>
               <input
                 type="text"
                 value={arrivalIcao}
@@ -303,15 +305,15 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">Function</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterFunction')}</label>
               <select
                 value={functionFilter}
                 onChange={(e) => { setFunctionFilter(e.target.value as '' | 'pic' | 'dual'); setPage(1); }}
                 className="input text-sm"
               >
-                <option value="">All</option>
-                <option value="pic">PIC only</option>
-                <option value="dual">Dual only</option>
+                <option value="">{t('flights:filterAll')}</option>
+                <option value="pic">{t('flights:filterPicOnly')}</option>
+                <option value="dual">{t('flights:filterDualOnly')}</option>
               </select>
             </div>
           </div>
@@ -325,12 +327,12 @@ export default function FlightsPage() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 id="flight-form-title" className="text-xl font-semibold text-slate-800 dark:text-slate-100">
-                  {editingFlight ? 'Edit Flight' : 'Log New Flight'}
+                  {editingFlight ? t('flights:editFlight') : t('flights:logNewFlight')}
                 </h2>
                 <button
                   onClick={handleCloseForm}
                   className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  aria-label="Close"
+                  aria-label={t('common:close')}
                 >
                   ✕
                 </button>
@@ -345,27 +347,27 @@ export default function FlightsPage() {
       {flights.length === 0 ? (
         <div className="card text-center py-12">
           <div className="text-5xl mb-4">✈</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">No flights logged yet</h2>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('flights:noFlights')}</h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6">
-            Start building your logbook by adding your first flight.
+            {t('flights:startBuildingLogbook')}
           </p>
           <button onClick={() => setShowForm(true)} className="btn-primary">
-            + Log Your First Flight
+            + {t('flights:logFirstFlight')}
           </button>
         </div>
       ) : (
         <>
           <div className="overflow-x-auto card p-0">
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm" aria-label="Flight log">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm" aria-label={t('flights:pageTitle')}>
               <thead className="bg-slate-50 dark:bg-slate-800/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Date</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Route</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Aircraft</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">Off / On Block</th>
-                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">Total</th>
-                  <th className="px-4 py-3 text-center font-medium text-slate-500 dark:text-slate-400">Function</th>
-                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">Ldg</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableDate')}</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableRoute')}</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableAircraft')}</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableOffOnBlock')}</th>
+                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableTotal')}</th>
+                  <th className="px-4 py-3 text-center font-medium text-slate-500 dark:text-slate-400">{t('flights:tableFunction')}</th>
+                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLdg')}</th>
                   <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400" />
                 </tr>
               </thead>
@@ -410,14 +412,14 @@ export default function FlightsPage() {
                       <button
                         onClick={(e) => { e.stopPropagation(); handleEdit(flight.id); }}
                         className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mr-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
-                        aria-label={`Edit flight ${flight.departureIcao || ''} to ${flight.arrivalIcao || ''}`}
+                        aria-label={t('flights:editFlightAriaLabel', { departure: flight.departureIcao || '', arrival: flight.arrivalIcao || '' })}
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(flight.id); }}
                         className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
-                        aria-label={`Delete flight ${flight.departureIcao || ''} to ${flight.arrivalIcao || ''}`}
+                        aria-label={t('flights:deleteFlightAriaLabel', { departure: flight.departureIcao || '', arrival: flight.arrivalIcao || '' })}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -436,17 +438,17 @@ export default function FlightsPage() {
                 disabled={page <= 1}
                 className="btn-secondary text-sm"
               >
-                Previous
+                {t('flights:previous')}
               </button>
               <span className="text-sm text-slate-600 dark:text-slate-400">
-                Page {pagination.page} of {pagination.totalPages}
+                {t('flights:pagination', { page: pagination.page, totalPages: pagination.totalPages })}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
                 disabled={page >= pagination.totalPages}
                 className="btn-secondary text-sm"
               >
-                Next
+                {t('flights:next')}
               </button>
             </div>
           )}
@@ -458,9 +460,9 @@ export default function FlightsPage() {
         open={!!deleteTarget}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        title="Delete flight?"
-        description="This flight will be permanently removed from your logbook. This action cannot be undone."
-        confirmLabel="Delete Flight"
+        title={t('flights:deleteTitle')}
+        description={t('flights:deleteDescription')}
+        confirmLabel={t('flights:deleteFlight')}
         variant="danger"
         isLoading={deleteFlight.isPending}
       />

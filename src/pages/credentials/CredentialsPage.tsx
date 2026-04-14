@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { useCredentials, useDeleteCredential } from '../../hooks/useCredentials';
 import CredentialForm from '../../components/credentials/CredentialForm';
@@ -6,21 +7,6 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { SkeletonGrid } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import HelpLink from '../../components/ui/HelpLink';
-
-const CREDENTIAL_LABELS: Record<string, string> = {
-  EASA_CLASS1_MEDICAL: 'EASA Class 1 Medical',
-  EASA_CLASS2_MEDICAL: 'EASA Class 2 Medical',
-  EASA_LAPL_MEDICAL: 'EASA LAPL Medical',
-  FAA_CLASS1_MEDICAL: 'FAA Class 1 Medical',
-  FAA_CLASS2_MEDICAL: 'FAA Class 2 Medical',
-  FAA_CLASS3_MEDICAL: 'FAA Class 3 Medical',
-  LANG_ICAO_LEVEL4: 'Language ICAO Level 4',
-  LANG_ICAO_LEVEL5: 'Language ICAO Level 5',
-  LANG_ICAO_LEVEL6: 'Language ICAO Level 6 (Expert)',
-  SEC_CLEARANCE_ZUP: 'Security Clearance ZÜP',
-  SEC_CLEARANCE_ZUBB: 'Security Clearance ZüBB',
-  OTHER: 'Other',
-};
 
 function getExpiryStatus(expiryDate: string | null | undefined): { label: string; class: string } {
   if (!expiryDate) return { label: 'No expiry', class: 'badge-current' };
@@ -40,6 +26,7 @@ export default function CredentialsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const { t } = useTranslation('credentials');
 
   const handleDelete = async (id: string) => {
     setDeleteTarget(id);
@@ -75,14 +62,14 @@ export default function CredentialsPage() {
     <div className="mx-auto max-w-[960px] py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="page-title">Credentials</h1>
+          <h1 className="page-title">{t('title')}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-            Medicals, language proficiency, and security clearances
+            {t('subtitle')}
             <HelpLink topic="credentials" />
           </p>
         </div>
         <button onClick={() => { setEditingId(null); setShowForm(true); }} className="btn-primary">
-          + Add Credential
+          {t('addCredential')}
         </button>
       </div>
 
@@ -93,7 +80,7 @@ export default function CredentialsPage() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 id="credential-form-title" className="text-xl font-semibold text-slate-800 dark:text-slate-100">
-                  {editingId ? 'Edit Credential' : 'Add Credential'}
+                  {editingId ? t('editCredential') : t('addCredential')}
                 </h2>
                 <button
                   onClick={() => setShowForm(false)}
@@ -114,9 +101,9 @@ export default function CredentialsPage() {
         open={!!deleteTarget}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        title="Delete credential?"
-        description="This credential will be permanently removed. This action cannot be undone."
-        confirmLabel="Delete"
+        title={t('deleteCredential')}
+        description={t('deleteConfirm')}
+        confirmLabel={t('deleteCredential')}
         variant="danger"
         isLoading={deleteCredential.isPending}
       />
@@ -124,9 +111,9 @@ export default function CredentialsPage() {
       {/* Credentials List */}
       {!credentials || credentials.length === 0 ? (
         <div className="card text-center py-12">
-          <p className="text-slate-500 dark:text-slate-400 mb-4">No credentials added yet.</p>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">{t('noCredentials')}</p>
           <button onClick={() => setShowForm(true)} className="btn-primary">
-            Add Your First Credential
+            {t('addFirst')}
           </button>
         </div>
       ) : (
@@ -138,7 +125,7 @@ export default function CredentialsPage() {
                 <div className="flex justify-between items-start mb-3">
                   <div className="min-w-0">
                     <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate">
-                      {CREDENTIAL_LABELS[cred.credentialType] || cred.credentialType}
+                      {t(`types.${cred.credentialType}`, { defaultValue: cred.credentialType })}
                     </h3>
                     {cred.credentialNumber && (
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{cred.credentialNumber}</p>
@@ -151,17 +138,17 @@ export default function CredentialsPage() {
 
                 <dl className="text-sm space-y-1.5 mb-4">
                   <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">Issued</dt>
+                    <dt className="text-slate-500 dark:text-slate-400">{t('issued')}</dt>
                     <dd className="text-slate-700 dark:text-slate-300">{format(new Date(cred.issueDate), 'dd MMM yyyy')}</dd>
                   </div>
                   {cred.expiryDate && (
                     <div className="flex justify-between">
-                      <dt className="text-slate-500 dark:text-slate-400">Expires</dt>
+                      <dt className="text-slate-500 dark:text-slate-400">{t('expires')}</dt>
                       <dd className="text-slate-700 dark:text-slate-300">{format(new Date(cred.expiryDate), 'dd MMM yyyy')}</dd>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">Authority</dt>
+                    <dt className="text-slate-500 dark:text-slate-400">{t('authority')}</dt>
                     <dd className="text-slate-700 dark:text-slate-300">{cred.issuingAuthority}</dd>
                   </div>
                 </dl>
@@ -175,13 +162,13 @@ export default function CredentialsPage() {
                     onClick={() => { setEditingId(cred.id); setShowForm(true); }}
                     className="btn-ghost btn-sm flex-1"
                   >
-                    Edit
+                    {t('edit')}
                   </button>
                   <button
                     onClick={() => handleDelete(cred.id)}
                     className="btn-ghost btn-sm flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
-                    Delete
+                    {t('delete')}
                   </button>
                 </div>
               </div>

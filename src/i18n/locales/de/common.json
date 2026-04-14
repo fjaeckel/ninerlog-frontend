@@ -65,5 +65,108 @@
     "areYouSure": "Sind Sie sicher?",
     "cannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.",
     "typeToConfirm": "Geben Sie '{{word}}' zur Bestätigung ein"
+  },
+  "help": {
+    "title": "Hilfe-Center",
+    "subtitle": "Erfahren Sie, wie Sie {{appName}} nutzen — Anleitungen für jede Funktion.",
+    "searchPlaceholder": "Hilfethemen durchsuchen...",
+    "searchAriaLabel": "Hilfethemen durchsuchen",
+    "clearSearch": "Suche löschen",
+    "resultCount_one": "{{count}} Ergebnis für \"{{query}}\"",
+    "resultCount_other": "{{count}} Ergebnisse für \"{{query}}\"",
+    "noResults": "Keine Hilfethemen entsprechen Ihrer Suche.",
+    "selectTopic": "Hilfethema auswählen"
+  },
+  "admin": {
+    "title": "Admin-Konsole",
+    "subtitle": "Plattformverwaltung — datenschutzkonform.",
+    "accessDenied": "Zugriff verweigert",
+    "noPrivileges": "Sie haben keine Administratorrechte.",
+    "tabs": {
+      "dashboard": "Dashboard",
+      "users": "Benutzer",
+      "auditLog": "Audit-Log",
+      "maintenance": "Wartung",
+      "announcements": "Ankündigungen",
+      "config": "Konfiguration"
+    },
+    "dashboard": {
+      "loadingStats": "Statistiken laden...",
+      "totalUsers": "Benutzer gesamt",
+      "totalFlights": "Flüge gesamt",
+      "totalAircraft": "Flugzeuge gesamt",
+      "totalCredentials": "Nachweise gesamt",
+      "totalImports": "Importe gesamt",
+      "flightsThisMonth": "Flüge diesen Monat",
+      "newUsersWeek": "Neue Benutzer (7T)",
+      "lockedAccounts": "Gesperrte Konten",
+      "disabledAccounts": "Deaktivierte Konten"
+    },
+    "users": {
+      "searchPlaceholder": "Nach E-Mail oder Name suchen...",
+      "searchAriaLabel": "Benutzer suchen",
+      "search": "Suchen",
+      "clear": "Löschen",
+      "user": "Benutzer",
+      "status": "Status",
+      "twoFA": "2FA",
+      "flights": "Flüge",
+      "aircraft": "Flugzeuge",
+      "lastLogin": "Letzter Login",
+      "actions": "Aktionen",
+      "disabled": "Deaktiviert",
+      "locked": "Gesperrt",
+      "active": "Aktiv",
+      "enabled": "Aktiviert",
+      "off": "Aus",
+      "noUsers": "Keine Benutzer gefunden",
+      "previous": "Zurück",
+      "next": "Weiter",
+      "confirmAction": "Bestätigen: {{action}} Benutzer",
+      "disableConfirm": "Konto für {{email}} deaktivieren? Die Person kann sich nicht mehr anmelden.",
+      "enableConfirm": "Konto für {{email}} wieder aktivieren?",
+      "unlockConfirm": "Konto für {{email}} entsperren?",
+      "reset2faConfirm": "2FA für {{email}} zurücksetzen?",
+      "auditTrailNote": "Diese Aktion wird im Admin-Audit-Protokoll erfasst.",
+      "disable": "Deaktivieren",
+      "enable": "Aktivieren",
+      "unlock": "Entsperren",
+      "reset2fa": "2FA zurücksetzen"
+    },
+    "audit": {
+      "timestamp": "Zeitstempel",
+      "action": "Aktion",
+      "admin": "Admin",
+      "targetUser": "Zielbenutzer",
+      "noEntries": "Keine Audit-Log-Einträge"
+    },
+    "maintenance": {
+      "tokenCleanup": "Token-Bereinigung",
+      "tokenCleanupDesc": "Abgelaufene und widerrufene Refresh-Tokens sowie verwendete Passwort-Reset-Tokens aus der Datenbank löschen.",
+      "cleanUpButton": "Abgelaufene Tokens bereinigen",
+      "cleaning": "Bereinigen...",
+      "smtpTest": "SMTP-Test",
+      "smtpTestDesc": "Eine Test-E-Mail an Ihre Admin-E-Mail-Adresse senden, um die SMTP-Konfiguration zu überprüfen.",
+      "sendTestEmail": "Test-E-Mail senden",
+      "sending": "Senden..."
+    },
+    "config": {
+      "title": "Laufzeitkonfiguration",
+      "subtitle": "Nicht-geheime Serverkonfiguration. Geheimnisse werden nie offengelegt.",
+      "loadingConfig": "Konfiguration laden..."
+    },
+    "announcements": {
+      "createTitle": "Ankündigung erstellen",
+      "createDesc": "Ankündigungen erscheinen als Banner für alle Benutzer. Auto-Hinweise (2FA, erster Flug) werden systemseitig generiert.",
+      "message": "Nachricht",
+      "messagePlaceholder": "z.B. Geplante Wartung am Dienstag um 20:00 UTC",
+      "severity": "Schweregrad",
+      "expireAfter": "Automatisch ablaufen nach (Stunden)",
+      "expirePlaceholder": "Leer lassen für permanent",
+      "publish": "Ankündigung veröffentlichen",
+      "creating": "Erstellen...",
+      "activeTitle": "Aktive Ankündigungen",
+      "noAnnouncements": "Keine aktiven Ankündigungen."
+    }
   }
 }

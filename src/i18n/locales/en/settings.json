@@ -1,5 +1,11 @@
 {
   "title": "Profile Settings",
+  "tabs": {
+    "preferences": "Preferences",
+    "account": "Account",
+    "notifications": "Notifications",
+    "data": "Data & Security"
+  },
   "timeDisplay": {
     "title": "Time Display",
     "description": "Choose how flight durations are displayed throughout the app.",
@@ -16,7 +22,10 @@
     "saveChanges": "Save Changes",
     "updateSuccess": "Profile updated successfully.",
     "emailInUse": "This email is already in use by another account.",
-    "updateFailed": "Failed to update profile."
+    "updateFailed": "Failed to update profile.",
+    "nameRequired": "Name is required.",
+    "nameTooLong": "Name must not exceed 255 characters.",
+    "invalidEmail": "Please enter a valid email address."
   },
   "changePassword": {
     "title": "Change Password",

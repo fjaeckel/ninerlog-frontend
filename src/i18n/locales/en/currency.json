@@ -1,5 +1,9 @@
 {
   "title": "Currency & Recency",
+  "subtitle": "Track your flight currency and credential validity.",
+  "loading": "Loading...",
+  "alerts_one": "{{count}} alert",
+  "alerts_other": "{{count}} alerts",
   "ratingCurrency": "Rating & License Currency",
   "passengerCurrency": "Passenger Currency",
   "flightReview": "Flight Review",
@@ -12,7 +16,9 @@
     "expired": "Expired",
     "notCurrent": "Not Current",
     "unknown": "Unknown",
-    "attention": "Attention"
+    "attention": "Attention",
+    "valid": "Valid",
+    "dayOnly": "Day Only"
   },
   "expiresIn": "Expires in {{days}} days",
   "expiredAgo": "Expired {{days}} days ago",

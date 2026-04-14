@@ -86,7 +86,7 @@ describe('MapPage', () => {
     } as any);
 
     renderWithProviders(<MapPage />);
-    expect(screen.getByText('Route Map')).toBeInTheDocument();
+    expect(screen.getByText('Flight Map')).toBeInTheDocument();
   });
 
   it('renders empty state when no data', () => {
@@ -98,7 +98,7 @@ describe('MapPage', () => {
     } as any);
 
     renderWithProviders(<MapPage />);
-    expect(screen.getByText(/no flight routes to display/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/no flight routes to display/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders route count and airport count', () => {
@@ -110,8 +110,8 @@ describe('MapPage', () => {
     } as any);
 
     renderWithProviders(<MapPage />);
-    expect(screen.getByText(/2 routes/)).toBeInTheDocument();
-    expect(screen.getByText(/2 airports/)).toBeInTheDocument();
+    expect(screen.getByText(/2 Flight Routes/)).toBeInTheDocument();
+    expect(screen.getByText(/2 Airports/)).toBeInTheDocument();
   });
 
   it('renders map container', () => {

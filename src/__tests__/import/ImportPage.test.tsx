@@ -50,14 +50,14 @@ describe('ImportPage', () => {
   it('renders upload step with title', () => {
     renderWithProviders(<ImportPage />);
     expect(screen.getByText('Import Flights')).toBeInTheDocument();
-    expect(screen.getByText(/upload flight log file/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /choose file/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/upload csv/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('button', { name: /select file/i })).toBeInTheDocument();
   });
 
   it('renders step indicator', () => {
     renderWithProviders(<ImportPage />);
     expect(screen.getByText(/1\. upload/i)).toBeInTheDocument();
-    expect(screen.getByText(/2\. map columns/i)).toBeInTheDocument();
+    expect(screen.getByText(/2\. map/i)).toBeInTheDocument();
     expect(screen.getByText(/3\. preview/i)).toBeInTheDocument();
     expect(screen.getByText(/4\. done/i)).toBeInTheDocument();
   });
@@ -70,7 +70,7 @@ describe('ImportPage', () => {
 
   it('renders ForeFlight support info', () => {
     renderWithProviders(<ImportPage />);
-    expect(screen.getAllByText(/foreflight/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/csv/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it('shows mapping step after upload', async () => {
@@ -136,7 +136,7 @@ describe('ImportPage', () => {
   it('renders file format info', () => {
     renderWithProviders(<ImportPage />);
     expect(screen.getAllByText(/csv/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/10 mb/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/supported formats/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it('shows person fields in column mapping dropdowns', async () => {
@@ -235,7 +235,7 @@ describe('ImportPage', () => {
     fireEvent.click(previewButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Import Preview')).toBeInTheDocument();
+      expect(screen.getByText('Preview')).toBeInTheDocument();
     });
 
     // Verify crew column header exists
@@ -296,11 +296,11 @@ describe('ImportPage', () => {
 
     // Preview
     fireEvent.click(screen.getByRole('button', { name: /validate & preview/i }));
-    await waitFor(() => expect(screen.getByText('Import Preview')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Preview')).toBeInTheDocument());
 
     // Confirm
     fireEvent.click(screen.getByRole('button', { name: /import 1 flight/i }));
-    await waitFor(() => expect(screen.getByText('Import Complete!')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Successfully imported/)).toBeInTheDocument());
 
     // Check contacts created is shown
     expect(screen.getByText('Contacts')).toBeInTheDocument();

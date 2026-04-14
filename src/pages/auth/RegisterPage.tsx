@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -22,6 +23,7 @@ const registerSchema = z
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const registerMutation = useRegister();
   const [error, setError] = useState<string | null>(null);
@@ -46,9 +48,9 @@ export default function RegisterPage() {
     } catch (err: unknown) {
       const status = extractApiStatus(err);
       if (status === 409) {
-        setError('An account with this email already exists.');
+        setError(t('auth:register.emailExists'));
       } else {
-        setError(extractApiError(err, 'Registration failed. Please try again.'));
+        setError(extractApiError(err, t('auth:register.registrationFailed')));
       }
     }
   };
@@ -61,7 +63,7 @@ export default function RegisterPage() {
           <div className="text-4xl mb-2">✈</div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{APP_NAME}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Create your account
+            {t('auth:register.tagline')}
           </p>
         </div>
 
@@ -77,7 +79,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="name" className="form-label">
-              Full Name <span className="text-red-500">*</span>
+              {t('auth:register.fullName')} <span className="text-red-500">*</span>
             </label>
             <input
               {...register('name')}
@@ -92,7 +94,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="email" className="form-label">
-              Email <span className="text-red-500">*</span>
+              {t('auth:register.email')} <span className="text-red-500">*</span>
             </label>
             <input
               {...register('email')}
@@ -107,7 +109,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="password" className="form-label">
-              Password <span className="text-red-500">*</span>
+              {t('auth:register.password')} <span className="text-red-500">*</span>
             </label>
             <input
               {...register('password')}
@@ -120,12 +122,12 @@ export default function RegisterPage() {
             {errors.password && (
               <p className="form-error">{errors.password.message}</p>
             )}
-            <p className="form-helper">Must be at least 12 characters</p>
+            <p className="form-helper">{t('auth:register.passwordHint')}</p>
           </div>
 
           <div>
             <label htmlFor="confirmPassword" className="form-label">
-              Confirm Password <span className="text-red-500">*</span>
+              {t('auth:register.confirmPassword')} <span className="text-red-500">*</span>
             </label>
             <input
               {...register('confirmPassword')}
@@ -145,16 +147,16 @@ export default function RegisterPage() {
             disabled={isSubmitting || registerMutation.isPending}
             className="btn-primary w-full btn-lg"
           >
-            {isSubmitting || registerMutation.isPending ? 'Creating account...' : 'Create Account'}
+            {isSubmitting || registerMutation.isPending ? t('auth:register.creatingAccount') : t('auth:register.createAccount')}
           </button>
 
           <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-            Already have an account?{' '}
+            {t('auth:register.haveAccount')}{' '}
             <Link
               to="/login"
               className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
             >
-              Log in
+              {t('auth:register.logIn')}
             </Link>
           </p>
         </form>

@@ -89,7 +89,7 @@ describe('ReportsPage', () => {
 
     renderWithProviders(<ReportsPage />);
     expect(screen.getByText('Reports')).toBeInTheDocument();
-    expect(screen.getByText(/flight trends/i)).toBeInTheDocument();
+    expect(screen.getByText(/flight reports/i)).toBeInTheDocument();
   });
 
   it('renders summary cards with correct values', () => {
@@ -130,9 +130,9 @@ describe('ReportsPage', () => {
     } as any);
 
     renderWithProviders(<ReportsPage />);
-    expect(screen.getByText('Block Time Over Time')).toBeInTheDocument();
+    expect(screen.getByText('Block Hours Over Time')).toBeInTheDocument();
     expect(screen.getByText('Flights Per Month')).toBeInTheDocument();
-    expect(screen.getByText('Time by Aircraft Type')).toBeInTheDocument();
+    expect(screen.getByText('Hours by Aircraft Type')).toBeInTheDocument();
     expect(screen.getByText('Aircraft Type Breakdown')).toBeInTheDocument();
   });
 
@@ -154,7 +154,7 @@ describe('ReportsPage', () => {
     } as any);
 
     renderWithProviders(<ReportsPage />);
-    expect(screen.getByText(/no flight data available/i)).toBeInTheDocument();
+    expect(screen.getByText(/not enough data to display reports/i)).toBeInTheDocument();
   });
 
   it('changes time range when selector is clicked', async () => {

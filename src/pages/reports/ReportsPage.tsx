@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
   PieChart, Pie, Cell,
@@ -17,6 +18,7 @@ const COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981'
 type TimeRange = 6 | 12 | 24;
 
 export default function ReportsPage() {
+  const { t } = useTranslation('reports');
   const [months, setMonths] = useState<TimeRange>(12);
   const { data: trends, isLoading, error } = useTrends(months);
   const { user } = useAuthStore();
@@ -34,8 +36,8 @@ export default function ReportsPage() {
     return (
       <div className="mx-auto max-w-[1280px] py-6">
         <ErrorState
-          title="Failed to load reports"
-          message="An error occurred while loading flight trends. Please try again."
+          title={t('failedToLoad', 'Failed to load reports')}
+          message={t('failedToLoadMessage', 'An error occurred while loading flight trends. Please try again.')}
         />
       </div>
     );
@@ -60,9 +62,9 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="page-title">Reports</h1>
+          <h1 className="page-title">{t('title')}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Flight trends and statistics
+            {t('flightReports', 'Flight trends and statistics')}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -84,10 +86,10 @@ export default function ReportsPage() {
           </div>
           {/* Export buttons */}
           <button onClick={handleExportCSV} className="btn-secondary btn-sm text-xs" disabled={!trends}>
-            Export CSV
+            {t('exportCsv')}
           </button>
           <button onClick={handleExportPDF} className="btn-secondary btn-sm text-xs" disabled={!trends}>
-            Export PDF
+            {t('exportPdf')}
           </button>
         </div>
       </div>
@@ -104,7 +106,7 @@ export default function ReportsPage() {
       {monthly.length > 0 ? (
         <>
           <div className="card mb-6">
-            <h2 className="section-title mb-4">Block Time Over Time</h2>
+            <h2 className="section-title mb-4">{t('blockHoursOverTime')}</h2>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={monthly} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -136,7 +138,7 @@ export default function ReportsPage() {
 
           {/* Flights Per Month (bar chart) */}
           <div className="card mb-6">
-            <h2 className="section-title mb-4">Flights Per Month</h2>
+            <h2 className="section-title mb-4">{t('flightsPerMonth')}</h2>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthly} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -162,7 +164,7 @@ export default function ReportsPage() {
       ) : (
         <div className="card text-center py-12 mb-6">
           <p className="text-slate-500 dark:text-slate-400">
-            No flight data available for the selected period.
+            {t('noData')}
           </p>
         </div>
       )}
@@ -171,7 +173,7 @@ export default function ReportsPage() {
       {byAircraft.length > 0 && (
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="card">
-            <h2 className="section-title mb-4">Time by Aircraft Type</h2>
+            <h2 className="section-title mb-4">{t('hoursByAircraftType')}</h2>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -199,7 +201,7 @@ export default function ReportsPage() {
           </div>
 
           <div className="card">
-            <h2 className="section-title mb-4">Aircraft Type Breakdown</h2>
+            <h2 className="section-title mb-4">{t('aircraftTypeBreakdown', 'Aircraft Type Breakdown')}</h2>
             <div className="space-y-3">
               {byAircraft.map((ac, idx) => {
                 const maxMinutes = byAircraft[0]?.totalMinutes || 1;

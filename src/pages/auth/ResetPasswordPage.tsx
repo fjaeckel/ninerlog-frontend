@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useResetPassword } from '../../hooks/useAuth';
@@ -16,6 +17,7 @@ const resetSchema = z.object({
 type ResetFormData = z.infer<typeof resetSchema>;
 
 export default function ResetPasswordPage() {
+  const { t } = useTranslation('auth');
   const resetPassword = useResetPassword();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +36,7 @@ export default function ResetPasswordPage() {
       await resetPassword.mutateAsync(data);
       setSuccess(true);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to send reset email. Please try again.');
+      setError(err.response?.data?.message || t('auth:resetPassword.sendFailed'));
     }
   };
 
@@ -44,12 +46,12 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-[400px]">
           <div className="card p-6 text-center">
             <div className="text-green-600 text-5xl mb-4">✓</div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">Check your email</h2>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">{t('auth:resetPassword.checkEmail')}</h2>
             <p className="text-slate-500 dark:text-slate-400 mb-6">
-              We've sent a password reset link to your email address. It expires in 1 hour.
+              {t('auth:resetPassword.resetSent')}
             </p>
             <Link to="/login" className="btn-primary inline-flex">
-              Back to login
+              {t('auth:resetPassword.backToLogin')}
             </Link>
           </div>
         </div>
@@ -62,9 +64,9 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-[400px] space-y-8">
         <div className="text-center">
           <div className="text-4xl mb-2">✈</div>
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Reset Password</h1>
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{t('auth:resetPassword.title')}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Enter your email and we'll send you a reset link
+            {t('auth:resetPassword.description')}
           </p>
         </div>
 
@@ -77,7 +79,7 @@ export default function ResetPasswordPage() {
 
           <div>
             <label htmlFor="email" className="form-label">
-              Email
+              {t('auth:resetPassword.email')}
             </label>
             <input
               {...register('email')}
@@ -97,7 +99,7 @@ export default function ResetPasswordPage() {
             disabled={isSubmitting || resetPassword.isPending}
             className="btn-primary w-full btn-lg"
           >
-            {isSubmitting || resetPassword.isPending ? 'Sending...' : 'Send Reset Link'}
+            {isSubmitting || resetPassword.isPending ? t('auth:resetPassword.sending') : t('auth:resetPassword.sendResetLink')}
           </button>
 
           <p className="text-center text-sm text-slate-500 dark:text-slate-400">
