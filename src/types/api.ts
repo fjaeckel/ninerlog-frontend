@@ -20,6 +20,9 @@ export interface User {
   twoFactorEnabled?: boolean;
   isAdmin?: boolean;
   timeDisplayFormat?: 'hm' | 'decimal';
+  dateFormat?: 'DD.MM.YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD';
+  decimalSeparator?: 'comma' | 'dot';
+  preferredLocale?: 'en' | 'de';
   createdAt: string;
   updatedAt: string;
 }

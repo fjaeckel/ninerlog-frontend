@@ -7,11 +7,16 @@
  */
 
 export type TimeDisplayFormat = 'hm' | 'decimal';
+export type DecimalSeparator = 'comma' | 'dot';
 
 /**
  * Format a duration in minutes to the user's preferred display format.
  */
-export function formatDuration(minutes: number, format: TimeDisplayFormat = 'hm'): string {
+export function formatDuration(
+  minutes: number,
+  format: TimeDisplayFormat = 'hm',
+  decimalSeparator: DecimalSeparator = 'dot',
+): string {
   if (minutes === 0) return format === 'hm' ? '0h 0m' : '0.0h';
 
   if (format === 'hm') {
@@ -22,7 +27,11 @@ export function formatDuration(minutes: number, format: TimeDisplayFormat = 'hm'
 
   // decimal format
   const hours = minutes / 60;
-  return `${hours.toFixed(1)}h`;
+  const formatted = hours.toFixed(1);
+  if (decimalSeparator === 'comma') {
+    return `${formatted.replace('.', ',')}h`;
+  }
+  return `${formatted}h`;
 }
 
 /**
