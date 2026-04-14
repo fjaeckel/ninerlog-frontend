@@ -236,6 +236,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/me/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get current user's flight statistics
+         * @description Get aggregated flight statistics for the authenticated user across all flights, independent of any license.
+         */
+        get: operations["getMyStatistics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/licenses": {
         parameters: {
             query?: never;
@@ -3668,6 +3688,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NotificationHistoryResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getMyStatistics: {
+        parameters: {
+            query?: {
+                /** @description Filter from this date (inclusive) */
+                startDate?: string;
+                /** @description Filter to this date (inclusive) */
+                endDate?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User flight statistics */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Statistics"];
                 };
             };
             401: components["responses"]["Unauthorized"];
