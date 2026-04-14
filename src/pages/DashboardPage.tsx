@@ -1,9 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
-import { useLicenses } from '../hooks/useLicenses';
 import { useFlights } from '../hooks/useFlights';
-import { useLicenseStatistics } from '../hooks/useStatistics';
+import { useMyStatistics } from '../hooks/useStatistics';
 import { useCredentials } from '../hooks/useCredentials';
 import { useAllCurrencyStatus } from '../hooks/useCurrency';
 import { useStatsByClass } from '../hooks/useStatsByClass';
@@ -13,12 +12,8 @@ import { formatDuration, type TimeDisplayFormat } from '../lib/duration';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const { data: licenses } = useLicenses();
   const navigate = useNavigate();
   const { t } = useTranslation(['dashboard', 'common']);
-
-  // Use the first license for statistics (per-license endpoint still works)
-  const firstLicense = licenses?.[0];
 
   const { data: flightsData } = useFlights({
     page: 1,
@@ -27,7 +22,7 @@ export default function DashboardPage() {
     sortOrder: 'desc',
   });
 
-  const { data: statistics } = useLicenseStatistics(firstLicense?.id || '');
+  const { data: statistics } = useMyStatistics();
   const { data: currencyStatus } = useAllCurrencyStatus();
   const { data: credentials } = useCredentials();
   const { data: classStat } = useStatsByClass();
