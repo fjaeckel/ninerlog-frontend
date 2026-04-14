@@ -75,7 +75,19 @@
     "resultCount_one": "{{count}} result for \"{{query}}\"",
     "resultCount_other": "{{count}} results for \"{{query}}\"",
     "noResults": "No help topics match your search.",
-    "selectTopic": "Select help topic"
+    "selectTopic": "Select help topic",
+    "sections": {
+      "gettingStarted": "Getting Started",
+      "aircraft": "Aircraft",
+      "licenses": "Licenses & Ratings",
+      "credentials": "Credentials",
+      "flights": "Logging Flights",
+      "importExport": "Import & Export",
+      "currency": "Currency & Recency",
+      "reports": "Reports & Maps",
+      "profile": "Profile & Settings",
+      "admin": "Admin Console"
+    }
   },
   "admin": {
     "title": "Admin Console",

@@ -1,44 +1,18 @@
 /**
- * Help content module — i18n-ready.
+ * Help content module — fully i18n-aware.
  *
- * Content is sourced from `src/i18n/locales/en/help.json` (the single source
- * of truth). When react-i18next is installed in Phase 7, this module can be
- * replaced with `t('help:<sectionId>')` calls — the JSON namespace is already
- * structured for that.
- *
- * Until then, we import the JSON directly and re-export each section as a
- * named constant so existing consumers (HelpPage, tests) continue to work
- * without changes.
+ * Content is loaded via react-i18next from the `help` namespace.
+ * EN content lives in `src/i18n/locales/en/help.json`, DE in `de/help.json`.
+ * Use `useHelpContent()` hook to get translated help text.
  */
 
-import helpContent from '../../../i18n/locales/en/help.json';
+import { useTranslation } from 'react-i18next';
 import { APP_NAME } from '../../../lib/config';
 
-/**
- * Replace all occurrences of "NinerLog" in help content with the configured
- * APP_NAME. This allows the help text to reflect a custom product name set
- * via the VITE_APP_NAME environment variable.
- */
 function brand(text: string): string {
   return text.replace(/NinerLog/g, APP_NAME);
 }
 
-// Re-export individual sections for backwards-compatible named imports
-export const gettingStarted: string = brand(helpContent['getting-started']);
-export const aircraft: string = brand(helpContent['aircraft']);
-export const licenses: string = brand(helpContent['licenses']);
-export const credentials: string = brand(helpContent['credentials']);
-export const flights: string = brand(helpContent['flights']);
-export const importExport: string = brand(helpContent['import-export']);
-export const currency: string = brand(helpContent['currency']);
-export const reports: string = brand(helpContent['reports']);
-export const profile: string = brand(helpContent['profile']);
-export const admin: string = brand(helpContent['admin']);
-
-/**
- * All section IDs available in the help namespace.
- * Matches the keys in en/help.json (excluding _meta).
- */
 export const helpSectionIds = [
   'getting-started',
   'aircraft',
@@ -55,9 +29,20 @@ export const helpSectionIds = [
 export type HelpSectionId = (typeof helpSectionIds)[number];
 
 /**
- * Get help content by section ID.
- * In Phase 7 this becomes: `t(`help:${id}`)`.
+ * Hook returning translated help content for all sections.
+ * Automatically switches when the user changes language.
  */
-export function getHelpContent(id: HelpSectionId): string {
-  return brand(helpContent[id]);
+export function useHelpContent() {
+  const { t } = useTranslation('help');
+
+  const sections = helpSectionIds.map((id) => ({
+    id,
+    content: brand(t(id, { defaultValue: '' })),
+  }));
+
+  function getContent(id: HelpSectionId): string {
+    return brand(t(id, { defaultValue: '' }));
+  }
+
+  return { sections, getContent };
 }

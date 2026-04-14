@@ -4,39 +4,57 @@ import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { HelpCircle, Plane, Award, FileText, PlaneTakeoff, Upload, Shield, BarChart3, User, ShieldCheck, BookOpen, Search, X } from 'lucide-react';
-import {
-  gettingStarted, aircraft, licenses, credentials,
-  flights, importExport, currency, reports, profile, admin,
-} from './content';
+import { useHelpContent, helpSectionIds, type HelpSectionId } from './content';
 import { APP_NAME } from '../../lib/config';
 
-const sections = [
-  { id: 'getting-started', label: 'Getting Started', icon: <BookOpen className="w-4 h-4" />, content: gettingStarted },
-  { id: 'aircraft', label: 'Aircraft', icon: <PlaneTakeoff className="w-4 h-4" />, content: aircraft },
-  { id: 'licenses', label: 'Licenses & Ratings', icon: <Award className="w-4 h-4" />, content: licenses },
-  { id: 'credentials', label: 'Credentials', icon: <FileText className="w-4 h-4" />, content: credentials },
-  { id: 'flights', label: 'Logging Flights', icon: <Plane className="w-4 h-4" />, content: flights },
-  { id: 'import-export', label: 'Import & Export', icon: <Upload className="w-4 h-4" />, content: importExport },
-  { id: 'currency', label: 'Currency & Recency', icon: <Shield className="w-4 h-4" />, content: currency },
-  { id: 'reports', label: 'Reports & Maps', icon: <BarChart3 className="w-4 h-4" />, content: reports },
-  { id: 'profile', label: 'Profile & Settings', icon: <User className="w-4 h-4" />, content: profile },
-  { id: 'admin', label: 'Admin Console', icon: <ShieldCheck className="w-4 h-4" />, content: admin },
-];
+const sectionIcons: Record<HelpSectionId, React.ReactNode> = {
+  'getting-started': <BookOpen className="w-4 h-4" />,
+  'aircraft': <PlaneTakeoff className="w-4 h-4" />,
+  'licenses': <Award className="w-4 h-4" />,
+  'credentials': <FileText className="w-4 h-4" />,
+  'flights': <Plane className="w-4 h-4" />,
+  'import-export': <Upload className="w-4 h-4" />,
+  'currency': <Shield className="w-4 h-4" />,
+  'reports': <BarChart3 className="w-4 h-4" />,
+  'profile': <User className="w-4 h-4" />,
+  'admin': <ShieldCheck className="w-4 h-4" />,
+};
+
+const sectionLabelKeys: Record<HelpSectionId, string> = {
+  'getting-started': 'help.sections.gettingStarted',
+  'aircraft': 'help.sections.aircraft',
+  'licenses': 'help.sections.licenses',
+  'credentials': 'help.sections.credentials',
+  'flights': 'help.sections.flights',
+  'import-export': 'help.sections.importExport',
+  'currency': 'help.sections.currency',
+  'reports': 'help.sections.reports',
+  'profile': 'help.sections.profile',
+  'admin': 'help.sections.admin',
+};
 
 export default function HelpPage() {
   const { t } = useTranslation('common');
+  const { getContent } = useHelpContent();
   const [searchParams] = useSearchParams();
   const topicFromUrl = searchParams.get('topic');
 
+  // Build sections array dynamically with translated labels and content
+  const sections = useMemo(() => helpSectionIds.map((id) => ({
+    id,
+    label: t(sectionLabelKeys[id]),
+    icon: sectionIcons[id],
+    content: getContent(id),
+  })), [t, getContent]);
+
   const [active, setActive] = useState(() => {
-    const match = sections.find((s) => s.id === topicFromUrl);
-    return match ? match.id : 'getting-started';
+    return helpSectionIds.includes(topicFromUrl as HelpSectionId) ? topicFromUrl! : 'getting-started';
   });
   const [searchQuery, setSearchQuery] = useState('');
 
   // Sync topic from URL when navigating via HelpLink
   useEffect(() => {
-    if (topicFromUrl && sections.some((s) => s.id === topicFromUrl)) {
+    if (topicFromUrl && helpSectionIds.includes(topicFromUrl as HelpSectionId)) {
       setActive(topicFromUrl);
       setSearchQuery('');
     }

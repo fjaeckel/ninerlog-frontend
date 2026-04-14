@@ -75,7 +75,19 @@
     "resultCount_one": "{{count}} Ergebnis für \"{{query}}\"",
     "resultCount_other": "{{count}} Ergebnisse für \"{{query}}\"",
     "noResults": "Keine Hilfethemen entsprechen Ihrer Suche.",
-    "selectTopic": "Hilfethema auswählen"
+    "selectTopic": "Hilfethema auswählen",
+    "sections": {
+      "gettingStarted": "Erste Schritte",
+      "aircraft": "Flugzeuge",
+      "licenses": "Lizenzen & Berechtigungen",
+      "credentials": "Nachweise",
+      "flights": "Flüge eintragen",
+      "importExport": "Import & Export",
+      "currency": "Gültigkeit & Recency",
+      "reports": "Berichte & Karten",
+      "profile": "Profil & Einstellungen",
+      "admin": "Admin-Konsole"
+    }
   },
   "admin": {
     "title": "Admin-Konsole",
