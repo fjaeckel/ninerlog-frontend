@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { format } from 'date-fns';
 import { useCredentials, useDeleteCredential } from '../../hooks/useCredentials';
 import CredentialForm from '../../components/credentials/CredentialForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { SkeletonGrid } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import HelpLink from '../../components/ui/HelpLink';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
 function getExpiryStatus(expiryDate: string | null | undefined): { label: string; class: string } {
   if (!expiryDate) return { label: 'No expiry', class: 'badge-current' };
@@ -27,6 +27,7 @@ export default function CredentialsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const { t } = useTranslation('credentials');
+  const { fmtDate } = useFormatPrefs();
 
   const handleDelete = async (id: string) => {
     setDeleteTarget(id);
@@ -139,12 +140,12 @@ export default function CredentialsPage() {
                 <dl className="text-sm space-y-1.5 mb-4">
                   <div className="flex justify-between">
                     <dt className="text-slate-500 dark:text-slate-400">{t('issued')}</dt>
-                    <dd className="text-slate-700 dark:text-slate-300">{format(new Date(cred.issueDate), 'dd MMM yyyy')}</dd>
+                    <dd className="text-slate-700 dark:text-slate-300">{fmtDate(cred.issueDate)}</dd>
                   </div>
                   {cred.expiryDate && (
                     <div className="flex justify-between">
                       <dt className="text-slate-500 dark:text-slate-400">{t('expires')}</dt>
-                      <dd className="text-slate-700 dark:text-slate-300">{format(new Date(cred.expiryDate), 'dd MMM yyyy')}</dd>
+                      <dd className="text-slate-700 dark:text-slate-300">{fmtDate(cred.expiryDate)}</dd>
                     </div>
                   )}
                   <div className="flex justify-between">

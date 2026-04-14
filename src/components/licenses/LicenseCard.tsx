@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { License } from '../../stores/licenseStore';
-import { format, isPast, differenceInDays } from 'date-fns';
+import { isPast, differenceInDays } from 'date-fns';
 import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateClassRating } from '../../hooks/useClassRatings';
 import { extractApiError } from '../../lib/errors';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
 const CLASS_TYPE_OPTIONS = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
@@ -12,6 +13,7 @@ const CLASS_TYPE_OPTIONS = [
 
 function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
   const { t } = useTranslation('licenses');
+  const { fmtDate } = useFormatPrefs();
   if (!expiryDate) {
     return <span className="text-xs text-slate-400">{t('card.noExpiry')}</span>;
   }
@@ -25,7 +27,7 @@ function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
   if (daysLeft <= 30) {
     return <span className="text-xs font-medium text-amber-600 dark:text-amber-400">{t('card.expiresInDays', { days: daysLeft })}</span>;
   }
-  return <span className="text-xs text-green-600 dark:text-green-400">{format(expiry, 'MMM dd, yyyy')}</span>;
+  return <span className="text-xs text-green-600 dark:text-green-400">{fmtDate(expiryDate)}</span>;
 }
 
 interface LicenseCardProps {
@@ -36,6 +38,7 @@ interface LicenseCardProps {
 
 export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardProps) {
   const { t } = useTranslation('licenses');
+  const { fmtDate } = useFormatPrefs();
   const { data: classRatings, isLoading: ratingsLoading } = useClassRatings(license.id);
   const createRating = useCreateClassRating();
   const deleteRating = useDeleteClassRating();
@@ -126,7 +129,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500 dark:text-slate-400">{t('card.issued')}</span>
-          <span className="text-slate-700 dark:text-slate-300">{format(new Date(license.issueDate), 'MMM dd, yyyy')}</span>
+          <span className="text-slate-700 dark:text-slate-300">{fmtDate(license.issueDate)}</span>
         </div>
         {license.requiresSeparateLogbook && (
           <div className="flex justify-between">

@@ -1,6 +1,7 @@
 import type { MonthlyTrend, AircraftBreakdown } from '../hooks/useReports';
 import { APP_NAME } from './config';
 import { formatDuration } from './duration';
+import { formatDate, type DateFormatPref } from './dateFormat';
 
 export function exportTrendsToCSV(monthly: MonthlyTrend[], byAircraftType: AircraftBreakdown[]) {
   const lines: string[] = [];
@@ -32,7 +33,7 @@ export function exportTrendsToCSV(monthly: MonthlyTrend[], byAircraftType: Aircr
   URL.revokeObjectURL(url);
 }
 
-export function exportTrendsToPDF(monthly: MonthlyTrend[], byAircraftType: AircraftBreakdown[]) {
+export function exportTrendsToPDF(monthly: MonthlyTrend[], byAircraftType: AircraftBreakdown[], dateFormatPref: DateFormatPref = 'DD.MM.YYYY') {
   const totalMinutes = monthly.reduce((s, m) => s + m.totalMinutes, 0);
   const totalFlights = monthly.reduce((s, m) => s + m.totalFlights, 0);
   const totalPICMinutes = monthly.reduce((s, m) => s + m.picMinutes, 0);
@@ -59,7 +60,7 @@ export function exportTrendsToPDF(monthly: MonthlyTrend[], byAircraftType: Aircr
 </style>
 </head><body>
 <h1>✈ ${APP_NAME} Flight Report</h1>
-<p style="color:#64748b">Generated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+<p style="color:#64748b">Generated ${formatDate(new Date(), dateFormatPref)}</p>
 
 <div class="summary">
   <div class="stat"><div class="stat-value">${totalFlights}</div><div class="stat-label">Total Flights</div></div>

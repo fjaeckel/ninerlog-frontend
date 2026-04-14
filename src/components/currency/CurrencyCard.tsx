@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { ClassRatingCurrency, CurrencyRequirement, CurrencyStatus } from '../../types/api';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
 const STATUS_CONFIG: Record<CurrencyStatus, {
   bg: string; border: string; badge: string; badgeKey: string; icon: string;
@@ -69,6 +70,7 @@ interface CurrencyCardProps {
 
 export function CurrencyCard({ rating }: CurrencyCardProps) {
   const { t } = useTranslation('currency');
+  const { fmtDate } = useFormatPrefs();
   const config = STATUS_CONFIG[rating.status];
   const label = t(`classTypes.${rating.classType}`, { defaultValue: rating.classType });
 
@@ -127,7 +129,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
       {/* Expiry date */}
       {rating.expiryDate && (
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-3 text-right">
-          {t('expiresLabel', { date: rating.expiryDate })}
+          {t('expiresLabel', { date: fmtDate(rating.expiryDate) })}
         </p>
       )}
     </div>

@@ -1,21 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { format } from 'date-fns';
 import { Pencil, Trash2, Search, X } from 'lucide-react';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
 import FlightForm from '../../components/flights/FlightForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
-import { useAuthStore } from '../../stores/authStore';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import type { operations } from '../../api/schema';
 
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
 
 export default function FlightsPage() {
   const { t } = useTranslation(['flights', 'common']);
+  const { fmtDate, fmtDuration } = useFormatPrefs();
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<'date' | 'totalTime' | 'createdAt'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -379,7 +378,7 @@ export default function FlightsPage() {
                     onClick={() => navigate(`/flights/${flight.id}`)}
                   >
                     <td className="px-4 py-3 whitespace-nowrap text-slate-800 dark:text-slate-200">
-                      {format(new Date(flight.date), 'dd MMM yyyy')}
+                      {fmtDate(flight.date)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-800 dark:text-slate-100">
                       {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
@@ -392,7 +391,7 @@ export default function FlightsPage() {
                       {flight.offBlockTime?.slice(0, 5) || '—'} / {flight.onBlockTime?.slice(0, 5) || '—'}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">
-                      {formatDuration(flight.totalTime, (useAuthStore.getState().user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')}
+                      {fmtDuration(flight.totalTime)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-center">
                       <span className={`badge ${

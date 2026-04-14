@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { format } from 'date-fns';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
 import FlightForm from '../../components/flights/FlightForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
-import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
-import { useAuthStore } from '../../stores/authStore';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
 export default function FlightDetailPage() {
   const { flightId } = useParams<{ flightId: string }>();
@@ -18,6 +16,7 @@ export default function FlightDetailPage() {
   const { data: flight, isLoading, error } = useFlight(flightId || '');
   const deleteFlight = useDeleteFlight();
   const [showEditForm, setShowEditForm] = useState(false);
+  const { fmtDateTime, fmtDateLong, fmtDuration } = useFormatPrefs();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (isLoading) {
@@ -90,7 +89,7 @@ export default function FlightDetailPage() {
             {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
-            {format(new Date(flight.date), 'EEEE, MMMM d, yyyy')}
+            {fmtDateLong(flight.date)}
           </p>
         </div>
         <div className="flex gap-2 shrink-0">
@@ -184,7 +183,7 @@ export default function FlightDetailPage() {
               <div key={label} className="flex justify-between">
                 <dt className="text-slate-500 dark:text-slate-400">{label}</dt>
                 <dd className={`font-medium ${value > 0 || text ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'} ${!text ? 'font-mono tabular-nums' : ''}`}>
-                  {text ?? formatDuration(value, (useAuthStore.getState().user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')}
+                  {text ?? fmtDuration(value)}
                 </dd>
               </div>
             ))}
@@ -253,9 +252,9 @@ export default function FlightDetailPage() {
 
       {/* Metadata */}
       <div className="mt-6 text-xs text-slate-400 dark:text-slate-500 text-center">
-        {t('detail.created', { date: format(new Date(flight.createdAt), 'MMM d, yyyy HH:mm') })}
+        {t('detail.created', { date: fmtDateTime(flight.createdAt) })}
         {flight.updatedAt !== flight.createdAt &&
-          ` · ${t('detail.updated', { date: format(new Date(flight.updatedAt), 'MMM d, yyyy HH:mm') })}`}
+          ` · ${t('detail.updated', { date: fmtDateTime(flight.updatedAt) })}`}
       </div>
     </div>
   );

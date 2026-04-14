@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotificationHistory } from '../hooks/useNotifications';
+import { useFormatPrefs } from '../hooks/useFormatPrefs';
 
 const CATEGORY_COLORS: Record<string, string> = {
   credential_medical: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
@@ -17,6 +18,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export function NotificationHistory() {
   const { t } = useTranslation('settings');
+  const { fmtDate } = useFormatPrefs();
   const [page, setPage] = useState(0);
   const pageSize = 10;
   const { data, isLoading } = useNotificationHistory(pageSize, page * pageSize);
@@ -60,7 +62,7 @@ export function NotificationHistory() {
             <div className="flex-1 min-w-0">
               <p className="text-sm text-slate-700 dark:text-slate-300 truncate">{entry.subject}</p>
               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                <span>{new Date(entry.sentAt).toLocaleDateString()}</span>
+                <span>{fmtDate(entry.sentAt)}</span>
                 {entry.daysBeforeExpiry != null && (
                   <span>• {t('notifications.daysBeforeExpiry', { days: entry.daysBeforeExpiry })}</span>
                 )}

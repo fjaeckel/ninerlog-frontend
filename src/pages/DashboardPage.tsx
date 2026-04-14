@@ -8,12 +8,13 @@ import { useAllCurrencyStatus } from '../hooks/useCurrency';
 import { useStatsByClass } from '../hooks/useStatsByClass';
 import { CurrencyCard } from '../components/currency/CurrencyCard';
 import { StatCard } from '../components/ui/StatCard';
-import { formatDuration, type TimeDisplayFormat } from '../lib/duration';
+import { useFormatPrefs } from '../hooks/useFormatPrefs';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { t } = useTranslation(['dashboard', 'common']);
+  const { fmtDuration } = useFormatPrefs();
 
   const { data: flightsData } = useFlights({
     page: 1,
@@ -101,8 +102,8 @@ export default function DashboardPage() {
 
       {/* Stats grid */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
-        <StatCard label={t('dashboard:stats.totalTime')} value={statistics ? formatDuration(statistics.totalMinutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm') : '0h 0m'} />
-        <StatCard label={t('dashboard:stats.picTime')} value={statistics ? formatDuration(statistics.picMinutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm') : '0h 0m'} />
+        <StatCard label={t('dashboard:stats.totalTime')} value={statistics ? fmtDuration(statistics.totalMinutes) : '0h 0m'} />
+        <StatCard label={t('dashboard:stats.picTime')} value={statistics ? fmtDuration(statistics.picMinutes) : '0h 0m'} />
         <StatCard label={t('dashboard:stats.totalFlights')} value={String(statistics?.totalFlights ?? totalFlights)} />
         <StatCard
           label={t('dashboard:stats.landings')}
@@ -125,7 +126,7 @@ export default function DashboardPage() {
               { label: t('dashboard:breakdownLabels.ifr'), value: statistics.ifrMinutes },
             ].map(({ label, value }) => (
               <div key={label}>
-                <p className="data-lg text-slate-800 dark:text-slate-100">{formatDuration(value, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')}</p>
+                <p className="data-lg text-slate-800 dark:text-slate-100">{fmtDuration(value)}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</p>
               </div>
             ))}
@@ -146,7 +147,7 @@ export default function DashboardPage() {
                 <div key={cs.class} data-testid={`class-stat-${cs.class}`}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium text-slate-700 dark:text-slate-300">{classLabel}</span>
-                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{formatDuration(cs.minutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')} · {cs.flights} {t('common:flights')} · {cs.landings} {t('common:ldg')}</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{fmtDuration(cs.minutes)} · {cs.flights} {t('common:flights')} · {cs.landings} {t('common:ldg')}</span>
                   </div>
                   <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 dark:bg-blue-400 rounded-full" style={{ width: `${pct}%` }} />
@@ -165,7 +166,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {classStat.byAuthority.map((auth) => (
               <div key={`${auth.authority}-${auth.licenseType}`} className="text-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                <p className="data-lg text-slate-800 dark:text-slate-100">{formatDuration(auth.minutes, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')}</p>
+                <p className="data-lg text-slate-800 dark:text-slate-100">{fmtDuration(auth.minutes)}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{auth.authority} {auth.licenseType}</p>
                 <p className="text-xs text-slate-400 dark:text-slate-500 font-mono tabular-nums">{auth.flights} {t('common:flights')}</p>
               </div>
@@ -202,7 +203,7 @@ export default function DashboardPage() {
                   <span className="ml-3 text-sm text-slate-500 dark:text-slate-400">{flight.aircraftReg}</span>
                 </div>
                 <div className="text-right">
-                  <span className="data-sm text-slate-800 dark:text-slate-100">{formatDuration(flight.totalTime, (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm')}</span>
+                  <span className="data-sm text-slate-800 dark:text-slate-100">{fmtDuration(flight.totalTime)}</span>
                   <span className="ml-3 text-sm text-slate-500 dark:text-slate-400">{flight.date}</span>
                 </div>
               </button>

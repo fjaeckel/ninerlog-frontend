@@ -5,9 +5,10 @@ import { useCredentials } from '../../hooks/useCredentials';
 import { useLicenses } from '../../hooks/useLicenses';
 import { CurrencyCard } from '../../components/currency/CurrencyCard';
 import { ChevronDown, ChevronRight, ShieldAlert, ShieldCheck } from 'lucide-react';
-import { isPast, differenceInDays, format } from 'date-fns';
+import { isPast, differenceInDays } from 'date-fns';
 import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
 import HelpLink from '../../components/ui/HelpLink';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
 const CLASS_TYPE_LABELS: Record<string, string> = {
   SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
@@ -36,6 +37,7 @@ export default function CurrencyPage() {
   const { data: licenses } = useLicenses();
   const [expandedLicenses, setExpandedLicenses] = useState<Record<string, boolean>>({});
   const { t } = useTranslation('currency');
+  const { fmtDate } = useFormatPrefs();
 
   const toggleLicense = (licenseId: string) => {
     setExpandedLicenses((prev) => ({ ...prev, [licenseId]: !prev[licenseId] }));
@@ -163,7 +165,9 @@ export default function CurrencyPage() {
                         <CurrencyCard rating={rating} />
                         {rating.ruleDescription && (
                           <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 px-1 italic">
-                            {rating.ruleDescription}
+                            {(rating as any).ruleDescriptionKey
+                              ? t(`ruleDescriptions.${(rating as any).ruleDescriptionKey}`, { defaultValue: rating.ruleDescription })
+                              : rating.ruleDescription}
                           </p>
                         )}
                       </div>
@@ -256,7 +260,11 @@ export default function CurrencyPage() {
                       {pax.passengerPrivilege.eligible ? '✓' : '⚠'} {pax.passengerPrivilege.message}
                     </div>
                   )}
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">{pax.ruleDescription}</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">
+                    {(pax as any).ruleDescriptionKey
+                      ? t(`ruleDescriptions.${(pax as any).ruleDescriptionKey}`, { defaultValue: pax.ruleDescription })
+                      : pax.ruleDescription}
+                  </p>
                 </div>
               );
             })}
@@ -309,7 +317,7 @@ export default function CurrencyPage() {
                     <p>{t('issued')}: {cred.issueDate}</p>
                     {cred.expiryDate && (
                       <p>
-                        {t('expiresLabel')}: {format(new Date(cred.expiryDate), 'MMM dd, yyyy')}
+                        {t('expiresLabel', { date: fmtDate(cred.expiryDate) })}
                         {daysLeft !== null && (
                           <span className={`ml-1 font-medium font-mono tabular-nums ${expired ? 'text-red-600 dark:text-red-400' : expiringSoon ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
                             ({expired ? t('expiredAgo', { days: Math.abs(daysLeft) }) : t('expiresIn', { days: daysLeft })})
