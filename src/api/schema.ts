@@ -1320,6 +1320,20 @@ export interface components {
              */
             timeDisplayFormat: "hm" | "decimal";
             /**
+             * @description User's preferred date display format.
+             * @default DD.MM.YYYY
+             * @example DD.MM.YYYY
+             * @enum {string}
+             */
+            dateFormat: "DD.MM.YYYY" | "MM/DD/YYYY" | "YYYY-MM-DD";
+            /**
+             * @description User's preferred decimal separator for number display. "comma" for European style (1,5), "dot" for US/UK style (1.5).
+             * @default comma
+             * @example comma
+             * @enum {string}
+             */
+            decimalSeparator: "comma" | "dot";
+            /**
              * @description User's preferred language for the interface.
              * @default en
              * @example en
@@ -3598,6 +3612,16 @@ export interface operations {
                      * @enum {string}
                      */
                     timeDisplayFormat?: "hm" | "decimal";
+                    /**
+                     * @description Preferred date display format
+                     * @enum {string}
+                     */
+                    dateFormat?: "DD.MM.YYYY" | "MM/DD/YYYY" | "YYYY-MM-DD";
+                    /**
+                     * @description Preferred decimal separator for number display
+                     * @enum {string}
+                     */
+                    decimalSeparator?: "comma" | "dot";
                     /**
                      * @description Preferred language for the interface
                      * @enum {string}
