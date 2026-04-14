@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useLogin } from '../../hooks/useAuth';
 import { useLogin2FA } from '../../hooks/useTwoFactor';
 import { useAuthStore } from '../../stores/authStore';
+import i18n from '../../i18n';
 import { APP_NAME } from '../../lib/config';
 
 const loginSchema = z.object({
@@ -71,6 +72,9 @@ export default function LoginPage() {
       });
 
       setAuth(result.user, result.accessToken, result.refreshToken, result.expiresIn);
+      if (result.user?.preferredLocale && result.user.preferredLocale !== i18n.language) {
+        i18n.changeLanguage(result.user.preferredLocale);
+      }
       navigate('/dashboard');
     } catch {
       setError(t('auth:twoFactor.invalidCode'));

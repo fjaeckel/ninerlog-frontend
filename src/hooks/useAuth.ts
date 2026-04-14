@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { apiClient } from '../api/client';
+import i18n from '../i18n';
 import type { components, operations } from '../api/schema';
 
 // Extract request body types from operations (they're inline, not in components)
@@ -28,6 +29,9 @@ export const useRegister = () => {
     },
     onSuccess: (data) => {
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);
+      if (data.user.preferredLocale && data.user.preferredLocale !== i18n.language) {
+        i18n.changeLanguage(data.user.preferredLocale);
+      }
     },
   });
 };
@@ -47,6 +51,9 @@ export const useLogin = () => {
       // Skip setAuth if 2FA is required — handled by LoginPage
       if (data.requiresTwoFactor) return;
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);
+      if (data.user?.preferredLocale && data.user.preferredLocale !== i18n.language) {
+        i18n.changeLanguage(data.user.preferredLocale);
+      }
     },
   });
 };

@@ -1,12 +1,28 @@
 import { useTranslation } from 'react-i18next';
 import { supportedLanguages, languageNames } from '../i18n';
+import { useUpdateProfile } from '../hooks/useProfile';
+import { useAuthStore } from '../stores/authStore';
 
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation('settings');
+  const updateProfile = useUpdateProfile();
+  const { updateUser, isAuthenticated } = useAuthStore();
 
   const currentLang = supportedLanguages.find(
     (l) => i18n.language === l || i18n.language.startsWith(l),
   ) ?? 'en';
+
+  const handleChange = async (lang: string) => {
+    await i18n.changeLanguage(lang);
+    if (isAuthenticated) {
+      try {
+        await updateProfile.mutateAsync({ preferredLocale: lang } as any);
+        updateUser({ preferredLocale: lang as 'en' | 'de' });
+      } catch {
+        // Language change in UI still applies even if API call fails
+      }
+    }
+  };
 
   return (
     <div className="card mb-6">
@@ -16,7 +32,7 @@ export function LanguageSwitcher() {
       </p>
       <select
         value={currentLang}
-        onChange={(e) => i18n.changeLanguage(e.target.value)}
+        onChange={(e) => handleChange(e.target.value)}
         className="input w-full"
       >
         {supportedLanguages.map((lang) => (
