@@ -58,7 +58,7 @@ describe('FlightCard', () => {
     );
 
     expect(screen.getByText(/EDDF → EDDH/)).toBeInTheDocument();
-    expect(screen.getByText(/Jan 15, 2026/)).toBeInTheDocument();
+    expect(screen.getByText(/15\.01\.2026/)).toBeInTheDocument();
   });
 
   it('renders total time badge', () => {

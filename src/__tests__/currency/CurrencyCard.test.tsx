@@ -119,7 +119,7 @@ describe('CurrencyCard', () => {
 
   it('renders expiry date', () => {
     render(<CurrencyCard rating={baseRating} />);
-    expect(screen.getByText('Expires: 2027-06-15')).toBeInTheDocument();
+    expect(screen.getByText('Expires: 15.06.2027')).toBeInTheDocument();
   });
 
   it('does not render expiry date when missing', () => {

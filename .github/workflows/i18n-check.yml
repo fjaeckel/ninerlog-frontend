@@ -1,0 +1,62 @@
+name: i18n Key Completeness
+
+on:
+  push:
+    paths:
+      - 'src/i18n/locales/**'
+  pull_request:
+    paths:
+      - 'src/i18n/locales/**'
+
+jobs:
+  check-translations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check translation key completeness
+        run: |
+          #!/bin/bash
+          set -euo pipefail
+
+          EN_DIR="src/i18n/locales/en"
+          DE_DIR="src/i18n/locales/de"
+          MISSING=0
+
+          for en_file in "$EN_DIR"/*.json; do
+            ns=$(basename "$en_file")
+            de_file="$DE_DIR/$ns"
+
+            if [ ! -f "$de_file" ]; then
+              echo "❌ Missing DE file: $de_file"
+              MISSING=1
+              continue
+            fi
+
+            # Extract all leaf keys from EN
+            en_keys=$(jq -r '[paths(scalars) | join(".")] | sort[]' "$en_file")
+            de_keys=$(jq -r '[paths(scalars) | join(".")] | sort[]' "$de_file")
+
+            # Find keys in EN but not in DE
+            missing_in_de=$(comm -23 <(echo "$en_keys") <(echo "$de_keys") || true)
+            if [ -n "$missing_in_de" ]; then
+              echo "❌ Keys in $ns (EN) missing from DE:"
+              echo "$missing_in_de" | sed 's/^/   /'
+              MISSING=1
+            fi
+
+            # Find keys in DE but not in EN
+            extra_in_de=$(comm -13 <(echo "$en_keys") <(echo "$de_keys") || true)
+            if [ -n "$extra_in_de" ]; then
+              echo "⚠️  Keys in $ns (DE) not in EN (may be intentional):"
+              echo "$extra_in_de" | sed 's/^/   /'
+            fi
+          done
+
+          if [ "$MISSING" -eq 1 ]; then
+            echo ""
+            echo "❌ Translation key mismatch detected. Please ensure EN and DE have the same keys."
+            exit 1
+          fi
+
+          echo "✅ All translation keys match between EN and DE."
