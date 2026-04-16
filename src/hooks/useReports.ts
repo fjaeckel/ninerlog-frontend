@@ -24,6 +24,27 @@ export interface TrendsData {
   byAircraftType: AircraftBreakdown[];
 }
 
+export interface ClassStat {
+  class: string;
+  flights: number;
+  minutes: number;
+  picMinutes: number;
+  dualMinutes: number;
+  landings: number;
+}
+
+export interface CategoryStat {
+  category: string;
+  flights: number;
+  picMinutes: number;
+  dualMinutes: number;
+}
+
+export interface StatsByClassData {
+  byClass: ClassStat[];
+  byCategory: CategoryStat[];
+}
+
 import { API_BASE_URL } from '../lib/config';
 
 export const useTrends = (months: number = 12) => {
@@ -35,6 +56,20 @@ export const useTrends = (months: number = 12) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Failed to fetch trends');
+      return res.json();
+    },
+  });
+};
+
+export const useStatsByClass = () => {
+  return useQuery({
+    queryKey: ['statsByClass'],
+    queryFn: async (): Promise<StatsByClassData> => {
+      const token = useAuthStore.getState().accessToken;
+      const res = await fetch(`${API_BASE_URL}/reports/stats-by-class`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to fetch stats by class');
       return res.json();
     },
   });

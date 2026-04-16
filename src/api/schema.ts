@@ -837,8 +837,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get statistics by aircraft class
-         * @description Returns aggregated flight statistics grouped by aircraft class and regulatory authority.
+         * Get statistics by aircraft class and category
+         * @description Returns aggregated flight statistics grouped by aircraft class, aircraft category (tailwheel, complex, high-performance), and regulatory authority.
          */
         get: operations["getStatsByClass"];
         put?: never;
@@ -4845,7 +4845,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Statistics grouped by class and authority */
+            /** @description Statistics grouped by class, category, and authority */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4853,14 +4853,26 @@ export interface operations {
                 content: {
                     "application/json": {
                         byClass?: {
-                            classType?: string;
-                            totalMinutes?: number;
+                            class?: string;
                             flights?: number;
+                            minutes?: number;
+                            picMinutes?: number;
+                            dualMinutes?: number;
+                            landings?: number;
+                        }[];
+                        /** @description PIC and Dual time grouped by aircraft category (e.g. tailwheel, complex, high-performance). Only categories with flights are included. */
+                        byCategory?: {
+                            /** @description Category label, e.g. 'Tailwheel', 'Complex', 'High Performance' */
+                            category?: string;
+                            flights?: number;
+                            picMinutes?: number;
+                            dualMinutes?: number;
                         }[];
                         byAuthority?: {
                             authority?: string;
-                            totalMinutes?: number;
+                            licenseType?: string;
                             flights?: number;
+                            minutes?: number;
                         }[];
                     };
                 };

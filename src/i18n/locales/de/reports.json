@@ -12,6 +12,9 @@
   "exportCsv": "CSV exportieren",
   "exportPdf": "PDF exportieren",
   "noData": "Nicht genügend Daten für die Anzeige von Berichten.",
+  "timeByCategory": "Flugzeit nach Flugzeugkategorie",
+  "category": "Kategorie",
+  "flights": "Flüge",
   "map": {
     "title": "Flugkarte",
     "routes": "Flugrouten",
