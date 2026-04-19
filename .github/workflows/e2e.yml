@@ -1,41 +1,16 @@
 name: E2E Tests
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'index.html'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
-      - 'playwright.config.ts'
-      - '.github/workflows/e2e.yml'
-      - 'docker-compose.test.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'index.html'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
-      - 'playwright.config.ts'
-      - '.github/workflows/e2e.yml'
-      - 'docker-compose.test.yml'
+  workflow_dispatch:
 
 concurrency:
-  group: e2e-${{ github.ref }}
+  group: e2e-frontend-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   e2e:
     name: Playwright E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 20
 
     steps:
@@ -46,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: fjaeckel/ninerlog-api
+          token: ${{ secrets.PROJECT_REPO_TOKEN }}
           path: ../ninerlog-api
 
       - name: Start API + Database
@@ -82,8 +58,11 @@ jobs:
       - name: Run E2E tests
         run: npx playwright test --project=chromium
         env:
-          # Vite dev server proxies /api to API container
           VITE_API_BASE_URL: http://localhost:3000/api/v1
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.test.yml --profile e2e logs
 
       - name: Stop services
         if: always()
