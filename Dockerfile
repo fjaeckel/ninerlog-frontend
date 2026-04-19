@@ -21,7 +21,7 @@ RUN if [ -f "../ninerlog-project/api-spec/openapi.yaml" ]; then \
 RUN npm run build
 
 # Production stage with Nginx
-FROM nginx:1.25-alpine
+FROM nginx:1.29-alpine
 
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
