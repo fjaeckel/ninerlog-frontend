@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, login, apiCall, type AuthContext } from './helpers';
+import { createTestUser, injectAuth, apiCall, type AuthContext } from './helpers';
 
 let auth: AuthContext;
 
@@ -8,24 +8,26 @@ test.beforeAll(async ({ request }) => {
 });
 
 test.beforeEach(async ({ page }) => {
-  await login(page, auth.email);
+  await injectAuth(page, auth);
 });
 
 test.describe('Notification Settings — Categories', () => {
   test('should display all credential category toggles', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Notification Settings')).toBeVisible({ timeout: 10000 });
 
     // Credentials group
     await expect(page.getByText('Credentials').first()).toBeVisible();
     await expect(page.getByText('Medical Expiry')).toBeVisible();
-    await expect(page.getByText('Language Proficiency')).toBeVisible();
-    await expect(page.getByText('Security Clearance')).toBeVisible();
+    await expect(page.getByText('Language Proficiency', { exact: true })).toBeVisible();
+    await expect(page.getByText('Security Clearance', { exact: true })).toBeVisible();
     await expect(page.getByText('Other Credentials')).toBeVisible();
   });
 
   test('should display all currency category toggles', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Notification Settings')).toBeVisible({ timeout: 10000 });
 
     // Ratings & Currency group
@@ -34,12 +36,13 @@ test.describe('Notification Settings — Categories', () => {
     await expect(page.getByText('Passenger Currency')).toBeVisible();
     await expect(page.getByText('Night Currency')).toBeVisible();
     await expect(page.getByText('Instrument Currency')).toBeVisible();
-    await expect(page.getByText('Flight Review')).toBeVisible();
+    await expect(page.getByText('Flight Review', { exact: true })).toBeVisible();
     await expect(page.getByText('EASA Revalidation')).toBeVisible();
   });
 
   test('should toggle individual category on and off', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Notification Settings')).toBeVisible({ timeout: 10000 });
 
     // Find the "Medical Expiry" checkbox
@@ -50,7 +53,6 @@ test.describe('Notification Settings — Categories', () => {
     // Toggle off
     const wasChecked = await medicalCheckbox.isChecked();
     await medicalCheckbox.click();
-    await page.waitForTimeout(500);
 
     if (wasChecked) {
       await expect(medicalCheckbox).not.toBeChecked();
@@ -60,13 +62,13 @@ test.describe('Notification Settings — Categories', () => {
 
     // Toggle back
     await medicalCheckbox.click();
-    await page.waitForTimeout(500);
   });
 });
 
 test.describe('Notification Settings — Warning Schedule', () => {
   test('should display warning day pills', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Warning Schedule')).toBeVisible({ timeout: 10000 });
 
     // Check all default pill buttons are present
@@ -79,20 +81,25 @@ test.describe('Notification Settings — Warning Schedule', () => {
 
   test('should toggle warning day pills', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Warning Schedule')).toBeVisible({ timeout: 10000 });
 
     // The 3d pill should initially be unselected (default is [30, 14, 7])
     const pill3d = page.getByRole('button', { name: '3d' });
-    await pill3d.click();
-    await page.waitForTimeout(500);
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
+      pill3d.click(),
+    ]);
 
     // Verify via API that 3 was added
     const prefs = await apiCall(page, 'GET', '/users/me/notifications', undefined, auth.accessToken);
     expect(prefs.warningDays).toContain(3);
 
     // Click again to remove
-    await pill3d.click();
-    await page.waitForTimeout(500);
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
+      pill3d.click(),
+    ]);
 
     const prefs2 = await apiCall(page, 'GET', '/users/me/notifications', undefined, auth.accessToken);
     expect(prefs2.warningDays).not.toContain(3);
@@ -102,6 +109,7 @@ test.describe('Notification Settings — Warning Schedule', () => {
 test.describe('Notification Settings — Check Hour', () => {
   test('should display check hour selector', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Daily Check Time')).toBeVisible({ timeout: 10000 });
 
     // Should have a select/dropdown
@@ -111,26 +119,32 @@ test.describe('Notification Settings — Check Hour', () => {
 
   test('should change check hour', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Daily Check Time')).toBeVisible({ timeout: 10000 });
 
     // Change to 14:00
     const hourSelect = page.locator('label', { hasText: 'Daily Check Time' }).locator('select');
-    await hourSelect.selectOption('14');
-    await page.waitForTimeout(500);
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
+      hourSelect.selectOption('14'),
+    ]);
 
     // Verify via API
     const prefs = await apiCall(page, 'GET', '/users/me/notifications', undefined, auth.accessToken);
     expect(prefs.checkHour).toBe(14);
 
     // Reset back to 8
-    await hourSelect.selectOption('8');
-    await page.waitForTimeout(500);
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
+      hourSelect.selectOption('8'),
+    ]);
   });
 });
 
 test.describe('Notification Settings — Master Switch', () => {
   test('should disable all toggles when email is off', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Notification Settings')).toBeVisible({ timeout: 10000 });
 
     // Turn email off
@@ -163,11 +177,13 @@ test.describe('Notification Settings — Master Switch', () => {
 test.describe('Notification History', () => {
   test('should display notification history section', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Notification History')).toBeVisible({ timeout: 10000 });
   });
 
   test('should show empty state when no notifications sent', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('No notifications sent yet.')).toBeVisible({ timeout: 10000 });
   });
 });
@@ -181,6 +197,7 @@ test.describe('Notification Settings — API persistence', () => {
 
     // Reload profile page
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Notification Settings')).toBeVisible({ timeout: 10000 });
 
     // Medical Expiry should be checked

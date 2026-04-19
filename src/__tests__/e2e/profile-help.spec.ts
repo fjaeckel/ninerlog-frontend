@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, login, seedFlight, apiCall, type AuthContext } from './helpers';
+import { createTestUser, injectAuth, seedFlight, apiCall, type AuthContext } from './helpers';
 
 let auth: AuthContext;
 
@@ -8,7 +8,7 @@ test.beforeAll(async ({ request }) => {
 });
 
 test.beforeEach(async ({ page }) => {
-  await login(page, auth.email);
+  await injectAuth(page, auth);
 });
 
 test.describe('Profile Page', () => {
@@ -16,14 +16,22 @@ test.describe('Profile Page', () => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
     await expect(page).toHaveURL('/profile');
     await expect(page.getByText('Profile Settings')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Profile Information')).toBeVisible();
+    // Preferences tab (default) — Time Display
     await expect(page.getByText('Time Display')).toBeVisible();
+    // Account tab — Profile Information
+    await page.getByRole('button', { name: 'Account' }).click();
+    await expect(page.getByText('Profile Information')).toBeVisible();
+    // Notifications tab — Notification Settings
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Notification Settings')).toBeVisible();
+    // Data & Security tab — Danger Zone
+    await page.getByRole('button', { name: 'Data & Security' }).click();
     await expect(page.getByText('Danger Zone')).toBeVisible();
   });
 
   test('should update profile name', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Account' }).click();
     const nameField = page.locator('#name');
     await nameField.clear();
     await nameField.fill('Updated Pilot');
@@ -34,6 +42,7 @@ test.describe('Profile Page', () => {
 
   test('should change password', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Account' }).click();
     await page.locator('#currentPassword').fill('TestPassword123!');
     await page.locator('#newPassword').fill('TestPassword123!');
     await page.locator('#confirmPassword').fill('TestPassword123!');
@@ -43,6 +52,7 @@ test.describe('Profile Page', () => {
 
   test('should show danger zone options', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Data & Security' }).click();
     await expect(page.getByText('Danger Zone')).toBeVisible({ timeout: 10000 });
   });
 });
@@ -52,9 +62,9 @@ test.describe('Time Display Preference', () => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
     await expect(page.getByText('Time Display')).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Hours & Minutes')).toBeVisible();
-    await expect(page.getByText('Decimal Hours')).toBeVisible();
+    await expect(page.getByText('Decimal Hours', { exact: true })).toBeVisible();
     // hm button should have the active border (blue)
-    const hmButton = page.locator('button', { hasText: '1h 30m' });
+    const hmButton = page.getByRole('button', { name: '1h 30m Hours & Minutes' });
     await expect(hmButton).toBeVisible();
     await expect(hmButton).toHaveClass(/border-blue-500/);
   });
@@ -64,26 +74,26 @@ test.describe('Time Display Preference', () => {
     await expect(page.getByText('Time Display')).toBeVisible({ timeout: 10000 });
 
     // Click the decimal button
-    const decimalButton = page.locator('button', { hasText: '1.5h' });
-    await decimalButton.click();
-
-    // Wait for the API to persist
-    await page.waitForTimeout(500);
+    const decimalButton = page.getByRole('button', { name: '1.5h Decimal Hours' });
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
+      decimalButton.click(),
+    ]);
 
     // Decimal button should now be active
     await expect(decimalButton).toHaveClass(/border-blue-500/);
 
-    // Reload the page and verify it persists
-    await page.reload();
-    await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
-    await expect(page.getByText('Time Display')).toBeVisible({ timeout: 10000 });
-    const decimalButtonAfterReload = page.locator('button', { hasText: '1.5h' });
-    await expect(decimalButtonAfterReload).toHaveClass(/border-blue-500/);
+    // Verify the preference was persisted via API
+    const user = await apiCall(page, 'GET', '/users/me', undefined, auth.accessToken);
+    expect(user.timeDisplayFormat).toBe('decimal');
 
     // Switch back to hm so other tests don't break
-    const hmButton = page.locator('button', { hasText: '1h 30m' });
-    await hmButton.click();
-    await page.waitForTimeout(500);
+    const hmButton = page.getByRole('button', { name: '1h 30m Hours & Minutes' });
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
+      hmButton.click(),
+    ]);
+    await expect(hmButton).toHaveClass(/border-blue-500/);
   });
 
   test('should display flight times in selected format on dashboard', async ({ page }) => {
@@ -100,22 +110,26 @@ test.describe('Time Display Preference', () => {
     // Should see "1h 30m" format for the 90-minute flight
     await expect(page.getByText(/1h 30m/).first()).toBeVisible({ timeout: 5000 });
 
-    // Switch to decimal
+    // Switch to decimal via profile UI
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
-    await page.locator('button', { hasText: '1.5h' }).click();
-    await page.waitForTimeout(500);
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
+      page.getByRole('button', { name: '1.5h Decimal Hours' }).click(),
+    ]);
 
-    // Go back to dashboard and verify decimal format
-    await page.goto('/dashboard');
+    // Go back to dashboard via SPA navigation and verify decimal format
+    await page.getByRole('link', { name: 'Dashboard' }).first().click();
     await expect(page.getByText('Dashboard').first()).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText(/1\.5h/).first()).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/1\.5/).first()).toBeVisible({ timeout: 5000 });
 
     // Clean up — switch back to hm
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
-    await page.locator('button', { hasText: '1h 30m' }).click();
-    await page.waitForTimeout(500);
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
+      page.getByRole('button', { name: '1h 30m Hours & Minutes' }).click(),
+    ]);
+    await expect(page.getByRole('button', { name: '1h 30m Hours & Minutes' })).toHaveClass(/border-blue-500/);
   });
-
   test('should persist timeDisplayFormat via API', async ({ page }) => {
     // Set to decimal via API
     await apiCall(page, 'PATCH', '/users/me', { timeDisplayFormat: 'decimal' }, auth.accessToken);
@@ -132,6 +146,7 @@ test.describe('Time Display Preference', () => {
 test.describe('Notification Settings', () => {
   test('should display notification toggles', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Notification Settings')).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Email Notifications')).toBeVisible();
     await expect(page.getByText('Medical Expiry')).toBeVisible();
@@ -140,6 +155,7 @@ test.describe('Notification Settings', () => {
 
   test('should toggle notification preferences', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Notifications' }).click();
     await expect(page.getByText('Notification Settings')).toBeVisible({ timeout: 10000 });
 
     // The email notifications toggle should be present and interactive
@@ -147,7 +163,6 @@ test.describe('Notification Settings', () => {
     if (await emailToggle.isVisible()) {
       const wasChecked = await emailToggle.isChecked();
       await emailToggle.click();
-      await page.waitForTimeout(500);
       // Should have toggled
       if (wasChecked) {
         await expect(emailToggle).not.toBeChecked();
@@ -156,7 +171,6 @@ test.describe('Notification Settings', () => {
       }
       // Toggle back
       await emailToggle.click();
-      await page.waitForTimeout(500);
     }
   });
 });
@@ -164,6 +178,7 @@ test.describe('Notification Settings', () => {
 test.describe('Flight Data Maintenance', () => {
   test('should show recalculate button', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await page.getByRole('button', { name: 'Data & Security' }).click();
     const recalcBtn = page.getByRole('button', { name: /recalculate/i });
     await expect(recalcBtn).toBeVisible({ timeout: 10000 });
   });

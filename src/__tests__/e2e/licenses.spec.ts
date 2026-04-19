@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, login, seedLicense, type AuthContext } from './helpers';
+import { createTestUser, injectAuth, seedLicense, type AuthContext } from './helpers';
 
 test.describe('Licenses', () => {
   let auth: AuthContext;
@@ -9,13 +9,13 @@ test.describe('Licenses', () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await login(page, auth.email);
+    await injectAuth(page, auth);
   });
 
   test('should show empty state', async ({ page }) => {
     await page.getByRole('link', { name: 'Licenses' }).first().click();
     await expect(page).toHaveURL('/licenses');
-    await expect(page.getByText('Add your first license')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/Add your first.*license/)).toBeVisible({ timeout: 10000 });
   });
 
   test('should display seeded license', async ({ page }) => {
@@ -27,7 +27,7 @@ test.describe('Licenses', () => {
 
   test('should create license via form', async ({ page }) => {
     await page.getByRole('link', { name: 'Licenses' }).first().click();
-    await page.getByRole('button', { name: '+ Add License' }).first().click();
+    await page.getByRole('button', { name: 'Add License' }).first().click();
 
     await page.locator('#regulatoryAuthority').fill('CAA');
     await page.locator('#licenseType').fill('ATPL');

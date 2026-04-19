@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, login, seedCredential, type AuthContext } from './helpers';
+import { createTestUser, injectAuth, seedCredential, type AuthContext } from './helpers';
 
 test.describe('Credentials', () => {
   let auth: AuthContext;
@@ -9,7 +9,7 @@ test.describe('Credentials', () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await login(page, auth.email);
+    await injectAuth(page, auth);
   });
 
   test('should show empty state', async ({ page }) => {
@@ -28,7 +28,7 @@ test.describe('Credentials', () => {
 
   test('should create credential via form', async ({ page }) => {
     await page.getByRole('link', { name: 'Credentials' }).first().click();
-    await page.getByRole('button', { name: '+ Add Credential' }).click();
+    await page.getByRole('button', { name: 'Add Credential' }).click();
     await expect(page.getByRole('heading', { name: 'Add Credential' })).toBeVisible();
 
     await page.locator('#credentialType').selectOption('EASA_CLASS2_MEDICAL');
@@ -51,7 +51,7 @@ test.describe('Credentials', () => {
     await cards.first().getByRole('button', { name: 'Delete' }).click();
 
     await expect(page.getByRole('alertdialog')).toBeVisible();
-    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete Credential' }).click();
     await expect(page.getByText('ToDelete AME')).not.toBeVisible({ timeout: 10000 });
   });
 });

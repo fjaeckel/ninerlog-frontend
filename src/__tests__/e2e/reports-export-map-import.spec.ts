@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, login, type AuthContext } from './helpers';
+import { createTestUser, injectAuth, type AuthContext } from './helpers';
 
 let auth: AuthContext;
 
@@ -8,7 +8,7 @@ test.beforeAll(async ({ request }) => {
 });
 
 test.beforeEach(async ({ page }) => {
-  await login(page, auth.email);
+  await injectAuth(page, auth);
 });
 
 test.describe('Reports Page', () => {
@@ -36,7 +36,7 @@ test.describe('Export Page', () => {
   test('should display export options', async ({ page }) => {
     await page.getByRole('link', { name: 'Export' }).first().click();
     await expect(page).toHaveURL('/export');
-    await expect(page.getByText('Export Data')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'Export', exact: true })).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Flight Log CSV')).toBeVisible();
     await expect(page.getByText('Full Data Backup')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'PDF Logbook' })).toBeVisible();
@@ -47,13 +47,13 @@ test.describe('Map Page', () => {
   test('should display map', async ({ page }) => {
     await page.getByRole('link', { name: 'Map' }).first().click();
     await expect(page).toHaveURL('/map');
-    await expect(page.getByText('Route Map')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Flight Map')).toBeVisible({ timeout: 10000 });
   });
 
   test('should have view toggle buttons', async ({ page }) => {
     await page.getByRole('link', { name: 'Map' }).first().click();
     await expect(page.getByRole('button', { name: 'Routes' })).toBeVisible({ timeout: 10000 });
-    await expect(page.getByRole('button', { name: 'Activity' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Activity Heatmap' })).toBeVisible();
   });
 });
 
