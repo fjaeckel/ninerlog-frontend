@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Info, CheckCircle, AlertTriangle, AlertOctagon } from 'lucide-react';
 import { useAnnouncements } from '../../hooks/useAnnouncements';
 
@@ -62,11 +62,6 @@ const severityConfig = {
 export default function AnnouncementBanner() {
   const { data } = useAnnouncements();
   const [dismissed, setDismissedState] = useState<Set<string>>(getDismissed);
-
-  // Sync dismissed state from localStorage on mount
-  useEffect(() => {
-    setDismissedState(getDismissed());
-  }, []);
 
   const handleDismiss = (id: string) => {
     const next = new Set(dismissed);

@@ -18,7 +18,10 @@ export default function FlightsPage() {
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<'date' | 'totalTime' | 'createdAt'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(() => {
+    const state = location.state as Record<string, unknown> | null;
+    return !!state?.openForm;
+  });
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -50,13 +53,21 @@ export default function FlightsPage() {
   }, [search]);
 
   // Open form modal when navigated with state.openForm (e.g. from bottom nav + button)
+  const locationState = location.state as Record<string, unknown> | null;
+  const shouldOpenForm = !!locationState?.openForm;
+  const [prevShouldOpen, setPrevShouldOpen] = useState(shouldOpenForm);
+  if (shouldOpenForm && !prevShouldOpen) {
+    setPrevShouldOpen(true);
+    setShowForm(true);
+  } else if (!shouldOpenForm && prevShouldOpen) {
+    setPrevShouldOpen(false);
+  }
   useEffect(() => {
-    if ((location.state as any)?.openForm) {
-      setShowForm(true);
+    if (shouldOpenForm) {
       // Clear the state so refreshing doesn't re-open
       navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location.state, location.pathname, navigate]);
+  }, [shouldOpenForm, location.pathname, navigate]);
 
   const params: ListFlightsParams = {
     page,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { parseDuration, formatDuration, type TimeDisplayFormat } from '@/lib/duration';
 
 interface DurationInputProps {
@@ -41,16 +41,10 @@ export function DurationInput({
   const [inputText, setInputText] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
-  // Sync display when value changes externally (and input is not focused)
-  useEffect(() => {
-    if (!isFocused) {
-      if (value === 0) {
-        setInputText('');
-      } else {
-        setInputText(formatDuration(value, displayFormat));
-      }
-    }
-  }, [value, displayFormat, isFocused]);
+  // Display formatted value when not focused; preserve user input when focused
+  const displayText = isFocused
+    ? inputText
+    : (value === 0 ? '' : formatDuration(value, displayFormat));
 
   const handleBlur = useCallback(() => {
     setIsFocused(false);
@@ -76,7 +70,7 @@ export function DurationInput({
     <input
       id={id}
       type="text"
-      value={inputText}
+      value={displayText}
       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputText(e.target.value)}
       onBlur={handleBlur}
       onFocus={handleFocus}

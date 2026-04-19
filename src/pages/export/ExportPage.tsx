@@ -20,7 +20,7 @@ export default function ExportPage() {
       } else {
         await exportDataJSON();
       }
-    } catch (err) {
+    } catch {
       setError('Export failed. Please try again.');
     } finally {
       setExporting(null);

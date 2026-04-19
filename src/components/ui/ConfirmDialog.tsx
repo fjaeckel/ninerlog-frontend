@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/cn';
 import { AlertTriangle } from 'lucide-react';
@@ -29,17 +29,13 @@ export function ConfirmDialog({
   const { t } = useTranslation('common');
   const confirmLabel = confirmLabelProp ?? t('confirm');
   const cancelLabel = cancelLabelProp ?? t('cancel');
-  const [mounted, setMounted] = useState(false);
   const confirmRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
-      setMounted(true);
       // Focus the cancel button on open (safer default)
       setTimeout(() => confirmRef.current?.focus(), 50);
-    } else {
-      setMounted(false);
     }
   }, [open]);
 
@@ -67,7 +63,7 @@ export function ConfirmDialog({
     [onCancel]
   );
 
-  if (!mounted) return null;
+  if (!open) return null;
 
   return (
     <>

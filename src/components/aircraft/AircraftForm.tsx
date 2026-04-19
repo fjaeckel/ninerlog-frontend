@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,8 +38,15 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
   const { data: existingAircraft } = useAircraftById(aircraftId || '');
   const isEditing = !!aircraftId;
 
-  const [isCustomClass, setIsCustomClass] = useState(false);
+  const [isCustomClass, setIsCustomClass] = useState(() => {
+    if (existingAircraft && isEditing) {
+      const acClass = existingAircraft.aircraftClass || '';
+      return acClass !== '' && !AIRCRAFT_CLASSES.some((c) => c === acClass);
+    }
+    return false;
+  });
   const [apiError, setApiError] = useState<string | null>(null);
+  const [prevAircraft, setPrevAircraft] = useState<typeof existingAircraft>(undefined);
 
   const {
     register,
@@ -63,26 +70,25 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
     },
   });
 
-  useEffect(() => {
-    if (existingAircraft && isEditing) {
-      const acClass = existingAircraft.aircraftClass || '';
-      const isKnown = AIRCRAFT_CLASSES.some((c) => c === acClass);
-      setIsCustomClass(acClass !== '' && !isKnown);
+  if (existingAircraft && isEditing && existingAircraft !== prevAircraft) {
+    setPrevAircraft(existingAircraft);
+    const acClass = existingAircraft.aircraftClass || '';
+    const isKnown = AIRCRAFT_CLASSES.some((c) => c === acClass);
+    setIsCustomClass(acClass !== '' && !isKnown);
 
-      reset({
-        registration: existingAircraft.registration,
-        type: existingAircraft.type,
-        make: existingAircraft.make,
-        model: existingAircraft.model,
-        aircraftClass: acClass,
-        isComplex: existingAircraft.isComplex ?? false,
-        isHighPerformance: existingAircraft.isHighPerformance ?? false,
-        isTailwheel: existingAircraft.isTailwheel ?? false,
-        notes: existingAircraft.notes || '',
-        isActive: existingAircraft.isActive ?? true,
-      });
-    }
-  }, [existingAircraft, isEditing, reset]);
+    reset({
+      registration: existingAircraft.registration,
+      type: existingAircraft.type,
+      make: existingAircraft.make,
+      model: existingAircraft.model,
+      aircraftClass: acClass,
+      isComplex: existingAircraft.isComplex ?? false,
+      isHighPerformance: existingAircraft.isHighPerformance ?? false,
+      isTailwheel: existingAircraft.isTailwheel ?? false,
+      notes: existingAircraft.notes || '',
+      isActive: existingAircraft.isActive ?? true,
+    });
+  }
 
   const onSubmit = async (data: AircraftFormData) => {
     try {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
@@ -52,15 +52,21 @@ export default function HelpPage() {
   });
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Sync topic from URL when navigating via HelpLink
-  useEffect(() => {
+  // Sync topic from URL — derive directly instead of setState in effect
+  const resolvedActive = (topicFromUrl && helpSectionIds.includes(topicFromUrl as HelpSectionId))
+    ? topicFromUrl
+    : active;
+
+  // Clear search when navigating via HelpLink
+  const [prevTopic, setPrevTopic] = useState(topicFromUrl);
+  if (topicFromUrl !== prevTopic) {
+    setPrevTopic(topicFromUrl);
     if (topicFromUrl && helpSectionIds.includes(topicFromUrl as HelpSectionId)) {
-      setActive(topicFromUrl);
       setSearchQuery('');
     }
-  }, [topicFromUrl]);
+  }
 
-  const activeSection = sections.find((s) => s.id === active) || sections[0];
+  const activeSection = sections.find((s) => s.id === resolvedActive) || sections[0];
 
   // Search: find sections matching the query
   const searchResults = useMemo(() => {
@@ -69,7 +75,7 @@ export default function HelpPage() {
     return sections.filter((s) =>
       s.label.toLowerCase().includes(q) || s.content.toLowerCase().includes(q)
     );
-  }, [searchQuery]);
+  }, [searchQuery, sections]);
 
   // Highlight matching text in search results (show snippet around match)
   const getSnippet = (content: string, query: string): string => {
@@ -78,7 +84,7 @@ export default function HelpPage() {
     if (idx === -1) return '';
     const start = Math.max(0, idx - 60);
     const end = Math.min(content.length, idx + query.length + 60);
-    let snippet = content.slice(start, end).replace(/[#*|_>\-]/g, '').trim();
+    let snippet = content.slice(start, end).replace(/[#*|_>-]/g, '').trim();
     if (start > 0) snippet = '...' + snippet;
     if (end < content.length) snippet += '...';
     return snippet;
