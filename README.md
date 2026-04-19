@@ -139,6 +139,14 @@ npm test                 # Unit tests
 npm run test:e2e         # E2E tests (Playwright)
 ```
 
+See [docs/TESTING.md](docs/TESTING.md) for the full testing guide.
+
+## Documentation
+
+- [Running Tests](docs/TESTING.md) — How to run unit and E2E tests
+- [I18N Developer Guide](docs/I18N_DEVELOPER_GUIDE.md) — Internationalization setup
+- [Translation Guide](docs/TRANSLATION_GUIDE.md) — Adding and managing translations
+
 ## Related Repositories
 
 - [ninerlog-project](../ninerlog-project) — OpenAPI spec & project planning

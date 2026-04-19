@@ -95,6 +95,27 @@ export async function login(page: Page, email: string, password = TEST_PASSWORD)
 }
 
 /**
+ * Fast auth injection — sets localStorage before page loads, skipping
+ * the full UI login flow.  ~10× faster than login().
+ */
+export async function injectAuth(page: Page, auth: AuthContext): Promise<void> {
+  await page.addInitScript(
+    (authJson: string) => {
+      localStorage.setItem('auth-storage', authJson);
+    },
+    JSON.stringify({
+      state: {
+        isAuthenticated: true,
+        accessToken: auth.accessToken,
+        user: { id: auth.userId, email: auth.email, name: 'E2E Test Pilot' },
+      },
+      version: 0,
+    }),
+  );
+  await page.goto('/dashboard');
+}
+
+/**
  * Get current access token from the page's localStorage.
  */
 export async function getAccessToken(page: Page): Promise<string> {

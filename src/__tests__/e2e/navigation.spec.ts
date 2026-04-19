@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, login, type AuthContext } from './helpers';
+import { createTestUser, injectAuth, type AuthContext } from './helpers';
 
 test.describe('Navigation — Desktop', () => {
   let auth: AuthContext;
@@ -9,7 +9,7 @@ test.describe('Navigation — Desktop', () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await login(page, auth.email);
+    await injectAuth(page, auth);
   });
 
   test('should navigate to all pages from sidebar', async ({ page }) => {
@@ -44,7 +44,7 @@ test.describe('Navigation — Mobile', () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await login(page, auth.email);
+    await injectAuth(page, auth);
   });
 
   test('should show bottom nav and More menu', async ({ page }) => {

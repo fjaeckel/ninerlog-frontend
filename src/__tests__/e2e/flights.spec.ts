@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, login, seedFlight, seedAircraft, type AuthContext } from './helpers';
+import { createTestUser, injectAuth, seedFlight, seedAircraft, type AuthContext } from './helpers';
 
 test.describe('Flights', () => {
   let auth: AuthContext;
@@ -9,7 +9,7 @@ test.describe('Flights', () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await login(page, auth.email);
+    await injectAuth(page, auth);
   });
 
   test('should show Flight Log page', async ({ page }) => {
@@ -48,7 +48,6 @@ test.describe('Flights', () => {
   test('should search flights', async ({ page }) => {
     await page.getByRole('link', { name: 'Flights' }).first().click();
     await page.getByPlaceholder('Search flights').fill('EDDF');
-    await page.waitForTimeout(500);
     await expect(page.getByText('EDDF')).toBeVisible({ timeout: 10000 });
   });
 

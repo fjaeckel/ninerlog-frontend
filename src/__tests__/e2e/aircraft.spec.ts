@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, login, seedAircraft, type AuthContext } from './helpers';
+import { createTestUser, injectAuth, seedAircraft, type AuthContext } from './helpers';
 
 test.describe('Aircraft', () => {
   let auth: AuthContext;
@@ -9,7 +9,7 @@ test.describe('Aircraft', () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await login(page, auth.email);
+    await injectAuth(page, auth);
   });
 
   test('should show empty state', async ({ page }) => {

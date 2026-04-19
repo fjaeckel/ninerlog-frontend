@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, login, seedAircraft, seedFlight, seedLicense, seedClassRating, type AuthContext } from './helpers';
+import { createTestUser, injectAuth, seedAircraft, seedFlight, seedLicense, seedClassRating, type AuthContext } from './helpers';
 
 test.describe('Dashboard', () => {
   let auth: AuthContext;
@@ -9,7 +9,7 @@ test.describe('Dashboard', () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    await login(page, auth.email);
+    await injectAuth(page, auth);
   });
 
   test('should show empty state for new user', async ({ page }) => {
@@ -20,7 +20,6 @@ test.describe('Dashboard', () => {
     await seedAircraft(page, auth.accessToken, { registration: 'D-DSH1' });
     await seedFlight(page, auth.accessToken, { aircraftReg: 'D-DSH1' });
     await page.reload();
-    await page.waitForLoadState('networkidle');
     await expect(page.getByText('Total Time')).toBeVisible({ timeout: 15000 });
     await expect(page.getByText('Total Flights')).toBeVisible({ timeout: 5000 });
   });
