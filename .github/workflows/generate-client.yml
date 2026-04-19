@@ -16,7 +16,7 @@ jobs:
     
     steps:
       - name: Checkout frontend repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Checkout project repository for OpenAPI spec
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: fjaeckel/ninerlog-project
           token: ${{ secrets.PROJECT_REPO_TOKEN }}
