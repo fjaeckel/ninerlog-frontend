@@ -1,12 +1,12 @@
 # NinerLog Frontend
 
-Mobile-first Progressive Web App for NinerLog — an EASA/FAA compliant digital pilot logbook.
+Mobile-first Progressive Web App for [NinerLog](https://ninerlog.com) — a free, open-source, EASA/FAA compliant digital pilot logbook.
 
 ## Tech Stack
 
-- **React 19** / **TypeScript 5.9** / **Vite 7**
-- **Tailwind CSS 4** (mobile-first, dark mode)
-- **React Router 7** (lazy-loaded routes)
+- **React** / **TypeScript** / **Vite**
+- **Tailwind CSS** (mobile-first, dark mode)
+- **React Router** (lazy-loaded routes)
 - **TanStack React Query** (server state) / **Zustand** (client state)
 - **React Hook Form** + **Zod** (form validation)
 - **Recharts** (charts & statistics)
@@ -19,12 +19,12 @@ Mobile-first Progressive Web App for NinerLog — an EASA/FAA compliant digital 
 - **Vitest** + **React Testing Library** (unit tests)
 - **Playwright** (E2E tests)
 - **MSW** (API mocking)
-- **ESLint 9** / **Prettier** / **Husky** + **lint-staged**
+- **ESLint** / **Prettier** / **Husky** + **lint-staged**
 
 ## Prerequisites
 
-- Node.js 24+
-- npm 11+
+- Node.js
+- npm
 - Access to `ninerlog-project` repo (for OpenAPI spec)
 
 ## Quick Start
@@ -98,56 +98,38 @@ src/
 | `/reports` | Reports & Charts | Protected |
 | `/map` | Route Map | Protected |
 | `/import` | CSV Import | Protected |
-| `/export` | PDF Export | Protected |
-| `/profile` | Profile & Settings | Protected |
-
-## API Client Generation
-
-The TypeScript API client and types are **auto-generated** from the OpenAPI spec in `ninerlog-project/api-spec/openapi.yaml`.
-
-```bash
-npm run generate:api
-```
-
-**Do not edit files in `src/api/` manually** — they will be overwritten on regeneration.
-
-## Environment
-
-Runtime configuration is injected via `public/env-config.js` (for Docker) or Vite env vars (for development):
-
-| Variable | Default | Description |
-|---|---|---|
-| `VITE_API_BASE_URL` | `/api/v1` | API base URL |
-| `VITE_ENV` | `development` | Environment name |
 
 ## Docker
 
-Multi-stage build: `node:20-alpine` (build) → `nginx:1.25-alpine` (serve). Nginx handles SPA routing, gzip, security headers, static asset caching, and optional TLS via Let's Encrypt.
-
 ```bash
-# From workspace root
-docker compose -f docker-compose.dev.yml up -d   # Dev (hot reload)
-docker compose up -d                               # Production
+# Development (hot-reload)
+docker compose -f docker-compose.dev.yml up frontend
+
+# Production build
+docker build -t ninerlog-frontend .
 ```
-
-See [DOCKER.md](../DOCKER.md) for full deployment guide.
-
-## Testing
-
-```bash
-npm test                 # Unit tests
-npm run test:e2e         # E2E tests (Playwright)
-```
-
-See [docs/TESTING.md](docs/TESTING.md) for the full testing guide.
 
 ## Documentation
 
-- [Running Tests](docs/TESTING.md) — How to run unit and E2E tests
-- [I18N Developer Guide](docs/I18N_DEVELOPER_GUIDE.md) — Internationalization setup
-- [Translation Guide](docs/TRANSLATION_GUIDE.md) — Adding and managing translations
+- [Testing Guide](docs/TESTING.md) — Unit (Vitest) and E2E (Playwright) testing
+- [Internationalization Guide](docs/I18N_DEVELOPER_GUIDE.md) — Adding translatable strings
+- [Translation Guide](docs/TRANSLATION_GUIDE.md) — Contributing translations (currently EN + DE)
+- [Implementation Notes](IMPLEMENTATION.md) — Feature summary and architecture decisions
+- [API Specification](https://github.com/fjaeckel/ninerlog-project/blob/main/api-spec/openapi.yaml) — OpenAPI 3.1 spec (source of truth)
+- [Design System](https://github.com/fjaeckel/ninerlog-project/blob/main/docs/design/design-system.md) — Colors, typography, spacing
 
 ## Related Repositories
 
-- [ninerlog-project](../ninerlog-project) — OpenAPI spec & project planning
-- [ninerlog-api](../ninerlog-api) — Go backend API
+| Repository | Description |
+|---|---|
+| [ninerlog-project](https://github.com/fjaeckel/ninerlog-project) | Project planning, documentation, OpenAPI spec |
+| [ninerlog-api](https://github.com/fjaeckel/ninerlog-api) | Go backend REST API |
+| [ninerlog-website](https://github.com/fjaeckel/ninerlog-website) | Marketing website |
+
+## Contributing
+
+See [CONTRIBUTING.md](https://github.com/fjaeckel/ninerlog-project/blob/main/CONTRIBUTING.md) for development guidelines.
+
+## Security
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md).
