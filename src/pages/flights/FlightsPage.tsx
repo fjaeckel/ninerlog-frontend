@@ -15,6 +15,9 @@ type ListFlightsParams = operations['listFlights']['parameters']['query'];
 export default function FlightsPage() {
   const { t } = useTranslation(['flights', 'common']);
   const { fmtDate, fmtDuration } = useFormatPrefs();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const deleteFlight = useDeleteFlight();
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<'date' | 'totalTime' | 'createdAt'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -25,9 +28,6 @@ export default function FlightsPage() {
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const deleteFlight = useDeleteFlight();
 
   // Search & filter state
   const [search, setSearch] = useState('');
