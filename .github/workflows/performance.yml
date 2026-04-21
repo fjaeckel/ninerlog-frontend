@@ -1,0 +1,90 @@
+name: Performance
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    types: [labeled]
+
+concurrency:
+  group: perf-frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bundle-size:
+    name: Bundle Size Check
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'perf-test')
+    runs-on: self-hosted
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with analysis
+        run: ANALYZE=true npx tsc && ANALYZE=true npx vite build
+
+      - name: Record bundle sizes
+        id: bundle
+        run: |
+          TOTAL_JS=$(find dist/assets -name '*.js' -exec wc -c {} + | tail -1 | awk '{print $1}')
+          TOTAL_CSS=$(find dist/assets -name '*.css' -exec wc -c {} + | tail -1 | awk '{print $1}')
+          LARGEST_CHUNK=$(find dist/assets -name '*.js' -exec wc -c {} + | sort -rn | head -2 | tail -1 | awk '{print $1}')
+          echo "total_js=$TOTAL_JS" >> "$GITHUB_OUTPUT"
+          echo "total_css=$TOTAL_CSS" >> "$GITHUB_OUTPUT"
+          echo "largest_chunk=$LARGEST_CHUNK" >> "$GITHUB_OUTPUT"
+          echo "## Bundle Size Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Metric | Size |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|--------|------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Total JS | $(echo "$TOTAL_JS" | awk '{printf "%.1f KB", $1/1024}') |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Total CSS | $(echo "$TOTAL_CSS" | awk '{printf "%.1f KB", $1/1024}') |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Largest Chunk | $(echo "$LARGEST_CHUNK" | awk '{printf "%.1f KB", $1/1024}') |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload bundle stats
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-stats
+          path: dist/stats.html
+
+  lighthouse:
+    name: Lighthouse CI
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'perf-test')
+    runs-on: self-hosted
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npx tsc && npx vite build
+
+      - name: Run Lighthouse CI
+        run: npx lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Upload Lighthouse results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-results
+          path: .lighthouseci/
