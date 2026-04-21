@@ -144,7 +144,7 @@ export default function MapPage() {
                     }}
                   >
                     <Tooltip>
-                      {route.departureIcao} → {route.arrivalIcao} ({route.flightCount} flight{route.flightCount !== 1 ? 's' : ''})
+                      {route.departureIcao} → {route.arrivalIcao} ({t('map.flightCount', { count: route.flightCount })})
                     </Tooltip>
                   </Polyline>
                 ))}

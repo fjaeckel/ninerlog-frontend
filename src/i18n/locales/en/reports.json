@@ -22,7 +22,8 @@
     "heatmap": "Activity Heatmap",
     "statistics": "Airport Statistics",
     "noRoutes": "No flight routes to display yet.",
-    "flightCount": "{{count}} flights"
+    "flightCount_one": "{{count}} flight",
+    "flightCount_other": "{{count}} flights"
   },
   "export": {
     "title": "Export",

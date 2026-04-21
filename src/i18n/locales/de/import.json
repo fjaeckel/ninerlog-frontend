@@ -10,11 +10,14 @@
   "targetField": "Zielfeld",
   "skip": "Überspringen",
   "preview": "Vorschau",
-  "previewRows": "Vorschau (erste {{count}} Zeilen)",
+  "previewRows_one": "Vorschau (erste {{count}} Zeile)",
+  "previewRows_other": "Vorschau (erste {{count}} Zeilen)",
   "importing": "Importieren...",
   "importFlights": "Flüge importieren",
-  "importSuccess": "{{count}} Flüge erfolgreich importiert.",
+  "importSuccess_one": "{{count}} Flug erfolgreich importiert.",
+  "importSuccess_other": "{{count}} Flüge erfolgreich importiert.",
   "importFailed": "Import fehlgeschlagen. Bitte überprüfen Sie das Dateiformat.",
-  "rowsDetected": "{{count}} Zeilen erkannt",
+  "rowsDetected_one": "{{count}} Zeile erkannt",
+  "rowsDetected_other": "{{count}} Zeilen erkannt",
   "duplicateWarning": "Einige Flüge könnten bereits vorhandenen Einträgen entsprechen."
 }

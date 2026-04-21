@@ -10,11 +10,14 @@
   "targetField": "Target Field",
   "skip": "Skip",
   "preview": "Preview",
-  "previewRows": "Preview (first {{count}} rows)",
+  "previewRows_one": "Preview (first {{count}} row)",
+  "previewRows_other": "Preview (first {{count}} rows)",
   "importing": "Importing...",
   "importFlights": "Import Flights",
-  "importSuccess": "Successfully imported {{count}} flights.",
+  "importSuccess_one": "Successfully imported {{count}} flight.",
+  "importSuccess_other": "Successfully imported {{count}} flights.",
   "importFailed": "Import failed. Please check your file format.",
-  "rowsDetected": "{{count}} rows detected",
+  "rowsDetected_one": "{{count}} row detected",
+  "rowsDetected_other": "{{count}} rows detected",
   "duplicateWarning": "Some flights may be duplicates of existing entries."
 }
