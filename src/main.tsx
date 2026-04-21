@@ -6,6 +6,7 @@ import { BetaGate } from './components/BetaGate';
 import App from './App';
 import './index.css';
 import './i18n'; // i18n initialization — must be imported before App
+import { initWebVitals } from './lib/web-vitals';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,3 +29,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </BetaGate>
   </React.StrictMode>
 );
+
+// Report Core Web Vitals
+initWebVitals();
