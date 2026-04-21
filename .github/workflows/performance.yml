@@ -78,9 +78,67 @@ jobs:
         run: npx tsc && npx vite build
 
       - name: Run Lighthouse CI
-        run: npx lhci autorun
+        id: lhci
+        run: npx lhci autorun 2>&1 | tee lighthouse-output.txt
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Generate Lighthouse summary
+        if: always()
+        run: |
+          {
+            echo "## Lighthouse CI Results"
+            echo ""
+            echo "| URL | Performance | Accessibility | Best Practices | SEO |"
+            echo "|-----|-------------|---------------|----------------|-----|"
+            for f in .lighthouseci/lhr-*.json; do
+              [ -f "$f" ] || continue
+              row=$(python3 -c "
+          import json
+          d = json.load(open('$f'))
+          url = d.get('finalUrl', d.get('requestedUrl', '?'))
+          path = url.replace('http://localhost:4173', '') or '/'
+          cats = d.get('categories', {})
+          perf = int((cats.get('performance', {}).get('score', 0) or 0) * 100)
+          a11y = int((cats.get('accessibility', {}).get('score', 0) or 0) * 100)
+          bp = int((cats.get('best-practices', {}).get('score', 0) or 0) * 100)
+          seo = int((cats.get('seo', {}).get('score', 0) or 0) * 100)
+          perf_icon = '✅' if perf >= 90 else '⚠️' if perf >= 50 else '❌'
+          print(f'| {path} | {perf_icon} {perf} | {a11y} | {bp} | {seo} |')
+              " 2>/dev/null)
+              [ -n "$row" ] && echo "$row"
+            done
+            echo ""
+            echo "### Core Web Vitals"
+            echo ""
+            echo "| URL | FCP | LCP | CLS | TBT |"
+            echo "|-----|-----|-----|-----|-----|"
+            for f in .lighthouseci/lhr-*.json; do
+              [ -f "$f" ] || continue
+              row=$(python3 -c "
+          import json
+          d = json.load(open('$f'))
+          url = d.get('finalUrl', d.get('requestedUrl', '?'))
+          path = url.replace('http://localhost:4173', '') or '/'
+          audits = d.get('audits', {})
+          fcp = audits.get('first-contentful-paint', {}).get('displayValue', '?')
+          lcp = audits.get('largest-contentful-paint', {}).get('displayValue', '?')
+          cls = audits.get('cumulative-layout-shift', {}).get('displayValue', '?')
+          tbt = audits.get('total-blocking-time', {}).get('displayValue', '?')
+          print(f'| {path} | {fcp} | {lcp} | {cls} | {tbt} |')
+              " 2>/dev/null)
+              [ -n "$row" ] && echo "$row"
+            done
+          } > lighthouse-summary.md
+          cat lighthouse-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment Lighthouse results on PR
+        if: always() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: lighthouse-results
+          path: lighthouse-summary.md
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Lighthouse results
         if: always()
