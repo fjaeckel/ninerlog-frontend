@@ -27,15 +27,14 @@ services:
     environment:
       - NODE_ENV=test
       - CI=true
-      - VITE_API_BASE_URL=http://api-test:3000/api/v1
-      - VITE_API_PROXY_TARGET=http://api-test:3000
+      - PLAYWRIGHT_BASE_URL=http://frontend-dev:5173
       - HOME=/root
     command: npm run test:e2e
     profiles:
       - e2e
     depends_on:
       frontend-dev:
-        condition: service_started
+        condition: service_healthy
       api-test:
         condition: service_healthy
     networks:
@@ -52,11 +51,16 @@ services:
       - .:/app
       - /app/node_modules
     environment:
-      - VITE_API_BASE_URL=http://api-test:3000/api/v1
       - VITE_API_PROXY_TARGET=http://api-test:3000
     ports:
       - "5174:5173"
     command: npm run dev -- --host 0.0.0.0
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:5173').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
     profiles:
       - e2e
     networks:
@@ -91,8 +95,8 @@ services:
     depends_on:
       postgres-test:
         condition: service_healthy
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       DATABASE_URL: postgresql://testuser:testpass@postgres-test:5432/ninerlog_test?sslmode=disable
       PORT: 3000

@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173';
+
 export default defineConfig({
   testDir: './src/__tests__/e2e',
   fullyParallel: false,
@@ -9,7 +11,7 @@ export default defineConfig({
   timeout: 30000,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL,
     trace: 'on-first-retry',
   },
 
@@ -28,9 +30,12 @@ export default defineConfig({
       : []),
   ],
 
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-  },
+  // Skip webServer when running in Docker (CI) — the frontend-dev container serves it
+  ...(!process.env.CI && {
+    webServer: {
+      command: 'npm run dev',
+      url: 'http://localhost:5173',
+      reuseExistingServer: true,
+    },
+  }),
 });
