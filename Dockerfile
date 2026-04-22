@@ -9,13 +9,8 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy source code
+# Copy source code (includes pre-generated API client in src/api/)
 COPY . .
-
-# Generate API client from OpenAPI spec (if available)
-RUN if [ -f "../ninerlog-project/api-spec/openapi.yaml" ]; then \
-      npm run generate:api ../ninerlog-project/api-spec/openapi.yaml || true; \
-    fi
 
 # Build the application
 RUN npm run build
