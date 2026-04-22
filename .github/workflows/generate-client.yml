@@ -29,18 +29,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Checkout project repository for OpenAPI spec
-        uses: actions/checkout@v6
-        with:
-          repository: fjaeckel/ninerlog-project
-          token: ${{ secrets.PROJECT_REPO_TOKEN }}
-          path: .openapi-spec
-          sparse-checkout: |
-            api-spec/openapi.yaml
-
       - name: Generate TypeScript client
         run: |
-          npm run generate:api -- .openapi-spec/api-spec/openapi.yaml
+          npm run generate:api -- https://raw.githubusercontent.com/fjaeckel/ninerlog-api/main/api-spec/openapi.yaml
 
       - name: Check for changes
         id: git-check
@@ -68,7 +59,7 @@ jobs:
             
             This PR updates the generated TypeScript API client to match the latest OpenAPI specification.
             
-            **Triggered by**: OpenAPI spec change in ninerlog-project
+            **Triggered by**: OpenAPI spec change in ninerlog-api
             **Commit**: ${{ github.event.client_payload.sha }}
             
             ### Changes

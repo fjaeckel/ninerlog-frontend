@@ -2,16 +2,16 @@
 set -e
 
 # Generate TypeScript API client from OpenAPI spec
-# Usage: ./scripts/generate-api-client.sh [path-to-openapi.yaml]
+# Usage: ./scripts/generate-api-client.sh [path-or-url-to-openapi.yaml]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Default to project repo spec
-OPENAPI_SPEC="${1:-../ninerlog-project/api-spec/openapi.yaml}"
+# Default to raw GitHub URL; override with a local path for dev
+OPENAPI_SPEC="${1:-https://raw.githubusercontent.com/fjaeckel/ninerlog-api/main/api-spec/openapi.yaml}"
 
-# Check if spec exists
-if [ ! -f "$OPENAPI_SPEC" ]; then
+# If it's a local path, verify it exists
+if [[ "$OPENAPI_SPEC" != http* ]] && [ ! -f "$OPENAPI_SPEC" ]; then
     echo "❌ OpenAPI spec not found at: $OPENAPI_SPEC"
     exit 1
 fi
@@ -81,7 +81,7 @@ const { data: flights } = useQuery({
 
 ## Source
 
-Generated from: `ninerlog-project/api-spec/openapi.yaml`
+Generated from: `ninerlog-api/api-spec/openapi.yaml`
 Generator: @hey-api/openapi-ts
 EOF
 

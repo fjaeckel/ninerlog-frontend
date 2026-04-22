@@ -2,7 +2,7 @@
 import { defineConfig } from '@hey-api/openapi-ts';
 
 export default defineConfig({
-  input: '../ninerlog-project/api-spec/openapi.yaml',
+  input: 'https://raw.githubusercontent.com/fjaeckel/ninerlog-api/main/api-spec/openapi.yaml',
   output: './src/api',
   client: 'axios',
   plugins: [

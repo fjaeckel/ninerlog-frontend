@@ -17,7 +17,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "type-check": "tsc --noEmit",
     "generate:api": "bash scripts/generate-api-client.sh",
-    "generate:api:watch": "bash scripts/generate-api-client.sh && npx openapi-typescript ../ninerlog-project/api-spec/openapi.yaml -o src/api/schema.ts --watch",
+    "generate:api:watch": "bash scripts/generate-api-client.sh && npx openapi-typescript https://raw.githubusercontent.com/fjaeckel/ninerlog-api/main/api-spec/openapi.yaml -o src/api/schema.ts --watch",
     "build:analyze": "ANALYZE=true tsc && ANALYZE=true vite build",
     "lighthouse": "lhci autorun",
     "lighthouse:collect": "lhci collect",
