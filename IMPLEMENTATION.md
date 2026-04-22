@@ -247,11 +247,10 @@ Ready for deployment to:
 
 - [TESTING.md](./TESTING.md) - Comprehensive testing guide
 - [README.md](./README.md) - Setup and usage
-- [../ninerlog-project/docs/](../ninerlog-project/docs/) - Architecture docs
 
 ## Contributing
 
-See [CONTRIBUTING.md](../ninerlog-project/CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ---
 

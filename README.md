@@ -25,7 +25,6 @@ Mobile-first Progressive Web App for [NinerLog](https://ninerlog.com) — a free
 
 - Node.js
 - npm
-- Access to `ninerlog-project` repo (for OpenAPI spec)
 
 ## Quick Start
 
@@ -115,20 +114,18 @@ docker build -t ninerlog-frontend .
 - [Internationalization Guide](docs/I18N_DEVELOPER_GUIDE.md) — Adding translatable strings
 - [Translation Guide](docs/TRANSLATION_GUIDE.md) — Contributing translations (currently EN + DE)
 - [Implementation Notes](IMPLEMENTATION.md) — Feature summary and architecture decisions
-- [API Specification](https://github.com/fjaeckel/ninerlog-project/blob/main/api-spec/openapi.yaml) — OpenAPI 3.1 spec (source of truth)
-- [Design System](https://github.com/fjaeckel/ninerlog-project/blob/main/docs/design/design-system.md) — Colors, typography, spacing
+- [API Specification](https://github.com/fjaeckel/ninerlog-api/blob/main/api-spec/openapi.yaml) — OpenAPI 3.1 spec (source of truth)
 
 ## Related Repositories
 
 | Repository | Description |
 |---|---|
-| [ninerlog-project](https://github.com/fjaeckel/ninerlog-project) | Project planning, documentation, OpenAPI spec |
-| [ninerlog-api](https://github.com/fjaeckel/ninerlog-api) | Go backend REST API |
+| [ninerlog-api](https://github.com/fjaeckel/ninerlog-api) | Go backend REST API (includes OpenAPI spec) |
 | [ninerlog-website](https://github.com/fjaeckel/ninerlog-website) | Marketing website |
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/fjaeckel/ninerlog-project/blob/main/CONTRIBUTING.md) for development guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 ## Security
 

@@ -5,7 +5,7 @@ You are assisting with the NinerLog Frontend repository, a mobile-first Progress
 ## Critical Cross-Repo Workflow Rules
 
 ### API-First Development
-- **ALWAYS update the OpenAPI spec first** (`ninerlog-project/api-spec/openapi.yaml`) before making any API changes.
+- **ALWAYS update the OpenAPI spec first** (`ninerlog-api/api-spec/openapi.yaml`) before making any API changes.
 - **ALWAYS regenerate API clients** in both `ninerlog-api` (`bash scripts/generate-server-types.sh`) and `ninerlog-frontend` (`bash scripts/generate-api-client.sh`) from the OpenAPI changes before implementing features.
 
 ### Pre-Commit / Pre-Push Checklist
@@ -15,18 +15,12 @@ You are assisting with the NinerLog Frontend repository, a mobile-first Progress
 
 ### Regression Handling
 - When regressions are found, **NEVER work around them in tests**.
-- **ALWAYS document regressions** in `ninerlog-project/REGRESSIONS.md` so they can be planned into the roadmap later.
+- **ALWAYS document regressions** in GitHub Issues so they can be planned into the roadmap later.
 - Regressions should be tracked as real issues, not hidden behind test workarounds.
 
 ## IMPORTANT: Design System
 
-**ALL UI code must follow the NinerLog Design System.** Before writing any UI code, consult:
-
-- `../ninerlog-project/docs/design/design-system.md` — Colors, typography, spacing, tokens
-- `../ninerlog-project/docs/design/components.md` — Component specs (Button, Input, Badge, Card, etc.)
-- `../ninerlog-project/docs/design/screens.md` — Screen layouts, wireframes, states
-- `../ninerlog-project/docs/design/interactions.md` — Navigation, forms, gestures, offline UX
-- `../ninerlog-project/docs/design/handoff.md` — Implementation guide, naming, patterns
+**ALL UI code must follow the NinerLog Design System.** The design tokens and component patterns are defined below.
 
 ### Design System Quick Reference
 
@@ -387,7 +381,7 @@ Essential fields to include in forms:
 - Suspense for async components
 
 ### Styling
-- **Always follow the NinerLog Design System** (see `../ninerlog-project/docs/design/`)
+- **Always follow the NinerLog Design System** (see design tokens and component patterns above)
 - Tailwind utility classes preferred, use design system component classes
 - Use `slate-*` palette for neutrals (NEVER `gray-*`)
 - Always provide `dark:` variant classes alongside light mode
@@ -466,8 +460,7 @@ const onSubmit = async (data: FlightLogFormData) => {
 
 ## Related Repositories
 
-- **ninerlog-project**: API spec and project planning
-- **ninerlog-api**: Backend API implementation
+- **ninerlog-api**: Backend API implementation (includes OpenAPI spec)
 
 When making changes:
 - Check API spec for endpoint availability

@@ -8,7 +8,7 @@ import { useResetPassword } from '../../hooks/useAuth';
 
 // ⚠️ WARNING: /auth/reset-password is NOT in the OpenAPI spec
 // This page will fail until the backend implements this endpoint
-// See: ninerlog-project/api-spec/openapi.yaml
+// See: ninerlog-api/api-spec/openapi.yaml
 
 const resetSchema = z.object({
   email: z.string().email('Invalid email address'),

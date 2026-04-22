@@ -104,7 +104,6 @@ You live and breathe design. You believe that a beautiful interface is not decor
 - `/ninerlog-frontend/src/components/**` — UI components
 - `/ninerlog-frontend/src/pages/**` — Page layouts
 - `/ninerlog-frontend/public/` — Static assets, logos, favicon
-- `/ninerlog-project/docs/` — Design documentation and brand guidelines
 
 ## Your Deliverables
 

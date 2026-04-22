@@ -40,5 +40,5 @@ const { data: flights } = useQuery({
 
 ## Source
 
-Generated from: `ninerlog-project/api-spec/openapi.yaml`
+Generated from: `ninerlog-api/api-spec/openapi.yaml`
 Generator: @hey-api/openapi-ts

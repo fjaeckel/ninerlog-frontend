@@ -1,5 +1,5 @@
 // Type definitions matching OpenAPI spec exactly
-// Source: ninerlog-project/api-spec/openapi.yaml
+// Source: ninerlog-api/api-spec/openapi.yaml
 
 // ============ Common Types ============
 

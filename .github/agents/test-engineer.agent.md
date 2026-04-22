@@ -1,6 +1,6 @@
 ---
 name: test-engineer
-description: "Testing specialist for NinerLog frontend. Use when: writing tests, fixing tests, running tests, checking test coverage, debugging test failures, adding E2E tests, verifying UI behavior, ensuring Playwright and Vitest tests pass. Knows the full project spec from ninerlog-project, all pages and components, the OpenAPI contract, and the complete test infrastructure."
+description: "Testing specialist for NinerLog frontend. Use when: writing tests, fixing tests, running tests, checking test coverage, debugging test failures, adding E2E tests, verifying UI behavior, ensuring Playwright and Vitest tests pass. Knows all pages and components, the OpenAPI contract, and the complete test infrastructure."
 tools: [search, read, edit, execute, web, todo, agent]
 ---
 
@@ -20,15 +20,7 @@ Before writing or fixing tests, consult these for domain context:
 
 | Source | Path | Contains |
 |--------|------|----------|
-| **OpenAPI Spec** | `../ninerlog-project/api-spec/openapi.yaml` | Every API endpoint, schema, and field name |
-| **Roadmap** | `../ninerlog-project/docs/planning/roadmap.md` | Feature phases, what's implemented, what's planned |
-| **Requirements** | `../ninerlog-project/docs/planning/requirements.md` | Functional requirements per feature |
-| **User Stories** | `../ninerlog-project/docs/planning/user-stories.md` | User-facing acceptance criteria |
-| **Screen Specs** | `../ninerlog-project/docs/design/screens.md` | Page layouts, states (empty, loaded, error) |
-| **Component Specs** | `../ninerlog-project/docs/design/components.md` | Component behavior, variants, accessibility |
-| **Interactions** | `../ninerlog-project/docs/design/interactions.md` | Navigation flow, form behavior, gestures |
-| **DB Schema** | `../ninerlog-project/docs/database/schema.md` | Table definitions, field types and constraints |
-| **Currency Rules** | `../ninerlog-project/docs/planning/currency-requirements-research.md` | EASA/FAA regulations for currency evaluation |
+| **OpenAPI Spec** | `../ninerlog-api/api-spec/openapi.yaml` | Every API endpoint, schema, and field name |
 
 ## Test Infrastructure
 
@@ -163,8 +155,8 @@ When asked to ensure tests are correct for a code change:
 
 ## Workflow: Adding Tests for a New Feature
 
-1. **Read the requirements** from `ninerlog-project/docs/planning/` to understand the expected behavior
-2. **Read the screen specs** from `ninerlog-project/docs/design/screens.md` for empty/loaded/error states
+1. **Read the changed file(s)** to understand what was modified
+2. **Check the OpenAPI spec** (`../ninerlog-api/api-spec/openapi.yaml`) for expected behavior and schemas
 3. **Read the component implementation** to extract exact text, labels, and IDs for selectors
 4. **Write unit tests** for the component logic (rendering, interactions, state changes)
 5. **Write E2E tests** for the user flow (navigate, fill form, submit, verify result)
