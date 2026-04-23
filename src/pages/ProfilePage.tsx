@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import QRCode from 'qrcode';
 import { useAuthStore } from '../stores/authStore';
 import { useUpdateProfile, useChangePassword, useDeleteAccount, useDeleteAllFlights, useDeleteAllUserData } from '../hooks/useProfile';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
@@ -33,6 +34,7 @@ export default function ProfilePage() {
   const [twoFADisablePassword, setTwoFADisablePassword] = useState('');
   const [showDisable2FA, setShowDisable2FA] = useState(false);
   const [twoFAMessage, setTwoFAMessage] = useState('');
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   // Profile form state
   const [name, setName] = useState(user?.name || '');
@@ -319,13 +321,17 @@ export default function ProfilePage() {
                     {recoveryCodes.map((code, i) => (<div key={i} className="text-slate-700 dark:text-slate-300">{code}</div>))}
                   </div>
                 </div>
-                <button onClick={() => { setRecoveryCodes(null); setTwoFASetupData(null); }} className="btn-primary w-full">{t('twoFactor.savedCodes')}</button>
+                <button onClick={() => { setRecoveryCodes(null); setTwoFASetupData(null); setQrDataUrl(null); }} className="btn-primary w-full">{t('twoFactor.savedCodes')}</button>
               </div>
             ) : twoFASetupData ? (
               <div className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">{t('twoFactor.scanQr')}</p>
                 <div className="flex justify-center p-4 bg-white dark:bg-slate-900 rounded-lg border">
-                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(twoFASetupData.qrUri)}`} alt="2FA QR Code" className="w-48 h-48" />
+                  {qrDataUrl ? (
+                    <img src={qrDataUrl} alt="2FA QR Code" className="w-48 h-48" />
+                  ) : (
+                    <div className="w-48 h-48 flex items-center justify-center text-slate-400">Loading...</div>
+                  )}
                 </div>
                 <div>
                   <label className="form-label">{t('twoFactor.manualKey')}</label>
@@ -340,7 +346,7 @@ export default function ProfilePage() {
                   <button onClick={async () => { setTwoFAMessage(''); try { const result = await verify2FA.mutateAsync(twoFACode); setRecoveryCodes(result.recoveryCodes); updateUser({ twoFactorEnabled: true }); setTwoFACode(''); } catch { setTwoFAMessage(t('twoFactor.invalidCode')); } }} disabled={twoFACode.length !== 6 || verify2FA.isPending} className="btn-primary flex-1">
                     {verify2FA.isPending ? t('twoFactor.verifying') : t('twoFactor.verifyAndEnable')}
                   </button>
-                  <button onClick={() => { setTwoFASetupData(null); setTwoFACode(''); setTwoFAMessage(''); }} className="btn-secondary flex-1">Cancel</button>
+                  <button onClick={() => { setTwoFASetupData(null); setQrDataUrl(null); setTwoFACode(''); setTwoFAMessage(''); }} className="btn-secondary flex-1">Cancel</button>
                 </div>
               </div>
             ) : user?.twoFactorEnabled ? (
@@ -371,7 +377,7 @@ export default function ProfilePage() {
             ) : (
               <div className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Add an extra layer of security with a time-based one-time password (TOTP) from an authenticator app.</p>
-                <button onClick={async () => { try { const data = await setup2FA.mutateAsync(); setTwoFASetupData(data); } catch { setTwoFAMessage('Failed to start 2FA setup.'); } }} disabled={setup2FA.isPending} className="btn-primary">
+                <button onClick={async () => { try { const data = await setup2FA.mutateAsync(); setTwoFASetupData(data); QRCode.toDataURL(data.qrUri, { width: 200, margin: 1 }).then(setQrDataUrl).catch(() => setQrDataUrl(null)); } catch { setTwoFAMessage('Failed to start 2FA setup.'); } }} disabled={setup2FA.isPending} className="btn-primary">
                   {setup2FA.isPending ? t('twoFactor.settingUp') : t('twoFactor.enable')}
                 </button>
               </div>
