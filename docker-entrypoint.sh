@@ -18,11 +18,13 @@ EOF
 BETA_PASSWORD="${BETA_PASSWORD:-}"
 
 if [ -n "$BETA_PASSWORD" ]; then
+  BETA_HASH=$(printf '%s' "$BETA_PASSWORD" | sha256sum | cut -d' ' -f1)
   cat > /etc/nginx/beta-gate.conf <<BETAEOF
 # Beta gate ENABLED — password required
 map \$http_x_beta_token \$beta_valid {
     default     "no";
     "$BETA_PASSWORD" "yes";
+    "$BETA_HASH" "yes";
 }
 BETAEOF
   echo "Beta gate ENABLED"

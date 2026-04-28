@@ -3,6 +3,13 @@ import { APP_NAME } from '../lib/config';
 
 const BETA_TOKEN_KEY = 'ninerlog_beta_token';
 
+async function hashValue(value: string): Promise<string> {
+  const data = new TextEncoder().encode(value);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 /**
  * Returns the stored beta token, or null if not set.
  * Can be used by API clients to attach the X-Beta-Token header.
@@ -80,7 +87,8 @@ export function BetaGate({ children }: { children: ReactNode }) {
 
     const valid = await verifyToken(password);
     if (valid) {
-      localStorage.setItem(BETA_TOKEN_KEY, password);
+      const hashed = await hashValue(password);
+      localStorage.setItem(BETA_TOKEN_KEY, hashed);
       setAuthorized(true);
     } else {
       setError('Invalid access code');

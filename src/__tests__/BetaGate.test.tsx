@@ -86,7 +86,10 @@ describe('BetaGate', () => {
       expect(screen.getByTestId('app-content')).toBeInTheDocument();
     });
 
-    expect(localStorage.getItem('ninerlog_beta_token')).toBe('secret123');
+    // The token is stored as a SHA-256 hash, not the raw access code
+    expect(localStorage.getItem('ninerlog_beta_token')).toBe(
+      'fcf730b6d95236ecd3c9fc2d92d7b6b2bb061514961aec041d6c7a7192f592e4'
+    );
   });
 
   it('shows error for invalid code', async () => {
