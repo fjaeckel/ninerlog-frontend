@@ -116,11 +116,16 @@ docker build -t ninerlog-frontend .
 - [Implementation Notes](IMPLEMENTATION.md) — Feature summary and architecture decisions
 - [API Specification](https://github.com/fjaeckel/ninerlog-api/blob/main/api-spec/openapi.yaml) — OpenAPI 3.1 spec (source of truth)
 
+## Running NinerLog
+
+To run your own NinerLog instance, see [ninerlog-dockerized](https://github.com/fjaeckel/ninerlog-dockerized) for a ready-to-use Docker Compose setup with pre-built images.
+
 ## Related Repositories
 
 | Repository | Description |
 |---|---|
 | [ninerlog-api](https://github.com/fjaeckel/ninerlog-api) | Go backend REST API (includes OpenAPI spec) |
+| [ninerlog-dockerized](https://github.com/fjaeckel/ninerlog-dockerized) | Self-hosted deployment (Docker Compose) |
 | [ninerlog-website](https://github.com/fjaeckel/ninerlog-website) | Marketing website |
 
 ## Contributing
