@@ -9,6 +9,10 @@ on:
     paths:
       - 'scripts/generate-api-client.sh'
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   generate-client:
     name: Generate TypeScript API Client

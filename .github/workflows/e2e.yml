@@ -3,6 +3,9 @@ name: E2E Tests
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: e2e-frontend-${{ github.ref }}
   cancel-in-progress: true

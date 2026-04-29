@@ -8,6 +8,9 @@ on:
     paths:
       - 'src/i18n/locales/**'
 
+permissions:
+  contents: read
+
 jobs:
   check-translations:
     runs-on: ubuntu-latest
