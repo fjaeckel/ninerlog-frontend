@@ -10,12 +10,6 @@ type LoginRequest = operations['loginUser']['requestBody']['content']['applicati
 
 type AuthResponse = components['schemas']['AuthResponse'];
 
-// Note: reset-password endpoint is not in OpenAPI spec
-// This is kept for UI but commented out until backend implements it
-interface ResetPasswordData {
-  email: string;
-}
-
 export const useRegister = () => {
   const { setAuth } = useAuthStore();
 
@@ -72,16 +66,24 @@ export const useLogout = () => {
   });
 };
 
-// ⚠️ WARNING: This endpoint is NOT in the OpenAPI spec
-// Keeping for UI compatibility but may fail until backend implements it
+export const useRequestPasswordReset = () => {
+  return useMutation({
+    mutationFn: async (data: { email: string }) => {
+      const { error } = await apiClient.POST('/auth/password-reset-request', {
+        body: data,
+      });
+      if (error) throw error;
+    },
+  });
+};
+
 export const useResetPassword = () => {
   return useMutation({
-    mutationFn: async (resetData: ResetPasswordData) => {
-      // This will fail since the endpoint doesn't exist in the spec
-      // Using legacy axios client for now
-      const axios = (await import('../lib/api')).default;
-      const response = await axios.post('/auth/reset-password', resetData);
-      return response.data;
+    mutationFn: async (data: { token: string; newPassword: string }) => {
+      const { error } = await apiClient.POST('/auth/password-reset', {
+        body: data,
+      });
+      if (error) throw error;
     },
   });
 };

@@ -4,11 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useResetPassword } from '../../hooks/useAuth';
-
-// ⚠️ WARNING: /auth/reset-password is NOT in the OpenAPI spec
-// This page will fail until the backend implements this endpoint
-// See: ninerlog-api/api-spec/openapi.yaml
+import { useRequestPasswordReset } from '../../hooks/useAuth';
 
 const resetSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -18,7 +14,7 @@ type ResetFormData = z.infer<typeof resetSchema>;
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation('auth');
-  const resetPassword = useResetPassword();
+  const requestReset = useRequestPasswordReset();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,10 +29,10 @@ export default function ResetPasswordPage() {
   const onSubmit = async (data: ResetFormData) => {
     try {
       setError(null);
-      await resetPassword.mutateAsync(data);
+      await requestReset.mutateAsync(data);
       setSuccess(true);
     } catch (err: any) {
-      setError(err.response?.data?.message || t('auth:resetPassword.sendFailed'));
+      setError(err?.error || t('auth:resetPassword.sendFailed'));
     }
   };
 
@@ -96,10 +92,10 @@ export default function ResetPasswordPage() {
 
           <button
             type="submit"
-            disabled={isSubmitting || resetPassword.isPending}
+            disabled={isSubmitting || requestReset.isPending}
             className="btn-primary w-full btn-lg"
           >
-            {isSubmitting || resetPassword.isPending ? t('auth:resetPassword.sending') : t('auth:resetPassword.sendResetLink')}
+            {isSubmitting || requestReset.isPending ? t('auth:resetPassword.sending') : t('auth:resetPassword.sendResetLink')}
           </button>
 
           <p className="text-center text-sm text-slate-500 dark:text-slate-400">

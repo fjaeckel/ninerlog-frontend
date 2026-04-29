@@ -8,6 +8,7 @@ import Layout from './components/layout/Layout';
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
+const NewPasswordPage = lazy(() => import('./pages/auth/NewPasswordPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const LicensesPage = lazy(() => import('./pages/licenses/LicensesPage'));
 const FlightsPage = lazy(() => import('./pages/flights/FlightsPage'));
@@ -44,6 +45,7 @@ function App() {
         <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
         <Route path="/register" element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/dashboard" />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/new-password" element={<NewPasswordPage />} />
 
         {/* Protected routes */}
         <Route element={<Layout />}>
