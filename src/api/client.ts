@@ -55,7 +55,7 @@ apiClient.use({
     // Handle 401 by attempting token refresh — but NOT for auth-related endpoints
     if (response.status === 401) {
       const url = request.url || '';
-      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/2fa/') || url.includes('/auth/register') || url.includes('/auth/refresh');
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/2fa/') || url.includes('/auth/register') || url.includes('/auth/refresh') || url.includes('/auth/password-reset');
       if (!isAuthEndpoint) {
         // Attempt to refresh the token
         if (!refreshPromise) {

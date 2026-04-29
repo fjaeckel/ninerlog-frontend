@@ -31,8 +31,13 @@ export default function ResetPasswordPage() {
       setError(null);
       await requestReset.mutateAsync(data);
       setSuccess(true);
-    } catch (err: any) {
-      setError(err?.error || t('auth:resetPassword.sendFailed'));
+    } catch (err: unknown) {
+      console.error('[ResetPassword] request failed:', err);
+      const message =
+        (err && typeof err === 'object' && 'error' in err && typeof (err as Record<string, unknown>).error === 'string')
+          ? (err as Record<string, unknown>).error as string
+          : t('auth:resetPassword.sendFailed');
+      setError(message);
     }
   };
 
