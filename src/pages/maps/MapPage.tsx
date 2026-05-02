@@ -113,7 +113,7 @@ export default function MapPage() {
           </p>
         </div>
       ) : (
-        <div className="card p-0 overflow-hidden rounded-xl" style={{ height: '65vh', minHeight: '400px' }}>
+        <div className="card p-0 overflow-hidden rounded-xl relative z-0" style={{ height: '65vh', minHeight: '400px' }}>
           <MapContainer
             center={allPositions.length > 0 ? allPositions[0] : defaultCenter}
             zoom={5}
