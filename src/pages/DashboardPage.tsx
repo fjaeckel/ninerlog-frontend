@@ -14,7 +14,7 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { t } = useTranslation(['dashboard', 'common']);
-  const { fmtDuration } = useFormatPrefs();
+  const { fmtDuration, fmtDate } = useFormatPrefs();
 
   const { data: flightsData } = useFlights({
     page: 1,
@@ -194,17 +194,21 @@ export default function DashboardPage() {
               <button
                 key={flight.id}
                 onClick={() => navigate(`/flights/${flight.id}`)}
-                className="w-full flex justify-between items-center py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded px-2 text-left transition-colors"
+                className="w-full grid grid-cols-[1fr_auto] gap-2 items-center py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded px-2 text-left transition-colors"
               >
-                <div>
-                  <span className="font-medium text-slate-800 dark:text-slate-100">
-                    {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
+                <div className="flex items-center gap-1 min-w-0">
+                  <span className="font-medium font-mono text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                    {flight.departureIcao || '—'}
                   </span>
-                  <span className="ml-3 text-sm text-slate-500 dark:text-slate-400">{flight.aircraftReg}</span>
+                  <span className="text-slate-400">→</span>
+                  <span className="font-medium font-mono text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                    {flight.arrivalIcao || '—'}
+                  </span>
+                  <span className="ml-2 text-sm text-slate-500 dark:text-slate-400 truncate">{flight.aircraftReg}</span>
                 </div>
-                <div className="text-right">
+                <div className="flex items-center gap-3 whitespace-nowrap">
                   <span className="data-sm text-slate-800 dark:text-slate-100">{fmtDuration(flight.totalTime)}</span>
-                  <span className="ml-3 text-sm text-slate-500 dark:text-slate-400">{flight.date}</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400 tabular-nums">{fmtDate(flight.date)}</span>
                 </div>
               </button>
             ))}

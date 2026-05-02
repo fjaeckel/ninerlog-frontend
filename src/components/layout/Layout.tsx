@@ -88,13 +88,14 @@ export default function Layout() {
       </aside>
 
       {/* ── Main Content ── */}
-      <main id="main-content" className="pt-14 lg:pt-16 pb-16 lg:pb-4 lg:ml-64 px-4 lg:px-8 overflow-x-hidden max-w-full">
+      <main id="main-content" className="pt-14 lg:pt-16 pb-24 lg:pb-4 lg:ml-64 px-4 lg:px-8 overflow-x-hidden max-w-full">
         <AnnouncementBanner />
         <Outlet />
       </main>
 
       {/* ── Mobile Bottom Nav ── */}
-      <nav className="fixed bottom-0 inset-x-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-40 flex items-center justify-around lg:hidden pb-safe" aria-label="Mobile navigation">
+      <nav className="fixed bottom-0 inset-x-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-40 lg:hidden" aria-label="Mobile navigation" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="h-14 flex items-center justify-around">
         <BottomNavItem to="/dashboard" label={t('nav:home')} icon={<LayoutDashboard className="w-5 h-5" />} />
         <BottomNavItem to="/flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
         <Link
@@ -116,6 +117,7 @@ export default function Layout() {
           <Menu className="w-5 h-5 mb-0.5" />
           <span>{t('nav:more')}</span>
         </button>
+        </div>
       </nav>
 
       {/* ── Mobile "More" Menu Sheet ── */}
