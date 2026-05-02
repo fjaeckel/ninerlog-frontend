@@ -88,7 +88,7 @@ export default function Layout() {
       </aside>
 
       {/* ── Main Content ── */}
-      <main id="main-content" className="pt-14 lg:pt-16 pb-16 lg:pb-4 lg:ml-64 px-4 lg:px-8">
+      <main id="main-content" className="pt-14 lg:pt-16 pb-16 lg:pb-4 lg:ml-64 px-4 lg:px-8 overflow-x-hidden max-w-full">
         <AnnouncementBanner />
         <Outlet />
       </main>
