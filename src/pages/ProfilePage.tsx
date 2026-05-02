@@ -161,8 +161,19 @@ export default function ProfilePage() {
     <div className="max-w-[640px] mx-auto px-4 py-8">
       <h1 className="page-title mb-6">{t('title')}</h1>
 
-      {/* Tab Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-700 mb-6 overflow-x-auto">
+      {/* Tab Navigation — select on mobile, tabs on sm+ */}
+      <div className="sm:hidden mb-6">
+        <select
+          value={activeTab}
+          onChange={(e) => setActiveTab(e.target.value as typeof activeTab)}
+          className="input w-full"
+        >
+          {tabs.map(({ id, label }) => (
+            <option key={id} value={id}>{label}</option>
+          ))}
+        </select>
+      </div>
+      <div className="hidden sm:flex border-b border-slate-200 dark:border-slate-700 mb-6">
         {tabs.map(({ id, label }) => (
           <button
             key={id}
@@ -194,22 +205,15 @@ export default function ProfilePage() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
               {t('dateFormat.description')}
             </p>
-            <div className="flex gap-3">
-              {([
-                { value: 'DD.MM.YYYY' as const, label: '14.04.2026', desc: t('dateFormat.european') },
-                { value: 'MM/DD/YYYY' as const, label: '04/14/2026', desc: t('dateFormat.us') },
-                { value: 'YYYY-MM-DD' as const, label: '2026-04-14', desc: t('dateFormat.iso') },
-              ] as const).map(({ value, label, desc }) => (
-                <button
-                  key={value}
-                  onClick={async () => { try { await updateProfile.mutateAsync({ dateFormat: value } as any); updateUser({ dateFormat: value }); } catch { /* ignore */ } }}
-                  className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${(user?.dateFormat || 'DD.MM.YYYY') === value ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
-                >
-                  <p className="font-semibold text-slate-800 dark:text-slate-100">{label}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{desc}</p>
-                </button>
-              ))}
-            </div>
+            <select
+              value={user?.dateFormat || 'DD.MM.YYYY'}
+              onChange={async (e) => { const value = e.target.value as 'DD.MM.YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD'; try { await updateProfile.mutateAsync({ dateFormat: value } as any); updateUser({ dateFormat: value }); } catch { /* ignore */ } }}
+              className="input w-full"
+            >
+              <option value="DD.MM.YYYY">14.04.2026 — {t('dateFormat.european')}</option>
+              <option value="MM/DD/YYYY">04/14/2026 — {t('dateFormat.us')}</option>
+              <option value="YYYY-MM-DD">2026-04-14 — {t('dateFormat.iso')}</option>
+            </select>
           </div>
 
           <div className="card">
@@ -217,20 +221,14 @@ export default function ProfilePage() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
               {t('decimalSeparator.description')}
             </p>
-            <div className="flex gap-3">
-              <button
-                onClick={async () => { try { await updateProfile.mutateAsync({ decimalSeparator: 'comma' } as any); updateUser({ decimalSeparator: 'comma' }); } catch { /* ignore */ } }}
-                className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${(user?.decimalSeparator || 'comma') === 'comma' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
-              >
-                <p className="font-semibold text-slate-800 dark:text-slate-100">{t('decimalSeparator.comma')}</p>
-              </button>
-              <button
-                onClick={async () => { try { await updateProfile.mutateAsync({ decimalSeparator: 'dot' } as any); updateUser({ decimalSeparator: 'dot' }); } catch { /* ignore */ } }}
-                className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${user?.decimalSeparator === 'dot' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
-              >
-                <p className="font-semibold text-slate-800 dark:text-slate-100">{t('decimalSeparator.dot')}</p>
-              </button>
-            </div>
+            <select
+              value={user?.decimalSeparator || 'comma'}
+              onChange={async (e) => { const value = e.target.value as 'comma' | 'dot'; try { await updateProfile.mutateAsync({ decimalSeparator: value } as any); updateUser({ decimalSeparator: value }); } catch { /* ignore */ } }}
+              className="input w-full"
+            >
+              <option value="comma">{t('decimalSeparator.comma')}</option>
+              <option value="dot">{t('decimalSeparator.dot')}</option>
+            </select>
           </div>
 
           <div className="card">
@@ -238,22 +236,14 @@ export default function ProfilePage() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
               {t('timeDisplay.description')}
             </p>
-            <div className="flex gap-3">
-              <button
-                onClick={async () => { try { await updateProfile.mutateAsync({ timeDisplayFormat: 'hm' } as any); updateUser({ timeDisplayFormat: 'hm' }); } catch { /* ignore */ } }}
-                className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${(user?.timeDisplayFormat || 'hm') === 'hm' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
-              >
-                <p className="font-semibold text-slate-800 dark:text-slate-100">{t('timeDisplay.hmExample')}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('timeDisplay.hm')}</p>
-              </button>
-              <button
-                onClick={async () => { try { await updateProfile.mutateAsync({ timeDisplayFormat: 'decimal' } as any); updateUser({ timeDisplayFormat: 'decimal' }); } catch { /* ignore */ } }}
-                className={`flex-1 p-3 rounded-lg border-2 text-center transition-colors ${user?.timeDisplayFormat === 'decimal' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}
-              >
-                <p className="font-semibold text-slate-800 dark:text-slate-100">{t('timeDisplay.decimalExample')}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('timeDisplay.decimal')}</p>
-              </button>
-            </div>
+            <select
+              value={user?.timeDisplayFormat || 'hm'}
+              onChange={async (e) => { const value = e.target.value as 'hm' | 'decimal'; try { await updateProfile.mutateAsync({ timeDisplayFormat: value } as any); updateUser({ timeDisplayFormat: value }); } catch { /* ignore */ } }}
+              className="input w-full"
+            >
+              <option value="hm">{t('timeDisplay.hmExample')} — {t('timeDisplay.hm')}</option>
+              <option value="decimal">{t('timeDisplay.decimalExample')} — {t('timeDisplay.decimal')}</option>
+            </select>
           </div>
         </div>
       )}
