@@ -951,11 +951,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               )}
               {approaches.length > 0 && (
                 <div className="space-y-2">
-                  <div className="grid grid-cols-[1fr_80px_64px_28px] gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium px-0.5">
+                  <div className="grid grid-cols-[1fr_60px_50px_28px] sm:grid-cols-[1fr_80px_64px_28px] gap-1.5 sm:gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium px-0.5">
                     <span>{t('approachType')}</span><span>{t('approachAirport')}</span><span>{t('approachRunway')}</span><span></span>
                   </div>
                   {approaches.map((appr, idx) => (
-                    <div key={idx} className="grid grid-cols-[1fr_80px_64px_28px] gap-2 items-center">
+                    <div key={idx} className="grid grid-cols-[1fr_60px_50px_28px] sm:grid-cols-[1fr_80px_64px_28px] gap-1.5 sm:gap-2 items-center">
                       <select
                         value={appr.type}
                         onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], type: e.target.value }; setApproaches(a); }}

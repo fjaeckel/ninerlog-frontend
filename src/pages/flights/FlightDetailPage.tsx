@@ -126,11 +126,11 @@ export default function FlightDetailPage() {
 
       {/* Edit Form Modal */}
       {showEditForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="edit-flight-title">
-          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 id="edit-flight-title" className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('editFlight')}</h2>
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="edit-flight-title">
+          <div className="bg-white dark:bg-slate-800 w-full sm:rounded-xl sm:max-w-2xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-4 sm:p-6">
+              <div className="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-slate-800 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 -mt-4 sm:-mt-6 pt-4 sm:pt-6 border-b border-slate-100 dark:border-slate-700 sm:border-0">
+                <h2 id="edit-flight-title" className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">{t('editFlight')}</h2>
                 <button
                   onClick={() => setShowEditForm(false)}
                   className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center"
