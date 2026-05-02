@@ -66,7 +66,7 @@ export default function AircraftPage() {
       {/* Form Modal */}
       {showForm && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[1020]"
           role="dialog"
           aria-modal="true"
           aria-labelledby="aircraft-form-title"

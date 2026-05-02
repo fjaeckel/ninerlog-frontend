@@ -219,8 +219,8 @@ function UsersTab() {
           </div>)}
       </div>
       {confirmAction && (<>
-        <div className="fixed inset-0 bg-black/40 z-50" onClick={() => setConfirmAction(null)} />
-        <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 mx-auto max-w-md bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-6">
+        <div className="fixed inset-0 bg-black/40 z-[1020]" onClick={() => setConfirmAction(null)} />
+        <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[1020] mx-auto max-w-md bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-6">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('admin.users.confirmAction', { action: actionLabel(confirmAction.type) })}</h3>
           <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
             {confirmAction.type === 'disable' && t('admin.users.disableConfirm', { email: confirmAction.user.email })}

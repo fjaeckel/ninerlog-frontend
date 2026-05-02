@@ -37,7 +37,7 @@ export default function Layout() {
       </a>
 
       {/* ── App Header ── */}
-      <header className="fixed top-0 inset-x-0 h-14 lg:h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-40 flex items-center justify-between px-4 lg:px-6" role="banner">
+      <header className="fixed top-0 inset-x-0 h-14 lg:h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-[1010] flex items-center justify-between px-4 lg:px-6" role="banner">
         <Link to="/dashboard" className="flex items-center gap-2">
           <Plane className="w-5 h-5 text-brand-600" aria-hidden="true" />
           <span className="text-lg font-bold text-brand-800 dark:text-blue-400">{APP_NAME}</span>
@@ -94,7 +94,7 @@ export default function Layout() {
       </main>
 
       {/* ── Mobile Bottom Nav ── */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-40 lg:hidden" aria-label="Mobile navigation" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav className="fixed bottom-0 inset-x-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-[1010] lg:hidden" aria-label="Mobile navigation" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="h-14 flex items-center justify-around">
         <BottomNavItem to="/dashboard" label={t('nav:home')} icon={<LayoutDashboard className="w-5 h-5" />} />
         <BottomNavItem to="/flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
@@ -124,11 +124,11 @@ export default function Layout() {
       {showMoreMenu && (
         <>
           <div
-            className="fixed inset-0 bg-black/40 z-50 lg:hidden"
+            className="fixed inset-0 bg-black/40 z-[1020] lg:hidden"
             onClick={() => setShowMoreMenu(false)}
             aria-hidden="true"
           />
-          <div className="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-white dark:bg-slate-800 rounded-t-xl shadow-2xl pb-safe animate-sheet-up">
+          <div className="fixed bottom-0 inset-x-0 z-[1020] lg:hidden bg-white dark:bg-slate-800 rounded-t-xl shadow-2xl pb-safe animate-sheet-up">
             <div className="flex justify-center pt-3 pb-2">
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
             </div>

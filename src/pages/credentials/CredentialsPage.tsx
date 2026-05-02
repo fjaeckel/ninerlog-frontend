@@ -76,7 +76,7 @@ export default function CredentialsPage() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="credential-form-title">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[1020]" role="dialog" aria-modal="true" aria-labelledby="credential-form-title">
           <div className="bg-white dark:bg-slate-800 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">

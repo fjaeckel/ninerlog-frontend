@@ -68,7 +68,7 @@ export function ConfirmDialog({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/50 z-50"
+        className="fixed inset-0 bg-black/50 z-[1020]"
         onClick={onCancel}
         aria-hidden="true"
       />
@@ -78,7 +78,7 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-desc"
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 z-[1020] flex items-center justify-center p-4"
         onKeyDown={handleKeyDown}
       >
         <div className="bg-white dark:bg-slate-800 rounded-xl max-w-sm w-full shadow-2xl p-6 animate-fade-in">
