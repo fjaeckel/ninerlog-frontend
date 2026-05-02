@@ -40,7 +40,7 @@ export default function AdminPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-slate-200 dark:border-slate-700">
+      <div className="flex gap-1 mb-6 border-b border-slate-200 dark:border-slate-700 overflow-x-auto -mx-4 px-4 scrollbar-none">
         {([
           { id: 'dashboard' as Tab, label: t('admin.tabs.dashboard'), icon: <BarChart3 className="w-4 h-4" /> },
           { id: 'users' as Tab, label: t('admin.tabs.users'), icon: <Users className="w-4 h-4" /> },
@@ -50,7 +50,7 @@ export default function AdminPage() {
           { id: 'config' as Tab, label: t('admin.tabs.config'), icon: <Settings2 className="w-4 h-4" /> },
         ]).map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors shrink-0 ${
               tab === t.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
             }`}>{t.icon} {t.label}</button>
         ))}
@@ -145,7 +145,8 @@ function UsersTab() {
         {search && <button type="button" onClick={() => { setSearch(''); setSearchInput(''); setPage(1); }} className="btn-secondary">{t('admin.users.clear')}</button>}
       </form>
       <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Desktop table */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-slate-200 dark:border-slate-700 text-left">
               <th className="px-4 py-3 font-medium text-slate-500">{t('admin.users.user')}</th>
@@ -178,6 +179,35 @@ function UsersTab() {
               {!isLoading && data?.data?.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-400">{t('admin.users.noUsers')}</td></tr>}
             </tbody>
           </table>
+        </div>
+        {/* Mobile card layout */}
+        <div className="sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
+          {isLoading && <div className="px-4 py-8 text-center text-slate-400">{t('common:loading')}</div>}
+          {data?.data?.map((u) => (
+            <div key={u.id} className="px-4 py-3 space-y-2">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="font-medium text-slate-700 dark:text-slate-200">{u.name}</div>
+                  <div className="text-xs text-slate-400">{u.email}</div>
+                </div>
+                <div>{u.disabled ? <span className="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs">{t('admin.users.disabled')}</span> : u.locked ? <span className="badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs">{t('admin.users.locked')}</span> : <span className="badge badge-current text-xs">{t('admin.users.active')}</span>}</div>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                <span>{u.flightCount} {t('admin.users.flights')}</span>
+                <span>{u.aircraftCount} {t('admin.users.aircraft')}</span>
+                <span>{u.twoFactorEnabled ? '2FA ✓' : ''}</span>
+                {u.lastLoginAt && <span>{fmtDate(u.lastLoginAt)}</span>}
+              </div>
+              <div className="flex gap-1">
+                {u.disabled
+                  ? <button onClick={() => setConfirmAction({ type: 'enable', user: u })} className="btn-ghost btn-sm text-xs text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" title="Enable account"><CheckCircle className="w-3.5 h-3.5" /></button>
+                  : <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title="Disable account"><Ban className="w-3.5 h-3.5" /></button>}
+                {u.locked && <button onClick={() => setConfirmAction({ type: 'unlock', user: u })} className="btn-ghost btn-sm text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="Unlock account"><Unlock className="w-3.5 h-3.5" /></button>}
+                {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Reset 2FA"><KeyRound className="w-3.5 h-3.5" /></button>}
+              </div>
+            </div>
+          ))}
+          {!isLoading && data?.data?.length === 0 && <div className="px-4 py-8 text-center text-slate-400">{t('admin.users.noUsers')}</div>}
         </div>
         {data && data.pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
@@ -217,7 +247,8 @@ function AuditLogTab() {
 
   return (
     <div className="card overflow-hidden">
-      <div className="overflow-x-auto">
+      {/* Desktop table */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-slate-200 dark:border-slate-700 text-left">
             <th className="px-4 py-3 font-medium text-slate-500">{t('admin.audit.timestamp')}</th>
@@ -238,6 +269,23 @@ function AuditLogTab() {
             {!isLoading && data?.data?.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">{t('admin.audit.noEntries')}</td></tr>}
           </tbody>
         </table>
+      </div>
+      {/* Mobile card layout */}
+      <div className="sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
+        {isLoading && <div className="px-4 py-8 text-center text-slate-400">{t('common:loading')}</div>}
+        {data?.data?.map((entry) => (
+          <div key={entry.id} className="px-4 py-3 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="badge badge-current text-xs">{entry.action}</span>
+              <span className="text-xs text-slate-400">{fmtDateTime(entry.createdAt)}</span>
+            </div>
+            <div className="flex gap-4 text-xs text-slate-400">
+              <span className="font-mono">{t('admin.audit.admin')}: {entry.adminUserId.slice(0, 8)}...</span>
+              {entry.targetUserId && <span className="font-mono">{t('admin.audit.targetUser')}: {entry.targetUserId.slice(0, 8)}...</span>}
+            </div>
+          </div>
+        ))}
+        {!isLoading && data?.data?.length === 0 && <div className="px-4 py-8 text-center text-slate-400">{t('admin.audit.noEntries')}</div>}
       </div>
       {data && data.pagination.totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
