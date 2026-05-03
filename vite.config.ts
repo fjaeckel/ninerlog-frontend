@@ -11,25 +11,38 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.svg', 'logo.svg'],
+      workbox: {
+        // Don't cache API calls — the app must always hit the live API for auth
+        // and data freshness. Caching /api/* would break session resume on iOS.
+        navigateFallbackDenylist: [/^\/api\//],
+        runtimeCaching: [
+          {
+            urlPattern: /^\/api\//,
+            handler: 'NetworkOnly',
+          },
+        ],
+      },
       manifest: {
         name: 'NinerLog',
         short_name: 'NinerLog',
         description: 'EASA/FAA Compliant Pilot Logbook',
-        theme_color: '#2563eb',
+        id: '/',
+        scope: '/',
+        start_url: '/dashboard',
+        display: 'standalone',
+        display_override: ['standalone', 'minimal-ui'],
+        orientation: 'any',
+        theme_color: '#1E3A5F',
+        background_color: '#0f172a',
+        categories: ['productivity', 'utilities', 'travel'],
         icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      }
+          { src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+          { src: 'logo.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+          { src: 'apple-touch-icon.svg', sizes: '180x180', type: 'image/svg+xml', purpose: 'any' },
+          { src: 'logo.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
+        ],
+      },
     }),
     // Bundle size visualization — generates dist/stats.html on build
     process.env.ANALYZE && visualizer({
