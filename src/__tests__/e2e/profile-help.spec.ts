@@ -58,42 +58,45 @@ test.describe('Profile Page', () => {
 });
 
 test.describe('Time Display Preference', () => {
+  // Locate the Time Display dropdown by scoping to the card containing the
+  // "Time Display" heading. The control is a native <select> with options
+  // "hm" (Hours & Minutes) and "decimal" (Decimal Hours).
+  const timeDisplaySelect = (page: import('@playwright/test').Page) =>
+    page
+      .locator('div.card')
+      .filter({ has: page.getByRole('heading', { name: 'Time Display' }) })
+      .locator('select');
+
   test('should show time display section with hm selected by default', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
-    await expect(page.getByText('Time Display')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Hours & Minutes')).toBeVisible();
-    await expect(page.getByText('Decimal Hours', { exact: true })).toBeVisible();
-    // hm button should have the active border (blue)
-    const hmButton = page.getByRole('button', { name: '1h 30m Hours & Minutes' });
-    await expect(hmButton).toBeVisible();
-    await expect(hmButton).toHaveClass(/border-blue-500/);
+    await expect(page.getByRole('heading', { name: 'Time Display' })).toBeVisible({ timeout: 10000 });
+    const select = timeDisplaySelect(page);
+    await expect(select).toBeVisible();
+    await expect(select).toHaveValue('hm');
   });
 
   test('should switch to decimal format and persist', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
-    await expect(page.getByText('Time Display')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'Time Display' })).toBeVisible({ timeout: 10000 });
 
-    // Click the decimal button
-    const decimalButton = page.getByRole('button', { name: '1.5h Decimal Hours' });
+    const select = timeDisplaySelect(page);
     await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
-      decimalButton.click(),
+      select.selectOption('decimal'),
     ]);
 
-    // Decimal button should now be active
-    await expect(decimalButton).toHaveClass(/border-blue-500/);
+    await expect(select).toHaveValue('decimal');
 
     // Verify the preference was persisted via API
     const user = await apiCall(page, 'GET', '/users/me', undefined, auth.accessToken);
     expect(user.timeDisplayFormat).toBe('decimal');
 
     // Switch back to hm so other tests don't break
-    const hmButton = page.getByRole('button', { name: '1h 30m Hours & Minutes' });
     await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
-      hmButton.click(),
+      select.selectOption('hm'),
     ]);
-    await expect(hmButton).toHaveClass(/border-blue-500/);
+    await expect(select).toHaveValue('hm');
   });
 
   test('should display flight times in selected format on dashboard', async ({ page }) => {
@@ -112,23 +115,31 @@ test.describe('Time Display Preference', () => {
 
     // Switch to decimal via profile UI
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await expect(page.getByRole('heading', { name: 'Time Display' })).toBeVisible({ timeout: 10000 });
     await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
-      page.getByRole('button', { name: '1.5h Decimal Hours' }).click(),
+      timeDisplaySelect(page).selectOption('decimal'),
     ]);
 
     // Go back to dashboard via SPA navigation and verify decimal format
     await page.getByRole('link', { name: 'Dashboard' }).first().click();
+    await expect(page).toHaveURL(/\/dashboard/);
     await expect(page.getByText('Dashboard').first()).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText(/1\.5/).first()).toBeVisible({ timeout: 5000 });
+    // Match "1.5h" in stat-card / flight-row content. Exclude <option> elements
+    // (the profile page's "Dot (1.5h)" decimal-separator option matches /1\.5/
+    // even when hidden inside a closed <select>).
+    await expect(
+      page.locator('main :text-matches("1\\.5h?"):not(option)').first(),
+    ).toBeVisible({ timeout: 5000 });
 
     // Clean up — switch back to hm
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    await expect(page.getByRole('heading', { name: 'Time Display' })).toBeVisible({ timeout: 10000 });
     await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
-      page.getByRole('button', { name: '1h 30m Hours & Minutes' }).click(),
+      timeDisplaySelect(page).selectOption('hm'),
     ]);
-    await expect(page.getByRole('button', { name: '1h 30m Hours & Minutes' })).toHaveClass(/border-blue-500/);
+    await expect(timeDisplaySelect(page)).toHaveValue('hm');
   });
   test('should persist timeDisplayFormat via API', async ({ page }) => {
     // Set to decimal via API
