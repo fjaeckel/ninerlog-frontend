@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Maskable PWA icon (180x180 base, with safe-zone padding so iOS rounded mask never clips the mark) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="NinerLog">
+  <defs>
+    <linearGradient id="nl-bg-apple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1E3A5F"/>
+      <stop offset="60%" stop-color="#1D4ED8"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" fill="url(#nl-bg-apple)"/>
+  <g transform="translate(22.5,22.5) scale(0.26)">
+    <rect x="80" y="320" width="352" height="10" rx="5" fill="#FFFFFF" opacity="0.6"/>
+    <path d="M96 280 L256 144 L416 280 L376 280 L256 196 L136 280 Z" fill="#FFFFFF"/>
+    <path d="M196 256 L256 212 L316 256 L292 256 L256 232 L220 256 Z" fill="#FFFFFF" opacity="0.55"/>
+    <circle cx="256" cy="372" r="10" fill="#FFFFFF" opacity="0.9"/>
+  </g>
+</svg>

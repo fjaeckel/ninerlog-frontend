@@ -9,6 +9,7 @@ import { useLogin2FA } from '../../hooks/useTwoFactor';
 import { useAuthStore } from '../../stores/authStore';
 import i18n from '../../i18n';
 import { APP_NAME } from '../../lib/config';
+import { LogoMark } from '../../components/ui/Logo';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -82,13 +83,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4">
-      <div className="w-full max-w-[400px] space-y-8">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-900 px-4 py-10">
+      {/* Aviation atmosphere — subtle radial brand glow, hidden in reduced-motion is fine because static */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            'radial-gradient(60rem 36rem at 50% -10%, rgba(37,99,235,0.18), transparent 60%), radial-gradient(40rem 28rem at 100% 110%, rgba(30,58,95,0.20), transparent 60%)',
+        }}
+      />
+      <div className="relative w-full max-w-[400px] space-y-6">
         {/* Logo & Tagline */}
         <div className="text-center">
-          <div className="text-4xl mb-2">✈</div>
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{APP_NAME}</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <div className="inline-flex items-center justify-center mb-3">
+            <LogoMark size={64} className="drop-shadow-md" />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-gradient-brand">{APP_NAME}</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             {t('auth:login.tagline')}
           </p>
         </div>

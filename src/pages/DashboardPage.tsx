@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Clock, Plane, ArrowDownToLine, BadgeCheck } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useFlights } from '../hooks/useFlights';
 import { useMyStatistics } from '../hooks/useStatistics';
@@ -37,15 +38,24 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-[1280px] py-6">
-      {/* Page header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="page-title">{greeting}, {user?.name || user?.email}!</h1>
-        <button
-          onClick={() => navigate('/flights', { state: { openForm: true } })}
-          className="btn-primary hidden sm:inline-flex"
-        >
-          {t('dashboard:logFlight')}
-        </button>
+      {/* Hero greeting */}
+      <div className="hero-greeting mb-6">
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium uppercase tracking-wider text-blue-100/80">
+              {greeting}
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+              {user?.name || user?.email}
+            </h1>
+          </div>
+          <button
+            onClick={() => navigate('/flights', { state: { openForm: true } })}
+            className="hidden sm:inline-flex items-center justify-center gap-2 h-11 px-5 rounded-md bg-white text-blue-700 font-semibold shadow-sm hover:bg-blue-50 active:scale-[0.98] transition-all"
+          >
+            {t('dashboard:logFlight')}
+          </button>
+        </div>
       </div>
 
       {/* Currency Status — per class rating */}
@@ -102,13 +112,30 @@ export default function DashboardPage() {
 
       {/* Stats grid */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
-        <StatCard label={t('dashboard:stats.totalTime')} value={statistics ? fmtDuration(statistics.totalMinutes) : '0h 0m'} />
-        <StatCard label={t('dashboard:stats.picTime')} value={statistics ? fmtDuration(statistics.picMinutes) : '0h 0m'} />
-        <StatCard label={t('dashboard:stats.totalFlights')} value={String(statistics?.totalFlights ?? totalFlights)} />
+        <StatCard
+          label={t('dashboard:stats.totalTime')}
+          value={statistics ? fmtDuration(statistics.totalMinutes) : '0h 0m'}
+          icon={<Clock className="w-4 h-4" />}
+          accent="blue"
+        />
+        <StatCard
+          label={t('dashboard:stats.picTime')}
+          value={statistics ? fmtDuration(statistics.picMinutes) : '0h 0m'}
+          icon={<BadgeCheck className="w-4 h-4" />}
+          accent="green"
+        />
+        <StatCard
+          label={t('dashboard:stats.totalFlights')}
+          value={String(statistics?.totalFlights ?? totalFlights)}
+          icon={<Plane className="w-4 h-4" />}
+          accent="blue"
+        />
         <StatCard
           label={t('dashboard:stats.landings')}
           value={String((statistics?.landingsDay ?? 0) + (statistics?.landingsNight ?? 0))}
           detail={`${statistics?.landingsDay ?? 0} ${t('dashboard:stats.day')} / ${statistics?.landingsNight ?? 0} ${t('dashboard:stats.night')}`}
+          icon={<ArrowDownToLine className="w-4 h-4" />}
+          accent="amber"
         />
       </div>
 
