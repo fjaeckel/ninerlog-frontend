@@ -60,12 +60,19 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      // Persist user profile, auth flag, and refresh token (for session continuity across reloads).
-      // Access token stays in memory only (short-lived, 15 min).
+      // Persist full session so an installed PWA (iOS home-screen / Android) can
+      // resume instantly without a /auth/refresh round-trip on every cold launch.
+      // Trade-off: the access token is reachable from JS, so an XSS on this origin
+      // could exfiltrate it — same blast radius as making authenticated calls
+      // directly. The proper hardening is HttpOnly refresh-cookie auth (tracked
+      // separately in the API spec); until then, durable session > daily 2FA pain.
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         refreshToken: state.refreshToken,
+        accessToken: state.accessToken,
+        tokenExpiresAt: state.tokenExpiresAt,
+        expiresIn: state.expiresIn,
       }),
     }
   )

@@ -1,7 +1,8 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
 import { useTheme } from './hooks/useTheme';
+import { bootstrapPromise } from './api/client';
 import Layout from './components/layout/Layout';
 
 // Lazy-loaded pages for code splitting
@@ -34,9 +35,23 @@ function PageLoader() {
 
 function App() {
   const { isAuthenticated } = useAuthStore();
+  const [bootReady, setBootReady] = useState(() => !bootstrapPromise);
 
   // Sync theme preference to document
   useTheme();
+
+  // Wait for the in-flight bootstrap refresh before rendering protected routes,
+  // so cold launches of the installed PWA never flash to /login on iOS.
+  useEffect(() => {
+    if (bootReady) return;
+    let cancelled = false;
+    bootstrapPromise?.finally(() => {
+      if (!cancelled) setBootReady(true);
+    });
+    return () => { cancelled = true; };
+  }, [bootReady]);
+
+  if (!bootReady) return <PageLoader />;
 
   return (
     <Suspense fallback={<PageLoader />}>
