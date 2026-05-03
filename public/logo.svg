@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NinerLog">
+  <defs>
+    <linearGradient id="nl-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1E3A5F"/>
+      <stop offset="55%" stop-color="#1D4ED8"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="nl-shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="55%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded badge -->
+  <rect x="0" y="0" width="512" height="512" rx="112" ry="112" fill="url(#nl-bg)"/>
+  <!-- Subtle top shine -->
+  <rect x="0" y="0" width="512" height="512" rx="112" ry="112" fill="url(#nl-shine)"/>
+  <!-- Horizon line -->
+  <rect x="80" y="320" width="352" height="10" rx="5" fill="#FFFFFF" opacity="0.55"/>
+  <!-- Wing / chevron mark -->
+  <path d="M96 280 L256 144 L416 280 L376 280 L256 196 L136 280 Z"
+        fill="#FFFFFF"/>
+  <!-- Inner vapor stripe -->
+  <path d="M196 256 L256 212 L316 256 L292 256 L256 232 L220 256 Z"
+        fill="#FFFFFF" opacity="0.55"/>
+  <!-- Small altitude dot -->
+  <circle cx="256" cy="372" r="10" fill="#FFFFFF" opacity="0.85"/>
+</svg>

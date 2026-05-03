@@ -294,4 +294,90 @@
   .data-sm {
     @apply text-sm font-medium font-mono tabular-nums;
   }
+
+  /* ── Polish: hover-lift for interactive cards ── */
+  .hover-lift {
+    @apply transition-[transform,box-shadow] duration-200 ease-out;
+  }
+  .hover-lift:hover {
+    @apply -translate-y-0.5 shadow-md;
+  }
+  .hover-lift:active {
+    @apply translate-y-0 shadow-sm;
+  }
+
+  /* ── Polish: glass / frosted surface (mobile nav, headers) ── */
+  .surface-glass {
+    @apply bg-white/80 dark:bg-slate-900/75 backdrop-blur-md backdrop-saturate-150;
+    @apply border-slate-200/70 dark:border-slate-800/70;
+  }
+  /* Fallback when backdrop-filter is unsupported */
+  @supports not ((backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px))) {
+    .surface-glass {
+      @apply bg-white dark:bg-slate-900;
+    }
+  }
+
+  /* ── Polish: brand gradient surfaces ── */
+  .gradient-brand {
+    background-image: linear-gradient(135deg, #1E3A5F 0%, #1D4ED8 55%, #2563EB 100%);
+  }
+  .gradient-brand-soft {
+    @apply bg-gradient-to-br from-brand-50 via-white to-blue-50;
+    @apply dark:from-slate-800 dark:via-slate-800/70 dark:to-blue-950/40;
+  }
+
+  /* ── Polish: hero greeting card ── */
+  .hero-greeting {
+    @apply relative overflow-hidden rounded-xl p-5 sm:p-6 text-white shadow-md;
+    background-image:
+      radial-gradient(ellipse at top right, rgba(96,165,250,0.45), transparent 55%),
+      linear-gradient(135deg, #1E3A5F 0%, #1D4ED8 60%, #2563EB 100%);
+  }
+  .hero-greeting::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+
+  /* ── Polish: text gradient (for wordmark / accents) ── */
+  .text-gradient-brand {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #1E3A5F 0%, #1D4ED8 60%, #2563EB 100%);
+  }
+  .dark .text-gradient-brand {
+    background-image: linear-gradient(135deg, #93C5FD 0%, #60A5FA 60%, #3B82F6 100%);
+  }
+
+  /* ── Polish: sidebar/nav active accent ── */
+  .nav-active-rail {
+    @apply relative;
+  }
+  .nav-active-rail::before {
+    content: '';
+    @apply absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-blue-600 dark:bg-blue-400;
+  }
+
+  /* ── Polish: status ring for currency / health badges ── */
+  .ring-status-current  { @apply ring-2 ring-green-500/30 dark:ring-green-400/30; }
+  .ring-status-expiring { @apply ring-2 ring-amber-500/30 dark:ring-amber-400/30; }
+  .ring-status-expired  { @apply ring-2 ring-red-500/30 dark:ring-red-400/30; }
+}
+
+@layer utilities {
+  /* iOS-style safe-area helpers */
+  .pt-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pl-safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  .pr-safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+  /* Tap-highlight removal (mobile feels app-native) */
+  .tap-none {
+    -webkit-tap-highlight-color: transparent;
+  }
 }

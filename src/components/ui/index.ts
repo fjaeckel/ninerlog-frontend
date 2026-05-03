@@ -4,3 +4,4 @@ export { ConfirmDialog } from './ConfirmDialog';
 export { Skeleton, SkeletonCard, SkeletonList, SkeletonGrid } from './Skeleton';
 export { ErrorState } from './ErrorState';
 export { PageWrapper, PageHeader } from './PageWrapper';
+export { Logo, LogoMark } from './Logo';
