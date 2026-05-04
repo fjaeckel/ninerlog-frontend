@@ -13,7 +13,12 @@ import { useAuthStore } from '../../stores/authStore';
 import type { Aircraft } from '../../hooks/useAircraft';
 import type { CrewRole, FlightCrewMemberInput } from '../../types/api';
 
-// Returns the current local time as HH:MM (used to pre-fill Off-Block on new flights)
+/**
+ * Returns the current LOCAL time as "HH:MM".
+ * Intentionally local time (not UTC) because Off-Block is pre-filled for
+ * the pilot's convenience — they see their watch/clock, not Zulu time.
+ * The value is converted to UTC by the server when the flight is saved.
+ */
 const getCurrentLocalTime = (): string => {
   const now = new Date();
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
@@ -961,7 +966,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               )}
               {approaches.length > 0 && (
                 <div className="space-y-2">
-                  <div className="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_auto] gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium px-0.5">
+                  <div className="sr-only sm:not-sr-only sm:grid sm:grid-cols-[2fr_1fr_1fr_auto] gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium px-0.5">
                     <span>{t('approachType')}</span><span>{t('approachAirport')}</span><span>{t('approachRunway')}</span><span></span>
                   </div>
                   {approaches.map((appr, idx) => (
