@@ -70,6 +70,12 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const isEditing = !!flightId;
   const lastFlight = recentFlightsData?.data?.[0];
 
+  // Pre-fill Off-Block with the current local time (HH:MM) for new flights
+  const getCurrentLocalTime = () => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  };
+
   // Aircraft autocomplete state
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
@@ -124,7 +130,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       aircraftType: '',
       departureIcao: '',
       arrivalIcao: '',
-      offBlockTime: '',
+      offBlockTime: isEditing ? '' : getCurrentLocalTime(),
       onBlockTime: '',
       departureTime: '',
       arrivalTime: '',
@@ -350,15 +356,21 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           {apiError}
         </div>
       )}
-      {/* Auto-fill from last flight */}
+      {/* Auto-fill from last flight — prominent banner */}
       {!isEditing && lastFlight && (
-        <div className="flex justify-end">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">{t('form.fillFromLastFlightTitle')}</p>
+            <p className="text-xs text-blue-600 dark:text-blue-400 truncate">
+              {lastFlight.aircraftReg} · {lastFlight.departureIcao || '?'} → {lastFlight.arrivalIcao || '?'}
+            </p>
+          </div>
           <button
             type="button"
             onClick={handleAutoFill}
-            className="btn-ghost btn-sm text-xs"
+            className="btn-primary btn-sm text-xs shrink-0"
           >
-            {t('form.fillFromLastFlight', { aircraft: lastFlight.aircraftReg, from: lastFlight.departureIcao || '?', to: lastFlight.arrivalIcao || '?' })}
+            {t('form.fill')}
           </button>
         </div>
       )}
@@ -601,7 +613,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       {/* Takeoffs & Landings — right after route */}
       <fieldset>
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.takeoffsAndLandings')}</legend>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <div>
             <label htmlFor="takeoffsDay" className="form-label">
               {t('fields.dayTakeoffs')}
@@ -614,7 +626,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               className="input"
               placeholder="Auto"
             />
-            <p className="form-helper">{t('form.autoCalculated')}</p>
           </div>
           <div>
               <label htmlFor="takeoffsNight" className="form-label">
@@ -628,7 +639,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 className="input"
                 placeholder="Auto"
               />
-              <p className="form-helper">{t('form.autoCalculated')}</p>
             </div>
           <div>
             <label htmlFor="landings" className="form-label">
@@ -641,9 +651,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               min="0"
               className="input"
             />
-            <p className="form-helper">{t('form.dayNightSplitAuto')}</p>
           </div>
         </div>
+        <p className="form-helper mt-2">{t('form.takeoffsAutoHelper')}</p>
       </fieldset>
 
       {/* Launch Method — shown for glider/TMG aircraft */}
@@ -951,11 +961,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               )}
               {approaches.length > 0 && (
                 <div className="space-y-2">
-                  <div className="grid grid-cols-[1fr_60px_50px_28px] sm:grid-cols-[1fr_80px_64px_28px] gap-1.5 sm:gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium px-0.5">
+                  <div className="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_auto] gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium px-0.5">
                     <span>{t('approachType')}</span><span>{t('approachAirport')}</span><span>{t('approachRunway')}</span><span></span>
                   </div>
                   {approaches.map((appr, idx) => (
-                    <div key={idx} className="grid grid-cols-[1fr_60px_50px_28px] sm:grid-cols-[1fr_80px_64px_28px] gap-1.5 sm:gap-2 items-center">
+                    <div key={idx} className="grid grid-cols-[2fr_1fr_1fr_auto] gap-1.5 items-center">
                       <select
                         value={appr.type}
                         onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], type: e.target.value }; setApproaches(a); }}

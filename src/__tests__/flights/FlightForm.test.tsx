@@ -100,6 +100,77 @@ describe('FlightForm', () => {
     expect(screen.getByLabelText(/on-block/i)).toBeInTheDocument();
   });
 
+  it('pre-fills off-block time with current local time on new flight creation', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    const fakeNow = new Date('2026-03-15T09:07:00');
+    vi.setSystemTime(fakeNow);
+
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    // Expected value computed the same way as the component (local-time hours/minutes)
+    const expected = `${String(fakeNow.getHours()).padStart(2, '0')}:${String(fakeNow.getMinutes()).padStart(2, '0')}`;
+    const offBlock = screen.getByLabelText(/off-block/i) as HTMLInputElement;
+    expect(offBlock.value).toBe(expected);
+
+    // On-block, Takeoff, and Landing should remain empty
+    const onBlock = screen.getByLabelText(/on-block/i) as HTMLInputElement;
+    expect(onBlock.value).toBe('');
+    const takeoff = screen.getByLabelText('Takeoff') as HTMLInputElement;
+    expect(takeoff.value).toBe('');
+    const landing = screen.getByLabelText('Landing') as HTMLInputElement;
+    expect(landing.value).toBe('');
+
+    vi.useRealTimers();
+  });
+
+  it('does not pre-fill off-block time when editing an existing flight', async () => {
+    const existingFlight = {
+      id: 'flight-edit',
+      userId: 'user-1',
+      licenseId: 'lic-1',
+      date: '2026-01-15',
+      aircraftReg: 'D-EFGH',
+      aircraftType: 'C172',
+      departureIcao: 'EDDF',
+      arrivalIcao: 'EDDH',
+      departureTime: '14:30:00',
+      arrivalTime: '16:00:00',
+      offBlockTime: '14:15:00',
+      onBlockTime: '16:10:00',
+      totalTime: 90,
+      isPic: true,
+      isDual: false,
+      picTime: 90,
+      dualTime: 0,
+      nightTime: 0,
+      ifrTime: 0,
+      landingsDay: 1,
+      landingsNight: 0,
+      allLandings: 1,
+      takeoffsDay: 1,
+      takeoffsNight: 0,
+      soloTime: 90,
+      crossCountryTime: 90,
+      distance: 185.3,
+      remarks: '',
+      createdAt: '2026-01-15T00:00:00Z',
+      updatedAt: '2026-01-15T00:00:00Z',
+    };
+
+    vi.spyOn(useFlightsHook, 'useFlight').mockReturnValue({
+      data: existingFlight,
+      isLoading: false,
+      error: null,
+    } as any);
+
+    renderWithProviders(<FlightForm flightId="flight-edit" onClose={mockOnClose} />);
+
+    await waitFor(() => {
+      const offBlock = screen.getByLabelText(/off-block/i) as HTMLInputElement;
+      expect(offBlock.value).toBe('14:15');
+    });
+  });
+
   it('renders time fields in advanced drawer', async () => {
     const user = userEvent.setup();
     renderWithProviders(<FlightForm onClose={mockOnClose} />);

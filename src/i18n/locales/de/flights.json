@@ -223,7 +223,10 @@
     "landingTooltip": "Landezeit (UTC) — optional",
     "trainingFlightPlaceholder": "Schulungsflug, Touch-and-Go-Übungen, etc.",
     "endorsementsPlaceholder": "Fluglehrer-Vermerke, Prüfungsreferenzen, Prüfernotizen",
-    "picNamePlaceholder": "Automatisch: Selbst (PIC) oder Fluglehrername (Dual)"
+    "picNamePlaceholder": "Automatisch: Selbst (PIC) oder Fluglehrername (Dual)",
+    "fillFromLastFlightTitle": "Aus letztem Flug übernehmen",
+    "fill": "Übernehmen",
+    "takeoffsAutoHelper": "Tag- und Nachtstart werden automatisch berechnet, wenn das Feld leer bleibt"
   },
   "crewRoles": {
     "PIC": "PIC",

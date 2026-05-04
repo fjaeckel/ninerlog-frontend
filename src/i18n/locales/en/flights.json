@@ -223,7 +223,10 @@
     "landingTooltip": "Landing time (UTC) — optional",
     "trainingFlightPlaceholder": "Training flight, touch and go practice, etc.",
     "endorsementsPlaceholder": "Instructor endorsements, skill test references, examiner notes",
-    "picNamePlaceholder": "Auto-filled: Self (PIC) or instructor name (Dual)"
+    "picNamePlaceholder": "Auto-filled: Self (PIC) or instructor name (Dual)",
+    "fillFromLastFlightTitle": "Fill from last flight",
+    "fill": "Fill",
+    "takeoffsAutoHelper": "Day & night takeoffs are auto-calculated if left empty"
   },
   "crewRoles": {
     "PIC": "PIC",
