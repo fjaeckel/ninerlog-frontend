@@ -100,15 +100,17 @@ describe('FlightForm', () => {
     expect(screen.getByLabelText(/on-block/i)).toBeInTheDocument();
   });
 
-  it('pre-fills off-block time with current local time on new flight creation', () => {
+  it('pre-fills off-block time with current UTC time on new flight creation', () => {
     vi.useFakeTimers();
-    const fakeNow = new Date('2026-03-15T09:07:00');
+    // ISO string with explicit Z suffix — getUTCHours() == 09, getUTCMinutes() == 07
+    const fakeNow = new Date('2026-03-15T09:07:00Z');
     vi.setSystemTime(fakeNow);
 
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    // Expected value computed the same way as the component (local-time hours/minutes)
-    const expected = `${String(fakeNow.getHours()).padStart(2, '0')}:${String(fakeNow.getMinutes()).padStart(2, '0')}`;
+    // Expected value computed the same way as the component (UTC hours/minutes)
+    const expected = `${String(fakeNow.getUTCHours()).padStart(2, '0')}:${String(fakeNow.getUTCMinutes()).padStart(2, '0')}`;
+    expect(expected).toBe('09:07');
     const offBlock = screen.getByLabelText(/off-block/i) as HTMLInputElement;
     expect(offBlock.value).toBe(expected);
 

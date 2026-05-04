@@ -13,15 +13,10 @@ import { useAuthStore } from '../../stores/authStore';
 import type { Aircraft } from '../../hooks/useAircraft';
 import type { CrewRole, FlightCrewMemberInput } from '../../types/api';
 
-/**
- * Returns the current LOCAL time as "HH:MM".
- * Intentionally local time (not UTC) because Off-Block is pre-filled for
- * the pilot's convenience — they see their watch/clock, not Zulu time.
- * The value is converted to UTC by the server when the flight is saved.
- */
-const getCurrentLocalTime = (): string => {
+/** Returns the current UTC time as "HH:MM". Used to pre-fill Off-Block on new flights. */
+const getCurrentUtcTime = (): string => {
   const now = new Date();
-  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  return `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`;
 };
 
 const flightSchema = z.object({
@@ -135,7 +130,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       aircraftType: '',
       departureIcao: '',
       arrivalIcao: '',
-      offBlockTime: isEditing ? '' : getCurrentLocalTime(),
+      offBlockTime: isEditing ? '' : getCurrentUtcTime(),
       onBlockTime: '',
       departureTime: '',
       arrivalTime: '',
