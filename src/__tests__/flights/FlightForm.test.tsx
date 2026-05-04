@@ -101,7 +101,7 @@ describe('FlightForm', () => {
   });
 
   it('pre-fills off-block time with current local time on new flight creation', () => {
-    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.useFakeTimers();
     const fakeNow = new Date('2026-03-15T09:07:00');
     vi.setSystemTime(fakeNow);
 

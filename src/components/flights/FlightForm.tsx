@@ -13,6 +13,12 @@ import { useAuthStore } from '../../stores/authStore';
 import type { Aircraft } from '../../hooks/useAircraft';
 import type { CrewRole, FlightCrewMemberInput } from '../../types/api';
 
+// Returns the current local time as HH:MM (used to pre-fill Off-Block on new flights)
+const getCurrentLocalTime = (): string => {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+};
+
 const flightSchema = z.object({
   date: z.string().min(1, 'Date is required'),
   aircraftReg: z.string().min(1, 'Aircraft registration is required'),
@@ -69,12 +75,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
   const isEditing = !!flightId;
   const lastFlight = recentFlightsData?.data?.[0];
-
-  // Pre-fill Off-Block with the current local time (HH:MM) for new flights
-  const getCurrentLocalTime = () => {
-    const now = new Date();
-    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  };
 
   // Aircraft autocomplete state
   const [showSuggestions, setShowSuggestions] = useState(false);
