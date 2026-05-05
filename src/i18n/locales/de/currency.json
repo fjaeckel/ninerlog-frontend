@@ -6,6 +6,7 @@
   "alerts_other": "{{count}} Warnungen",
   "ratingCurrency": "Berechtigungs- & Lizenz-Gültigkeit",
   "passengerCurrency": "Passagier-Gültigkeit",
+  "passengerCurrencyDesc": "Erforderliche Landungen, um Passagiere mitnehmen zu dürfen. Alleinflug ist auch ohne Passagier-Gültigkeit möglich.",
   "flightReview": "Flugüberprüfung",
   "noRatings": "Keine Klassenberechtigungen gefunden. Fügen Sie eine Lizenz mit Klassenberechtigungen hinzu.",
   "noCredentials": "Keine Nachweise gefunden. Fügen Sie Medicals und Zertifikate hinzu.",
