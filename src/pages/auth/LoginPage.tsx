@@ -25,6 +25,9 @@ export default function LoginPage() {
   const login = useLogin();
   const login2FA = useLogin2FA();
   const passkeyLogin = useLoginWithPasskey();
+  // Separate mutation instance so the conditional/autofill ceremony's pending
+  // state never drives the explicit "Sign in with passkey" button.
+  const passkeyConditional = useLoginWithPasskey();
   const passkeyAvailable = passkeysSupported();
   const { setAuth } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
@@ -109,7 +112,15 @@ export default function LoginPage() {
     let cancelled = false;
     (async () => {
       try {
-        await passkeyLogin.mutateAsync({ conditional: true });
+        // Only attempt conditional mediation if the browser actually supports
+        // it. Otherwise startAuthentication() will hang indefinitely waiting
+        // for an autofill suggestion that can never be produced, leaving the
+        // mutation in a permanent "pending" state.
+        const PKC = (window as unknown as { PublicKeyCredential?: { isConditionalMediationAvailable?: () => Promise<boolean> } }).PublicKeyCredential;
+        if (!PKC?.isConditionalMediationAvailable) return;
+        const supported = await PKC.isConditionalMediationAvailable();
+        if (!supported || cancelled) return;
+        await passkeyConditional.mutateAsync({ conditional: true });
         if (!cancelled) navigate('/dashboard');
       } catch {
         // Conditional UI may simply be unavailable — silently ignore.
