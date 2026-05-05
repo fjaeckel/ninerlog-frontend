@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import type { components, operations } from '../api/schema';
+import { invalidateFlightDependentQueries } from './invalidation';
 
 type Flight = components['schemas']['Flight'];
 type FlightCreate = components['schemas']['FlightCreate'];
@@ -50,9 +51,7 @@ export const useCreateFlight = () => {
       return data as Flight;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['flights'] });
-      queryClient.invalidateQueries({ queryKey: ['statistics'] });
-      queryClient.invalidateQueries({ queryKey: ['currency'] });
+      invalidateFlightDependentQueries(queryClient);
     },
   });
 };
@@ -71,10 +70,8 @@ export const useUpdateFlight = () => {
       return data as Flight;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['flights'] });
+      invalidateFlightDependentQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: ['flights', data.id] });
-      queryClient.invalidateQueries({ queryKey: ['statistics'] });
-      queryClient.invalidateQueries({ queryKey: ['currency'] });
     },
   });
 };
@@ -91,9 +88,7 @@ export const useDeleteFlight = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['flights'] });
-      queryClient.invalidateQueries({ queryKey: ['statistics'] });
-      queryClient.invalidateQueries({ queryKey: ['currency'] });
+      invalidateFlightDependentQueries(queryClient);
     },
   });
 };
