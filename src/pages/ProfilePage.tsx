@@ -11,6 +11,7 @@ import { API_BASE_URL as API_BASE } from '../lib/config';
 import { extractApiError, extractApiStatus } from '../lib/errors';
 import { NotificationHistory } from '../components/NotificationHistory';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { PasskeySection } from '../components/auth/PasskeySection';
 
 export default function ProfilePage() {
   const { t } = useTranslation('settings');
@@ -373,6 +374,8 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+
+          <PasskeySection />
         </div>
       )}
 

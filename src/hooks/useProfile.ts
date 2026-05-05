@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 import type { components } from '../api/schema';
+import { invalidateFlightDependentQueries } from './invalidation';
 
 type User = components['schemas']['User'];
 
@@ -65,9 +66,7 @@ export const useDeleteAllFlights = () => {
       return data as { deleted: number };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['flights'] });
-      queryClient.invalidateQueries({ queryKey: ['statistics'] });
-      queryClient.invalidateQueries({ queryKey: ['currency'] });
+      invalidateFlightDependentQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: ['imports'] });
     },
   });

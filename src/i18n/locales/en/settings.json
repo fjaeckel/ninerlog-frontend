@@ -149,5 +149,22 @@
     "description": "Choose the decimal separator for number formatting (e.g. decimal hours).",
     "comma": "Comma (1,5h)",
     "dot": "Dot (1.5h)"
+  },
+  "passkeys": {
+    "title": "Passkeys",
+    "description": "Trust this device — sign in with Face ID, Touch ID or a security key, no password or 2FA needed.",
+    "unsupported": "This browser does not support passkeys.",
+    "loading": "Loading…",
+    "empty": "No passkeys registered yet.",
+    "unnamed": "Unnamed passkey",
+    "created": "Created",
+    "lastUsed": "Last used",
+    "revoke": "Revoke",
+    "add": "Add Passkey",
+    "registering": "Registering…",
+    "labelInput": "Label (optional)",
+    "labelPlaceholder": "e.g. iPhone 15 — Face ID",
+    "registerFailed": "Could not register passkey. Please try again.",
+    "deleteFailed": "Could not revoke passkey. Please try again."
   }
 }

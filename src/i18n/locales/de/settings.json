@@ -149,5 +149,22 @@
     "description": "Wählen Sie das Dezimaltrennzeichen für Zahlenformatierung (z.B. Dezimalstunden).",
     "comma": "Komma (1,5h)",
     "dot": "Punkt (1.5h)"
+  },
+  "passkeys": {
+    "title": "Passkeys",
+    "description": "Diesem Gerät vertrauen — Anmeldung per Face ID, Touch ID oder Sicherheitsschlüssel ohne Passwort oder 2FA.",
+    "unsupported": "Dieser Browser unterstützt keine Passkeys.",
+    "loading": "Wird geladen…",
+    "empty": "Noch keine Passkeys registriert.",
+    "unnamed": "Unbenannter Passkey",
+    "created": "Erstellt",
+    "lastUsed": "Zuletzt verwendet",
+    "revoke": "Entfernen",
+    "add": "Passkey hinzufügen",
+    "registering": "Wird registriert…",
+    "labelInput": "Bezeichnung (optional)",
+    "labelPlaceholder": "z.B. iPhone 15 — Face ID",
+    "registerFailed": "Passkey konnte nicht registriert werden. Bitte erneut versuchen.",
+    "deleteFailed": "Passkey konnte nicht entfernt werden. Bitte erneut versuchen."
   }
 }

@@ -1,6 +1,7 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import type { components } from '../api/schema';
+import { invalidateFlightDependentQueries } from './invalidation';
 
 type ImportUploadResponse = components['schemas']['ImportUploadResponse'];
 type ImportPreviewResponse = components['schemas']['ImportPreviewResponse'];
@@ -57,6 +58,7 @@ export const usePreviewImport = () => {
 };
 
 export const useConfirmImport = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (req: {
       uploadToken: string;
@@ -73,6 +75,10 @@ export const useConfirmImport = () => {
         throw new Error(err.error || 'Import failed');
       }
       return res.json();
+    },
+    onSuccess: () => {
+      invalidateFlightDependentQueries(queryClient);
+      queryClient.invalidateQueries({ queryKey: ['imports'] });
     },
   });
 };

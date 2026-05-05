@@ -205,6 +205,129 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/webauthn/register/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Begin passkey (WebAuthn) registration
+         * @description Authenticated endpoint that returns the `PublicKeyCredentialCreationOptionsJSON`
+         *     the browser passes to `navigator.credentials.create()`. The server stores the
+         *     challenge in a short-lived session keyed by `sessionId` which must be sent back
+         *     with the verification request.
+         */
+        post: operations["webauthnRegisterOptions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/webauthn/register/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete passkey registration
+         * @description Verifies the attestation produced by the authenticator and stores the new
+         *     credential against the authenticated user.
+         */
+        post: operations["webauthnRegisterVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/webauthn/login/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Begin passkey login
+         * @description Public endpoint that returns the `PublicKeyCredentialRequestOptionsJSON` for
+         *     `navigator.credentials.get()`. The email is optional — when omitted the server
+         *     returns a discoverable-credential challenge for client-side credential discovery
+         *     (recommended for `mediation: "conditional"` autofill).
+         */
+        post: operations["webauthnLoginOptions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/webauthn/login/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete passkey login
+         * @description Verifies the assertion and, on success, returns an `AuthResponse` with access
+         *     and refresh tokens — bypassing 2FA because the passkey already counts as a
+         *     possession+inherence factor.
+         */
+        post: operations["webauthnLoginVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/webauthn/credentials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the current user's passkeys */
+        get: operations["listWebauthnCredentials"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/webauthn/credentials/{credentialId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke a passkey */
+        delete: operations["deleteWebauthnCredential"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me": {
         parameters: {
             query?: never;
@@ -1428,6 +1551,36 @@ export interface components {
              */
             expiresIn: number;
             user: components["schemas"]["User"];
+        };
+        WebAuthnRegistrationOptions: {
+            /** @description Opaque server session identifier — must be sent back with /auth/webauthn/register/verify */
+            sessionId: string;
+            /** @description PublicKeyCredentialCreationOptionsJSON to be passed to navigator.credentials.create() */
+            publicKey: {
+                [key: string]: unknown;
+            };
+        };
+        WebAuthnLoginOptions: {
+            /** @description Opaque server session identifier — must be sent back with /auth/webauthn/login/verify */
+            sessionId: string;
+            /** @description PublicKeyCredentialRequestOptionsJSON to be passed to navigator.credentials.get() */
+            publicKey: {
+                [key: string]: unknown;
+            };
+        };
+        WebAuthnCredential: {
+            /** Format: uuid */
+            id: string;
+            /** @description Human-readable label (e.g. "iPhone 15") */
+            label?: string;
+            /** @description Authenticator transports (usb, nfc, ble, internal, hybrid) */
+            transports?: string[];
+            /** @description Authenticator AAGUID (hex) */
+            aaguid?: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastUsedAt?: string;
         };
         License: {
             /**
@@ -3651,6 +3804,165 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    webauthnRegisterOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Creation options */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebAuthnRegistrationOptions"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    webauthnRegisterVerify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The session id returned by /auth/webauthn/register/options */
+                    sessionId: string;
+                    /** @description Optional human-readable label (e.g. "iPhone 15") */
+                    label?: string;
+                    /** @description The full RegistrationResponseJSON from @simplewebauthn/browser */
+                    response: {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description Credential registered */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebAuthnCredential"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    webauthnLoginOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** Format: email */
+                    email?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Request options */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebAuthnLoginOptions"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+        };
+    };
+    webauthnLoginVerify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    sessionId: string;
+                    /** @description The full AuthenticationResponseJSON from @simplewebauthn/browser */
+                    response: {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description Login successful */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    listWebauthnCredentials: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of registered passkeys */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebAuthnCredential"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    deleteWebauthnCredential: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                credentialId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Passkey revoked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
     getCurrentUser: {

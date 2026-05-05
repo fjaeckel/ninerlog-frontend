@@ -18,7 +18,16 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          // Treat the in-docker frontend origin as secure so that
+          // window.PublicKeyCredential is exposed for WebAuthn tests.
+          args: [
+            '--unsafely-treat-insecure-origin-as-secure=http://app.ninerlog.test:5173,http://frontend-dev:5173',
+          ],
+        },
+      },
     },
     ...(process.env.E2E_MOBILE
       ? [

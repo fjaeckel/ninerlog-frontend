@@ -6,6 +6,7 @@
   "alerts_other": "{{count}} alerts",
   "ratingCurrency": "Rating & License Currency",
   "passengerCurrency": "Passenger Currency",
+  "passengerCurrencyDesc": "Recent landings required to carry passengers. You can still fly solo without passenger currency.",
   "flightReview": "Flight Review",
   "noRatings": "No class ratings found. Add a license with class ratings to see currency status.",
   "noCredentials": "No credentials found. Add medicals and certificates to track validity.",
