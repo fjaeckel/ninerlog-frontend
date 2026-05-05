@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useLogin } from '../../hooks/useAuth';
 import { useLogin2FA } from '../../hooks/useTwoFactor';
+import { useLoginWithPasskey, passkeysSupported } from '../../hooks/usePasskeys';
 import { useAuthStore } from '../../stores/authStore';
 import i18n from '../../i18n';
 import { APP_NAME } from '../../lib/config';
@@ -23,6 +24,8 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const login = useLogin();
   const login2FA = useLogin2FA();
+  const passkeyLogin = useLoginWithPasskey();
+  const passkeyAvailable = passkeysSupported();
   const { setAuth } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
   const [twoFactorToken, setTwoFactorToken] = useState<string | null>(null);
@@ -81,6 +84,40 @@ export default function LoginPage() {
       setError(t('auth:twoFactor.invalidCode'));
     }
   };
+
+  const handlePasskeyLogin = async () => {
+    setError(null);
+    try {
+      await passkeyLogin.mutateAsync({});
+      navigate('/dashboard');
+    } catch (err) {
+      // Surface a generic message — most failures are user cancellation.
+      const msg = (err as { error?: string; message?: string })?.error
+        ?? (err as { message?: string })?.message
+        ?? '';
+      if (msg.toLowerCase().includes('not allowed') || msg.toLowerCase().includes('aborted')) {
+        // user cancelled — stay silent
+        return;
+      }
+      setError(t('auth:login.passkeyFailed'));
+    }
+  };
+
+  // Trigger conditional / autofill UI on supported browsers.
+  useEffect(() => {
+    if (!passkeyAvailable || twoFactorToken) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        await passkeyLogin.mutateAsync({ conditional: true });
+        if (!cancelled) navigate('/dashboard');
+      } catch {
+        // Conditional UI may simply be unavailable — silently ignore.
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-900 px-4 py-10">
@@ -174,7 +211,7 @@ export default function LoginPage() {
               {...register('email')}
               type="email"
               id="email"
-              autoComplete="email"
+              autoComplete="email webauthn"
               className={`input ${errors.email ? 'input-error' : ''}`}
               placeholder="pilot@example.com"
             />
@@ -216,6 +253,24 @@ export default function LoginPage() {
           >
             {isSubmitting || login.isPending ? t('auth:login.signingIn') : t('auth:login.logIn')}
           </button>
+
+          {passkeyAvailable && (
+            <>
+              <div className="flex items-center gap-3 text-xs text-slate-400">
+                <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+                <span>{t('auth:login.or')}</span>
+                <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+              </div>
+              <button
+                type="button"
+                onClick={handlePasskeyLogin}
+                disabled={passkeyLogin.isPending}
+                className="btn-secondary w-full btn-lg"
+              >
+                {passkeyLogin.isPending ? t('auth:login.passkeySigningIn') : t('auth:login.signInWithPasskey')}
+              </button>
+            </>
+          )}
 
           <p className="text-center text-sm text-slate-500 dark:text-slate-400">
             {t('auth:login.noAccount')}{' '}
