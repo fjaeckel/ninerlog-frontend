@@ -393,7 +393,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <label htmlFor="date" className="form-label">
               {t('fields.date')} <span className="text-red-500">*</span>
             </label>
-            <input {...register('date')} type="date" id="date" className="input px-2" />
+            <input {...register('date')} type="date" id="date" className="input px-1.5" />
             {errors.date && (
               <p className="form-error">{errors.date.message}</p>
             )}
@@ -547,7 +547,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         </div>
 
         {/* Off-Block → On-Block → Takeoff → Landing */}
-        <div className="grid grid-cols-4 gap-3 sm:gap-4 mb-4 [&>*]:min-w-0">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 [&>*]:min-w-0">
           <div>
             <label htmlFor="offBlockTime" className="form-label">
               {t('detail.offBlock')} <span className="text-red-500">*</span>
@@ -556,7 +556,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               {...register('offBlockTime')}
               type="time"
               id="offBlockTime"
-              className="input px-1.5 text-center"
+              className="input px-1 text-center"
               title={t('form.offBlockTooltip')}
             />
             {errors.offBlockTime && (
@@ -571,7 +571,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               {...register('onBlockTime')}
               type="time"
               id="onBlockTime"
-              className="input px-1.5 text-center"
+              className="input px-1 text-center"
               title={t('form.onBlockTooltip')}
             />
             {errors.onBlockTime && (
@@ -586,7 +586,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               {...register('departureTime')}
               type="time"
               id="departureTime"
-              className="input px-1.5 text-center"
+              className="input px-1 text-center"
               title={t('form.takeoffTooltip')}
             />
           </div>
@@ -598,7 +598,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               {...register('arrivalTime')}
               type="time"
               id="arrivalTime"
-              className="input px-1.5 text-center"
+              className="input px-1 text-center"
               title={t('form.landingTooltip')}
             />
           </div>
