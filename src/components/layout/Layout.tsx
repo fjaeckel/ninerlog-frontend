@@ -40,7 +40,7 @@ export default function Layout() {
 
       {/* ── App Header ── */}
       <header
-        className="fixed top-0 inset-x-0 h-14 lg:h-16 surface-glass border-b z-[1010] flex items-center justify-between px-4 lg:px-6 pt-safe-top tap-none"
+        className="fixed top-0 inset-x-0 h-[calc(3.5rem+env(safe-area-inset-top))] lg:h-[calc(4rem+env(safe-area-inset-top))] surface-glass border-b z-[1010] flex items-center justify-between px-4 lg:px-6 pt-safe-top tap-none"
         role="banner"
       >
         <Link to="/dashboard" className="flex items-center gap-2.5 group" aria-label={APP_NAME}>
@@ -112,7 +112,7 @@ export default function Layout() {
       </aside>
 
       {/* ── Main Content ── */}
-      <main id="main-content" className="pt-14 lg:pt-16 pb-24 lg:pb-4 lg:ml-64 px-4 lg:px-8 overflow-x-hidden max-w-full">
+      <main id="main-content" className="pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-[calc(4rem+env(safe-area-inset-top))] pb-24 lg:pb-4 lg:ml-64 px-4 lg:px-8 overflow-x-hidden max-w-full">
         <AnnouncementBanner />
         <Outlet />
       </main>
@@ -230,7 +230,7 @@ function BottomNavItem({ to, label, icon }: { to: string; label: string; icon: R
       {({ isActive }) => (
         <>
           <span
-            className={`absolute top-1 h-1 w-6 rounded-full transition-opacity ${
+            className={`absolute top-1 h-0.5 w-4 rounded-full transition-opacity ${
               isActive ? 'opacity-100 bg-blue-600 dark:bg-blue-400' : 'opacity-0'
             }`}
             aria-hidden="true"
