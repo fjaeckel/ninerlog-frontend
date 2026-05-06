@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
@@ -74,6 +74,12 @@ describe('FlightForm', () => {
     } as any);
   });
 
+  afterEach(() => {
+    // Ensure fake timers from individual tests don't leak into the next test
+    // and break userEvent.
+    vi.useRealTimers();
+  });
+
   it('renders all form sections', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
@@ -100,7 +106,7 @@ describe('FlightForm', () => {
     expect(screen.getByLabelText(/on-block/i)).toBeInTheDocument();
   });
 
-  it('pre-fills off-block time with current UTC time on new flight creation', () => {
+  it('pre-fills off-block and on-block time with current UTC time on new flight creation', () => {
     vi.useFakeTimers();
     // ISO string with explicit Z suffix — getUTCHours() == 09, getUTCMinutes() == 07
     const fakeNow = new Date('2026-03-15T09:07:00Z');
@@ -114,9 +120,11 @@ describe('FlightForm', () => {
     const offBlock = screen.getByLabelText(/off-block/i) as HTMLInputElement;
     expect(offBlock.value).toBe(expected);
 
-    // On-block, Takeoff, and Landing should remain empty
+    // On-block is mirrored from off-block to reduce mobile time-wheel scrolling.
     const onBlock = screen.getByLabelText(/on-block/i) as HTMLInputElement;
-    expect(onBlock.value).toBe('');
+    expect(onBlock.value).toBe(expected);
+
+    // Takeoff and Landing should remain empty
     const takeoff = screen.getByLabelText('Takeoff') as HTMLInputElement;
     expect(takeoff.value).toBe('');
     const landing = screen.getByLabelText('Landing') as HTMLInputElement;

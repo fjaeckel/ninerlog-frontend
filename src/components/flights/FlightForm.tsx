@@ -259,6 +259,16 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     }
   }, [matchedAircraft, setValue, isEditing]);
 
+  // Pre-fill on-block with off-block when off-block is entered (and on-block is empty)
+  // Cuts down on time-wheel scrolling on mobile.
+  const watchedOffBlock = watch('offBlockTime');
+  const watchedOnBlock = watch('onBlockTime');
+  useEffect(() => {
+    if (!isEditing && watchedOffBlock && !watchedOnBlock) {
+      setValue('onBlockTime', watchedOffBlock, { shouldValidate: true });
+    }
+  }, [watchedOffBlock, watchedOnBlock, setValue, isEditing]);
+
   // Quick-add aircraft handler
   const handleQuickAdd = async () => {
     if (!regUppercase || !quickAddMake || !quickAddModel) return;
@@ -350,7 +360,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-full overflow-x-hidden">
       {apiError && (
         <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
           {apiError}
@@ -378,7 +388,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       {/* Basic Info */}
       <fieldset>
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('sections.basic')}</legend>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 [&>*]:min-w-0">
           <div>
             <label htmlFor="date" className="form-label">
               {t('fields.date')} <span className="text-red-500">*</span>
@@ -501,7 +511,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.routeAndTimesUtc')}</legend>
 
         {/* Departure → Arrival ICAO side by side */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 [&>*]:min-w-0">
           <div>
             <label htmlFor="departureIcao" className="form-label">
               {t('fields.departureIcao')} <span className="text-red-500">*</span>
@@ -537,7 +547,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         </div>
 
         {/* Off-Block → On-Block → Takeoff → Landing */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 [&>*]:min-w-0">
           <div>
             <label htmlFor="offBlockTime" className="form-label">
               {t('detail.offBlock')} <span className="text-red-500">*</span>
@@ -613,7 +623,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       {/* Takeoffs & Landings — right after route */}
       <fieldset>
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.takeoffsAndLandings')}</legend>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-3 [&>*]:min-w-0">
           <div>
             <label htmlFor="takeoffsDay" className="form-label">
               {t('fields.dayTakeoffs')}
