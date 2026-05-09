@@ -7,6 +7,7 @@ export default function ExportPage() {
   const [exporting, setExporting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pdfFormat, setPdfFormat] = useState<'easa' | 'faa' | 'summary'>('easa');
+  const [pdfPageSize, setPdfPageSize] = useState<'a4' | 'a5' | 'letter'>('a4');
   const [csvFormat, setCsvFormat] = useState<'standard' | 'easa' | 'faa'>('standard');
 
   const handleExport = async (format: 'csv' | 'json' | 'pdf') => {
@@ -16,7 +17,7 @@ export default function ExportPage() {
       if (format === 'csv') {
         await exportFlightsCSV(csvFormat);
       } else if (format === 'pdf') {
-        await exportFlightsPDF(undefined, pdfFormat);
+        await exportFlightsPDF(undefined, pdfFormat, pdfPageSize);
       } else {
         await exportDataJSON();
       }
@@ -95,10 +96,21 @@ export default function ExportPage() {
             value={pdfFormat}
             onChange={(e) => setPdfFormat(e.target.value as 'easa' | 'faa' | 'summary')}
             className="input mb-3 text-sm"
+            aria-label={t('export.pdfFormat', 'PDF format')}
           >
             <option value="easa">{t('export.easaLogbook')}</option>
             <option value="faa">{t('export.faaLogbook')}</option>
             <option value="summary">{t('export.summaryReport')}</option>
+          </select>
+          <select
+            value={pdfPageSize}
+            onChange={(e) => setPdfPageSize(e.target.value as 'a4' | 'a5' | 'letter')}
+            className="input mb-3 text-sm"
+            aria-label={t('export.pdfPageSize', 'Page size')}
+          >
+            <option value="a4">{t('export.pageSizeA4', 'A4 (landscape)')}</option>
+            <option value="a5">{t('export.pageSizeA5', 'A5 (landscape)')}</option>
+            <option value="letter">{t('export.pageSizeLetter', 'US Letter (landscape)')}</option>
           </select>
           <button
             onClick={() => handleExport('pdf')}

@@ -34,6 +34,11 @@
     "standardCsv": "Standard CSV",
     "download": "Download",
     "downloading": "Downloading...",
-    "preview": "Column Preview"
+    "preview": "Column Preview",
+    "pdfFormat": "PDF format",
+    "pdfPageSize": "Page size",
+    "pageSizeA4": "A4 (landscape)",
+    "pageSizeA5": "A5 (landscape)",
+    "pageSizeLetter": "US Letter (landscape)"
   }
 }
