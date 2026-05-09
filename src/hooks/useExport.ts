@@ -24,10 +24,15 @@ export const exportFlightsCSV = (format?: 'standard' | 'easa' | 'faa') => {
 export const exportDataJSON = () =>
   downloadFile(`${API_BASE}/exports/json`, `ninerlog_backup_${new Date().toISOString().slice(0, 10)}.json`);
 
-export const exportFlightsPDF = (logbookLicenseId?: string, format?: 'easa' | 'faa' | 'summary') => {
+export const exportFlightsPDF = (
+  logbookLicenseId?: string,
+  format?: 'easa' | 'faa' | 'summary',
+  pageSize?: 'a4' | 'a5' | 'letter',
+) => {
   const params = new URLSearchParams();
   if (logbookLicenseId) params.set('logbookLicenseId', logbookLicenseId);
   if (format) params.set('format', format);
+  if (pageSize) params.set('page_size', pageSize);
   const query = params.toString() ? `?${params.toString()}` : '';
   return downloadFile(`${API_BASE}/exports/pdf${query}`, `ninerlog_logbook_${new Date().toISOString().slice(0, 10)}.pdf`);
 };

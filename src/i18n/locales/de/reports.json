@@ -34,6 +34,11 @@
     "standardCsv": "Standard-CSV",
     "download": "Herunterladen",
     "downloading": "Wird heruntergeladen...",
-    "preview": "Spaltenvorschau"
+    "preview": "Spaltenvorschau",
+    "pdfFormat": "PDF-Format",
+    "pdfPageSize": "Seitenformat",
+    "pageSizeA4": "A4 (Querformat)",
+    "pageSizeA5": "A5 (Querformat)",
+    "pageSizeLetter": "US Letter (Querformat)"
   }
 }
