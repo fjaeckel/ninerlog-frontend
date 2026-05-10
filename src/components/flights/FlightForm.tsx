@@ -325,7 +325,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         ...(data.takeoffsDay !== undefined && { takeoffsDay: data.takeoffsDay }),
         ...(data.takeoffsNight !== undefined && { takeoffsNight: data.takeoffsNight }),
         remarks: data.remarks || null,
-        instructorName: data.instructorName || null,
+        // Auto-derive instructor & PIC names from crew (single source of truth: People on Board).
+        instructorName: crewMembers.find((m) => m.role === 'Instructor')?.name ?? null,
         instructorComments: data.instructorComments || null,
         simulatedFlightTime: data.simulatedFlightTime,
         groundTrainingTime: data.groundTrainingTime,
@@ -341,7 +342,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isFlightReview: data.isFlightReview,
         isProficiencyCheck: data.isProficiencyCheck,
         launchMethod: (data.launchMethod || null) as any,
-        picName: data.picName || null,
+        picName: crewMembers.find((m) => m.role === 'PIC')?.name ?? null,
         multiPilotTime: data.multiPilotTime,
         fstdType: data.fstdType || null,
         endorsements: data.endorsements || null,
@@ -764,17 +765,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               </button>
             </div>
 
-            {/* Instructor fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-              <div>
-                <label htmlFor="instructorName" className="form-label">{t('fields.instructorName')}</label>
-                <input {...register('instructorName')} id="instructorName" className="input text-sm" placeholder={t('fields.instructorName')} />
-              </div>
-              <div>
+            {/* Instructor comments — only shown when an instructor is on board */}
+            {crewMembers.some((m) => m.role === 'Instructor') && (
+              <div className="mt-3">
                 <label htmlFor="instructorComments" className="form-label">{t('fields.instructorComments', { defaultValue: 'Instructor Comments' })}</label>
                 <input {...register('instructorComments')} id="instructorComments" className="input text-sm" placeholder={t('form.instructorRemarks')} />
               </div>
-            </div>
+            )}
           </div>
         )}
       </fieldset>
@@ -1069,20 +1066,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         )}
       </fieldset>
 
-      {/* PIC Name, Remarks & Endorsements */}
+      {/* Remarks & Endorsements */}
       <div className="space-y-4">
-        <div>
-          <label htmlFor="picName" className="form-label">
-            {t('fields.picName')}
-          </label>
-          <input
-            {...register('picName')}
-            id="picName"
-            className="input"
-            placeholder={t('form.picNamePlaceholder')}
-          />
-          <p className="form-helper">{t('form.picNameHelper')}</p>
-        </div>
         <div>
           <label htmlFor="remarks" className="form-label">
             {t('fields.remarks')}

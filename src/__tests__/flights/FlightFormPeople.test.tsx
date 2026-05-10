@@ -47,8 +47,8 @@ describe('FlightForm People Section', () => {
     const user = userEvent.setup();
     render(<FlightForm onClose={mockOnClose} />);
     await user.click(screen.getByText('People on Board'));
-    // After expanding, role selector should be visible
-    expect(screen.getByText('Instructor Name')).toBeInTheDocument();
+    // After expanding, the crew name input should be visible
+    expect(screen.getByPlaceholderText('Person name')).toBeInTheDocument();
   });
 
   it('renders Advanced Times section collapsed by default', () => {
