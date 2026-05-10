@@ -61,12 +61,12 @@ export const useTrends = (months: number = 12) => {
   });
 };
 
-export const useStatsByClass = () => {
+export const useStatsByClass = (months: number = 12) => {
   return useQuery({
-    queryKey: ['statsByClass'],
+    queryKey: ['statsByClass', months],
     queryFn: async (): Promise<StatsByClassData> => {
       const token = useAuthStore.getState().accessToken;
-      const res = await fetch(`${API_BASE_URL}/reports/stats-by-class`, {
+      const res = await fetch(`${API_BASE_URL}/reports/stats-by-class?months=${months}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Failed to fetch stats by class');

@@ -20,7 +20,7 @@ export default function ReportsPage() {
   const { t } = useTranslation('reports');
   const [months, setMonths] = useState<TimeRange>(12);
   const { data: trends, isLoading, error } = useTrends(months);
-  const { data: statsByClass } = useStatsByClass();
+  const { data: statsByClass } = useStatsByClass(months);
   const { fmtDuration, dateFormatPref } = useFormatPrefs();
   const fmt = fmtDuration;
 
@@ -109,7 +109,7 @@ export default function ReportsPage() {
             <h2 className="section-title mb-4">{t('blockHoursOverTime')}</h2>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={monthly} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <AreaChart data={monthly} margin={{ top: 5, right: 20, left: 10, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis
                     dataKey="month"
@@ -118,8 +118,13 @@ export default function ReportsPage() {
                       const [y, m] = v.split('-');
                       return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m) - 1]} ${y.slice(2)}`;
                     }}
+                    label={{ value: t('axisMonth', 'Month'), position: 'insideBottom', offset: -2, fill: '#94a3b8', fontSize: 12 }}
                   />
-                  <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} />
+                  <YAxis
+                    tick={{ fontSize: 12, fill: '#94a3b8' }}
+                    tickFormatter={(v: number) => String(Math.round(v / 60))}
+                    label={{ value: t('axisHours', 'Hours'), angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 12 }}
+                  />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc', fontSize: '13px' }}
                     labelFormatter={(v) => {
@@ -141,7 +146,7 @@ export default function ReportsPage() {
             <h2 className="section-title mb-4">{t('flightsPerMonth')}</h2>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthly} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <BarChart data={monthly} margin={{ top: 5, right: 20, left: 10, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis
                     dataKey="month"
@@ -150,8 +155,13 @@ export default function ReportsPage() {
                       const [, m] = v.split('-');
                       return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m) - 1];
                     }}
+                    label={{ value: t('axisMonth', 'Month'), position: 'insideBottom', offset: -2, fill: '#94a3b8', fontSize: 12 }}
                   />
-                  <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} allowDecimals={false} />
+                  <YAxis
+                    tick={{ fontSize: 12, fill: '#94a3b8' }}
+                    allowDecimals={false}
+                    label={{ value: t('axisFlights', 'Flights'), angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 12 }}
+                  />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc', fontSize: '13px' }}
                   />
