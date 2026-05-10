@@ -61,7 +61,7 @@
     "easa_lapl": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer in den letzten 24 Monaten (EASA FCL.140.A)",
     "easa_spl": "Erfordert 5h PIC-Flugzeit + 15 Starts + 2 Übungsflüge mit Fluglehrer in den letzten 24 Monaten (EASA FCL.140.S)",
     "easa_spl_tmg": "Erfordert 12h Flugzeit + 12 Starts & Landungen auf TMG in den letzten 24 Monaten (EASA FCL.140.S(b)(2))",
-    "easa_pax": "3 Starts & Landungen in gleicher Muster/Klasse in den vorangegangenen 90 Tagen für Passagiermitnahme (EASA FCL.060(b))",
+    "easa_pax": "3 Starts & Landungen (Tag) und 1 Start & Landung bei Nacht in gleicher Muster/Klasse in den vorangegangenen 90 Tagen für Passagiermitnahme; die Nachtanforderung entfällt bei gültiger IR-Berechtigung (EASA FCL.060(b))",
     "faa_pax_day_night": "3 Starts & Landungen in 90 Tagen für Tag-Passagiergültigkeit; 3 Voll-Stop-Nachtlandungen in 90 Tagen für Nacht-Passagiergültigkeit (14 CFR 61.57(a)/(b))",
     "faa_ir": "Erfordert 6 Instrumentenanflüge + Warteverfahren innerhalb der vorangegangenen 6 Kalendermonate (14 CFR 61.57(c))",
     "faa_glider": "Erfordert 3 Starts & Landungen in den vorangegangenen 90 Tagen (14 CFR 61.57(a))",

@@ -61,7 +61,7 @@
     "easa_lapl": "Requires 12h flight time + 12 takeoffs & landings + 1h training flight with instructor within the last 24 months (EASA FCL.140.A)",
     "easa_spl": "Requires 5h PIC flight time + 15 launches + 2 training flights with instructor within the last 24 months (EASA FCL.140.S)",
     "easa_spl_tmg": "Requires 12h flight time + 12 takeoffs & landings on TMG within the last 24 months (EASA FCL.140.S(b)(2))",
-    "easa_pax": "3 takeoffs & landings in same type/class within preceding 90 days to carry passengers (EASA FCL.060(b))",
+    "easa_pax": "3 takeoffs & landings (day) and 1 takeoff & landing at night in same type/class within preceding 90 days to carry passengers; the night requirement is waived for pilots holding a valid IR (EASA FCL.060(b))",
     "faa_pax_day_night": "3 takeoffs & landings in preceding 90 days for day passenger currency; 3 full-stop night takeoffs & landings in preceding 90 days for night passenger currency (14 CFR 61.57(a)/(b))",
     "faa_ir": "Requires 6 instrument approaches + holding procedures within the preceding 6 calendar months (14 CFR 61.57(c))",
     "faa_glider": "Requires 3 launches & landings in preceding 90 days (14 CFR 61.57(a))",
