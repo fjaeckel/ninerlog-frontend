@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Plane, FileText, PlaneTakeoff, BarChart3, Map,
-  Award, User, Upload, Download, Shield, LogOut, Menu, Plus, ShieldCheck, HelpCircle
+  Award, User, Upload, Download, Shield, LogOut, Menu, Plus, ShieldCheck, HelpCircle, Bug, ExternalLink
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLogout } from '../../hooks/useAuth';
@@ -107,6 +107,12 @@ export default function Layout() {
             <SidebarItem to="/admin" label={t('nav:admin')} icon={<ShieldCheck className="w-5 h-5" />} />
           )}
           <SidebarItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} />
+          <SidebarExternalItem
+            href="https://ninerlog.com/report-a-bug"
+            label={t('nav:reportBug')}
+            title={t('nav:reportBugTooltip')}
+            icon={<Bug className="w-5 h-5" />}
+          />
           <SidebarItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} />
         </div>
       </aside>
@@ -170,6 +176,13 @@ export default function Layout() {
               <MoreMenuItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuExternalItem
+                href="https://ninerlog.com/report-a-bug"
+                label={t('nav:reportBug')}
+                title={t('nav:reportBugTooltip')}
+                icon={<Bug className="w-5 h-5" />}
+                onClick={() => setShowMoreMenu(false)}
+              />
               {user?.isAdmin && (
                 <MoreMenuItem to="/admin" label={t('nav:admin')} icon={<ShieldCheck className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               )}
@@ -259,5 +272,38 @@ function MoreMenuItem({ to, label, icon, onClick }: { to: string; label: string;
       <span className="shrink-0" aria-hidden="true">{icon}</span>
       {label}
     </NavLink>
+  );
+}
+
+function SidebarExternalItem({ href, label, title, icon }: { href: string; label: string; title?: string; icon: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={title}
+      className="relative flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors tap-none text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+    >
+      <span className="shrink-0" aria-hidden="true">{icon}</span>
+      <span className="flex-1">{label}</span>
+      <ExternalLink className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+    </a>
+  );
+}
+
+function MoreMenuExternalItem({ href, label, title, icon, onClick }: { href: string; label: string; title?: string; icon: React.ReactNode; onClick: () => void }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={title}
+      onClick={onClick}
+      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+    >
+      <span className="shrink-0" aria-hidden="true">{icon}</span>
+      <span className="flex-1">{label}</span>
+      <ExternalLink className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+    </a>
   );
 }

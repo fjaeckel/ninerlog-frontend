@@ -87,6 +87,11 @@
       "reports": "Reports & Maps",
       "profile": "Profile & Settings",
       "admin": "Admin Console"
+    },
+    "reportBug": {
+      "title": "Spotted a gremlin in the cockpit?",
+      "body": "Squawk it. Every bug you report keeps the whole fleet flying smoothly — no PIREP too small.",
+      "cta": "Report a bug"
     }
   },
   "admin": {

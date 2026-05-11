@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { HelpCircle, Plane, Award, FileText, PlaneTakeoff, Upload, Shield, BarChart3, User, ShieldCheck, BookOpen, Search, X } from 'lucide-react';
+import { HelpCircle, Plane, Award, FileText, PlaneTakeoff, Upload, Shield, BarChart3, User, ShieldCheck, BookOpen, Search, X, Bug, ExternalLink } from 'lucide-react';
 import { useHelpContent, helpSectionIds, type HelpSectionId } from './content';
 import { APP_NAME } from '../../lib/config';
 
@@ -172,6 +172,26 @@ export default function HelpPage() {
                 <Markdown remarkPlugins={[remarkGfm]}>{activeSection.content}</Markdown>
               </article>
             </div>
+
+            {/* Report-a-bug call to action — hidden on print */}
+            <a
+              href="https://ninerlog.com/report-a-bug"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 print:hidden flex items-start gap-4 p-4 sm:p-5 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-900/10 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors group"
+            >
+              <span className="shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center" aria-hidden="true">
+                <Bug className="w-5 h-5" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">{t('help.reportBug.title')}</h2>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" aria-hidden="true" />
+                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{t('help.reportBug.body')}</p>
+                <span className="inline-block mt-2 text-sm font-medium text-amber-700 dark:text-amber-300 group-hover:underline">{t('help.reportBug.cta')} →</span>
+              </div>
+            </a>
           </div>
         </div>
       )}

@@ -87,6 +87,11 @@
       "reports": "Berichte & Karten",
       "profile": "Profil & Einstellungen",
       "admin": "Admin-Konsole"
+    },
+    "reportBug": {
+      "title": "Einen Gremlin im Cockpit entdeckt?",
+      "body": "Squawk it. Jeder gemeldete Fehler hält die ganze Flotte am Laufen — kein PIREP ist zu klein.",
+      "cta": "Fehler melden"
     }
   },
   "admin": {

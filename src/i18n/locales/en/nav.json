@@ -11,6 +11,8 @@
   "export": "Export",
   "admin": "Admin",
   "help": "Help",
+  "reportBug": "Report a Bug",
+  "reportBugTooltip": "Squawk it — opens ninerlog.com",
   "profileSettings": "Profile & Settings",
   "home": "Home",
   "addFlight": "Add Flight",
