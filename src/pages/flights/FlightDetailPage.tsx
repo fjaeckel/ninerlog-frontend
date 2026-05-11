@@ -53,6 +53,15 @@ export default function FlightDetailPage() {
   const totalLandings = flight.allLandings;
   const totalTakeoffs = flight.takeoffsDay + flight.takeoffsNight;
 
+  const hasInstrumentData =
+    (flight.ifrTime ?? 0) > 0 ||
+    (flight.actualInstrumentTime ?? 0) > 0 ||
+    (flight.simulatedInstrumentTime ?? 0) > 0 ||
+    (flight.holds ?? 0) > 0 ||
+    (flight.approachesCount ?? 0) > 0 ||
+    (flight.approaches && flight.approaches.length > 0) ||
+    !!flight.isIpc;
+
   const handleDelete = async () => {
     await deleteFlight.mutateAsync(flight.id);
     navigate('/flights');
@@ -66,7 +75,6 @@ export default function FlightDetailPage() {
     { label: t('fields.soloTime'), value: flight.soloTime },
     { label: t('detail.crossCountry'), value: flight.crossCountryTime },
     { label: t('fields.nightTime'), value: flight.nightTime },
-    { label: t('fields.ifrTime'), value: flight.ifrTime },
     { label: t('detail.sicTime'), value: flight.sicTime || 0 },
     { label: t('detail.dualGiven'), value: flight.dualGivenTime || 0 },
     { label: t('detail.simulatedFlight'), value: flight.simulatedFlightTime || 0 },
@@ -208,6 +216,61 @@ export default function FlightDetailPage() {
             </div>
           </dl>
         </div>
+
+        {/* Instrument & Approaches */}
+        {hasInstrumentData && (
+          <div className="card">
+            <h2 className="section-title mb-4">{t('detail.instrumentAndApproaches')}</h2>
+            <dl className="space-y-3">
+              <div className="flex justify-between">
+                <dt className="text-slate-500 dark:text-slate-400">{t('fields.ifrTime')}</dt>
+                <dd className={`font-medium font-mono tabular-nums ${flight.ifrTime > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
+                  {fmtDuration(flight.ifrTime)}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-slate-500 dark:text-slate-400">{t('fields.actualInstrumentTime')}</dt>
+                <dd className={`font-medium font-mono tabular-nums ${(flight.actualInstrumentTime ?? 0) > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
+                  {fmtDuration(flight.actualInstrumentTime ?? 0)}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-slate-500 dark:text-slate-400">{t('fields.simulatedInstrumentTime')}</dt>
+                <dd className={`font-medium font-mono tabular-nums ${(flight.simulatedInstrumentTime ?? 0) > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
+                  {fmtDuration(flight.simulatedInstrumentTime ?? 0)}
+                </dd>
+              </div>
+              <DetailRow label={t('fields.holds')} value={String(flight.holds ?? 0)} mono />
+              <DetailRow label={t('fields.approaches')} value={String(flight.approachesCount ?? 0)} mono />
+              {flight.isIpc && (
+                <div className="flex justify-between">
+                  <dt className="text-slate-500 dark:text-slate-400">{t('fields.isIpc')}</dt>
+                  <dd>
+                    <span className="badge-info text-xs">{t('detail.yes')}</span>
+                  </dd>
+                </div>
+              )}
+              {flight.approaches && flight.approaches.length > 0 && (
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+                  <dt className="text-slate-500 dark:text-slate-400 text-sm mb-2">{t('fields.approaches')}</dt>
+                  <ul className="space-y-1.5">
+                    {flight.approaches.map((a, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-sm">
+                        <span className="badge-info text-xs">
+                          {t(`approachTypes.${a.type}`, { defaultValue: a.type })}
+                        </span>
+                        <span className="font-mono tabular-nums text-slate-700 dark:text-slate-200">
+                          {a.airport || '—'}
+                          {a.runway ? ` · RWY ${a.runway}` : ''}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </dl>
+          </div>
+        )}
 
         {/* Remarks & Comments */}
         <div className="card">
