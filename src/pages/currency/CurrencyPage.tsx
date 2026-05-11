@@ -18,7 +18,7 @@ const CLASS_TYPE_LABELS: Record<string, string> = {
 };
 
 const CREDENTIAL_DESCRIPTIONS: Record<string, string> = {
-  EASA_CLASS1_MEDICAL: 'EASA Class 1 Medical — valid for 12 months (6 months after age 40 for ATPL holders)',
+  EASA_CLASS1_MEDICAL: 'EASA Class 1 Medical — valid for 12 months (6 months for single-pilot CAT passenger operations after age 40, and for all holders after age 60)',
   EASA_CLASS2_MEDICAL: 'EASA Class 2 Medical — valid for 60 months if issued before age 40, 24 months after age 40',
   EASA_LAPL_MEDICAL: 'EASA LAPL Medical — valid for 60 months if issued before age 40, 24 months after age 40',
   FAA_CLASS1_MEDICAL: 'FAA Class 1 Medical — valid for 12 months (6 months after age 40)',
