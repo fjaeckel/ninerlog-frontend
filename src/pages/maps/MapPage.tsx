@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import { useFlightRoutes, useAirportStats } from '../../hooks/useMaps';
+import { useTheme } from '../../hooks/useTheme';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import 'leaflet/dist/leaflet.css';
@@ -21,6 +22,8 @@ type MapView = 'routes' | 'heatmap';
 
 export default function MapPage() {
   const { t } = useTranslation('reports');
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   const { data: routeData, isLoading: routesLoading } = useFlightRoutes();
   const { data: airportStats, isLoading: statsLoading } = useAirportStats();
   const [view, setView] = useState<MapView>('routes');
@@ -121,8 +124,17 @@ export default function MapPage() {
             style={{ height: '100%', width: '100%' }}
           >
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              key={isDark ? 'dark' : 'light'}
+              attribution={
+                isDark
+                  ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                  : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              }
+              url={
+                isDark
+                  ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                  : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+              }
             />
 
             {allPositions.length > 0 && <FitBounds positions={allPositions} />}
