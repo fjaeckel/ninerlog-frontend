@@ -129,6 +129,41 @@
     @apply outline-none ring-2 ring-blue-500 ring-offset-2;
   }
 
+  /* Dark-mode map: invert + hue-rotate the OSM tile pane in place of
+     a separate dark tile provider. This works identically across
+     Chrome, Firefox and Safari (no third-party CDN, no CSP changes,
+     no Safari ITP interactions) and survives offline tile caches.
+     Only the .leaflet-tile-pane is filtered so vector overlays
+     (Polylines, CircleMarkers) and tooltips keep their original
+     colours. */
+  .map-dark .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.85);
+  }
+  /* Map container background — shown briefly before tiles paint and
+     in any tile gaps. Leaflet's default #ddd flashes white on dark. */
+  .map-dark .leaflet-container {
+    background: #0f172a; /* slate-900 */
+  }
+  /* Tone the built-in attribution + zoom controls so they don't burn
+     white against the dark basemap. These sit outside the tile pane
+     and aren't affected by the filter above. */
+  .map-dark .leaflet-control-attribution {
+    background: rgba(15, 23, 42, 0.8) !important;
+    color: #cbd5e1 !important;
+  }
+  .map-dark .leaflet-control-attribution a {
+    color: #93c5fd !important;
+  }
+  .map-dark .leaflet-bar a,
+  .map-dark .leaflet-bar a:hover {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-bottom-color: #334155 !important;
+  }
+  .map-dark .leaflet-bar a:hover {
+    background-color: #334155 !important;
+  }
+
   /* Body defaults — design system slate palette */
   body {
     @apply bg-slate-50 text-slate-800 font-sans antialiased;
