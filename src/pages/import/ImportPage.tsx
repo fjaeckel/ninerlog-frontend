@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useUploadImport, usePreviewImport, useConfirmImport } from '../../hooks/useImport';
-import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping } from '../../hooks/useImport';
+import { useUploadImport, usePreviewImport, useConfirmImport, useRestoreJSON } from '../../hooks/useImport';
+import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportJSONResult } from '../../hooks/useImport';
 import HelpLink from '../../components/ui/HelpLink';
 
 const IMPORT_FIELDS = [
@@ -42,20 +42,25 @@ const IMPORT_FIELDS = [
 ];
 
 type Step = 'upload' | 'mapping' | 'preview' | 'result';
+type Mode = 'csv' | 'json';
 
 export default function ImportPage() {
   const { t } = useTranslation('import');
+  const [mode, setMode] = useState<Mode>('csv');
   const [step, setStep] = useState<Step>('upload');
   const [uploadData, setUploadData] = useState<ImportUploadResponse | null>(null);
   const [mappings, setMappings] = useState<ImportColumnMapping[]>([]);
   const [previewData, setPreviewData] = useState<ImportPreviewResponse | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
+  const [jsonResult, setJsonResult] = useState<ImportJSONResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const jsonInputRef = useRef<HTMLInputElement>(null);
 
   const upload = useUploadImport();
   const preview = usePreviewImport();
   const confirm = useConfirmImport();
+  const restore = useRestoreJSON();
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -119,8 +124,33 @@ export default function ImportPage() {
     setMappings([]);
     setPreviewData(null);
     setResult(null);
+    setJsonResult(null);
     setError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+    if (jsonInputRef.current) jsonInputRef.current.value = '';
+  };
+
+  const handleSwitchMode = (next: Mode) => {
+    if (next === mode) return;
+    handleReset();
+    setMode(next);
+  };
+
+  const handleJSONFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setJsonResult(null);
+    try {
+      const data = await restore.mutateAsync(file);
+      setJsonResult(data);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Restore failed';
+      setError(message);
+    } finally {
+      // Reset the input so the same file can be re-selected after an error.
+      if (jsonInputRef.current) jsonInputRef.current.value = '';
+    }
   };
 
   return (
@@ -133,7 +163,42 @@ export default function ImportPage() {
         </p>
       </div>
 
-      {/* Step indicator */}
+      {/* Mode tabs: CSV flight import vs. full JSON backup restore. The two
+          flows share zero state and reset each other, which keeps the
+          underlying step machine simple. */}
+      <div
+        role="tablist"
+        aria-label={t('modeTabsLabel', 'Import mode')}
+        className="flex gap-2 mb-6 border-b border-slate-200 dark:border-slate-700"
+      >
+        <button
+          role="tab"
+          aria-selected={mode === 'csv'}
+          onClick={() => handleSwitchMode('csv')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors min-h-[44px] ${
+            mode === 'csv'
+              ? 'border-blue-600 text-blue-700 dark:text-blue-400'
+              : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+          }`}
+        >
+          {t('modeCsv', 'CSV Flights')}
+        </button>
+        <button
+          role="tab"
+          aria-selected={mode === 'json'}
+          onClick={() => handleSwitchMode('json')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors min-h-[44px] ${
+            mode === 'json'
+              ? 'border-blue-600 text-blue-700 dark:text-blue-400'
+              : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+          }`}
+        >
+          {t('modeJson', 'Restore JSON Backup')}
+        </button>
+      </div>
+
+      {/* Step indicator (CSV flow only) */}
+      {mode === 'csv' && (
       <div className="flex items-center gap-2 mb-6 text-sm">
         {(['upload', 'mapping', 'preview', 'result'] as Step[]).map((s, i) => (
           <div key={s} className="flex items-center gap-2">
@@ -150,6 +215,7 @@ export default function ImportPage() {
           </div>
         ))}
       </div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm mb-4">
@@ -157,8 +223,100 @@ export default function ImportPage() {
         </div>
       )}
 
+      {/* JSON Restore flow — single-step upload, immediate result. */}
+      {mode === 'json' && !jsonResult && (
+        <div className="card text-center py-12">
+          <div className="text-5xl mb-4">💾</div>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            {t('restoreJsonTitle', 'Restore JSON Backup')}
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-2 max-w-md mx-auto">
+            {t(
+              'restoreJsonDescription',
+              'Upload a NinerLog JSON backup (from Export → Full Data Backup) to restore your flights, aircraft, licenses, class ratings, credentials and crew members.',
+            )}
+          </p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mb-6 max-w-md mx-auto">
+            {t(
+              'restoreJsonNote',
+              'The restore is additive — existing data is never modified or deleted. Aircraft whose registration already exists in your account are skipped.',
+            )}
+          </p>
+          <input
+            ref={jsonInputRef}
+            type="file"
+            accept="application/json,.json"
+            onChange={handleJSONFileSelect}
+            className="hidden"
+          />
+          <button
+            onClick={() => jsonInputRef.current?.click()}
+            disabled={restore.isPending}
+            className="btn-primary"
+          >
+            {restore.isPending
+              ? t('restoringJson', 'Restoring…')
+              : t('selectJsonFile', 'Choose JSON backup')}
+          </button>
+        </div>
+      )}
+
+      {mode === 'json' && jsonResult && (
+        <div className="card text-center py-12">
+          <div className="text-5xl mb-4">✅</div>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            {t('restoreJsonSuccess', 'Backup restored')}
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+            {t('restoreJsonSummary', 'Your data was successfully imported into this account.')}
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto mb-6">
+            <SummaryCard
+              label={t('restoreSummaryAircraftImported', 'Aircraft imported')}
+              value={jsonResult.aircraftImported}
+              color="green"
+            />
+            <SummaryCard
+              label={t('restoreSummaryAircraftSkipped', 'Aircraft skipped')}
+              value={jsonResult.aircraftSkipped}
+              color="amber"
+            />
+            <SummaryCard
+              label={t('restoreSummaryLicenses', 'Licenses')}
+              value={jsonResult.licensesImported}
+              color="green"
+            />
+            <SummaryCard
+              label={t('restoreSummaryClassRatings', 'Class ratings')}
+              value={jsonResult.classRatingsImported}
+              color="green"
+            />
+            <SummaryCard
+              label={t('restoreSummaryCredentials', 'Credentials')}
+              value={jsonResult.credentialsImported}
+              color="green"
+            />
+            <SummaryCard
+              label={t('restoreSummaryFlights', 'Flights')}
+              value={jsonResult.flightsImported}
+              color="green"
+            />
+            <SummaryCard
+              label={t('restoreSummaryCrew', 'Crew members')}
+              value={jsonResult.crewMembersImported}
+              color="green"
+            />
+          </div>
+
+          <button onClick={handleReset} className="btn-primary">
+            {t('restoreAnother', 'Restore another backup')}
+          </button>
+        </div>
+      )}
+
       {/* Step 1: Upload */}
-      {step === 'upload' && (
+      {mode === 'csv' && step === 'upload' && (
         <div className="card text-center py-12">
           <div className="text-5xl mb-4">📂</div>
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('uploadCsv', 'Upload Flight Log File')}</h2>
@@ -183,7 +341,7 @@ export default function ImportPage() {
       )}
 
       {/* Step 2: Column Mapping */}
-      {step === 'mapping' && uploadData && (
+      {mode === 'csv' && step === 'mapping' && uploadData && (
         <div className="space-y-4">
           <div className="card">
             <div className="flex justify-between items-center mb-4">
@@ -258,7 +416,7 @@ export default function ImportPage() {
       )}
 
       {/* Step 3: Preview */}
-      {step === 'preview' && previewData && (
+      {mode === 'csv' && step === 'preview' && previewData && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <SummaryCard label="Total Rows" value={previewData.totalRows} />
@@ -345,7 +503,7 @@ export default function ImportPage() {
       )}
 
       {/* Step 4: Result */}
-      {step === 'result' && result && (
+      {mode === 'csv' && step === 'result' && result && (
         <div className="card text-center py-12">
           <div className="text-5xl mb-4">
             {result.status === 'completed' ? '✅' : result.status === 'partial' ? '⚠' : '❌'}

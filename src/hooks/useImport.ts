@@ -7,8 +7,15 @@ type ImportUploadResponse = components['schemas']['ImportUploadResponse'];
 type ImportPreviewResponse = components['schemas']['ImportPreviewResponse'];
 type ImportResult = components['schemas']['ImportResult'];
 type ImportColumnMapping = components['schemas']['ImportColumnMapping'];
+type ImportJSONResult = components['schemas']['ImportJSONResult'];
 
-export type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping };
+export type {
+  ImportUploadResponse,
+  ImportPreviewResponse,
+  ImportResult,
+  ImportColumnMapping,
+  ImportJSONResult,
+};
 
 import { API_BASE_URL } from '../lib/config';
 
@@ -79,6 +86,52 @@ export const useConfirmImport = () => {
     onSuccess: () => {
       invalidateFlightDependentQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: ['imports'] });
+    },
+  });
+};
+
+/**
+ * Restore a NinerLog JSON backup (as produced by `GET /exports/json`).
+ *
+ * The endpoint is additive: it never deletes or modifies existing data, and
+ * skips aircraft whose registration already exists for the user. After a
+ * successful restore we invalidate every query that depends on the flight
+ * log, plus the aircraft/licenses/credentials lists since those were all
+ * potentially repopulated.
+ */
+export const useRestoreJSON = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File): Promise<ImportJSONResult> => {
+      // Read the file as text first so we can reject obviously-broken JSON
+      // before paying the cost of a network round-trip.
+      const text = await file.text();
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        throw new Error('Selected file is not valid JSON');
+      }
+      if (!parsed || typeof parsed !== 'object') {
+        throw new Error('Selected file is not a NinerLog JSON backup');
+      }
+      const res = await fetch(`${API_BASE_URL}/imports/json`, {
+        method: 'POST',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: text,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Restore failed' }));
+        throw new Error(err.error || 'Restore failed');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      invalidateFlightDependentQueries(queryClient);
+      queryClient.invalidateQueries({ queryKey: ['aircraft'] });
+      queryClient.invalidateQueries({ queryKey: ['licenses'] });
+      queryClient.invalidateQueries({ queryKey: ['credentials'] });
+      queryClient.invalidateQueries({ queryKey: ['class-ratings'] });
     },
   });
 };
