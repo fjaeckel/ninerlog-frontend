@@ -19,5 +19,24 @@
   "importFailed": "Import fehlgeschlagen. Bitte überprüfen Sie das Dateiformat.",
   "rowsDetected_one": "{{count}} Zeile erkannt",
   "rowsDetected_other": "{{count}} Zeilen erkannt",
-  "duplicateWarning": "Einige Flüge könnten bereits vorhandenen Einträgen entsprechen."
+  "duplicateWarning": "Einige Flüge könnten bereits vorhandenen Einträgen entsprechen.",
+
+  "modeTabsLabel": "Import-Modus",
+  "modeCsv": "CSV-Flüge",
+  "modeJson": "JSON-Sicherung wiederherstellen",
+  "restoreJsonTitle": "JSON-Sicherung wiederherstellen",
+  "restoreJsonDescription": "Laden Sie eine NinerLog-JSON-Sicherung hoch (aus Export → Komplettes Datenbackup), um Ihre Flüge, Luftfahrzeuge, Lizenzen, Klassenberechtigungen, Nachweise und Crew-Mitglieder wiederherzustellen.",
+  "restoreJsonNote": "Die Wiederherstellung ist additiv — vorhandene Daten werden nie geändert oder gelöscht. Luftfahrzeuge, deren Kennzeichen bereits in Ihrem Konto vorhanden ist, werden übersprungen.",
+  "selectJsonFile": "JSON-Sicherung auswählen",
+  "restoringJson": "Wiederherstellen…",
+  "restoreJsonSuccess": "Sicherung wiederhergestellt",
+  "restoreJsonSummary": "Ihre Daten wurden erfolgreich in dieses Konto importiert.",
+  "restoreSummaryAircraftImported": "Luftfahrzeuge importiert",
+  "restoreSummaryAircraftSkipped": "Luftfahrzeuge übersprungen",
+  "restoreSummaryLicenses": "Lizenzen",
+  "restoreSummaryClassRatings": "Klassenberechtigungen",
+  "restoreSummaryCredentials": "Nachweise",
+  "restoreSummaryFlights": "Flüge",
+  "restoreSummaryCrew": "Crew-Mitglieder",
+  "restoreAnother": "Weitere Sicherung wiederherstellen"
 }

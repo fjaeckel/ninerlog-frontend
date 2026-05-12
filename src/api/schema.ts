@@ -944,6 +944,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/imports/json": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore a NinerLog JSON backup
+         * @description Restore a previously exported NinerLog JSON backup into the authenticated
+         *     user's account. Recreates aircraft, licenses, class ratings, credentials,
+         *     flights and crew members from the backup. New UUIDs are assigned so the
+         *     backup can be restored into any NinerLog installation (including the one
+         *     it was exported from).
+         *
+         *     This is an additive operation — it does not modify or delete existing
+         *     data. Aircraft whose registration already exists for the user are
+         *     skipped (and the existing aircraft is referenced by imported flights).
+         */
+        post: operations["importDataJSON"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/exports/pdf": {
         parameters: {
             query?: never;
@@ -993,7 +1021,7 @@ export interface paths {
         };
         /**
          * Get statistics by aircraft class and category
-         * @description Returns aggregated flight statistics grouped by aircraft class, aircraft category (tailwheel, complex, high-performance), and regulatory authority.
+         * @description Returns aggregated flight statistics grouped by aircraft class, aircraft category (tailwheel, complex, high-performance), and regulatory authority. Results are scoped to the requested timeframe.
          */
         get: operations["getStatsByClass"];
         put?: never;
@@ -3193,6 +3221,29 @@ export interface components {
              */
             createdAt: string;
         };
+        /** @description Summary returned by `POST /imports/json` after restoring a backup. */
+        ImportJSONResult: {
+            /**
+             * @description Number of aircraft created from the backup
+             * @example 3
+             */
+            aircraftImported: number;
+            /**
+             * @description Aircraft skipped because the registration already exists for the user
+             * @example 1
+             */
+            aircraftSkipped: number;
+            /** @example 2 */
+            licensesImported: number;
+            /** @example 4 */
+            classRatingsImported: number;
+            /** @example 2 */
+            credentialsImported: number;
+            /** @example 27 */
+            flightsImported: number;
+            /** @example 11 */
+            crewMembersImported: number;
+        };
         PaginatedImports: {
             data: components["schemas"]["ImportResult"][];
             pagination: {
@@ -5248,6 +5299,42 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
+    importDataJSON: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @example NinerLog JSON Backup */
+                    format: string;
+                    version?: string;
+                    /** Format: date-time */
+                    exportedAt?: string;
+                    flights?: Record<string, never>[];
+                    aircraft?: Record<string, never>[];
+                    licenses?: Record<string, never>[];
+                    credentials?: Record<string, never>[];
+                };
+            };
+        };
+        responses: {
+            /** @description Restore summary with per-entity counts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJSONResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
     exportFlightsPDF: {
         parameters: {
             query?: {
@@ -5314,7 +5401,10 @@ export interface operations {
     };
     getStatsByClass: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Number of months to include (default 12, 0 = all time) */
+                months?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;

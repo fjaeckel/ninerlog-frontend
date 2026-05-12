@@ -19,5 +19,24 @@
   "importFailed": "Import failed. Please check your file format.",
   "rowsDetected_one": "{{count}} row detected",
   "rowsDetected_other": "{{count}} rows detected",
-  "duplicateWarning": "Some flights may be duplicates of existing entries."
+  "duplicateWarning": "Some flights may be duplicates of existing entries.",
+
+  "modeTabsLabel": "Import mode",
+  "modeCsv": "CSV Flights",
+  "modeJson": "Restore JSON Backup",
+  "restoreJsonTitle": "Restore JSON Backup",
+  "restoreJsonDescription": "Upload a NinerLog JSON backup (from Export → Full Data Backup) to restore your flights, aircraft, licenses, class ratings, credentials and crew members.",
+  "restoreJsonNote": "The restore is additive — existing data is never modified or deleted. Aircraft whose registration already exists in your account are skipped.",
+  "selectJsonFile": "Choose JSON backup",
+  "restoringJson": "Restoring…",
+  "restoreJsonSuccess": "Backup restored",
+  "restoreJsonSummary": "Your data was successfully imported into this account.",
+  "restoreSummaryAircraftImported": "Aircraft imported",
+  "restoreSummaryAircraftSkipped": "Aircraft skipped",
+  "restoreSummaryLicenses": "Licenses",
+  "restoreSummaryClassRatings": "Class ratings",
+  "restoreSummaryCredentials": "Credentials",
+  "restoreSummaryFlights": "Flights",
+  "restoreSummaryCrew": "Crew members",
+  "restoreAnother": "Restore another backup"
 }
