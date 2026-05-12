@@ -116,7 +116,10 @@ export default function MapPage() {
           </p>
         </div>
       ) : (
-        <div className="card p-0 overflow-hidden rounded-xl isolate" style={{ height: '65vh', minHeight: '400px' }}>
+        <div
+          className={`card p-0 overflow-hidden rounded-xl isolate ${isDark ? 'map-dark' : ''}`}
+          style={{ height: '65vh', minHeight: '400px' }}
+        >
           <MapContainer
             center={allPositions.length > 0 ? allPositions[0] : defaultCenter}
             zoom={5}
@@ -124,17 +127,8 @@ export default function MapPage() {
             style={{ height: '100%', width: '100%' }}
           >
             <TileLayer
-              key={isDark ? 'dark' : 'light'}
-              attribution={
-                isDark
-                  ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                  : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              }
-              url={
-                isDark
-                  ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                  : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-              }
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
             {allPositions.length > 0 && <FitBounds positions={allPositions} />}
