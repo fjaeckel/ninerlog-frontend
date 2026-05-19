@@ -29,7 +29,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@tanstack/react-query": "^5.100.10",
     "@types/leaflet": "^1.9.21",
-    "axios": "^1.15.2",
+    "axios": "^1.16.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "i18next": "^26.0.8",
