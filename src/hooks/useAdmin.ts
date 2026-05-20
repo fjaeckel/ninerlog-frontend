@@ -87,6 +87,23 @@ export const useResetUser2fa = () => {
   });
 };
 
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await apiClient.DELETE('/admin/users/{userId}', {
+        params: { path: { userId } },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
+    },
+  });
+};
+
 export const useAdminStats = () => {
   return useQuery({
     queryKey: ['admin', 'stats'],

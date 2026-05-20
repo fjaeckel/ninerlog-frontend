@@ -1212,6 +1212,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/users/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Permanently delete a user account
+         * @description Permanently delete a user account and ALL their content (flights, aircraft,
+         *     licenses, contacts, credentials, backups, notifications, etc.) via cascading
+         *     deletes. This action is irreversible. The deletion is recorded in the admin
+         *     audit log (with the target user reference set to NULL after the cascade).
+         *     An admin cannot delete their own account.
+         */
+        delete: operations["deleteUser"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/users/{userId}/disable": {
         parameters: {
             query?: never;
@@ -5731,6 +5755,34 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+        };
+    };
+    deleteUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User and all their content deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message?: string;
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     disableUser: {
