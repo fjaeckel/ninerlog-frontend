@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { components } from '../../api/schema';
 import {
@@ -27,7 +27,10 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
 
   const isEditing = !!destination;
 
-  const [providerName, setProviderName] = useState(destination?.provider ?? '');
+  const [providerNameOverride, setProviderName] = useState<string | null>(
+    destination?.provider ?? null,
+  );
+  const providerName = providerNameOverride ?? providers?.[0]?.name ?? '';
   const [displayName, setDisplayName] = useState(destination?.displayName ?? '');
   const [schedule, setSchedule] = useState<BackupSchedule>(destination?.schedule ?? 'manual');
   const [scheduleHourUtc, setScheduleHourUtc] = useState<number>(destination?.scheduleHourUtc ?? 3);
@@ -47,13 +50,6 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
   const [credentials, setCredentials] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  // Auto-select first provider when creating
-  useEffect(() => {
-    if (!isEditing && !providerName && providers && providers.length > 0) {
-      setProviderName(providers[0].name);
-    }
-  }, [providers, providerName, isEditing]);
 
   const selectedProvider = useMemo(
     () => providers?.find((p) => p.name === providerName) ?? null,
