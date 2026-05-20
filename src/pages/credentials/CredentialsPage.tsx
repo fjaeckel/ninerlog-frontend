@@ -42,7 +42,7 @@ export default function CredentialsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[960px] py-6">
+      <div className="mx-auto max-w-7xl py-6">
         <SkeletonGrid count={4} />
       </div>
     );
@@ -50,7 +50,7 @@ export default function CredentialsPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-[960px] py-6">
+      <div className="mx-auto max-w-7xl py-6">
         <ErrorState
           title="Failed to load credentials"
           message="An error occurred while loading your credentials. Please try again."
@@ -60,8 +60,8 @@ export default function CredentialsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[960px] py-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="mx-auto max-w-7xl py-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
           <h1 className="page-title">{t('title')}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
@@ -69,7 +69,7 @@ export default function CredentialsPage() {
             <HelpLink topic="credentials" />
           </p>
         </div>
-        <button onClick={() => { setEditingId(null); setShowForm(true); }} className="btn-primary">
+        <button onClick={() => { setEditingId(null); setShowForm(true); }} className="btn-primary self-start sm:self-auto">
           {t('addCredential')}
         </button>
       </div>
@@ -118,59 +118,84 @@ export default function CredentialsPage() {
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-4">
           {credentials.map((cred) => {
             const status = getExpiryStatus(cred.expiryDate);
             return (
               <div key={cred.id} className="card">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="min-w-0">
-                    <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate">
-                      {t(`types.${cred.credentialType}`, { defaultValue: cred.credentialType })}
-                    </h3>
-                    {cred.credentialNumber && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{cred.credentialNumber}</p>
-                    )}
-                  </div>
-                  <span className={`badge text-xs shrink-0 ml-2 ${status.class}`}>
-                    {status.label}
-                  </span>
-                </div>
-
-                <dl className="text-sm space-y-1.5 mb-4">
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">{t('issued')}</dt>
-                    <dd className="text-slate-700 dark:text-slate-300">{fmtDate(cred.issueDate)}</dd>
-                  </div>
-                  {cred.expiryDate && (
-                    <div className="flex justify-between">
-                      <dt className="text-slate-500 dark:text-slate-400">{t('expires')}</dt>
-                      <dd className="text-slate-700 dark:text-slate-300">{fmtDate(cred.expiryDate)}</dd>
+                <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
+                  {/* Identity */}
+                  <div className="lg:w-80 lg:shrink-0">
+                    <div className="flex items-start gap-3 flex-wrap">
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+                          {t(`types.${cred.credentialType}`, { defaultValue: cred.credentialType })}
+                        </h3>
+                        {cred.credentialNumber && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
+                            {cred.credentialNumber}
+                          </p>
+                        )}
+                      </div>
+                      <span className={`badge text-xs ${status.class}`}>
+                        {status.label}
+                      </span>
                     </div>
-                  )}
-                  <div className="flex justify-between">
-                    <dt className="text-slate-500 dark:text-slate-400">{t('authority')}</dt>
-                    <dd className="text-slate-700 dark:text-slate-300">{cred.issuingAuthority}</dd>
                   </div>
-                </dl>
 
-                {cred.notes && (
-                  <p className="text-xs text-slate-500 dark:text-slate-400 italic mb-3 truncate">{cred.notes}</p>
-                )}
+                  {/* Details grid */}
+                  <dl className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-x-6 gap-y-3 flex-1 text-sm min-w-0">
+                    <div>
+                      <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        {t('issued')}
+                      </dt>
+                      <dd className="mt-0.5 font-medium text-slate-700 dark:text-slate-200">
+                        {fmtDate(cred.issueDate)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        {t('expires')}
+                      </dt>
+                      <dd className="mt-0.5 font-medium text-slate-700 dark:text-slate-200">
+                        {cred.expiryDate ? fmtDate(cred.expiryDate) : '—'}
+                      </dd>
+                    </div>
+                    <div className="col-span-2 sm:col-span-1">
+                      <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        {t('authority')}
+                      </dt>
+                      <dd className="mt-0.5 font-medium text-slate-700 dark:text-slate-200 break-words">
+                        {cred.issuingAuthority}
+                      </dd>
+                    </div>
+                    {cred.notes && (
+                      <div className="col-span-2 sm:col-span-3">
+                        <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          {t('fields.notes')}
+                        </dt>
+                        <dd className="mt-0.5 text-slate-600 dark:text-slate-300 italic break-words">
+                          {cred.notes}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
 
-                <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
-                  <button
-                    onClick={() => { setEditingId(cred.id); setShowForm(true); }}
-                    className="btn-ghost btn-sm flex-1"
-                  >
-                    {t('edit')}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(cred.id)}
-                    className="btn-ghost btn-sm flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  >
-                    {t('delete')}
-                  </button>
+                  {/* Actions */}
+                  <div className="flex lg:flex-col gap-2 lg:w-28 lg:shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-700">
+                    <button
+                      onClick={() => { setEditingId(cred.id); setShowForm(true); }}
+                      className="btn-ghost btn-sm flex-1"
+                    >
+                      {t('edit')}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(cred.id)}
+                      className="btn-ghost btn-sm flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
+                      {t('delete')}
+                    </button>
+                  </div>
                 </div>
               </div>
             );
