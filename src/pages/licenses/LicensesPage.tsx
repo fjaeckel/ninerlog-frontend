@@ -37,12 +37,12 @@ export default function LicensesPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[960px] py-6">
+      <div className="mx-auto max-w-7xl py-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48"></div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="card h-48">
+              <div key={i} className="card h-40">
                 <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-3"></div>
                 <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mb-2"></div>
                 <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-2/3"></div>
@@ -56,7 +56,7 @@ export default function LicensesPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-[960px] py-6">
+      <div className="mx-auto max-w-7xl py-6">
         <div className="card text-center py-12">
           <div className="text-4xl mb-3">⚠</div>
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('error')}</h2>
@@ -67,13 +67,13 @@ export default function LicensesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[960px] py-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="mx-auto max-w-7xl py-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div className="flex items-center gap-2">
           <h1 className="page-title">{t('title')}</h1>
           <HelpLink topic="licenses" />
         </div>
-        <button onClick={() => setShowForm(true)} className="btn-primary">
+        <button onClick={() => setShowForm(true)} className="btn-primary self-start sm:self-auto">
           {t('addLicense')}
         </button>
       </div>
@@ -113,7 +113,7 @@ export default function LicensesPage() {
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-4">
           {licenses?.map((license) => (
             <LicenseCard
               key={license.id}
