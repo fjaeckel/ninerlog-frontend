@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   useBackupDestinations,
@@ -37,6 +37,15 @@ export default function BackupsPage() {
     const t = setTimeout(() => setStatusMessage(null), 6000);
     return () => clearTimeout(t);
   }, [statusMessage]);
+
+  // Sort destinations: enabled first, then alphabetically by displayName.
+  const sortedDestinations = useMemo(() => {
+    if (!destinations) return destinations;
+    return [...destinations].sort((a, b) => {
+      if (a.enabled !== b.enabled) return a.enabled ? -1 : 1;
+      return a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' });
+    });
+  }, [destinations]);
 
   const handleTest = async (dest: BackupDestination) => {
     setBusyId(dest.id);
@@ -84,7 +93,7 @@ export default function BackupsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[1100px] py-6">
+      <div className="py-2">
         <SkeletonGrid count={3} />
       </div>
     );
@@ -95,28 +104,19 @@ export default function BackupsPage() {
     const status = (error as { response?: { status?: number } } | undefined)?.response?.status;
     if (status === 503) {
       return (
-        <div className="mx-auto max-w-[960px] py-6">
-          <div className="card">
-            <h1 className="page-title mb-2">{t('title')}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{t('disabled')}</p>
-          </div>
+        <div className="card">
+          <h2 className="section-title mb-2">{t('title')}</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t('disabled')}</p>
         </div>
       );
     }
-    return (
-      <div className="mx-auto max-w-[960px] py-6">
-        <ErrorState title={t('error.title')} message={t('error.message')} />
-      </div>
-    );
+    return <ErrorState title={t('error.title')} message={t('error.message')} />;
   }
 
   return (
-    <div className="mx-auto max-w-[1100px] py-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="page-title">{t('title')}</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('subtitle')}</p>
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t('subtitle')}</p>
         <button
           onClick={() => {
             setEditing(null);
@@ -206,7 +206,7 @@ export default function BackupsPage() {
         </div>
       )}
 
-      {!destinations || destinations.length === 0 ? (
+      {!sortedDestinations || sortedDestinations.length === 0 ? (
         <div className="card text-center py-12">
           <p className="text-slate-500 dark:text-slate-400 mb-4">{t('empty')}</p>
           <button
@@ -221,7 +221,7 @@ export default function BackupsPage() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {destinations.map((dest) => {
+          {sortedDestinations.map((dest) => {
             const statusClass =
               dest.status === 'active'
                 ? 'badge-current'

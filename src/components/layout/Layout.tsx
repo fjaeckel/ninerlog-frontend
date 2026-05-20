@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Plane, FileText, PlaneTakeoff, BarChart3, Map,
-  Award, User, Upload, Download, Shield, LogOut, Menu, Plus, ShieldCheck, HelpCircle, Bug, ExternalLink, Cloud
+  Award, User, Upload, Download, Shield, LogOut, Menu, Plus, ShieldCheck, HelpCircle, Bug, ExternalLink
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLogout } from '../../hooks/useAuth';
@@ -101,7 +101,6 @@ export default function Layout() {
           <SidebarItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} />
           <SidebarItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} />
           <SidebarItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} />
-          <SidebarItem to="/backups" label={t('nav:backups')} icon={<Cloud className="w-5 h-5" />} />
         </nav>
         <div className="border-t border-slate-200 dark:border-slate-800 p-3 space-y-0.5">
           {user?.isAdmin && (
@@ -175,7 +174,6 @@ export default function Layout() {
               <MoreMenuItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/backups" label={t('nav:backups')} icon={<Cloud className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuExternalItem
