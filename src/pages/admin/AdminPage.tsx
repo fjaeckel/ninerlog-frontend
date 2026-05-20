@@ -39,22 +39,40 @@ export default function AdminPage() {
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('admin.subtitle')}</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-slate-200 dark:border-slate-700 overflow-x-auto -mx-4 px-4 scrollbar-none">
-        {([
+      {/* Tabs — select on mobile, tabs on sm+ */}
+      {(() => {
+        const tabs = [
           { id: 'dashboard' as Tab, label: t('admin.tabs.dashboard'), icon: <BarChart3 className="w-4 h-4" /> },
           { id: 'users' as Tab, label: t('admin.tabs.users'), icon: <Users className="w-4 h-4" /> },
           { id: 'audit' as Tab, label: t('admin.tabs.auditLog'), icon: <ScrollText className="w-4 h-4" /> },
           { id: 'maintenance' as Tab, label: t('admin.tabs.maintenance'), icon: <Wrench className="w-4 h-4" /> },
           { id: 'announcements' as Tab, label: t('admin.tabs.announcements'), icon: <Megaphone className="w-4 h-4" /> },
           { id: 'config' as Tab, label: t('admin.tabs.config'), icon: <Settings2 className="w-4 h-4" /> },
-        ]).map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors shrink-0 ${
-              tab === t.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-            }`}>{t.icon} {t.label}</button>
-        ))}
-      </div>
+        ];
+        return (
+          <>
+            <div className="sm:hidden mb-6">
+              <select
+                value={tab}
+                onChange={(e) => setTab(e.target.value as Tab)}
+                className="input w-full"
+              >
+                {tabs.map(({ id, label }) => (
+                  <option key={id} value={id}>{label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="hidden sm:flex gap-1 mb-6 border-b border-slate-200 dark:border-slate-700 overflow-x-auto -mx-4 px-4 scrollbar-none">
+              {tabs.map(({ id, label, icon }) => (
+                <button key={id} onClick={() => setTab(id)}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors shrink-0 ${
+                    tab === id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}>{icon} {label}</button>
+              ))}
+            </div>
+          </>
+        );
+      })()}
 
       {tab === 'dashboard' && <DashboardTab />}
       {tab === 'users' && <UsersTab />}
