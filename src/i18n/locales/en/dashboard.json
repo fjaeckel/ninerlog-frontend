@@ -19,6 +19,7 @@
     "night": "night"
   },
   "blockTimeBreakdown": "Block Time Breakdown",
+  "baselineApplied": "Includes {{hours}}h carried forward from your initial-hours snapshot (as of {{date}}).",
   "breakdownLabels": {
     "pic": "PIC",
     "dual": "Dual",

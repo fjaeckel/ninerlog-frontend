@@ -166,5 +166,39 @@
     "labelPlaceholder": "z.B. iPhone 15 — Face ID",
     "registerFailed": "Passkey konnte nicht registriert werden. Bitte erneut versuchen.",
     "deleteFailed": "Passkey konnte nicht entfernt werden. Bitte erneut versuchen."
+  },
+  "baseline": {
+    "title": "Anfangsbestand",
+    "description": "Erfasse einmalig deinen vorherigen Flugerfahrungsstand, ohne jeden Altflug einzeln einzutragen. Alle erfassten oder importierten Flüge werden auf diesen Bestand aufaddiert.",
+    "loading": "Bestand wird geladen…",
+    "summary": "{{hours}}h gesamt · {{pic}}h PIC · {{landings}} Landungen, Stand {{date}}.",
+    "create": "Anfangsbestand anlegen",
+    "edit": "Bestand bearbeiten",
+    "delete": "Bestand löschen",
+    "deleteButton": "Bestand endgültig löschen",
+    "deleteConfirm": "Anfangsbestand wirklich entfernen? Erfasste Flüge bleiben unverändert.",
+    "save": "Bestand speichern",
+    "saveSuccess": "Bestand gespeichert.",
+    "saveFailed": "Bestand konnte nicht gespeichert werden.",
+    "deleteSuccess": "Bestand entfernt.",
+    "deleteFailed": "Bestand konnte nicht entfernt werden.",
+    "fields": {
+      "baselineDate": "Stichtag",
+      "totalFlights": "Anzahl Flüge",
+      "totalHours": "Gesamtstunden",
+      "picHours": "PIC-Stunden",
+      "sicHours": "Co-Pilot-Stunden",
+      "dualHours": "Dual (erhalten)",
+      "dualGivenHours": "Dual (erteilt)",
+      "multiPilotHours": "Multi-Pilot-Stunden",
+      "soloHours": "Solo-Stunden",
+      "crossCountryHours": "Überlandstunden",
+      "nightHours": "Nachtstunden",
+      "ifrHours": "IFR-/Instrumentenstunden",
+      "landingsDay": "Landungen Tag",
+      "landingsNight": "Landungen Nacht",
+      "notes": "Notizen",
+      "notesPlaceholder": "z.B. aus Papierlogbuch 1998–2010"
+    }
   }
 }
