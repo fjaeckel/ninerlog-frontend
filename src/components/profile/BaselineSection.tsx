@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   useDeleteBaseline,
@@ -118,14 +118,12 @@ export function BaselineSection() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [message, setMessage] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
 
-  // Sync form with server state when the snapshot changes.
-  useEffect(() => {
-    if (baseline) {
-      setForm(baselineToForm(baseline));
-    }
-  }, [baseline]);
-
   const hasBaseline = Boolean(baseline);
+
+  const openEditor = () => {
+    setForm(baseline ? baselineToForm(baseline) : EMPTY_FORM);
+    setShowForm(true);
+  };
   const headerSummary = useMemo(() => {
     if (!baseline) return null;
     const hours = ((baseline.totalMinutes ?? 0) / 60).toFixed(1);
@@ -184,7 +182,7 @@ export function BaselineSection() {
             <div className="space-y-3">
               <p className="text-sm text-slate-700 dark:text-slate-200">{headerSummary}</p>
               <div className="flex gap-3">
-                <button type="button" onClick={() => setShowForm(true)} className="btn-secondary">
+                <button type="button" onClick={openEditor} className="btn-secondary">
                   {t('baseline.edit')}
                 </button>
                 {!showDeleteConfirm ? (
@@ -223,7 +221,7 @@ export function BaselineSection() {
           )}
 
           {!hasBaseline && !showForm && (
-            <button type="button" onClick={() => setShowForm(true)} className="btn-primary">
+            <button type="button" onClick={openEditor} className="btn-primary">
               {t('baseline.create')}
             </button>
           )}
