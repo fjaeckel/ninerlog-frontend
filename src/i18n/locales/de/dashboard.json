@@ -19,6 +19,7 @@
     "night": "Nacht"
   },
   "blockTimeBreakdown": "Blockzeit-Aufteilung",
+  "baselineApplied": "Inklusive {{hours}}h aus deinem Anfangsbestand (Stand {{date}}).",
   "breakdownLabels": {
     "pic": "PIC",
     "dual": "Dual",

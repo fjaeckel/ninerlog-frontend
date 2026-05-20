@@ -391,6 +391,37 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/me/baseline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the user's initial hours snapshot (baseline)
+         * @description Returns the user's optional initial-hours snapshot. The snapshot represents
+         *     flying experience accumulated up to a chosen cutoff date and is added to
+         *     aggregated user-level statistics (`/users/me/statistics`) when the
+         *     requested date range covers the cutoff. Returns 404 when no snapshot exists.
+         */
+        get: operations["getMyBaseline"];
+        /**
+         * Create or replace the user's initial hours snapshot
+         * @description Upserts the authenticated user's initial-hours snapshot. All numeric fields
+         *     default to zero when omitted. The cutoff date marks the latest moment that
+         *     the baseline counts toward; logged flights on or after this date are added
+         *     on top of the baseline.
+         */
+        put: operations["putMyBaseline"];
+        post?: never;
+        /** Remove the user's initial hours snapshot */
+        delete: operations["deleteMyBaseline"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me/statistics": {
         parameters: {
             query?: never;
@@ -2328,6 +2359,85 @@ export interface components {
              * @example 12000
              */
             crossCountryMinutes?: number;
+            /**
+             * @description Present when an initial-hours snapshot was added to these totals.
+             *     Frontends can use it to display a "(includes initial snapshot)" hint
+             *     and break down logged vs. carried-forward time.
+             */
+            baseline?: components["schemas"]["StatisticsBaselineContribution"];
+        };
+        /** @description Portion of the statistics totals contributed by the user's initial-hours snapshot. */
+        StatisticsBaselineContribution: {
+            /** Format: date */
+            baselineDate: string;
+            totalFlights: number;
+            totalMinutes: number;
+            picMinutes: number;
+            sicMinutes?: number;
+            dualMinutes: number;
+            dualGivenMinutes?: number;
+            multiPilotMinutes?: number;
+            nightMinutes: number;
+            ifrMinutes: number;
+            soloMinutes?: number;
+            crossCountryMinutes?: number;
+            landingsDay: number;
+            landingsNight: number;
+        };
+        /**
+         * @description Initial-hours snapshot input. Allows a user to record their pre-existing
+         *     flying experience as a single carried-forward total without entering
+         *     every historical flight. All numeric fields default to 0 when omitted.
+         */
+        FlightBaselineInput: {
+            /**
+             * Format: date
+             * @description Cutoff date the snapshot covers (inclusive).
+             */
+            baselineDate: string;
+            /** @default 0 */
+            totalFlights: number;
+            /**
+             * @description Total block time in minutes
+             * @default 0
+             */
+            totalMinutes: number;
+            /** @default 0 */
+            picMinutes: number;
+            /** @default 0 */
+            sicMinutes: number;
+            /**
+             * @description Dual instruction received in minutes
+             * @default 0
+             */
+            dualMinutes: number;
+            /** @default 0 */
+            dualGivenMinutes: number;
+            /** @default 0 */
+            multiPilotMinutes: number;
+            /** @default 0 */
+            nightMinutes: number;
+            /**
+             * @description Total IFR / instrument time in minutes
+             * @default 0
+             */
+            ifrMinutes: number;
+            /** @default 0 */
+            soloMinutes: number;
+            /** @default 0 */
+            crossCountryMinutes: number;
+            /** @default 0 */
+            landingsDay: number;
+            /** @default 0 */
+            landingsNight: number;
+            /** @description Optional free-form context (e.g. "From paper logbook 1998-2010"). */
+            notes?: string | null;
+        };
+        FlightBaseline: components["schemas"]["FlightBaselineInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
         };
         Currency: {
             /**
@@ -4264,6 +4374,74 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    getMyBaseline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User's flight baseline */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightBaseline"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    putMyBaseline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FlightBaselineInput"];
+            };
+        };
+        responses: {
+            /** @description Baseline created or updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightBaseline"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    deleteMyBaseline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Baseline removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
     getMyStatistics: {
