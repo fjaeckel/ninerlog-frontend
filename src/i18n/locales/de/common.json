@@ -144,11 +144,16 @@
       "enableConfirm": "Konto für {{email}} wieder aktivieren?",
       "unlockConfirm": "Konto für {{email}} entsperren?",
       "reset2faConfirm": "2FA für {{email}} zurücksetzen?",
+      "deleteConfirm": "Konto für {{email}} dauerhaft löschen?",
+      "deleteWarning": "Dies löscht {{name}} und ALLE Inhalte ({{flightCount}} Flüge, {{aircraftCount}} Flugzeuge sowie Lizenzen, Kontakte, Berechtigungen, Backups und Benachrichtigungen) dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteEmailPrompt": "Geben Sie {{email}} ein, um die Löschung zu bestätigen",
+      "deleteTitle": "Konto und alle Inhalte löschen",
       "auditTrailNote": "Diese Aktion wird im Admin-Audit-Protokoll erfasst.",
       "disable": "Deaktivieren",
       "enable": "Aktivieren",
       "unlock": "Entsperren",
-      "reset2fa": "2FA zurücksetzen"
+      "reset2fa": "2FA zurücksetzen",
+      "delete": "Löschen"
     },
     "audit": {
       "timestamp": "Zeitstempel",

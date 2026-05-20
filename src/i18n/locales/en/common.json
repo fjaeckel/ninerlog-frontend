@@ -144,11 +144,16 @@
       "enableConfirm": "Re-enable account for {{email}}?",
       "unlockConfirm": "Unlock account for {{email}}?",
       "reset2faConfirm": "Reset 2FA for {{email}}?",
+      "deleteConfirm": "Permanently delete the account for {{email}}?",
+      "deleteWarning": "This will permanently delete {{name}} and ALL of their content ({{flightCount}} flights, {{aircraftCount}} aircraft, plus licenses, contacts, credentials, backups, and notifications). This action cannot be undone.",
+      "deleteEmailPrompt": "Type {{email}} to confirm deletion",
+      "deleteTitle": "Delete account and all content",
       "auditTrailNote": "This action will be logged to the admin audit trail.",
       "disable": "Disable",
       "enable": "Enable",
       "unlock": "Unlock",
-      "reset2fa": "Reset 2FA"
+      "reset2fa": "Reset 2FA",
+      "delete": "Delete"
     },
     "audit": {
       "timestamp": "Timestamp",
