@@ -9,6 +9,7 @@
   "map": "Map",
   "import": "Import",
   "export": "Export",
+  "backups": "Cloud Backups",
   "admin": "Admin",
   "help": "Help",
   "reportBug": "Report a Bug",

@@ -28,8 +28,9 @@ else
     echo "=================================================="
     echo ""
     
-    echo "🐳 Starting test environment (DB + MailPit + API + Frontend)..."
-    docker compose -f docker-compose.test.yml --profile e2e up -d --build postgres-test mailpit-test api-test frontend-dev
+    echo "🐳 Starting test environment (DB + MailPit + API + Frontend + MinIO)..."
+    docker compose -f docker-compose.test.yml --profile e2e up -d --build postgres-test mailpit-test minio-test api-test frontend-dev
+    docker compose -f docker-compose.test.yml --profile e2e run --rm minio-test-init || true
     
     echo "⏳ Waiting for services to be healthy..."
     sleep 10

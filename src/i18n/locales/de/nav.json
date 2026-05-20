@@ -9,6 +9,7 @@
   "map": "Karte",
   "import": "Import",
   "export": "Export",
+  "backups": "Cloud-Backups",
   "admin": "Admin",
   "help": "Hilfe",
   "reportBug": "Fehler melden",
