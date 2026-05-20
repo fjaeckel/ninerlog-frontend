@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
 import { ShieldCheck, Search, Ban, CheckCircle, Unlock, KeyRound, Users, BarChart3, Wrench, ScrollText, Settings2, Megaphone, Trash2 } from 'lucide-react';
 import {
-  useAdminUsers, useDisableUser, useEnableUser, useUnlockUser, useResetUser2fa,
+  useAdminUsers, useDisableUser, useEnableUser, useUnlockUser, useResetUser2fa, useDeleteUser,
   useAdminStats, useAdminAuditLog, useCleanupTokens, useSmtpTest, useAdminConfig,
 } from '../../hooks/useAdmin';
 import { useCreateAnnouncement, useDeleteAnnouncement, useAnnouncements } from '../../hooks/useAnnouncements';
@@ -39,22 +39,40 @@ export default function AdminPage() {
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('admin.subtitle')}</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-slate-200 dark:border-slate-700 overflow-x-auto -mx-4 px-4 scrollbar-none">
-        {([
+      {/* Tabs — select on mobile, tabs on sm+ */}
+      {(() => {
+        const tabs = [
           { id: 'dashboard' as Tab, label: t('admin.tabs.dashboard'), icon: <BarChart3 className="w-4 h-4" /> },
           { id: 'users' as Tab, label: t('admin.tabs.users'), icon: <Users className="w-4 h-4" /> },
           { id: 'audit' as Tab, label: t('admin.tabs.auditLog'), icon: <ScrollText className="w-4 h-4" /> },
           { id: 'maintenance' as Tab, label: t('admin.tabs.maintenance'), icon: <Wrench className="w-4 h-4" /> },
           { id: 'announcements' as Tab, label: t('admin.tabs.announcements'), icon: <Megaphone className="w-4 h-4" /> },
           { id: 'config' as Tab, label: t('admin.tabs.config'), icon: <Settings2 className="w-4 h-4" /> },
-        ]).map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors shrink-0 ${
-              tab === t.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-            }`}>{t.icon} {t.label}</button>
-        ))}
-      </div>
+        ];
+        return (
+          <>
+            <div className="sm:hidden mb-6">
+              <select
+                value={tab}
+                onChange={(e) => setTab(e.target.value as Tab)}
+                className="input w-full"
+              >
+                {tabs.map(({ id, label }) => (
+                  <option key={id} value={id}>{label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="hidden sm:flex gap-1 mb-6 border-b border-slate-200 dark:border-slate-700 overflow-x-auto -mx-4 px-4 scrollbar-none">
+              {tabs.map(({ id, label, icon }) => (
+                <button key={id} onClick={() => setTab(id)}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors shrink-0 ${
+                    tab === id ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}>{icon} {label}</button>
+              ))}
+            </div>
+          </>
+        );
+      })()}
 
       {tab === 'dashboard' && <DashboardTab />}
       {tab === 'users' && <UsersTab />}
@@ -104,6 +122,7 @@ function UsersTab() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [confirmAction, setConfirmAction] = useState<{ type: string; user: AdminUser } | null>(null);
+  const [deleteEmailInput, setDeleteEmailInput] = useState('');
   const [actionMessage, setActionMessage] = useState('');
 
   const { data, isLoading } = useAdminUsers(page, 20, search || undefined);
@@ -111,9 +130,13 @@ function UsersTab() {
   const enableUser = useEnableUser();
   const unlockUser = useUnlockUser();
   const resetUser2fa = useResetUser2fa();
+  const deleteUser = useDeleteUser();
 
   const handleAction = async () => {
     if (!confirmAction) return;
+    if (confirmAction.type === 'delete' && deleteEmailInput.trim().toLowerCase() !== confirmAction.user.email.toLowerCase()) {
+      return;
+    }
     setActionMessage('');
     try {
       const fns: Record<string, (id: string) => Promise<unknown>> = {
@@ -121,15 +144,17 @@ function UsersTab() {
         enable: (id) => enableUser.mutateAsync(id),
         unlock: (id) => unlockUser.mutateAsync(id),
         'reset-2fa': (id) => resetUser2fa.mutateAsync(id),
+        delete: (id) => deleteUser.mutateAsync(id),
       };
       await fns[confirmAction.type](confirmAction.user.id);
       setActionMessage(`Action "${confirmAction.type}" applied to ${confirmAction.user.email}.`);
     } catch { setActionMessage(`Failed to ${confirmAction.type} user.`); }
     setConfirmAction(null);
+    setDeleteEmailInput('');
   };
 
   const handleSearch = (e: React.FormEvent) => { e.preventDefault(); setSearch(searchInput); setPage(1); };
-  const actionLabel = (type: string) => type === 'disable' ? t('admin.users.disable') : type === 'enable' ? t('admin.users.enable') : type === 'unlock' ? t('admin.users.unlock') : t('admin.users.reset2fa');
+  const actionLabel = (type: string) => type === 'disable' ? t('admin.users.disable') : type === 'enable' ? t('admin.users.enable') : type === 'unlock' ? t('admin.users.unlock') : type === 'delete' ? t('admin.users.delete') : t('admin.users.reset2fa');
 
   return (
     <>
@@ -173,6 +198,7 @@ function UsersTab() {
                       : <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title="Disable account"><Ban className="w-3.5 h-3.5" /></button>}
                     {u.locked && <button onClick={() => setConfirmAction({ type: 'unlock', user: u })} className="btn-ghost btn-sm text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="Unlock account"><Unlock className="w-3.5 h-3.5" /></button>}
                     {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Reset 2FA"><KeyRound className="w-3.5 h-3.5" /></button>}
+                    <button onClick={() => setConfirmAction({ type: 'delete', user: u })} className="btn-ghost btn-sm text-xs text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.deleteTitle')}><Trash2 className="w-3.5 h-3.5" /></button>
                   </div></td>
                 </tr>
               ))}
@@ -204,6 +230,7 @@ function UsersTab() {
                   : <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title="Disable account"><Ban className="w-3.5 h-3.5" /></button>}
                 {u.locked && <button onClick={() => setConfirmAction({ type: 'unlock', user: u })} className="btn-ghost btn-sm text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="Unlock account"><Unlock className="w-3.5 h-3.5" /></button>}
                 {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Reset 2FA"><KeyRound className="w-3.5 h-3.5" /></button>}
+                <button onClick={() => setConfirmAction({ type: 'delete', user: u })} className="btn-ghost btn-sm text-xs text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.deleteTitle')}><Trash2 className="w-3.5 h-3.5" /></button>
               </div>
             </div>
           ))}
@@ -219,7 +246,7 @@ function UsersTab() {
           </div>)}
       </div>
       {confirmAction && (<>
-        <div className="fixed inset-0 bg-black/40 z-[1020]" onClick={() => setConfirmAction(null)} />
+        <div className="fixed inset-0 bg-black/40 z-[1020]" onClick={() => { setConfirmAction(null); setDeleteEmailInput(''); }} />
         <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[1020] mx-auto max-w-md bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-6">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('admin.users.confirmAction', { action: actionLabel(confirmAction.type) })}</h3>
           <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
@@ -227,11 +254,37 @@ function UsersTab() {
             {confirmAction.type === 'enable' && t('admin.users.enableConfirm', { email: confirmAction.user.email })}
             {confirmAction.type === 'unlock' && t('admin.users.unlockConfirm', { email: confirmAction.user.email })}
             {confirmAction.type === 'reset-2fa' && t('admin.users.reset2faConfirm', { email: confirmAction.user.email })}
+            {confirmAction.type === 'delete' && t('admin.users.deleteConfirm', { email: confirmAction.user.email })}
           </p>
+          {confirmAction.type === 'delete' && (
+            <>
+              <p className="text-xs text-red-600 dark:text-red-400 mb-3 font-medium">
+                {t('admin.users.deleteWarning', { name: confirmAction.user.name, flightCount: confirmAction.user.flightCount, aircraftCount: confirmAction.user.aircraftCount })}
+              </p>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" htmlFor="delete-confirm-email">
+                {t('admin.users.deleteEmailPrompt', { email: confirmAction.user.email })}
+              </label>
+              <input
+                id="delete-confirm-email"
+                type="text"
+                autoComplete="off"
+                autoFocus
+                value={deleteEmailInput}
+                onChange={(e) => setDeleteEmailInput(e.target.value)}
+                placeholder={confirmAction.user.email}
+                className="input mb-3"
+                aria-label={t('admin.users.deleteEmailPrompt', { email: confirmAction.user.email })}
+              />
+            </>
+          )}
           <p className="text-xs text-slate-400 mb-4">{t('admin.users.auditTrailNote')}</p>
           <div className="flex gap-3 justify-end">
-            <button onClick={() => setConfirmAction(null)} className="btn-secondary text-sm">{t('common:cancel')}</button>
-            <button onClick={handleAction} className={confirmAction.type === 'disable' ? 'btn-danger' : 'btn-primary'}>{actionLabel(confirmAction.type)}</button>
+            <button onClick={() => { setConfirmAction(null); setDeleteEmailInput(''); }} className="btn-secondary text-sm">{t('common:cancel')}</button>
+            <button
+              onClick={handleAction}
+              disabled={confirmAction.type === 'delete' && deleteEmailInput.trim().toLowerCase() !== confirmAction.user.email.toLowerCase()}
+              className={confirmAction.type === 'disable' || confirmAction.type === 'delete' ? 'btn-danger' : 'btn-primary'}
+            >{actionLabel(confirmAction.type)}</button>
           </div>
         </div>
       </>)}

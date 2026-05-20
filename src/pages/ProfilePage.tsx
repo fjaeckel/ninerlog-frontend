@@ -13,6 +13,7 @@ import { NotificationHistory } from '../components/NotificationHistory';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { PasskeySection } from '../components/auth/PasskeySection';
 import BackupsPage from './backups/BackupsPage';
+import { BaselineSection } from '../components/profile/BaselineSection';
 
 export default function ProfilePage() {
   const { t } = useTranslation('settings');
@@ -492,6 +493,9 @@ export default function ProfilePage() {
       {/* ════════════════════════════════════════════════════════════════ */}
       {activeTab === 'data' && (
         <div className="space-y-6">
+          {/* Initial Hours Snapshot */}
+          <BaselineSection />
+
           {/* Flight Data Maintenance */}
           <div className="card">
             <h2 className="section-title mb-4">{t('flightData.title')}</h2>

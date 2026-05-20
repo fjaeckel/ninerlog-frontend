@@ -167,5 +167,39 @@
     "labelPlaceholder": "e.g. iPhone 15 — Face ID",
     "registerFailed": "Could not register passkey. Please try again.",
     "deleteFailed": "Could not revoke passkey. Please try again."
+  },
+  "baseline": {
+    "title": "Initial Hours Snapshot",
+    "description": "Record a one-time starting point of pre-existing flying experience without entering every historical flight. All logged or imported flights add on top of this snapshot.",
+    "loading": "Loading snapshot…",
+    "summary": "{{hours}}h total · {{pic}}h PIC · {{landings}} landings, as of {{date}}.",
+    "create": "Add Initial Snapshot",
+    "edit": "Edit Snapshot",
+    "delete": "Delete Snapshot",
+    "deleteButton": "Permanently Delete Snapshot",
+    "deleteConfirm": "Remove the initial-hours snapshot? Logged flights are not affected.",
+    "save": "Save Snapshot",
+    "saveSuccess": "Snapshot saved.",
+    "saveFailed": "Failed to save snapshot.",
+    "deleteSuccess": "Snapshot removed.",
+    "deleteFailed": "Failed to remove snapshot.",
+    "fields": {
+      "baselineDate": "Cutoff date",
+      "totalFlights": "Total flights",
+      "totalHours": "Total hours",
+      "picHours": "PIC hours",
+      "sicHours": "SIC hours",
+      "dualHours": "Dual received",
+      "dualGivenHours": "Dual given",
+      "multiPilotHours": "Multi-pilot hours",
+      "soloHours": "Solo hours",
+      "crossCountryHours": "Cross-country hours",
+      "nightHours": "Night hours",
+      "ifrHours": "IFR / instrument hours",
+      "landingsDay": "Day landings",
+      "landingsNight": "Night landings",
+      "notes": "Notes",
+      "notesPlaceholder": "e.g. From paper logbook 1998-2010"
+    }
   }
 }

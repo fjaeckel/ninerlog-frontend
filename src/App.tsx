@@ -1,29 +1,31 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
 import { useTheme } from './hooks/useTheme';
 import { bootstrapPromise } from './api/client';
 import Layout from './components/layout/Layout';
+import { lazyWithRetry } from './lib/lazyWithRetry';
 
-// Lazy-loaded pages for code splitting
-const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
-const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
-const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
-const NewPasswordPage = lazy(() => import('./pages/auth/NewPasswordPage'));
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
-const LicensesPage = lazy(() => import('./pages/licenses/LicensesPage'));
-const FlightsPage = lazy(() => import('./pages/flights/FlightsPage'));
-const FlightDetailPage = lazy(() => import('./pages/flights/FlightDetailPage'));
-const ProfilePage = lazy(() => import('./pages/ProfilePage'));
-const CredentialsPage = lazy(() => import('./pages/credentials/CredentialsPage'));
-const AircraftPage = lazy(() => import('./pages/aircraft/AircraftPage'));
-const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'));
-const MapPage = lazy(() => import('./pages/maps/MapPage'));
-const ImportPage = lazy(() => import('./pages/import/ImportPage'));
-const ExportPage = lazy(() => import('./pages/export/ExportPage'));
-const CurrencyPage = lazy(() => import('./pages/currency/CurrencyPage'));
-const AdminPage = lazy(() => import('./pages/admin/AdminPage'));
-const HelpPage = lazy(() => import('./pages/help/HelpPage'));
+// Lazy-loaded pages for code splitting (with chunk-load retry + reload fallback
+// so a stale PWA deployment never strands the user on a blank screen).
+const LoginPage = lazyWithRetry(() => import('./pages/auth/LoginPage'));
+const RegisterPage = lazyWithRetry(() => import('./pages/auth/RegisterPage'));
+const ResetPasswordPage = lazyWithRetry(() => import('./pages/auth/ResetPasswordPage'));
+const NewPasswordPage = lazyWithRetry(() => import('./pages/auth/NewPasswordPage'));
+const DashboardPage = lazyWithRetry(() => import('./pages/DashboardPage'));
+const LicensesPage = lazyWithRetry(() => import('./pages/licenses/LicensesPage'));
+const FlightsPage = lazyWithRetry(() => import('./pages/flights/FlightsPage'));
+const FlightDetailPage = lazyWithRetry(() => import('./pages/flights/FlightDetailPage'));
+const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage'));
+const CredentialsPage = lazyWithRetry(() => import('./pages/credentials/CredentialsPage'));
+const AircraftPage = lazyWithRetry(() => import('./pages/aircraft/AircraftPage'));
+const ReportsPage = lazyWithRetry(() => import('./pages/reports/ReportsPage'));
+const MapPage = lazyWithRetry(() => import('./pages/maps/MapPage'));
+const ImportPage = lazyWithRetry(() => import('./pages/import/ImportPage'));
+const ExportPage = lazyWithRetry(() => import('./pages/export/ExportPage'));
+const CurrencyPage = lazyWithRetry(() => import('./pages/currency/CurrencyPage'));
+const AdminPage = lazyWithRetry(() => import('./pages/admin/AdminPage'));
+const HelpPage = lazyWithRetry(() => import('./pages/help/HelpPage'));
 
 function PageLoader() {
   return (

@@ -110,6 +110,18 @@ export default function DashboardPage() {
         );
       })()}
 
+      {/* Initial-hours snapshot indicator */}
+      {statistics?.baseline && (
+        <div className="mb-4 p-3 rounded-md bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-sm text-blue-900 dark:text-blue-200">
+          {t('dashboard:baselineApplied', {
+            hours: ((statistics.baseline.totalMinutes ?? 0) / 60).toFixed(1),
+            date: statistics.baseline.baselineDate,
+            defaultValue:
+              'Includes {{hours}}h carried forward from your initial-hours snapshot (as of {{date}}).',
+          })}
+        </div>
+      )}
+
       {/* Stats grid */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
         <StatCard
