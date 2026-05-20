@@ -67,18 +67,18 @@ describe('AdminPage — Admin Features', () => {
     const user = userEvent.setup();
     renderWithProviders(<AdminPage />);
 
-    // Dashboard tab buttons
+    // Dashboard tab buttons (rendered as both <option> and <button>)
     expect(screen.getByText('Admin Console')).toBeInTheDocument();
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Users')).toBeInTheDocument();
-    expect(screen.getByText('Audit Log')).toBeInTheDocument();
-    expect(screen.getByText('Maintenance')).toBeInTheDocument();
-    expect(screen.getByText('Announcements')).toBeInTheDocument();
-    expect(screen.getByText('Config')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Dashboard/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Users$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Audit Log/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Maintenance/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Announcements/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Config/ })).toBeInTheDocument();
     expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
 
     // Navigate to Users
-    await user.click(screen.getByText('Users'));
+    await user.click(screen.getByRole('button', { name: /^Users$/ }));
     expect(screen.getByText('User')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('2FA')).toBeInTheDocument();
