@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { useLogin } from '../../hooks/useAuth';
+import { useLogin, useResendVerification } from '../../hooks/useAuth';
 import { useLogin2FA } from '../../hooks/useTwoFactor';
 import { useLoginWithPasskey, passkeysSupported } from '../../hooks/usePasskeys';
 import { useAuthStore } from '../../stores/authStore';
@@ -33,6 +33,9 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [twoFactorToken, setTwoFactorToken] = useState<string | null>(null);
   const [twoFACode, setTwoFACode] = useState('');
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resentNotice, setResentNotice] = useState(false);
+  const resendVerification = useResendVerification();
 
   const {
     register,
@@ -45,6 +48,8 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setError(null);
+      setUnverifiedEmail(null);
+      setResentNotice(false);
       const result = await login.mutateAsync(data);
 
       // Check if 2FA is required
@@ -55,6 +60,11 @@ export default function LoginPage() {
 
       navigate('/dashboard');
     } catch (err: any) {
+      const code = err?.code ?? err?.response?.data?.code;
+      if (code === 'email_not_verified') {
+        setUnverifiedEmail(data.email);
+        return;
+      }
       const msg = err?.error || err?.message || err?.response?.data?.error || '';
       if (msg.toLowerCase().includes('too many requests')) {
         setError(t('auth:login.rateLimited'));
@@ -66,6 +76,16 @@ export default function LoginPage() {
         setError(msg || t('auth:login.invalidCredentials'));
       }
     }
+  };
+
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail) return;
+    try {
+      await resendVerification.mutateAsync(unverifiedEmail);
+    } catch {
+      // ignore — endpoint always 204
+    }
+    setResentNotice(true);
   };
 
   const handleTwoFactorSubmit = async () => {
@@ -211,6 +231,27 @@ export default function LoginPage() {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
               {error}
+            </div>
+          )}
+
+          {unverifiedEmail && (
+            <div
+              className="bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300 px-4 py-3 rounded-lg text-sm space-y-2"
+              data-testid="email-not-verified-banner"
+            >
+              <p>{t('auth:login.emailNotVerified.message')}</p>
+              {resentNotice ? (
+                <p className="font-medium">{t('auth:register.checkYourEmail.resent')}</p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={resendVerification.isPending}
+                  className="font-medium underline hover:no-underline"
+                >
+                  {t('auth:login.emailNotVerified.resend')}
+                </button>
+              )}
             </div>
           )}
 

@@ -10,6 +10,7 @@ import { lazyWithRetry } from './lib/lazyWithRetry';
 // so a stale PWA deployment never strands the user on a blank screen).
 const LoginPage = lazyWithRetry(() => import('./pages/auth/LoginPage'));
 const RegisterPage = lazyWithRetry(() => import('./pages/auth/RegisterPage'));
+const VerifyEmailPage = lazyWithRetry(() => import('./pages/auth/VerifyEmailPage'));
 const ResetPasswordPage = lazyWithRetry(() => import('./pages/auth/ResetPasswordPage'));
 const NewPasswordPage = lazyWithRetry(() => import('./pages/auth/NewPasswordPage'));
 const DashboardPage = lazyWithRetry(() => import('./pages/DashboardPage'));
@@ -61,6 +62,7 @@ function App() {
         {/* Public routes */}
         <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" />} />
         <Route path="/register" element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/dashboard" />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/new-password" element={<NewPasswordPage />} />
 
