@@ -101,7 +101,9 @@ export default function BackupsPage() {
 
   if (error) {
     // 503 means feature is disabled (no BACKUP_CREDENTIALS_KEY on server)
-    const status = (error as { response?: { status?: number } } | undefined)?.response?.status;
+    const status =
+      (error as { status?: number; response?: { status?: number } } | undefined)?.status ??
+      (error as { response?: { status?: number } } | undefined)?.response?.status;
     if (status === 503) {
       return (
         <div className="card">

@@ -26,9 +26,19 @@ export const useBackupProviders = (enabled = true) => {
 export const useBackupDestinations = () => {
   return useQuery({
     queryKey: ['backup-destinations'],
+    retry: (failureCount, err: unknown) => {
+      // Don't retry when the feature is disabled on the server (503).
+      const status = (err as { status?: number } | undefined)?.status;
+      if (status === 503) return false;
+      return failureCount < 3;
+    },
     queryFn: async (): Promise<BackupDestination[]> => {
-      const { data, error } = await apiClient.GET('/backups/destinations');
-      if (error) throw error;
+      const { data, error, response } = await apiClient.GET('/backups/destinations');
+      if (error) {
+        const wrapped = error as Record<string, unknown>;
+        wrapped.status = response?.status;
+        throw wrapped;
+      }
       return data as BackupDestination[];
     },
   });
