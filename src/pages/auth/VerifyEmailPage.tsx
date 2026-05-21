@@ -12,19 +12,14 @@ export default function VerifyEmailPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const verifyMutation = useVerifyEmail();
-  const [status, setStatus] = useState<Status>('verifying');
-  const ranRef = useRef(false);
-
   const token = params.get('token') ?? '';
+  const [status, setStatus] = useState<Status>(token ? 'verifying' : 'invalid');
+  const ranRef = useRef(false);
 
   useEffect(() => {
     if (ranRef.current) return;
+    if (!token) return;
     ranRef.current = true;
-
-    if (!token) {
-      setStatus('invalid');
-      return;
-    }
 
     verifyMutation
       .mutateAsync(token)
