@@ -9,23 +9,47 @@ type RegisterRequest = operations['registerUser']['requestBody']['content']['app
 type LoginRequest = operations['loginUser']['requestBody']['content']['application/json'];
 
 type AuthResponse = components['schemas']['AuthResponse'];
+type RegistrationResponse = components['schemas']['RegistrationResponse'];
 
 export const useRegister = () => {
+  return useMutation({
+    mutationFn: async (requestData: RegisterRequest): Promise<NonNullable<RegistrationResponse>> => {
+      const { data, error } = await apiClient.POST('/auth/register', {
+        body: requestData as any,
+      });
+      if (error) throw error;
+      return data as NonNullable<RegistrationResponse>;
+    },
+  });
+};
+
+export const useVerifyEmail = () => {
   const { setAuth } = useAuthStore();
 
   return useMutation({
-    mutationFn: async (requestData: RegisterRequest): Promise<NonNullable<AuthResponse>> => {
-      const { data, error } = await apiClient.POST('/auth/register', {
-        body: requestData as any,
+    mutationFn: async (token: string): Promise<NonNullable<AuthResponse>> => {
+      const { data, error } = await apiClient.POST('/auth/verify-email', {
+        body: { token } as any,
       });
       if (error) throw error;
       return data as NonNullable<AuthResponse>;
     },
     onSuccess: (data) => {
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);
-      if (data.user.preferredLocale && data.user.preferredLocale !== i18n.language) {
+      if (data.user?.preferredLocale && data.user.preferredLocale !== i18n.language) {
         i18n.changeLanguage(data.user.preferredLocale);
       }
+    },
+  });
+};
+
+export const useResendVerification = () => {
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const { error } = await apiClient.POST('/auth/verify-email/resend', {
+        body: { email } as any,
+      });
+      if (error) throw error;
     },
   });
 };

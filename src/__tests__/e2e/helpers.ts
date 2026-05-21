@@ -15,6 +15,48 @@ export function uniqueEmail(): string {
 
 const TEST_PASSWORD = 'TestPassword123!';
 
+// MailPit base URL — reachable from inside the e2e network as `mailpit-test`,
+// or via localhost when developers run Playwright outside Docker. The
+// PLAYWRIGHT_MAILPIT_URL env var lets CI override this without code changes.
+const MAILPIT_URL = process.env.PLAYWRIGHT_MAILPIT_URL || 'http://mailpit-test:8025';
+
+/**
+ * Poll MailPit for an email-verification message addressed to `email` and
+ * return the verification token from the link inside.
+ */
+async function fetchVerificationToken(
+  request: import('@playwright/test').APIRequestContext,
+  email: string,
+): Promise<string> {
+  const deadline = Date.now() + 10_000;
+  let lastErr = '';
+  while (Date.now() < deadline) {
+    try {
+      const search = await request.get(
+        `${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`,
+      );
+      if (search.ok()) {
+        const data: { messages: Array<{ ID: string; Subject: string }> } = await search.json();
+        const verifyMsg = data.messages.find((m) => /confirm your email/i.test(m.Subject));
+        if (verifyMsg) {
+          const full = await request.get(`${MAILPIT_URL}/api/v1/message/${verifyMsg.ID}`);
+          if (full.ok()) {
+            const body: { HTML?: string; Text?: string } = await full.json();
+            const haystack = (body.HTML ?? '') + '\n' + (body.Text ?? '');
+            const m = haystack.match(/token=([A-Za-z0-9_\-=]+)/);
+            if (m) return m[1];
+            lastErr = 'verification email present but no token in body';
+          }
+        }
+      }
+    } catch (err) {
+      lastErr = String(err);
+    }
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  throw new Error(`Could not retrieve verification token for ${email}: ${lastErr}`);
+}
+
 /** Stored auth state after login */
 export interface AuthContext {
   email: string;
@@ -43,13 +85,23 @@ export async function createTestUser(request: import('@playwright/test').APIRequ
   if (!regRes!.ok()) {
     throw new Error(`Registration failed: ${regRes!.status()} ${await regRes!.text()}`);
   }
-  const regData = await regRes!.json();
+
+  // Email verification is required: pull the verification token from the
+  // test SMTP server (MailPit) and exchange it for an AuthResponse.
+  const token = await fetchVerificationToken(request, email);
+  const verifyRes = await request.post('/api/v1/auth/verify-email', {
+    data: { token },
+  });
+  if (!verifyRes.ok()) {
+    throw new Error(`Email verification failed: ${verifyRes.status()} ${await verifyRes.text()}`);
+  }
+  const verifyData = await verifyRes.json();
 
   return {
     email,
     password: TEST_PASSWORD,
-    accessToken: regData.accessToken,
-    userId: regData.user?.id || '',
+    accessToken: verifyData.accessToken,
+    userId: verifyData.user?.id || '',
   };
 }
 
@@ -66,7 +118,14 @@ export async function registerAndLogin(page: Page): Promise<AuthContext> {
   await page.locator('#confirmPassword').fill(TEST_PASSWORD);
   await page.getByRole('button', { name: /create account/i }).click();
 
-  // Should redirect to dashboard after successful registration
+  // After successful registration the UI now displays the
+  // "Check your email" view — login is blocked until verification.
+  await expect(page.getByTestId('check-email-view')).toBeVisible({ timeout: 15000 });
+
+  // Pull the verification token from MailPit and visit /verify-email,
+  // which auto-redirects to /dashboard on success.
+  const token = await fetchVerificationToken(page.request, email);
+  await page.goto(`/verify-email?token=${encodeURIComponent(token)}`);
   await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
   // Wait for the Layout to be fully rendered (header with Logout button)
   await expect(page.locator('button', { hasText: 'Logout' })).toBeVisible({ timeout: 10000 });

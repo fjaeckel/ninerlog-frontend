@@ -15,9 +15,55 @@ export interface paths {
         put?: never;
         /**
          * Register a new user
-         * @description Create a new user account with email and password
+         * @description Create a new user account with email and password. A verification email is sent
+         *     to the provided address — the user must click the link in that email to confirm
+         *     their address before they can log in. No authentication tokens are returned
+         *     from this endpoint.
          */
         post: operations["registerUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/verify-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify email address
+         * @description Consume an email-verification token (delivered via the registration email)
+         *     and mark the user's address as verified. On success, returns a full
+         *     `AuthResponse` so the frontend can log the user in immediately.
+         */
+        post: operations["verifyEmail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/verify-email/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resend the email-verification message
+         * @description Request a fresh verification email. Always returns 204 regardless of whether
+         *     the email exists or is already verified, to prevent user enumeration.
+         */
+        post: operations["resendVerificationEmail"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1683,6 +1729,11 @@ export interface components {
              */
             twoFactorEnabled?: boolean;
             /**
+             * @description Whether the user has confirmed their email address.
+             * @example true
+             */
+            emailVerified?: boolean;
+            /**
              * @description Whether this user is the platform admin (computed from ADMIN_EMAIL env var, not stored in DB)
              * @example false
              */
@@ -1792,6 +1843,21 @@ export interface components {
              */
             expiresIn: number;
             user: components["schemas"]["User"];
+        };
+        RegistrationResponse: {
+            /**
+             * Format: email
+             * @description Address the verification email was sent to
+             * @example pilot@example.com
+             */
+            email: string;
+            /** @example A verification email has been sent. Please check your inbox to complete registration. */
+            message: string;
+            /**
+             * @description Always true — clients should display a "check your email" message and not attempt login until verification completes.
+             * @example true
+             */
+            verificationRequired: boolean;
         };
         License: {
             /**
@@ -3830,6 +3896,13 @@ export interface components {
              * @example Validation failed
              */
             error: string;
+            /**
+             * @description Optional machine-readable error code, used by clients to distinguish
+             *     between conditions that share an HTTP status (e.g. `email_not_verified`
+             *     vs `account_disabled` for 403 on /auth/login).
+             * @example email_not_verified
+             */
+            code?: string;
             /** @description Detailed validation errors */
             details?: {
                 /** @example totalTime */
@@ -3954,13 +4027,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description User created successfully */
+            /** @description User created — verification email sent */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AuthResponse"];
+                    "application/json": components["schemas"]["RegistrationResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -3973,6 +4046,71 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+        };
+    };
+    verifyEmail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Verification token from the email link */
+                    token: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Email verified — user is now logged in */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Invalid, expired, or already-used token */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    resendVerificationEmail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * Format: email
+                     * @example pilot@example.com
+                     */
+                    email: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Verification email sent (if account exists and is not yet verified) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
         };
     };
     loginUser: {
@@ -4010,6 +4148,18 @@ export interface operations {
             };
             /** @description Invalid credentials */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /**
+             * @description Account cannot be used. The error `code` distinguishes the reason:
+             *     `email_not_verified` (email confirmation pending) or `account_disabled`.
+             */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRegister } from '../../hooks/useAuth';
+import { useRegister, useResendVerification } from '../../hooks/useAuth';
 import { APP_NAME } from '../../lib/config';
 import { LogoMark } from '../../components/ui/Logo';
 import { extractApiError, extractApiStatus } from '../../lib/errors';
@@ -25,9 +25,11 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const { t } = useTranslation('auth');
-  const navigate = useNavigate();
   const registerMutation = useRegister();
+  const resendMutation = useResendVerification();
   const [error, setError] = useState<string | null>(null);
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [resentNotice, setResentNotice] = useState(false);
 
   const {
     register,
@@ -45,7 +47,7 @@ export default function RegisterPage() {
         password: data.password,
         name: data.name,
       });
-      navigate('/dashboard');
+      setRegisteredEmail(data.email);
     } catch (err: unknown) {
       const status = extractApiStatus(err);
       if (status === 409) {
@@ -53,6 +55,17 @@ export default function RegisterPage() {
       } else {
         setError(extractApiError(err, t('auth:register.registrationFailed')));
       }
+    }
+  };
+
+  const handleResend = async () => {
+    if (!registeredEmail) return;
+    try {
+      await resendMutation.mutateAsync(registeredEmail);
+      setResentNotice(true);
+    } catch {
+      // Endpoint always returns 204 — but be safe.
+      setResentNotice(true);
     }
   };
 
@@ -78,7 +91,38 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <form
+        {registeredEmail ? (
+          <div className="card p-6 space-y-4" data-testid="check-email-view">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              {t('auth:register.checkYourEmail.title')}
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {t('auth:register.checkYourEmail.description', { email: registeredEmail })}
+            </p>
+            {resentNotice && (
+              <div className="bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
+                {t('auth:register.checkYourEmail.resent')}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendMutation.isPending}
+              className="btn-secondary w-full"
+            >
+              {t('auth:register.checkYourEmail.resend')}
+            </button>
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+              <Link
+                to="/login"
+                className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                {t('auth:register.logIn')}
+              </Link>
+            </p>
+          </div>
+        ) : (
+          <form
           className="card p-6 space-y-5"
           onSubmit={handleSubmit(onSubmit)}
         >
@@ -171,6 +215,7 @@ export default function RegisterPage() {
             </Link>
           </p>
         </form>
+        )}
       </div>
     </div>
   );
