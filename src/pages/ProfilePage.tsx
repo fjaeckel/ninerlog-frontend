@@ -12,6 +12,7 @@ import { extractApiError, extractApiStatus } from '../lib/errors';
 import { NotificationHistory } from '../components/NotificationHistory';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { PasskeySection } from '../components/auth/PasskeySection';
+import BackupsPage from './backups/BackupsPage';
 import { BaselineSection } from '../components/profile/BaselineSection';
 
 export default function ProfilePage() {
@@ -63,7 +64,7 @@ export default function ProfilePage() {
   const [recalcMessage, setRecalcMessage] = useState('');
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'preferences' | 'account' | 'notifications' | 'data'>('preferences');
+  const [activeTab, setActiveTab] = useState<'preferences' | 'account' | 'notifications' | 'backups' | 'data'>('preferences');
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,6 +157,7 @@ export default function ProfilePage() {
     { id: 'preferences' as const, label: t('tabs.preferences') },
     { id: 'account' as const, label: t('tabs.account') },
     { id: 'notifications' as const, label: t('tabs.notifications') },
+    { id: 'backups' as const, label: t('tabs.backups') },
     { id: 'data' as const, label: t('tabs.data') },
   ];
 
@@ -474,6 +476,15 @@ export default function ProfilePage() {
           )}
 
           <NotificationHistory />
+        </div>
+      )}
+
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* Cloud Backups Tab                                              */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'backups' && (
+        <div className="space-y-6">
+          <BackupsPage />
         </div>
       )}
 

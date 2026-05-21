@@ -1513,6 +1513,143 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/backups/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List available backup providers
+         * @description Returns the static catalog of cloud backup providers and their configuration/credential field schemas.
+         */
+        get: operations["listBackupProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/backups/destinations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the user's backup destinations */
+        get: operations["listBackupDestinations"];
+        put?: never;
+        /** Create a backup destination */
+        post: operations["createBackupDestination"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/backups/destinations/{destinationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a backup destination */
+        get: operations["getBackupDestination"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a backup destination
+         * @description Deletes the destination and its run history. Does NOT delete objects already uploaded to the remote bucket.
+         */
+        delete: operations["deleteBackupDestination"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a backup destination
+         * @description Partial update — only supplied fields are modified. Credentials cannot be rotated via this endpoint; delete and recreate the destination to change credentials.
+         */
+        patch: operations["updateBackupDestination"];
+        trace?: never;
+    };
+    "/backups/destinations/{destinationId}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test a backup destination's connectivity
+         * @description Re-runs the provider validation (auth + bucket access) without performing a backup.
+         */
+        post: operations["testBackupDestination"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/backups/destinations/{destinationId}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trigger an immediate backup run
+         * @description Runs a backup synchronously and returns the resulting BackupRun audit record. Concurrent runs against the same destination are rejected with 409.
+         */
+        post: operations["runBackupNow"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/backups/destinations/{destinationId}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List backup runs for a destination */
+        get: operations["listBackupRuns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/backups/runs/{runId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single backup run by ID */
+        get: operations["getBackupRun"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3537,6 +3674,156 @@ export interface components {
                 totalPages: number;
             };
         };
+        /**
+         * Format: uuid
+         * @description Backup destination UUID
+         */
+        BackupDestinationId: string;
+        /**
+         * @description Cadence at which scheduled runs fire (UTC). 'manual' disables scheduling.
+         * @enum {string}
+         */
+        BackupSchedule: "manual" | "daily" | "weekly" | "monthly";
+        /**
+         * @description Operational status of a destination. 'error' is set automatically after 3 consecutive run failures.
+         * @enum {string}
+         */
+        BackupStatus: "active" | "paused" | "error";
+        /** @enum {string} */
+        BackupRunStatus: "success" | "failed" | "skipped";
+        /** @enum {string} */
+        BackupRunTrigger: "scheduled" | "manual";
+        /**
+         * @description Hint for rendering provider config/credential form fields.
+         * @enum {string}
+         */
+        BackupFieldType: "string" | "password" | "region" | "url";
+        BackupField: {
+            /** @description Stable field key sent back as part of the config or credentials map. */
+            name: string;
+            /** @description Human-readable label. */
+            label: string;
+            type: components["schemas"]["BackupFieldType"];
+            required: boolean;
+            description?: string;
+            placeholder?: string;
+        };
+        BackupFieldSchema: {
+            fields: components["schemas"]["BackupField"][];
+        };
+        BackupProvider: {
+            /** @example s3 */
+            name: string;
+            /** @example Amazon S3 (and compatible) */
+            displayName: string;
+            description?: string;
+            configSchema: components["schemas"]["BackupFieldSchema"];
+            credentialSchema: components["schemas"]["BackupFieldSchema"];
+        };
+        BackupDestination: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            /** @example s3 */
+            provider: string;
+            displayName: string;
+            /** @description Provider-specific non-secret configuration (e.g. bucket, region, prefix). */
+            config: {
+                [key: string]: unknown;
+            };
+            /** @description Non-sensitive hint about the stored credential (e.g. last 4 of access key). */
+            credentialHint?: string;
+            schedule: components["schemas"]["BackupSchedule"];
+            scheduleHourUtc?: number;
+            /** @description 0=Sunday, 6=Saturday. Required when schedule=weekly. */
+            scheduleDayOfWeek?: number;
+            /** @description Day of month for monthly schedule. Capped at 28 to avoid month-end edge cases. */
+            scheduleDayOfMonth?: number;
+            /** @description Number of historical backups to retain. 0 means keep all. */
+            retentionCount: number;
+            status: components["schemas"]["BackupStatus"];
+            lastError?: string;
+            enabled: boolean;
+            consecutiveFailures?: number;
+            /** Format: date-time */
+            lastRunAt?: string;
+            /** Format: date-time */
+            lastSuccessAt?: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        BackupDestinationCreate: {
+            /** @example s3 */
+            provider: string;
+            displayName: string;
+            config: {
+                [key: string]: unknown;
+            };
+            /** @description Secret fields. Stored encrypted at rest (AES-256-GCM) and never returned in any response. */
+            credentials: {
+                [key: string]: unknown;
+            };
+            schedule: components["schemas"]["BackupSchedule"];
+            scheduleHourUtc?: number;
+            scheduleDayOfWeek?: number;
+            scheduleDayOfMonth?: number;
+            /** @default 30 */
+            retentionCount: number;
+            /** @default true */
+            enabled: boolean;
+        };
+        /** @description Partial update — only supplied fields are modified. */
+        BackupDestinationUpdate: {
+            displayName?: string;
+            schedule?: components["schemas"]["BackupSchedule"];
+            scheduleHourUtc?: number;
+            scheduleDayOfWeek?: number;
+            scheduleDayOfMonth?: number;
+            retentionCount?: number;
+            enabled?: boolean;
+        };
+        BackupTestResult: {
+            success: boolean;
+            message?: string;
+        };
+        BackupRun: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            destinationId: string;
+            /** Format: uuid */
+            userId: string;
+            status: components["schemas"]["BackupRunStatus"];
+            trigger?: components["schemas"]["BackupRunTrigger"];
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            completedAt?: string;
+            durationMs?: number;
+            /** Format: int64 */
+            sizeBytes?: number;
+            sha256?: string;
+            flightCount?: number;
+            aircraftCount?: number;
+            licenseCount?: number;
+            credentialCount?: number;
+            remotePath?: string;
+            errorMessage?: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        PaginatedBackupRuns: {
+            data: components["schemas"]["BackupRun"][];
+            pagination: {
+                page: number;
+                pageSize: number;
+                total: number;
+                totalPages: number;
+            };
+        };
         Error: {
             /**
              * @description Error message
@@ -3623,6 +3910,8 @@ export interface components {
     parameters: {
         /** @description License UUID */
         LicenseId: string;
+        /** @description Backup destination UUID */
+        BackupDestinationId: string;
         /** @description Aircraft UUID */
         AircraftId: string;
         /** @description Flight UUID */
@@ -6269,6 +6558,289 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listBackupProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Provider catalog */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupProvider"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Cloud backups are not configured on this server */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listBackupDestinations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Destination list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupDestination"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Cloud backups are not configured on this server */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createBackupDestination: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupDestinationCreate"];
+            };
+        };
+        responses: {
+            /** @description Destination created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupDestination"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            /** @description Cloud backups are not configured on this server */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getBackupDestination: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Backup destination UUID */
+                destinationId: components["parameters"]["BackupDestinationId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Destination */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupDestination"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteBackupDestination: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Backup destination UUID */
+                destinationId: components["parameters"]["BackupDestinationId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Destination deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateBackupDestination: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Backup destination UUID */
+                destinationId: components["parameters"]["BackupDestinationId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupDestinationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Destination updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupDestination"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    testBackupDestination: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Backup destination UUID */
+                destinationId: components["parameters"]["BackupDestinationId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Test result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupTestResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    runBackupNow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Backup destination UUID */
+                destinationId: components["parameters"]["BackupDestinationId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Run started (or completed; the body reflects the final state) */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupRun"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description Another run is already in progress for this destination */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listBackupRuns: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Backup destination UUID */
+                destinationId: components["parameters"]["BackupDestinationId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated run history */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedBackupRuns"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getBackupRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Run */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupRun"];
+                };
             };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];

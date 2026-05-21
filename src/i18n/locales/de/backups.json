@@ -1,0 +1,104 @@
+{
+  "title": "Cloud-Backups",
+  "subtitle": "Sende verschlüsselte Sicherungen deiner Flüge, Flugzeuge, Lizenzen und Nachweise nach Plan an einen Cloud-Speicher.",
+  "addDestination": "Ziel hinzufügen",
+  "addFirst": "Erstes Ziel hinzufügen",
+  "empty": "Noch keine Backup-Ziele.",
+  "disabled": "Cloud-Backups sind auf diesem Server nicht aktiviert. Bitte deinen Administrator, BACKUP_CREDENTIALS_KEY zu setzen.",
+  "paused": "pausiert",
+  "test": "Testen",
+  "testing": "Teste…",
+  "runNow": "Jetzt sichern",
+  "running": "Sichere…",
+  "edit": "Bearbeiten",
+  "delete": "Löschen",
+  "deleteTitle": "Backup-Ziel löschen",
+  "deleteConfirm": "„{{name}}\" und den Verlauf endgültig löschen?",
+  "lastRun": "Letzter Lauf",
+  "lastSuccess": "Letzter Erfolg",
+  "credentialHint": "Zugang",
+  "retention": "Aufbewahrung",
+  "retentionAll": "Alle behalten",
+  "status": {
+    "active": "Aktiv",
+    "paused": "Pausiert",
+    "error": "Fehler"
+  },
+  "schedule": {
+    "manual": "Nur manuell",
+    "daily": "Täglich",
+    "weekly": "Wöchentlich",
+    "monthly": "Monatlich"
+  },
+  "days": {
+    "0": "Sonntag",
+    "1": "Montag",
+    "2": "Dienstag",
+    "3": "Mittwoch",
+    "4": "Donnerstag",
+    "5": "Freitag",
+    "6": "Samstag"
+  },
+  "error": {
+    "title": "Backup-Ziele konnten nicht geladen werden",
+    "message": "Beim Laden deiner Backup-Ziele ist ein Fehler aufgetreten. Bitte erneut versuchen."
+  },
+  "messages": {
+    "testSuccess": "Verbindung zu „{{name}}\" erfolgreich.",
+    "testFailed": "Verbindungstest fehlgeschlagen.",
+    "runSuccess": "Backup von „{{name}}\" erfolgreich abgeschlossen.",
+    "runFailed": "Backup-Lauf fehlgeschlagen.",
+    "deleteFailed": "Ziel konnte nicht gelöscht werden."
+  },
+  "form": {
+    "createTitle": "Backup-Ziel hinzufügen",
+    "editTitle": "Backup-Ziel bearbeiten",
+    "provider": "Anbieter",
+    "displayName": "Anzeigename",
+    "displayNamePlaceholder": "z. B. Mein S3-Bucket",
+    "configSection": "Ziel",
+    "credentialsSection": "Zugangsdaten",
+    "credentialsHint": "Verschlüsselt gespeichert. Zugangsdaten werden niemals zurückgegeben.",
+    "scheduleSection": "Zeitplan",
+    "schedule": "Häufigkeit",
+    "scheduleHour": "Stunde (UTC)",
+    "scheduleHourHint": "0–23. Die Minute ist nicht konfigurierbar.",
+    "scheduleDayOfWeek": "Wochentag",
+    "scheduleDayOfMonth": "Tag des Monats",
+    "retention": "Letzte N Backups behalten",
+    "retentionHint": "0 = alle behalten. Ältere Backups werden nach jedem erfolgreichen Lauf entfernt.",
+    "enabled": "Aktiviert",
+    "cancel": "Abbrechen",
+    "save": "Änderungen speichern",
+    "create": "Ziel erstellen",
+    "saving": "Speichere…",
+    "close": "Schließen",
+    "loadingProviders": "Lade Anbieter…",
+    "noProviders": "Auf diesem Server sind keine Backup-Anbieter verfügbar.",
+    "failedToSave": "Ziel konnte nicht gespeichert werden."
+  },
+  "history": {
+    "title": "Verlauf — {{name}}",
+    "button": "Verlauf"
+  },
+  "runs": {
+    "status": "Status",
+    "startedAt": "Gestartet",
+    "trigger": "Auslöser",
+    "duration": "Dauer",
+    "size": "Größe",
+    "remotePath": "Remote-Pfad",
+    "loading": "Lade Verlauf…",
+    "loadError": "Verlauf konnte nicht geladen werden.",
+    "empty": "Noch keine Backup-Läufe.",
+    "statuses": {
+      "success": "Erfolg",
+      "failed": "Fehlgeschlagen",
+      "skipped": "Übersprungen"
+    },
+    "triggers": {
+      "scheduled": "Geplant",
+      "manual": "Manuell"
+    }
+  }
+}

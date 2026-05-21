@@ -77,6 +77,7 @@ function App() {
           <Route path="/map" element={isAuthenticated ? <MapPage /> : <Navigate to="/login" />} />
           <Route path="/import" element={isAuthenticated ? <ImportPage /> : <Navigate to="/login" />} />
           <Route path="/export" element={isAuthenticated ? <ExportPage /> : <Navigate to="/login" />} />
+          <Route path="/backups" element={<Navigate to="/profile" replace />} />
           <Route path="/currency" element={isAuthenticated ? <CurrencyPage /> : <Navigate to="/login" />} />
           <Route path="/admin" element={isAuthenticated ? <AdminPage /> : <Navigate to="/login" />} />
           <Route path="/help" element={isAuthenticated ? <HelpPage /> : <Navigate to="/login" />} />

@@ -1,0 +1,104 @@
+{
+  "title": "Cloud Backups",
+  "subtitle": "Send encrypted backups of your flights, aircraft, licenses and credentials to a cloud destination on a schedule.",
+  "addDestination": "Add destination",
+  "addFirst": "Add your first destination",
+  "empty": "No backup destinations yet.",
+  "disabled": "Cloud backups are not enabled on this server. Ask your administrator to set BACKUP_CREDENTIALS_KEY.",
+  "paused": "paused",
+  "test": "Test",
+  "testing": "Testing…",
+  "runNow": "Run now",
+  "running": "Running…",
+  "edit": "Edit",
+  "delete": "Delete",
+  "deleteTitle": "Delete backup destination",
+  "deleteConfirm": "Delete \"{{name}}\" and its run history? This cannot be undone.",
+  "lastRun": "Last run",
+  "lastSuccess": "Last success",
+  "credentialHint": "Credential",
+  "retention": "Retention",
+  "retentionAll": "Keep all",
+  "status": {
+    "active": "Active",
+    "paused": "Paused",
+    "error": "Error"
+  },
+  "schedule": {
+    "manual": "Manual only",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly"
+  },
+  "days": {
+    "0": "Sunday",
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday"
+  },
+  "error": {
+    "title": "Failed to load backup destinations",
+    "message": "An error occurred while loading your backup destinations. Please try again."
+  },
+  "messages": {
+    "testSuccess": "Connection to \"{{name}}\" succeeded.",
+    "testFailed": "Connection test failed.",
+    "runSuccess": "Backup of \"{{name}}\" completed successfully.",
+    "runFailed": "Backup run failed.",
+    "deleteFailed": "Failed to delete destination."
+  },
+  "form": {
+    "createTitle": "Add backup destination",
+    "editTitle": "Edit backup destination",
+    "provider": "Provider",
+    "displayName": "Display name",
+    "displayNamePlaceholder": "e.g. My S3 bucket",
+    "configSection": "Destination",
+    "credentialsSection": "Credentials",
+    "credentialsHint": "Stored encrypted at rest. Credentials are never returned by the API.",
+    "scheduleSection": "Schedule",
+    "schedule": "Cadence",
+    "scheduleHour": "Hour (UTC)",
+    "scheduleHourHint": "0–23. The minute is not configurable.",
+    "scheduleDayOfWeek": "Day of week",
+    "scheduleDayOfMonth": "Day of month",
+    "retention": "Keep last N backups",
+    "retentionHint": "0 keeps all backups. Older backups are deleted from the destination after each successful run.",
+    "enabled": "Enabled",
+    "cancel": "Cancel",
+    "save": "Save changes",
+    "create": "Create destination",
+    "saving": "Saving…",
+    "close": "Close",
+    "loadingProviders": "Loading providers…",
+    "noProviders": "No backup providers are available on this server.",
+    "failedToSave": "Failed to save destination."
+  },
+  "history": {
+    "title": "History — {{name}}",
+    "button": "History"
+  },
+  "runs": {
+    "status": "Status",
+    "startedAt": "Started",
+    "trigger": "Trigger",
+    "duration": "Duration",
+    "size": "Size",
+    "remotePath": "Remote path",
+    "loading": "Loading runs…",
+    "loadError": "Failed to load run history.",
+    "empty": "No backup runs yet.",
+    "statuses": {
+      "success": "Success",
+      "failed": "Failed",
+      "skipped": "Skipped"
+    },
+    "triggers": {
+      "scheduled": "Scheduled",
+      "manual": "Manual"
+    }
+  }
+}
