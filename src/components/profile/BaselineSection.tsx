@@ -7,23 +7,25 @@ import {
   type FlightBaseline,
   type FlightBaselineInput,
 } from '../../hooks/useBaseline';
+import { DurationInput } from '../flights/DurationInput';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
-// Shape used by the form. We track minutes as user-friendly hour strings (e.g.
-// "74", "74.5") and convert to integer minutes on submit. Landings are kept
-// as strings so the input can be cleared while typing.
+// Form state. Durations are stored as integer minutes (matching API storage and
+// the rest of the app); landings/flight counts as strings so the input can be
+// cleared while typing.
 type FormState = {
   baselineDate: string;
   totalFlights: string;
-  totalHours: string;
-  picHours: string;
-  sicHours: string;
-  dualHours: string;
-  dualGivenHours: string;
-  multiPilotHours: string;
-  nightHours: string;
-  ifrHours: string;
-  soloHours: string;
-  crossCountryHours: string;
+  totalMinutes: number;
+  picMinutes: number;
+  sicMinutes: number;
+  dualMinutes: number;
+  dualGivenMinutes: number;
+  multiPilotMinutes: number;
+  nightMinutes: number;
+  ifrMinutes: number;
+  soloMinutes: number;
+  crossCountryMinutes: number;
   landingsDay: string;
   landingsNight: string;
   notes: string;
@@ -32,34 +34,20 @@ type FormState = {
 const EMPTY_FORM: FormState = {
   baselineDate: new Date().toISOString().slice(0, 10),
   totalFlights: '',
-  totalHours: '',
-  picHours: '',
-  sicHours: '',
-  dualHours: '',
-  dualGivenHours: '',
-  multiPilotHours: '',
-  nightHours: '',
-  ifrHours: '',
-  soloHours: '',
-  crossCountryHours: '',
+  totalMinutes: 0,
+  picMinutes: 0,
+  sicMinutes: 0,
+  dualMinutes: 0,
+  dualGivenMinutes: 0,
+  multiPilotMinutes: 0,
+  nightMinutes: 0,
+  ifrMinutes: 0,
+  soloMinutes: 0,
+  crossCountryMinutes: 0,
   landingsDay: '',
   landingsNight: '',
   notes: '',
 };
-
-function minutesToHours(min: number | undefined): string {
-  if (!min) return '';
-  // Show one decimal when not an integer count of hours.
-  const h = min / 60;
-  return Number.isInteger(h) ? String(h) : h.toFixed(2).replace(/\.?0+$/, '');
-}
-
-function hoursToMinutes(value: string): number {
-  if (!value.trim()) return 0;
-  const n = Number(value.replace(',', '.'));
-  if (!Number.isFinite(n) || n < 0) return 0;
-  return Math.round(n * 60);
-}
 
 function intOrZero(value: string): number {
   if (!value.trim()) return 0;
@@ -71,16 +59,16 @@ function baselineToForm(b: FlightBaseline): FormState {
   return {
     baselineDate: typeof b.baselineDate === 'string' ? b.baselineDate : EMPTY_FORM.baselineDate,
     totalFlights: b.totalFlights ? String(b.totalFlights) : '',
-    totalHours: minutesToHours(b.totalMinutes),
-    picHours: minutesToHours(b.picMinutes),
-    sicHours: minutesToHours(b.sicMinutes),
-    dualHours: minutesToHours(b.dualMinutes),
-    dualGivenHours: minutesToHours(b.dualGivenMinutes),
-    multiPilotHours: minutesToHours(b.multiPilotMinutes),
-    nightHours: minutesToHours(b.nightMinutes),
-    ifrHours: minutesToHours(b.ifrMinutes),
-    soloHours: minutesToHours(b.soloMinutes),
-    crossCountryHours: minutesToHours(b.crossCountryMinutes),
+    totalMinutes: b.totalMinutes ?? 0,
+    picMinutes: b.picMinutes ?? 0,
+    sicMinutes: b.sicMinutes ?? 0,
+    dualMinutes: b.dualMinutes ?? 0,
+    dualGivenMinutes: b.dualGivenMinutes ?? 0,
+    multiPilotMinutes: b.multiPilotMinutes ?? 0,
+    nightMinutes: b.nightMinutes ?? 0,
+    ifrMinutes: b.ifrMinutes ?? 0,
+    soloMinutes: b.soloMinutes ?? 0,
+    crossCountryMinutes: b.crossCountryMinutes ?? 0,
     landingsDay: b.landingsDay ? String(b.landingsDay) : '',
     landingsNight: b.landingsNight ? String(b.landingsNight) : '',
     notes: b.notes ?? '',
@@ -91,16 +79,16 @@ function formToInput(form: FormState): FlightBaselineInput {
   return {
     baselineDate: form.baselineDate,
     totalFlights: intOrZero(form.totalFlights),
-    totalMinutes: hoursToMinutes(form.totalHours),
-    picMinutes: hoursToMinutes(form.picHours),
-    sicMinutes: hoursToMinutes(form.sicHours),
-    dualMinutes: hoursToMinutes(form.dualHours),
-    dualGivenMinutes: hoursToMinutes(form.dualGivenHours),
-    multiPilotMinutes: hoursToMinutes(form.multiPilotHours),
-    nightMinutes: hoursToMinutes(form.nightHours),
-    ifrMinutes: hoursToMinutes(form.ifrHours),
-    soloMinutes: hoursToMinutes(form.soloHours),
-    crossCountryMinutes: hoursToMinutes(form.crossCountryHours),
+    totalMinutes: form.totalMinutes,
+    picMinutes: form.picMinutes,
+    sicMinutes: form.sicMinutes,
+    dualMinutes: form.dualMinutes,
+    dualGivenMinutes: form.dualGivenMinutes,
+    multiPilotMinutes: form.multiPilotMinutes,
+    nightMinutes: form.nightMinutes,
+    ifrMinutes: form.ifrMinutes,
+    soloMinutes: form.soloMinutes,
+    crossCountryMinutes: form.crossCountryMinutes,
     landingsDay: intOrZero(form.landingsDay),
     landingsNight: intOrZero(form.landingsNight),
     notes: form.notes.trim() ? form.notes.trim() : null,
@@ -112,6 +100,7 @@ export function BaselineSection() {
   const { data: baseline, isLoading } = useMyBaseline();
   const upsert = useUpsertBaseline();
   const remove = useDeleteBaseline();
+  const { timeFormat } = useFormatPrefs();
 
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [showForm, setShowForm] = useState(false);
@@ -244,16 +233,16 @@ export function BaselineSection() {
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <HoursField label={t('baseline.fields.totalHours')} value={form.totalHours} onChange={(v) => setForm((s) => ({ ...s, totalHours: v }))} />
-                <HoursField label={t('baseline.fields.picHours')} value={form.picHours} onChange={(v) => setForm((s) => ({ ...s, picHours: v }))} />
-                <HoursField label={t('baseline.fields.sicHours')} value={form.sicHours} onChange={(v) => setForm((s) => ({ ...s, sicHours: v }))} />
-                <HoursField label={t('baseline.fields.dualHours')} value={form.dualHours} onChange={(v) => setForm((s) => ({ ...s, dualHours: v }))} />
-                <HoursField label={t('baseline.fields.dualGivenHours')} value={form.dualGivenHours} onChange={(v) => setForm((s) => ({ ...s, dualGivenHours: v }))} />
-                <HoursField label={t('baseline.fields.multiPilotHours')} value={form.multiPilotHours} onChange={(v) => setForm((s) => ({ ...s, multiPilotHours: v }))} />
-                <HoursField label={t('baseline.fields.soloHours')} value={form.soloHours} onChange={(v) => setForm((s) => ({ ...s, soloHours: v }))} />
-                <HoursField label={t('baseline.fields.crossCountryHours')} value={form.crossCountryHours} onChange={(v) => setForm((s) => ({ ...s, crossCountryHours: v }))} />
-                <HoursField label={t('baseline.fields.nightHours')} value={form.nightHours} onChange={(v) => setForm((s) => ({ ...s, nightHours: v }))} />
-                <HoursField label={t('baseline.fields.ifrHours')} value={form.ifrHours} onChange={(v) => setForm((s) => ({ ...s, ifrHours: v }))} />
+                <HoursField label={t('baseline.fields.totalHours')} value={form.totalMinutes} onChange={(v) => setForm((s) => ({ ...s, totalMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.picHours')} value={form.picMinutes} onChange={(v) => setForm((s) => ({ ...s, picMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.sicHours')} value={form.sicMinutes} onChange={(v) => setForm((s) => ({ ...s, sicMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.dualHours')} value={form.dualMinutes} onChange={(v) => setForm((s) => ({ ...s, dualMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.dualGivenHours')} value={form.dualGivenMinutes} onChange={(v) => setForm((s) => ({ ...s, dualGivenMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.multiPilotHours')} value={form.multiPilotMinutes} onChange={(v) => setForm((s) => ({ ...s, multiPilotMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.soloHours')} value={form.soloMinutes} onChange={(v) => setForm((s) => ({ ...s, soloMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.crossCountryHours')} value={form.crossCountryMinutes} onChange={(v) => setForm((s) => ({ ...s, crossCountryMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.nightHours')} value={form.nightMinutes} onChange={(v) => setForm((s) => ({ ...s, nightMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.ifrHours')} value={form.ifrMinutes} onChange={(v) => setForm((s) => ({ ...s, ifrMinutes: v }))} displayFormat={timeFormat} />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -323,10 +312,26 @@ function Field({ label, required, children }: { label: string; required?: boolea
   );
 }
 
-function HoursField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function HoursField({
+  label,
+  value,
+  onChange,
+  displayFormat,
+}: {
+  label: string;
+  value: number;
+  onChange: (minutes: number) => void;
+  displayFormat: 'hm' | 'decimal';
+}) {
+  const placeholder = displayFormat === 'decimal' ? '0.0' : '0:00';
   return (
     <Field label={label}>
-      <NumberInput value={value} onChange={onChange} step="0.1" />
+      <DurationInput
+        value={value}
+        onChange={onChange}
+        displayFormat={displayFormat}
+        placeholder={placeholder}
+      />
     </Field>
   );
 }

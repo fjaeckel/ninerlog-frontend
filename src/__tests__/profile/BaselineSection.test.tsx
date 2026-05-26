@@ -66,11 +66,11 @@ describe('BaselineSection', () => {
 
     const totalHours = screen.getByLabelText(/total hours/i);
     await userEvent.clear(totalHours);
-    await userEvent.type(totalHours, '74');
+    await userEvent.type(totalHours, '74:00');
 
     const picHours = screen.getByLabelText(/pic hours/i);
     await userEvent.clear(picHours);
-    await userEvent.type(picHours, '74');
+    await userEvent.type(picHours, '74:00');
 
     const landingsDay = screen.getByLabelText(/day landings/i);
     await userEvent.clear(landingsDay);
