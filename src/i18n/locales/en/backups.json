@@ -96,6 +96,8 @@
       "failed": "Failed",
       "skipped": "Skipped"
     },
+    "skippedTooltip": "Nothing changed since the last successful backup, so no new file was uploaded.",
+    "skippedNote": "Runs are marked Skipped when your data is unchanged since the last successful backup. Nothing is uploaded and your retention slots are preserved. As soon as you add or edit a flight, aircraft, licence or credential, the next run will upload again.",
     "triggers": {
       "scheduled": "Scheduled",
       "manual": "Manual"

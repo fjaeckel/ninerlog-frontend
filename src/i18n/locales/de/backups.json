@@ -96,6 +96,8 @@
       "failed": "Fehlgeschlagen",
       "skipped": "Übersprungen"
     },
+    "skippedTooltip": "Seit dem letzten erfolgreichen Backup hat sich nichts geändert, daher wurde keine neue Datei hochgeladen.",
+    "skippedNote": "Läufe werden als „Übersprungen“ markiert, wenn sich deine Daten seit dem letzten erfolgreichen Backup nicht geändert haben. Es wird nichts hochgeladen und deine Aufbewahrungsplätze bleiben erhalten. Sobald du einen Flug, ein Luftfahrzeug, eine Lizenz oder einen Berechtigungsnachweis hinzufügst oder änderst, lädt der nächste Lauf wieder hoch.",
     "triggers": {
       "scheduled": "Geplant",
       "manual": "Manuell"
