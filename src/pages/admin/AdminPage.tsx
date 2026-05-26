@@ -103,14 +103,44 @@ function DashboardTab() {
     { label: t('admin.dashboard.disabledAccounts'), value: data.disabledAccounts, warn: data.disabledAccounts > 0 },
   ];
 
+  const backups = data.cloudBackupDestinations;
+  const backupProviders = backups
+    ? Object.entries(backups.byProvider).sort(([a], [b]) => a.localeCompare(b))
+    : [];
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-      {stats.map((s) => (
-        <div key={s.label} className="card text-center py-4">
-          <div className={`text-2xl font-bold ${s.warn ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-100'}`}>{s.value}</div>
-          <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {stats.map((s) => (
+          <div key={s.label} className="card text-center py-4">
+            <div className={`text-2xl font-bold ${s.warn ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-100'}`}>{s.value}</div>
+            <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {backups && (
+        <div className="card p-4">
+          <div className="flex items-baseline justify-between mb-3">
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+              {t('admin.dashboard.cloudBackupDestinations')}
+            </h3>
+            <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">{backups.total}</div>
+          </div>
+          {backupProviders.length === 0 ? (
+            <div className="text-xs text-slate-500">{t('admin.dashboard.cloudBackupDestinationsNone')}</div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {backupProviders.map(([provider, count]) => (
+                <div key={provider} className="rounded border border-slate-200 dark:border-slate-700 px-3 py-2 text-center">
+                  <div className="text-lg font-semibold text-slate-800 dark:text-slate-100">{count}</div>
+                  <div className="text-xs text-slate-500 mt-0.5 uppercase tracking-wide">{provider}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      ))}
+      )}
     </div>
   );
 }

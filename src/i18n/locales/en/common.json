@@ -117,7 +117,9 @@
       "flightsThisMonth": "Flights This Month",
       "newUsersWeek": "New Users (7d)",
       "lockedAccounts": "Locked Accounts",
-      "disabledAccounts": "Disabled Accounts"
+      "disabledAccounts": "Disabled Accounts",
+      "cloudBackupDestinations": "Cloud Backup Destinations",
+      "cloudBackupDestinationsNone": "No cloud backup destinations configured by users yet."
     },
     "users": {
       "searchPlaceholder": "Search by email or name...",
