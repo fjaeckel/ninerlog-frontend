@@ -185,6 +185,9 @@
       "rateLimitAdmin": "Rate Limit (Admin)",
       "smtp": "SMTP",
       "adminEmail": "Admin Email",
+      "cloudBackups": "Cloud Backups",
+      "cloudBackupProviders": "Cloud Backup Providers",
+      "cloudBackupProvidersNone": "None registered",
       "configured": "Configured",
       "notConfigured": "Not configured"
     },
