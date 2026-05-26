@@ -2,14 +2,17 @@ import { test, expect } from '@playwright/test';
 import { registerAndLogin } from './helpers';
 
 // Cloud backup settings flow. Requires the API to be running with
-// BACKUP_CREDENTIALS_KEY set and a reachable MinIO service. In the docker
-// e2e environment (docker-compose.test.yml) this is provided as
-// "minio-test:9000" and a pre-created bucket "ninerlog-backups".
+// BACKUP_CREDENTIALS_KEY set and a reachable S3-compatible service. In the
+// docker e2e environment (docker-compose.test.yml) this is provided by a
+// SeaweedFS container at "seaweedfs-test:8333" with a pre-created bucket
+// "ninerlog-backups".
 //
 // When running locally without those services, this suite is auto-skipped.
 
-const MINIO_ENDPOINT = process.env.E2E_MINIO_ENDPOINT || 'http://minio-test:9000';
-const MINIO_BUCKET = process.env.E2E_MINIO_BUCKET || 'ninerlog-backups';
+const S3_ENDPOINT = process.env.E2E_S3_ENDPOINT || 'http://seaweedfs-test:8333';
+const S3_BUCKET = process.env.E2E_S3_BUCKET || 'ninerlog-backups';
+const S3_ACCESS_KEY = process.env.E2E_S3_ACCESS_KEY || 'ninerlogadmin';
+const S3_SECRET_KEY = process.env.E2E_S3_SECRET_KEY || 'ninerlogsecret';
 
 test.describe('Cloud Backups', () => {
   test('create, test, run, view history, and delete an S3 destination', async ({ page, request }) => {
@@ -33,17 +36,17 @@ test.describe('Cloud Backups', () => {
 
     // Provider should default to S3
     await expect(page.getByLabel(/provider/i)).toBeVisible();
-    await page.getByLabel(/display name/i).fill('E2E MinIO bucket');
-    await page.getByLabel(/^Bucket/i).fill(MINIO_BUCKET);
+    await page.getByLabel(/display name/i).fill('E2E S3 bucket');
+    await page.getByLabel(/^Bucket/i).fill(S3_BUCKET);
     await page.getByLabel(/^Region/i).fill('us-east-1');
-    await page.getByLabel(/endpoint url/i).fill(MINIO_ENDPOINT);
-    await page.getByLabel(/access key id/i).fill('minioadmin');
-    await page.getByLabel(/secret access key/i).fill('minioadmin');
+    await page.getByLabel(/endpoint url/i).fill(S3_ENDPOINT);
+    await page.getByLabel(/access key id/i).fill(S3_ACCESS_KEY);
+    await page.getByLabel(/secret access key/i).fill(S3_SECRET_KEY);
 
     await page.getByRole('button', { name: /create destination/i }).click();
 
     // Card visible
-    const card = page.locator('[data-testid="backup-destination"]', { hasText: 'E2E MinIO bucket' });
+    const card = page.locator('[data-testid="backup-destination"]', { hasText: 'E2E S3 bucket' });
     await expect(card).toBeVisible({ timeout: 15000 });
 
     // Test connection
