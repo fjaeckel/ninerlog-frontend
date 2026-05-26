@@ -3702,6 +3702,17 @@ export interface components {
             smtpConfigured: boolean;
             /** @description Whether ADMIN_EMAIL is set */
             adminEmailConfigured: boolean;
+            /** @description Whether cloud backups are enabled (BACKUP_CREDENTIALS_KEY is set) */
+            cloudBackupsConfigured: boolean;
+            /**
+             * @description Names of registered cloud backup providers (e.g. s3, sftp, webdav). Empty when cloud backups are disabled.
+             * @example [
+             *       "s3",
+             *       "sftp",
+             *       "webdav"
+             *     ]
+             */
+            cloudBackupProviders: string[];
         };
         AdminUser: {
             /** Format: uuid */

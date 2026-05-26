@@ -424,6 +424,18 @@ function ConfigTab() {
         ? <span className="text-green-600 dark:text-green-400 font-medium">{t('admin.config.configured')}</span>
         : <span className="text-amber-600 dark:text-amber-400 font-medium">{t('admin.config.notConfigured')}</span>,
     },
+    {
+      label: t('admin.config.cloudBackups'),
+      value: data.cloudBackupsConfigured
+        ? <span className="text-green-600 dark:text-green-400 font-medium">{t('admin.config.configured')}</span>
+        : <span className="text-amber-600 dark:text-amber-400 font-medium">{t('admin.config.notConfigured')}</span>,
+    },
+    {
+      label: t('admin.config.cloudBackupProviders'),
+      value: data.cloudBackupProviders.length > 0
+        ? <span className="font-mono text-xs uppercase">{data.cloudBackupProviders.join(', ')}</span>
+        : <span className="text-slate-400">{t('admin.config.cloudBackupProvidersNone')}</span>,
+    },
   ];
 
   return (
