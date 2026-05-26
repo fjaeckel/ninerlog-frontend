@@ -3645,6 +3645,21 @@ export interface components {
             newUsersThisWeek: number;
             lockedAccounts: number;
             disabledAccounts: number;
+            /** @description Counts of user-configured cloud backup destinations. */
+            cloudBackupDestinations: {
+                /** @description Total number of cloud backup destinations configured across all users. */
+                total: number;
+                /**
+                 * @description Number of destinations grouped by provider name (e.g. {"s3": 3, "sftp": 1}). Providers with zero destinations are omitted.
+                 * @example {
+                 *       "s3": 3,
+                 *       "sftp": 1
+                 *     }
+                 */
+                byProvider: {
+                    [key: string]: number;
+                };
+            };
         };
         Announcement: {
             /** @description Unique identifier (UUID for admin announcements, string key for hints) */

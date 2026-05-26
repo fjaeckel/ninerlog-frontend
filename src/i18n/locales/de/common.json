@@ -117,7 +117,9 @@
       "flightsThisMonth": "Flüge diesen Monat",
       "newUsersWeek": "Neue Benutzer (7T)",
       "lockedAccounts": "Gesperrte Konten",
-      "disabledAccounts": "Deaktivierte Konten"
+      "disabledAccounts": "Deaktivierte Konten",
+      "cloudBackupDestinations": "Cloud-Backup-Ziele",
+      "cloudBackupDestinationsNone": "Noch keine Cloud-Backup-Ziele von Benutzern konfiguriert."
     },
     "users": {
       "searchPlaceholder": "Nach E-Mail oder Name suchen...",
