@@ -53,6 +53,8 @@
     "OTHER": "Other"
   },
   "expiresLabel": "Expires: {{date}}",
+  "windowOpensLabel": "Experience window opens {{date}}",
+  "windowClosedHint": "Recently revalidated — flights logged before this date don't count toward the next revalidation.",
   "launchesCount": "{{current}} / {{required}} launches",
   "ruleDescriptions": {
     "easa_sep_tmg": "Requires 12h total flight time + 6h as PIC + 12 takeoffs & landings + 1h refresher training with instructor within the 12 months preceding the expiry date of the rating (EASA FCL.740.A(b)(1))",

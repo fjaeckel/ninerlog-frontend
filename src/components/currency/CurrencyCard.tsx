@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar, Clock } from 'lucide-react';
 import type { ClassRatingCurrency, CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
@@ -120,6 +120,26 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
       <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
         {rating.message}
       </p>
+
+      {/* Window-not-yet-open banner — shown for EASA FCL.740.A / FCL.625.A
+          ratings during the first ~12 months after revalidation, when flight
+          experience does not yet count toward the next revalidation. */}
+      {rating.windowOpensAt && rating.windowOpen === false && (
+        <div
+          className="mb-3 rounded-md border border-sky-200 bg-sky-50/70 px-3 py-2 text-xs text-sky-800 dark:border-sky-800/50 dark:bg-sky-900/20 dark:text-sky-200 inline-flex items-start gap-2 w-full"
+          data-testid="currency-window-closed"
+        >
+          <Clock className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+          <div className="space-y-0.5">
+            <p className="font-medium">
+              {t('windowOpensLabel', { date: fmtDate(rating.windowOpensAt) })}
+            </p>
+            <p className="text-sky-700/80 dark:text-sky-300/80">
+              {t('windowClosedHint')}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Requirements with progress bars */}
       {rating.requirements && rating.requirements.length > 0 && (
