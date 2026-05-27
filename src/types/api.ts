@@ -254,6 +254,18 @@ export interface ClassRatingCurrency {
   licenseType?: string;
   status: CurrencyStatus;
   expiryDate?: string | null;
+  /**
+   * For expiry-anchored revalidation rules (EASA FCL.740.A SEP/TMG/MEP/SET,
+   * FCL.625.A IR), the date on which the 12-month experience-counting window
+   * opens. Omitted for rolling-window rules (LAPL/SPL) and expiry-only ratings.
+   */
+  windowOpensAt?: string | null;
+  /**
+   * Only meaningful when `windowOpensAt` is set. False during the
+   * "recently revalidated" period — flight experience does not yet count
+   * toward this rating's revalidation and `requirements` is suppressed.
+   */
+  windowOpen?: boolean;
   message: string;
   ruleDescription?: string;
   progress?: CurrencyProgress;

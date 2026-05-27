@@ -3165,6 +3165,24 @@ export interface components {
              * @description Class rating expiry date
              */
             expiryDate?: string | null;
+            /**
+             * Format: date
+             * @description For ratings whose experience window is anchored to expiry (EASA
+             *     FCL.740.A SEP/TMG/MEP/SET and FCL.625.A IR), the date on which
+             *     the 12-month experience-counting window opens (expiry − 12
+             *     months). Omitted for rolling-window rules (LAPL FCL.140.A,
+             *     SPL FCL.140.S) and for expiry-only ratings.
+             */
+            windowOpensAt?: string | null;
+            /**
+             * @description Only meaningful when `windowOpensAt` is set. True if the
+             *     revalidation experience window is currently open
+             *     (now >= windowOpensAt). When false, flight experience accrued
+             *     today does not yet count toward this rating's revalidation, so
+             *     `requirements` is omitted and `status` stays `current` until the
+             *     window opens.
+             */
+            windowOpen?: boolean;
             /** @description Human-readable status message */
             message?: string;
             /** @description Progress metrics toward currency requirements (authority-specific) */
@@ -3612,6 +3630,13 @@ export interface components {
             /** Format: uuid */
             adminUserId: string;
             /**
+             * Format: email
+             * @description Email of the admin who performed the action (if the account still exists)
+             */
+            adminEmail?: string;
+            /** @description Display name of the admin who performed the action (if the account still exists) */
+            adminName?: string;
+            /**
              * @description The admin action performed
              * @example disable_user
              */
@@ -3621,6 +3646,13 @@ export interface components {
              * @description The user affected by the action (if any)
              */
             targetUserId?: string;
+            /**
+             * Format: email
+             * @description Email of the target user (if any, and if the account still exists)
+             */
+            targetUserEmail?: string;
+            /** @description Display name of the target user (if any, and if the account still exists) */
+            targetUserName?: string;
             /** @description Additional details about the action (JSON) */
             details?: Record<string, never>;
             /** Format: date-time */
