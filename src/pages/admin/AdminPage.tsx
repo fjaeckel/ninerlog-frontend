@@ -328,6 +328,25 @@ function AuditLogTab() {
   const [page, setPage] = useState(1);
   const { data, isLoading } = useAdminAuditLog(page, 20);
 
+  const renderUser = (
+    id: string | undefined,
+    name: string | undefined,
+    email: string | undefined,
+  ) => {
+    if (!id) return '\u2014';
+    if (name && email) {
+      return (
+        <span>
+          <span className="text-slate-700 dark:text-slate-200">{name}</span>
+          <span className="text-slate-400"> &lt;{email}&gt;</span>
+        </span>
+      );
+    }
+    if (name) return <span className="text-slate-700 dark:text-slate-200">{name}</span>;
+    if (email) return <span className="text-slate-700 dark:text-slate-200">{email}</span>;
+    return <span className="font-mono text-slate-400">{id.slice(0, 8)}…</span>;
+  };
+
   return (
     <div className="card overflow-hidden">
       {/* Desktop table */}
@@ -345,8 +364,8 @@ function AuditLogTab() {
               <tr key={entry.id} className="border-b border-slate-100 dark:border-slate-800">
                 <td className="px-4 py-3 text-xs text-slate-500">{fmtDateTime(entry.createdAt)}</td>
                 <td className="px-4 py-3"><span className="badge badge-current text-xs">{entry.action}</span></td>
-                <td className="px-4 py-3 text-xs text-slate-400 font-mono">{entry.adminUserId.slice(0, 8)}...</td>
-                <td className="px-4 py-3 text-xs text-slate-400 font-mono">{entry.targetUserId ? `${entry.targetUserId.slice(0, 8)}...` : '\u2014'}</td>
+                <td className="px-4 py-3 text-xs">{renderUser(entry.adminUserId, entry.adminName, entry.adminEmail)}</td>
+                <td className="px-4 py-3 text-xs">{renderUser(entry.targetUserId, entry.targetUserName, entry.targetUserEmail)}</td>
               </tr>
             ))}
             {!isLoading && data?.data?.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">{t('admin.audit.noEntries')}</td></tr>}
@@ -362,9 +381,11 @@ function AuditLogTab() {
               <span className="badge badge-current text-xs">{entry.action}</span>
               <span className="text-xs text-slate-400">{fmtDateTime(entry.createdAt)}</span>
             </div>
-            <div className="flex gap-4 text-xs text-slate-400">
-              <span className="font-mono">{t('admin.audit.admin')}: {entry.adminUserId.slice(0, 8)}...</span>
-              {entry.targetUserId && <span className="font-mono">{t('admin.audit.targetUser')}: {entry.targetUserId.slice(0, 8)}...</span>}
+            <div className="flex flex-col gap-1 text-xs text-slate-400">
+              <span>{t('admin.audit.admin')}: {renderUser(entry.adminUserId, entry.adminName, entry.adminEmail)}</span>
+              {entry.targetUserId && (
+                <span>{t('admin.audit.targetUser')}: {renderUser(entry.targetUserId, entry.targetUserName, entry.targetUserEmail)}</span>
+              )}
             </div>
           </div>
         ))}
