@@ -53,6 +53,8 @@
     "OTHER": "Sonstige"
   },
   "expiresLabel": "Gültig bis: {{date}}",
+  "windowOpensLabel": "Erfahrungs-Zeitfenster öffnet am {{date}}",
+  "windowClosedHint": "Kürzlich verlängert — Flüge vor diesem Datum zählen nicht für die nächste Verlängerung.",
   "launchesCount": "{{current}} / {{required}} Starts",
   "ruleDescriptions": {
     "easa_sep_tmg": "Erfordert 12h Gesamtflugzeit + 6h als PIC + 12 Starts & Landungen + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum der Berechtigung (EASA FCL.740.A(b)(1))",

@@ -219,4 +219,32 @@ describe('CurrencyCard', () => {
     render(<CurrencyCard rating={baseRating} />);
     expect(screen.queryByTestId('launch-method-currency')).not.toBeInTheDocument();
   });
+
+  it('renders the window-opens banner when revalidation window is closed', () => {
+    const freshlyRevalidated: ClassRatingCurrency = {
+      classRatingId: 'cr-fresh',
+      classType: 'SEP_LAND',
+      licenseId: 'lic-1',
+      regulatoryAuthority: 'EASA',
+      licenseType: 'PPL',
+      status: 'current',
+      expiryDate: '2028-05-15',
+      windowOpensAt: '2027-05-15',
+      windowOpen: false,
+      message: 'EASA SEP_LAND — recently revalidated; experience window opens 2027-05-15',
+    };
+    render(<CurrencyCard rating={freshlyRevalidated} />);
+    expect(screen.getByTestId('currency-window-closed')).toBeInTheDocument();
+    expect(screen.queryByTestId(/requirement-/)).not.toBeInTheDocument();
+  });
+
+  it('does not render the window banner once the window is open', () => {
+    const inWindow: ClassRatingCurrency = {
+      ...baseRating,
+      windowOpensAt: '2025-06-15',
+      windowOpen: true,
+    };
+    render(<CurrencyCard rating={inWindow} />);
+    expect(screen.queryByTestId('currency-window-closed')).not.toBeInTheDocument();
+  });
 });
