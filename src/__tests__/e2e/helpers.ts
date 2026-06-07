@@ -32,8 +32,12 @@ async function fetchVerificationToken(
   let lastErr = '';
   while (Date.now() < deadline) {
     try {
+      // The query intentionally omits the `to:` prefix. For security (CWE-640),
+      // the API delivers the recipient via the SMTP envelope only and omits the
+      // `To:` header, so MailPit records the recipient as Bcc. A bare-address
+      // query matches the message regardless of which header it lands in.
       const search = await request.get(
-        `${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`,
+        `${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(email)}`,
       );
       if (search.ok()) {
         const data: { messages: Array<{ ID: string; Subject: string }> } = await search.json();
