@@ -26,7 +26,7 @@ export const exportDataJSON = () =>
 
 export const exportFlightsPDF = (
   logbookLicenseId?: string,
-  format?: 'easa' | 'faa' | 'summary',
+  format?: 'easa' | 'faa' | 'glider' | 'summary',
   pageSize?: 'a4' | 'a5' | 'letter',
 ) => {
   const params = new URLSearchParams();

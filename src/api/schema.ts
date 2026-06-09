@@ -2276,11 +2276,27 @@ export interface components {
              */
             isProficiencyCheck?: boolean;
             /**
-             * @description Launch method for glider/SPL flights (winch, aerotow, or self-launch)
+             * @description Launch method for glider/SPL flights (winch, aerotow, self-launch, bungee, or auto-tow)
              * @example winch
              * @enum {string|null}
              */
-            launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
+            launchMethod?: "winch" | "aerotow" | "self-launch" | "bungee" | "auto-tow" | "null" | null;
+            /**
+             * @description Number of launches on this flight (EASA FCL.140.S). Defaults to 1 for glider flights; a club training row may chain several launches in one entry. 0 for powered flights.
+             * @example 1
+             */
+            launches?: number;
+            /**
+             * @description Release / cable-break altitude in metres for winch and aerotow launches.
+             * @example 450
+             */
+            releaseAltitude?: number | null;
+            /**
+             * @description Reference datum for releaseAltitude (above ground level or above mean sea level).
+             * @example AGL
+             * @enum {string|null}
+             */
+            releaseAltitudeRef?: "AGL" | "AMSL" | "null" | null;
             /**
              * @description Name of the pilot-in-command for this flight (EASA AMC1 FCL.050 Col 12). Auto-set to "Self" when isPic=true, or to instructorName when isDual=true.
              * @example Self
@@ -2427,7 +2443,16 @@ export interface components {
             isFlightReview?: boolean;
             isProficiencyCheck?: boolean;
             /** @enum {string|null} */
-            launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
+            launchMethod?: "winch" | "aerotow" | "self-launch" | "bungee" | "auto-tow" | "null" | null;
+            /** @description Number of launches on this flight (EASA FCL.140.S). Defaults to 1 for glider flights, 0 for powered flights. */
+            launches?: number;
+            /** @description Release / cable-break altitude in metres for winch and aerotow launches. */
+            releaseAltitude?: number | null;
+            /**
+             * @description Reference datum for releaseAltitude (AGL or AMSL).
+             * @enum {string|null}
+             */
+            releaseAltitudeRef?: "AGL" | "AMSL" | "null" | null;
             /** @description Name of the PIC. Auto-set to "Self" when isPic=true, or to instructorName when isDual=true. */
             picName?: string | null;
             /** @description Multi-pilot time in minutes (EASA AMC1 FCL.050 Col 10) */
@@ -2493,7 +2518,16 @@ export interface components {
             isFlightReview?: boolean;
             isProficiencyCheck?: boolean;
             /** @enum {string|null} */
-            launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
+            launchMethod?: "winch" | "aerotow" | "self-launch" | "bungee" | "auto-tow" | "null" | null;
+            /** @description Number of launches on this flight (EASA FCL.140.S) */
+            launches?: number;
+            /** @description Release / cable-break altitude in metres for winch and aerotow launches. */
+            releaseAltitude?: number | null;
+            /**
+             * @description Reference datum for releaseAltitude (AGL or AMSL).
+             * @enum {string|null}
+             */
+            releaseAltitudeRef?: "AGL" | "AMSL" | "null" | null;
             /** @description Name of the PIC */
             picName?: string | null;
             /** @description Multi-pilot time in minutes */
@@ -6039,8 +6073,8 @@ export interface operations {
             query?: {
                 /** @description Filter flights for a specific logbook license */
                 logbookLicenseId?: string;
-                /** @description PDF format — easa (AMC1 FCL.050 two-page spread), faa (ASA/Jeppesen layout), or summary (simplified totals) */
-                format?: "easa" | "faa" | "summary";
+                /** @description PDF format — easa (AMC1 FCL.050 two-page spread), faa (ASA/Jeppesen layout), glider (EASA SPL sailplane logbook with launch columns), or summary (simplified totals) */
+                format?: "easa" | "faa" | "glider" | "summary";
                 /** @description Page size for the generated PDF. All sizes are rendered in landscape orientation. EASA format is laid out as a book-style two-page spread (left + right) intended for double-sided printing. */
                 page_size?: "a4" | "a5" | "letter";
             };

@@ -6,7 +6,7 @@ export default function ExportPage() {
   const { t } = useTranslation('reports');
   const [exporting, setExporting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [pdfFormat, setPdfFormat] = useState<'easa' | 'faa' | 'summary'>('easa');
+  const [pdfFormat, setPdfFormat] = useState<'easa' | 'faa' | 'glider' | 'summary'>('easa');
   const [pdfPageSize, setPdfPageSize] = useState<'a4' | 'a5' | 'letter'>('a4');
   const [csvFormat, setCsvFormat] = useState<'standard' | 'easa' | 'faa'>('standard');
 
@@ -94,12 +94,13 @@ export default function ExportPage() {
           </p>
           <select
             value={pdfFormat}
-            onChange={(e) => setPdfFormat(e.target.value as 'easa' | 'faa' | 'summary')}
+            onChange={(e) => setPdfFormat(e.target.value as 'easa' | 'faa' | 'glider' | 'summary')}
             className="input mb-3 text-sm"
             aria-label={t('export.pdfFormat', 'PDF format')}
           >
             <option value="easa">{t('export.easaLogbook')}</option>
             <option value="faa">{t('export.faaLogbook')}</option>
+            <option value="glider">{t('export.gliderLogbook', 'EASA Sailplane (SPL)')}</option>
             <option value="summary">{t('export.summaryReport')}</option>
           </select>
           <select
