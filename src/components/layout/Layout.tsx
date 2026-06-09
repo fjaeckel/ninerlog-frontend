@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLogout } from '../../hooks/useAuth';
+import { useFlights } from '../../hooks/useFlights';
 import { useAuthStore } from '../../stores/authStore';
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import AnnouncementBanner from '../ui/AnnouncementBanner';
@@ -23,13 +24,19 @@ export default function Layout() {
 
   // Auto-start the welcome tour the first time a freshly registered user lands
   // in the app. Persisted per-user, so it never re-appears after being seen or
-  // skipped. Replayable from the Help page.
+  // skipped. Replayable from the Help page. Skipped for users who already have
+  // flights logged, even when the completion flag is missing (e.g. new device).
   const openTour = useOnboardingStore((s) => s.open);
+  const { data: flights, isLoading: flightsLoading } = useFlights({ pageSize: 1 });
   useEffect(() => {
     if (!user) return;
+    // Wait for the flight count before deciding, so experienced users on a
+    // fresh device don't see the tour flash before it's skipped.
+    if (flightsLoading) return;
+    if ((flights?.pagination.total ?? 0) > 0) return;
     const { hasCompleted, isOpen } = useOnboardingStore.getState();
     if (!hasCompleted(user.id) && !isOpen) openTour();
-  }, [user, openTour]);
+  }, [user, openTour, flights, flightsLoading]);
 
   const handleLogout = async () => {
     useOnboardingStore.getState().close();
