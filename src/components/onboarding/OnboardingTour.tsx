@@ -188,9 +188,20 @@ export function OnboardingTour() {
       }
     : null;
 
-  const cardClassName = isDesktop
-    ? 'absolute pointer-events-auto'
-    : 'fixed left-3 right-3 bottom-[calc(5rem+env(safe-area-inset-bottom))] mx-auto max-w-md pointer-events-auto';
+  // Card placement:
+  //  • no target (welcome/finish)  → centered on screen
+  //  • desktop + target            → floating beside the spotlight (cardStyle)
+  //  • mobile + target             → docked as a bottom sheet above the nav bar
+  let cardClassName: string;
+  if (!target.rect) {
+    cardClassName =
+      'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-1.5rem)] max-w-md pointer-events-auto';
+  } else if (isDesktop) {
+    cardClassName = 'absolute pointer-events-auto';
+  } else {
+    cardClassName =
+      'fixed left-3 right-3 bottom-[calc(5rem+env(safe-area-inset-bottom))] mx-auto max-w-md pointer-events-auto';
+  }
 
   return createPortal(
     <div
@@ -236,7 +247,7 @@ export function OnboardingTour() {
         </button>
 
         {/* Progress */}
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 pr-7">
           <div className="flex gap-1.5" aria-hidden="true">
             {tourSteps.map((s, i) => (
               <span
