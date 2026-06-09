@@ -17,6 +17,7 @@ import enSettings from './locales/en/settings.json';
 import enImport from './locales/en/import.json';
 import enHelp from './locales/en/help.json';
 import enBackups from './locales/en/backups.json';
+import enOnboarding from './locales/en/onboarding.json';
 
 // German namespaces
 import deCommon from './locales/de/common.json';
@@ -33,6 +34,7 @@ import deSettings from './locales/de/settings.json';
 import deImport from './locales/de/import.json';
 import deHelp from './locales/de/help.json';
 import deBackups from './locales/de/backups.json';
+import deOnboarding from './locales/de/onboarding.json';
 
 export const supportedLanguages = ['en', 'de'] as const;
 export type SupportedLanguage = (typeof supportedLanguages)[number];
@@ -62,6 +64,7 @@ i18n
         import: enImport,
         help: enHelp,
         backups: enBackups,
+        onboarding: enOnboarding,
       },
       de: {
         common: deCommon,
@@ -78,6 +81,7 @@ i18n
         import: deImport,
         help: deHelp,
         backups: deBackups,
+        onboarding: deOnboarding,
       },
     },
     fallbackLng: 'en',
@@ -85,7 +89,7 @@ i18n
     ns: [
       'common', 'auth', 'nav', 'flights', 'aircraft', 'dashboard',
       'currency', 'licenses', 'credentials', 'reports', 'settings',
-      'import', 'help', 'backups',
+      'import', 'help', 'backups', 'onboarding',
     ],
     interpolation: {
       escapeValue: false, // React already escapes

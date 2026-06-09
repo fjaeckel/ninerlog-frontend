@@ -1,0 +1,52 @@
+{
+  "tour": {
+    "skip": "Überspringen",
+    "next": "Weiter",
+    "back": "Zurück",
+    "finish": "Los geht's",
+    "start": "Tour starten",
+    "replay": "Willkommens-Tour erneut ansehen",
+    "progress": "Schritt {{current}} von {{total}}",
+    "dialogLabel": "Willkommens-Tour",
+    "close": "Tour schließen",
+    "moreHint": "Auf dem Smartphone findest du das im Menü „Mehr“.",
+    "steps": {
+      "welcome": {
+        "title": "Willkommen bei NinerLog, {{name}}! 👋",
+        "body": "Lass uns kurz zeigen, wo du alles findest. Es dauert nur eine Minute – und du kannst die Tour jederzeit überspringen."
+      },
+      "dashboard": {
+        "title": "Deine Übersicht",
+        "body": "Das ist deine Startseite. Sobald du Flüge erfasst, siehst du hier auf einen Blick deine Summen, deine Gültigkeit und die letzten Flüge."
+      },
+      "aircraft": {
+        "title": "Flugzeuge hinzufügen",
+        "body": "Lege zuerst die Flugzeuge an, die du fliegst. Kennzeichen, Muster und Klasse werden bei jedem Flug wiederverwendet – du gibst sie nur einmal ein."
+      },
+      "licenses": {
+        "title": "Lizenzen hinzufügen",
+        "body": "Füge deine Pilotenlizenzen hinzu (PPL, SPL, CPL, ATPL, IR …). NinerLog passt damit dein Flugbuch und die Gültigkeitsregeln an jede Behörde an."
+      },
+      "credentials": {
+        "title": "Nachweise speichern",
+        "body": "Bewahre Medicals, Ratings und weitere Nachweise hier auf. Wir behalten die Ablaufdaten im Blick und warnen dich rechtzeitig."
+      },
+      "addFlight": {
+        "title": "Flug erfassen",
+        "body": "Das ist der schnellste Weg, einen Flug zu erfassen. Flugzeug wählen, Off-Block- und On-Block-Zeit, Flugplätze und Landungen eintragen – fertig."
+      },
+      "flights": {
+        "title": "Deine Flüge finden",
+        "body": "Jeder erfasste Flug liegt hier. Durchsuchen, filtern und auf einen Eintrag tippen, um alle Details zu sehen oder zu bearbeiten."
+      },
+      "currency": {
+        "title": "Gültigkeit behalten",
+        "body": "Behalte deine Recency im Blick – etwa 3 Starts und Landungen in 90 Tagen – damit du immer weißt, wann du fliegen darfst."
+      },
+      "finish": {
+        "title": "Du bist startklar! ✈️",
+        "body": "Das war die Tour. Am besten legst du jetzt ein Flugzeug an und erfasst deinen ersten Flug. Die Tour findest du jederzeit erneut in der Hilfe."
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "tour": {
+    "skip": "Skip",
+    "next": "Next",
+    "back": "Back",
+    "finish": "Get started",
+    "start": "Take the tour",
+    "replay": "Replay welcome tour",
+    "progress": "Step {{current}} of {{total}}",
+    "dialogLabel": "Welcome tour",
+    "close": "Close tour",
+    "moreHint": "On mobile you'll find this under the “More” menu.",
+    "steps": {
+      "welcome": {
+        "title": "Welcome to NinerLog, {{name}}! 👋",
+        "body": "Let's take a quick tour so you know exactly where everything lives. It only takes a minute — and you can skip it any time."
+      },
+      "dashboard": {
+        "title": "Your dashboard",
+        "body": "This is your home base. Once you start logging flights you'll see your totals, currency status and recent activity here at a glance."
+      },
+      "aircraft": {
+        "title": "Add your aircraft",
+        "body": "Start by adding the aircraft you fly. Registration, type and class are reused every time you log a flight, so you only enter them once."
+      },
+      "licenses": {
+        "title": "Add your licenses",
+        "body": "Add your pilot licenses (PPL, SPL, CPL, ATPL, IR…). NinerLog uses them to tailor your flight log and currency rules to each authority."
+      },
+      "credentials": {
+        "title": "Store your credentials",
+        "body": "Keep medicals, ratings and other certificates here. We'll watch their expiry dates and warn you before anything lapses."
+      },
+      "addFlight": {
+        "title": "Log a flight",
+        "body": "This is the quickest way to add a flight. Pick your aircraft, enter your off-block and on-block times, airports and landings — that's it."
+      },
+      "flights": {
+        "title": "Find your flights",
+        "body": "Every flight you log lives here. Browse, search and tap any entry to view or edit the full details."
+      },
+      "currency": {
+        "title": "Stay current",
+        "body": "Track your recency at a glance — like 3 takeoffs and landings in 90 days — so you always know when you're legal to fly."
+      },
+      "finish": {
+        "title": "You're ready to fly! ✈️",
+        "body": "That's the tour. The best first step is adding an aircraft and logging your first flight. You can replay this tour any time from the Help page."
+      }
+    }
+  }
+}
