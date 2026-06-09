@@ -3,8 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { HelpCircle, Plane, Award, FileText, PlaneTakeoff, Upload, Shield, BarChart3, User, ShieldCheck, BookOpen, Search, X, Bug, ExternalLink } from 'lucide-react';
+import { HelpCircle, Plane, Award, FileText, PlaneTakeoff, Upload, Shield, BarChart3, User, ShieldCheck, BookOpen, Search, X, Bug, ExternalLink, Compass } from 'lucide-react';
 import { useHelpContent, helpSectionIds, type HelpSectionId } from './content';
+import { useOnboardingStore } from '../../stores/onboardingStore';
 import { APP_NAME } from '../../lib/config';
 
 const sectionIcons: Record<HelpSectionId, React.ReactNode> = {
@@ -35,6 +36,8 @@ const sectionLabelKeys: Record<HelpSectionId, string> = {
 
 export default function HelpPage() {
   const { t } = useTranslation('common');
+  const { t: tOnboarding } = useTranslation('onboarding');
+  const openTour = useOnboardingStore((s) => s.open);
   const { getContent } = useHelpContent();
   const [searchParams] = useSearchParams();
   const topicFromUrl = searchParams.get('topic');
@@ -94,9 +97,19 @@ export default function HelpPage() {
     <div className="mx-auto max-w-[1100px] py-6 print:max-w-none print:py-0">
       {/* Header — hidden on print */}
       <div className="mb-6 print:hidden">
-        <div className="flex items-center gap-2">
-          <HelpCircle className="w-6 h-6 text-blue-600" />
-          <h1 className="page-title">{t('help.title')}</h1>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-6 h-6 text-blue-600" />
+            <h1 className="page-title">{t('help.title')}</h1>
+          </div>
+          <button
+            onClick={openTour}
+            className="btn-secondary btn-sm shrink-0"
+          >
+            <Compass className="w-4 h-4" aria-hidden="true" />
+            <span className="hidden sm:inline">{tOnboarding('tour.replay')}</span>
+            <span className="sm:hidden">{tOnboarding('tour.start')}</span>
+          </button>
         </div>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('help.subtitle', { appName: APP_NAME })}</p>
       </div>

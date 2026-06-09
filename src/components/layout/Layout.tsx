@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Plane, FileText, PlaneTakeoff, BarChart3, Map,
@@ -6,10 +6,13 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLogout } from '../../hooks/useAuth';
+import { useFlights } from '../../hooks/useFlights';
 import { useAuthStore } from '../../stores/authStore';
+import { useOnboardingStore } from '../../stores/onboardingStore';
 import AnnouncementBanner from '../ui/AnnouncementBanner';
 import { LogoMark } from '../ui/Logo';
 import { ThemeSwitcher } from '../ui/ThemeSwitcher';
+import { OnboardingTour } from '../onboarding/OnboardingTour';
 import { APP_NAME } from '../../lib/config';
 
 export default function Layout() {
@@ -19,7 +22,24 @@ export default function Layout() {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const { t } = useTranslation(['nav', 'common']);
 
+  // Auto-start the welcome tour the first time a freshly registered user lands
+  // in the app. Persisted per-user, so it never re-appears after being seen or
+  // skipped. Replayable from the Help page. Skipped for users who already have
+  // flights logged, even when the completion flag is missing (e.g. new device).
+  const openTour = useOnboardingStore((s) => s.open);
+  const { data: flights, isLoading: flightsLoading } = useFlights({ pageSize: 1 });
+  useEffect(() => {
+    if (!user) return;
+    // Wait for the flight count before deciding, so experienced users on a
+    // fresh device don't see the tour flash before it's skipped.
+    if (flightsLoading) return;
+    if ((flights?.pagination.total ?? 0) > 0) return;
+    const { hasCompleted, isOpen } = useOnboardingStore.getState();
+    if (!hasCompleted(user.id) && !isOpen) openTour();
+  }, [user, openTour, flights, flightsLoading]);
+
   const handleLogout = async () => {
+    useOnboardingStore.getState().close();
     await logout.mutateAsync();
     navigate('/login');
   };
@@ -80,6 +100,7 @@ export default function Layout() {
           <Link
             to="/flights"
             state={{ openForm: true }}
+            data-tour="add-flight"
             className="btn-primary w-full justify-center hover-lift"
           >
             <Plus className="w-4 h-4" aria-hidden="true" />
@@ -87,14 +108,14 @@ export default function Layout() {
           </Link>
         </div>
         <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5" aria-label="Main">
-          <SidebarItem to="/dashboard" label={t('nav:dashboard')} icon={<LayoutDashboard className="w-5 h-5" />} />
-          <SidebarItem to="/flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
-          <SidebarItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} />
-          <SidebarItem to="/currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} />
+          <SidebarItem to="/dashboard" tourId="dashboard" label={t('nav:dashboard')} icon={<LayoutDashboard className="w-5 h-5" />} />
+          <SidebarItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
+          <SidebarItem to="/aircraft" tourId="aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} />
+          <SidebarItem to="/currency" tourId="currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} />
 
           <SidebarGroup label={t('nav:licenses')} />
-          <SidebarItem to="/licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} />
-          <SidebarItem to="/credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} />
+          <SidebarItem to="/licenses" tourId="licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} />
+          <SidebarItem to="/credentials" tourId="credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} />
 
           <SidebarGroup label={t('nav:reports')} />
           <SidebarItem to="/reports" label={t('nav:reports')} icon={<BarChart3 className="w-5 h-5" />} />
@@ -130,11 +151,12 @@ export default function Layout() {
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="h-14 flex items-center justify-around">
-        <BottomNavItem to="/dashboard" label={t('nav:home')} icon={<LayoutDashboard className="w-5 h-5" />} />
-        <BottomNavItem to="/flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
+        <BottomNavItem to="/dashboard" tourId="dashboard" label={t('nav:home')} icon={<LayoutDashboard className="w-5 h-5" />} />
+        <BottomNavItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
         <Link
           to="/flights"
           state={{ openForm: true }}
+          data-tour="add-flight"
           className="flex flex-col items-center justify-center -mt-6 active:scale-95 transition-transform tap-none"
           aria-label={t('nav:addFlight')}
         >
@@ -145,6 +167,7 @@ export default function Layout() {
         <BottomNavItem to="/reports" label={t('nav:reports')} icon={<BarChart3 className="w-5 h-5" />} />
         <button
           onClick={() => setShowMoreMenu(true)}
+          data-tour="more"
           className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors tap-none"
           aria-label="More menu"
         >
@@ -198,14 +221,18 @@ export default function Layout() {
           </div>
         </>
       )}
+
+      {/* First-login guided tour overlay */}
+      <OnboardingTour />
     </div>
   );
 }
 
-function SidebarItem({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) {
+function SidebarItem({ to, label, icon, tourId }: { to: string; label: string; icon: React.ReactNode; tourId?: string }) {
   return (
     <NavLink
       to={to}
+      data-tour={tourId}
       className={({ isActive }) =>
         `relative flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors tap-none ${
           isActive
@@ -228,10 +255,11 @@ function SidebarGroup({ label }: { label: string }) {
   );
 }
 
-function BottomNavItem({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) {
+function BottomNavItem({ to, label, icon, tourId }: { to: string; label: string; icon: React.ReactNode; tourId?: string }) {
   return (
     <NavLink
       to={to}
+      data-tour={tourId}
       className={({ isActive }) =>
         `relative flex flex-col items-center justify-center min-w-[44px] min-h-[44px] px-3 text-xs font-medium transition-colors tap-none ${
           isActive
