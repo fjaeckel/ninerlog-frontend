@@ -8,6 +8,7 @@ import { useRegister, useResendVerification } from '../../hooks/useAuth';
 import { APP_NAME } from '../../lib/config';
 import { LogoMark } from '../../components/ui/Logo';
 import { extractApiError, extractApiStatus } from '../../lib/errors';
+import { supportedLanguages, languageNames } from '../../i18n';
 
 const registerSchema = z
   .object({
@@ -15,6 +16,7 @@ const registerSchema = z
     email: z.string().email('Invalid email address'),
     password: z.string().min(12, 'Password must be at least 12 characters'),
     confirmPassword: z.string(),
+    language: z.enum(supportedLanguages),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
@@ -24,12 +26,17 @@ const registerSchema = z
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const { t } = useTranslation('auth');
+  const { t, i18n } = useTranslation('auth');
   const registerMutation = useRegister();
   const resendMutation = useResendVerification();
   const [error, setError] = useState<string | null>(null);
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
   const [resentNotice, setResentNotice] = useState(false);
+
+  const detectedLanguage =
+    supportedLanguages.find(
+      (l) => i18n.language === l || i18n.language.startsWith(l),
+    ) ?? 'en';
 
   const {
     register,
@@ -37,7 +44,12 @@ export default function RegisterPage() {
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      language: detectedLanguage,
+    },
   });
+
+  const languageField = register('language');
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
@@ -46,6 +58,7 @@ export default function RegisterPage() {
         email: data.email,
         password: data.password,
         name: data.name,
+        preferredLocale: data.language,
       });
       setRegisteredEmail(data.email);
     } catch (err: unknown) {
@@ -195,6 +208,28 @@ export default function RegisterPage() {
             {errors.confirmPassword && (
               <p className="form-error">{errors.confirmPassword.message}</p>
             )}
+          </div>
+
+          <div>
+            <label htmlFor="language" className="form-label">
+              {t('auth:register.language')}
+            </label>
+            <select
+              {...languageField}
+              id="language"
+              className="input"
+              onChange={(e) => {
+                languageField.onChange(e);
+                void i18n.changeLanguage(e.target.value);
+              }}
+            >
+              {supportedLanguages.map((lang) => (
+                <option key={lang} value={lang}>
+                  {languageNames[lang]}
+                </option>
+              ))}
+            </select>
+            <p className="form-helper">{t('auth:register.languageHint')}</p>
           </div>
 
           <button
