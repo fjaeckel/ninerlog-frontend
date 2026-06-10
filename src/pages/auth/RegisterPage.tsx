@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,10 +27,12 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const { t, i18n } = useTranslation('auth');
+  const navigate = useNavigate();
   const registerMutation = useRegister();
   const resendMutation = useResendVerification();
   const [error, setError] = useState<string | null>(null);
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [loginReadyEmail, setLoginReadyEmail] = useState<string | null>(null);
   const [resentNotice, setResentNotice] = useState(false);
 
   const detectedLanguage =
@@ -54,13 +56,21 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setError(null);
-      await registerMutation.mutateAsync({
+      setResentNotice(false);
+      const response = await registerMutation.mutateAsync({
         email: data.email,
         password: data.password,
         name: data.name,
         preferredLocale: data.language,
       });
-      setRegisteredEmail(data.email);
+
+      if (response.verificationRequired) {
+        setLoginReadyEmail(null);
+        setRegisteredEmail(response.email ?? data.email);
+      } else {
+        setRegisteredEmail(null);
+        setLoginReadyEmail(response.email ?? data.email);
+      }
     } catch (err: unknown) {
       const status = extractApiStatus(err);
       if (status === 409) {
@@ -133,6 +143,22 @@ export default function RegisterPage() {
                 {t('auth:register.logIn')}
               </Link>
             </p>
+          </div>
+        ) : loginReadyEmail ? (
+          <div className="card p-6 space-y-4" data-testid="login-ready-view">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              {t('auth:register.accountReady.title')}
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {t('auth:register.accountReady.description', { email: loginReadyEmail })}
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/login', { state: { email: loginReadyEmail } })}
+              className="btn-primary w-full"
+            >
+              {t('auth:register.accountReady.logInNow')}
+            </button>
           </div>
         ) : (
           <form
