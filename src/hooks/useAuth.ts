@@ -5,7 +5,10 @@ import i18n from '../i18n';
 import type { components, operations } from '../api/schema';
 
 // Extract request body types from operations (they're inline, not in components)
-type RegisterRequest = operations['registerUser']['requestBody']['content']['application/json'];
+type RegisterRequest = operations['registerUser']['requestBody']['content']['application/json'] & {
+  /** Preferred interface language, inferred from the browser at signup. */
+  preferredLocale?: components['schemas']['User']['preferredLocale'];
+};
 type LoginRequest = operations['loginUser']['requestBody']['content']['application/json'];
 
 type AuthResponse = components['schemas']['AuthResponse'];
