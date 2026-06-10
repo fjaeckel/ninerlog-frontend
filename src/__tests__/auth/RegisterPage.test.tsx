@@ -38,10 +38,15 @@ describe('RegisterPage', () => {
     isError: false,
     error: null,
   };
+  const mockResendVerification = {
+    mutateAsync: vi.fn(),
+    isPending: false,
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(useAuthHook, 'useRegister').mockReturnValue(mockRegister as any);
+    vi.spyOn(useAuthHook, 'useResendVerification').mockReturnValue(mockResendVerification as any);
   });
 
   afterEach(() => {
@@ -143,5 +148,50 @@ describe('RegisterPage', () => {
         expect.objectContaining({ preferredLocale: 'de' }),
       );
     });
+  });
+
+  it('shows check-email view when verification is required', async () => {
+    const user = userEvent.setup();
+    mockRegister.mutateAsync.mockResolvedValueOnce({
+      email: 'pilot@example.com',
+      verificationRequired: true,
+      message: 'verification required',
+    });
+
+    renderWithProviders(<RegisterPage />);
+
+    await user.type(screen.getByLabelText(/name/i), 'A Pilot');
+    await user.type(screen.getByLabelText(/^email/i), 'pilot@example.com');
+    await user.type(screen.getByLabelText(/^password/i), 'password1234');
+    await user.type(screen.getByLabelText(/confirm password/i), 'password1234');
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('check-email-view')).toBeInTheDocument();
+    });
+  });
+
+  it('shows login-ready view when verification is not required', async () => {
+    const user = userEvent.setup();
+    mockRegister.mutateAsync.mockResolvedValueOnce({
+      email: 'pilot@example.com',
+      verificationRequired: false,
+      message: 'account ready',
+    });
+
+    renderWithProviders(<RegisterPage />);
+
+    await user.type(screen.getByLabelText(/name/i), 'A Pilot');
+    await user.type(screen.getByLabelText(/^email/i), 'pilot@example.com');
+    await user.type(screen.getByLabelText(/^password/i), 'password1234');
+    await user.type(screen.getByLabelText(/confirm password/i), 'password1234');
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('login-ready-view')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /log in now/i }));
+    expect(mockNavigate).toHaveBeenCalledWith('/login', { state: { email: 'pilot@example.com' } });
   });
 });

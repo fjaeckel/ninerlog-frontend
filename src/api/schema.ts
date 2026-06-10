@@ -15,10 +15,15 @@ export interface paths {
         put?: never;
         /**
          * Register a new user
-         * @description Create a new user account with email and password. A verification email is sent
-         *     to the provided address — the user must click the link in that email to confirm
-         *     their address before they can log in. No authentication tokens are returned
-         *     from this endpoint.
+         * @description Create a new user account with email and password.
+         *
+         *     When SMTP is configured, a verification email is sent to the provided address,
+         *     and the user must confirm it before they can log in.
+         *
+         *     When SMTP is not configured, the backend auto-verifies the new account so
+         *     registration and login remain usable in local/self-hosted setups.
+         *
+         *     No authentication tokens are returned from this endpoint.
          */
         post: operations["registerUser"];
         delete?: never;
@@ -1847,14 +1852,14 @@ export interface components {
         RegistrationResponse: {
             /**
              * Format: email
-             * @description Address the verification email was sent to
+             * @description Registered account email address
              * @example pilot@example.com
              */
             email: string;
             /** @example A verification email has been sent. Please check your inbox to complete registration. */
             message: string;
             /**
-             * @description Always true — clients should display a "check your email" message and not attempt login until verification completes.
+             * @description True when SMTP is configured and the user must verify via email; false when the backend auto-verifies because SMTP is not configured.
              * @example true
              */
             verificationRequired: boolean;
@@ -4081,11 +4086,17 @@ export interface operations {
                     password: string;
                     /** @example John Doe */
                     name: string;
+                    /**
+                     * @description Preferred language for the interface. Defaults to `en` when omitted.
+                     * @example en
+                     * @enum {string}
+                     */
+                    preferredLocale?: "en" | "de";
                 };
             };
         };
         responses: {
-            /** @description User created — verification email sent */
+            /** @description User created (verification may be required depending on SMTP configuration) */
             201: {
                 headers: {
                     [name: string]: unknown;
