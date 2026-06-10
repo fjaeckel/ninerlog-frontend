@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import RegisterPage from '../../pages/auth/RegisterPage';
 import * as useAuthHook from '../../hooks/useAuth';
+import i18n from '../../i18n';
 
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
@@ -43,6 +44,10 @@ describe('RegisterPage', () => {
     vi.spyOn(useAuthHook, 'useRegister').mockReturnValue(mockRegister as any);
   });
 
+  afterEach(() => {
+    void i18n.changeLanguage('en');
+  });
+
   it('renders registration form', () => {
     renderWithProviders(<RegisterPage />);
     
@@ -50,6 +55,7 @@ describe('RegisterPage', () => {
     expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^password/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/language/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
 
@@ -84,6 +90,7 @@ describe('RegisterPage', () => {
         email: 'john@example.com',
         password: 'password1234',
         name: 'John Doe',
+        preferredLocale: 'en',
       });
     });
   });
@@ -115,5 +122,26 @@ describe('RegisterPage', () => {
     
     // The error should appear after async mutation rejection
     await screen.findByText(/email already exists/i);
+  });
+
+  it('submits the selected language as preferredLocale', async () => {
+    const user = userEvent.setup();
+    mockRegister.mutateAsync.mockResolvedValueOnce({});
+
+    renderWithProviders(<RegisterPage />);
+
+    await user.type(screen.getByLabelText(/name/i), 'John Doe');
+    await user.type(screen.getByLabelText(/^email/i), 'john@example.com');
+    await user.type(screen.getByLabelText(/^password/i), 'password1234');
+    await user.type(screen.getByLabelText(/confirm password/i), 'password1234');
+    const submitButton = screen.getByRole('button', { name: /create account/i });
+    await user.selectOptions(screen.getByLabelText(/language/i), 'de');
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockRegister.mutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ preferredLocale: 'de' }),
+      );
+    });
   });
 });
