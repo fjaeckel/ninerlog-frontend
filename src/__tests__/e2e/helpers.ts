@@ -198,7 +198,8 @@ export async function login(page: Page, email: string, password = TEST_PASSWORD)
  */
 export async function injectAuth(page: Page, auth: AuthContext): Promise<void> {
   await page.addInitScript(
-    ([authJson, onboardingJson]: [string, string]) => {
+    (args: string[]) => {
+      const [authJson, onboardingJson] = args;
       localStorage.setItem('auth-storage', authJson);
       localStorage.setItem('ninerlog-onboarding', onboardingJson);
     },
