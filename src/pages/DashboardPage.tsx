@@ -198,22 +198,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Time by Authority */}
-      {classStat && classStat.byAuthority.length > 0 && (
-        <div className="card mb-6">
-          <h2 className="section-title mb-4">{t('dashboard:timeByAuthority')}</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {classStat.byAuthority.map((auth) => (
-              <div key={`${auth.authority}-${auth.licenseType}`} className="text-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                <p className="data-lg text-slate-800 dark:text-slate-100">{fmtDuration(auth.minutes)}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{auth.authority} {auth.licenseType}</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 font-mono tabular-nums">{auth.flights} {t('common:flights')}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Recent Flights */}
       <div className="card mb-6">
         <div className="flex justify-between items-center mb-4">
