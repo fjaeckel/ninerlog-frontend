@@ -1,7 +1,14 @@
 name: E2E Tests
 
 on:
+  pull_request:
   workflow_dispatch:
+    inputs:
+      api_ref:
+        description: 'API branch or ref to test against (defaults to main)'
+        required: false
+        default: 'main'
+        type: string
 
 permissions:
   contents: read
@@ -13,10 +20,17 @@ concurrency:
 jobs:
   e2e:
     name: Playwright E2E Tests
-    runs-on: self-hosted
+    runs-on:
+      - self-hosted
+      - docker
     timeout-minutes: 20
 
     steps:
+      - name: Fix workspace permissions (remove root-owned artifacts)
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/work" alpine \
+            sh -c "rm -rf /work/playwright-report /work/test-results /work/ninerlog-api 2>/dev/null || true"
+
       - name: Checkout frontend
         uses: actions/checkout@v6
 
@@ -25,51 +39,45 @@ jobs:
         with:
           repository: fjaeckel/ninerlog-api
           token: ${{ secrets.PROJECT_REPO_TOKEN }}
-          path: ../ninerlog-api
+          path: ./ninerlog-api
+          ref: ${{ inputs.api_ref || 'main' }}
 
-      - name: Start API + Database
-        run: docker compose -f docker-compose.test.yml --profile e2e up -d postgres-test api-test
+      - name: Export runner UID/GID for compose
+        run: |
+          echo "HOST_UID=$(id -u)" >> "$GITHUB_ENV"
+          echo "HOST_GID=$(id -g)" >> "$GITHUB_ENV"
+
+      - name: Start all services
+        run: docker compose -f docker-compose.test.yml -f docker-compose.actions.yml --profile e2e up -d
         env:
           DOCKER_BUILDKIT: 1
 
-      - name: Wait for API to be healthy
+      - name: Wait for all services to be healthy
         run: |
-          for i in $(seq 1 30); do
-            if docker compose -f docker-compose.test.yml exec -T api-test wget --no-verbose --tries=1 --spider http://localhost:3000/health 2>/dev/null; then
-              echo "API is healthy"
+          for i in $(seq 1 60); do
+            if docker compose -f docker-compose.test.yml -f docker-compose.actions.yml ps | grep -q "frontend-dev.*healthy"; then
+              echo "All services are healthy"
               exit 0
             fi
-            echo "Waiting for API... ($i/30)"
+            echo "Waiting for services... ($i/60)"
             sleep 2
           done
-          echo "API failed to start"
-          docker compose -f docker-compose.test.yml logs api-test
+          echo "Services failed to start"
+          docker compose -f docker-compose.test.yml -f docker-compose.actions.yml --profile e2e logs
           exit 1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
       - name: Run E2E tests
-        run: npx playwright test --project=chromium
         env:
-          VITE_API_BASE_URL: http://localhost:3000/api/v1
+          PLAYWRIGHT_WORKERS: '8'
+        run: docker compose -f docker-compose.test.yml -f docker-compose.actions.yml run --rm frontend-e2e
 
       - name: Dump logs on failure
         if: failure()
-        run: docker compose -f docker-compose.test.yml --profile e2e logs
+        run: docker compose -f docker-compose.test.yml -f docker-compose.actions.yml --profile e2e logs
 
       - name: Stop services
         if: always()
-        run: docker compose -f docker-compose.test.yml --profile e2e down -v
+        run: docker compose -f docker-compose.test.yml -f docker-compose.actions.yml --profile e2e down -v
 
       - name: Upload test report
         uses: actions/upload-artifact@v7
