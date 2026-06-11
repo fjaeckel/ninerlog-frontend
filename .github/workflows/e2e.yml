@@ -77,7 +77,14 @@ jobs:
 
       - name: Stop services
         if: always()
-        run: docker compose -f docker-compose.test.yml -f docker-compose.actions.yml --profile e2e down -v
+        run: docker compose -f docker-compose.test.yml -f docker-compose.actions.yml --profile e2e down -v --rmi local
+
+      - name: Reap stale docker resources (free disk)
+        if: always()
+        run: |
+          docker image prune -af
+          docker builder prune -af
+          docker volume prune -f
 
       - name: Upload test report
         uses: actions/upload-artifact@v7
