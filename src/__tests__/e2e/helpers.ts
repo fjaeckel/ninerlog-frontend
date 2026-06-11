@@ -15,6 +15,32 @@ export function uniqueEmail(): string {
 
 const TEST_PASSWORD = 'TestPassword123!';
 
+function buildOnboardingStorage(userId: string): string {
+  return JSON.stringify({
+    state: {
+      completedUserIds: [userId],
+    },
+    version: 0,
+  });
+}
+
+async function dismissOnboardingTourIfPresent(page: Page): Promise<void> {
+  const dialog = page.locator('[role="dialog"][aria-label="Welcome tour"]');
+  const isVisible = await dialog.isVisible().catch(() => false);
+  if (!isVisible) return;
+
+  const skipButton = dialog.getByRole('button', { name: /skip|close|finish/i }).first();
+  if (await skipButton.isVisible().catch(() => false)) {
+    await skipButton.click();
+  } else {
+    await page.keyboard.press('Escape');
+  }
+
+  await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {
+    // If a localized label prevents matching, don't fail the whole test here.
+  });
+}
+
 // MailPit base URL — reachable from inside the e2e network as `mailpit-test`,
 // or via localhost when developers run Playwright outside Docker. The
 // PLAYWRIGHT_MAILPIT_URL env var lets CI override this without code changes.
@@ -100,12 +126,13 @@ export async function createTestUser(request: import('@playwright/test').APIRequ
     throw new Error(`Email verification failed: ${verifyRes.status()} ${await verifyRes.text()}`);
   }
   const verifyData = await verifyRes.json();
+  const userId = verifyData.user?.id || '';
 
   return {
     email,
     password: TEST_PASSWORD,
     accessToken: verifyData.accessToken,
-    userId: verifyData.user?.id || '',
+    userId,
   };
 }
 
@@ -133,6 +160,7 @@ export async function registerAndLogin(page: Page): Promise<AuthContext> {
   await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
   // Wait for the Layout to be fully rendered (header with Logout button)
   await expect(page.locator('button', { hasText: 'Logout' })).toBeVisible({ timeout: 10000 });
+  await dismissOnboardingTourIfPresent(page);
 
   // Get a fresh token by logging in via API (the UI registration token may not be accessible)
   const loginRes = await page.request.post('/api/v1/auth/login', {
@@ -141,6 +169,12 @@ export async function registerAndLogin(page: Page): Promise<AuthContext> {
   const loginData = await loginRes.json();
   const accessToken = loginData.accessToken || '';
   const userId = loginData.user?.id || '';
+
+  // Prevent the first-login welcome tour from intercepting interactions
+  // in tests that navigate immediately after authentication.
+  await page.evaluate((onboardingJson: string) => {
+    localStorage.setItem('ninerlog-onboarding', onboardingJson);
+  }, buildOnboardingStorage(userId));
 
   return { email, password: TEST_PASSWORD, accessToken, userId };
 }
@@ -155,6 +189,7 @@ export async function login(page: Page, email: string, password = TEST_PASSWORD)
   await page.getByRole('button', { name: /log in/i }).click();
   await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
   await expect(page.locator('button', { hasText: 'Logout' })).toBeVisible({ timeout: 10000 });
+  await dismissOnboardingTourIfPresent(page);
 }
 
 /**
@@ -163,19 +198,26 @@ export async function login(page: Page, email: string, password = TEST_PASSWORD)
  */
 export async function injectAuth(page: Page, auth: AuthContext): Promise<void> {
   await page.addInitScript(
-    (authJson: string) => {
+    (args: string[]) => {
+      const [authJson, onboardingJson] = args;
       localStorage.setItem('auth-storage', authJson);
+      localStorage.setItem('ninerlog-onboarding', onboardingJson);
     },
-    JSON.stringify({
-      state: {
-        isAuthenticated: true,
-        accessToken: auth.accessToken,
-        user: { id: auth.userId, email: auth.email, name: 'E2E Test Pilot' },
-      },
-      version: 0,
-    }),
+    [
+      JSON.stringify({
+        state: {
+          isAuthenticated: true,
+          accessToken: auth.accessToken,
+          user: { id: auth.userId, email: auth.email, name: 'E2E Test Pilot' },
+        },
+        version: 0,
+      }),
+      buildOnboardingStorage(auth.userId),
+    ],
   );
   await page.goto('/dashboard');
+  await dismissOnboardingTourIfPresent(page);
+  await page.getByRole('link', { name: /dashboard|credentials|aircraft|licenses|flights/i }).first().waitFor({ state: 'visible', timeout: 10000 });
 }
 
 /**
