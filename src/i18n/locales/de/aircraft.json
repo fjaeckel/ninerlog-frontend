@@ -58,6 +58,8 @@
     "MEP_SEA": "MEP (See) — Mehrmotorig Kolben",
     "SET_LAND": "SET (Land) — Einmotorig Turboprop",
     "SET_SEA": "SET (See) — Einmotorig Turboprop",
-    "TMG": "TMG — Reisemotorsegler"
+    "TMG": "TMG — Reisemotorsegler",
+    "GLIDER": "GLIDER — Segelflugzeug",
+    "OTHER": "OTHER — Sonstige"
   }
 }
