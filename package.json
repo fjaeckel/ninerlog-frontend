@@ -86,7 +86,7 @@
   },
   "overrides": {
     "serialize-javascript": ">=7.0.5",
-    "tmp": ">=0.2.6",
+    "tmp": ">=0.2.7",
     "uuid": ">=14.0.0"
   },
   "engines": {
