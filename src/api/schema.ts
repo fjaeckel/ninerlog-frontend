@@ -1251,6 +1251,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/flight-sessions/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get current flight session
+         * @description Returns the authenticated user's open (in-progress) flight session, if any.
+         */
+        get: operations["getCurrentFlightSession"];
+        put?: never;
+        post?: never;
+        /**
+         * Discard current flight session
+         * @description Discards the open flight session (e.g. after an accidental off-block tap). No flight log entry is created.
+         */
+        delete: operations["discardCurrentFlightSession"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/flight-sessions/current/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a flight session event
+         * @description Tap-to-log endpoint for recording block/flight time events live from a mobile device.
+         *
+         *     - `offblock` opens a new session (or returns the existing open one — double-taps are harmless).
+         *     - `takeoff` and `landing` stamp the airborne times on the open session.
+         *     - `onblock` stamps the on-block time, closes the session, and converts it into a
+         *       regular flight log entry (returned via `flightId`). The created flight is prefilled
+         *       with block/flight times, block-time-derived total time, and auto-calculated fields;
+         *       the pilot completes the remaining details later in the normal flight edit flow.
+         *
+         *     Each event type is recorded at most once per session: repeating an event returns the
+         *     session unchanged, which makes offline retries safe.
+         *
+         *     The event timestamp defaults to the server clock; clients that queued the tap offline
+         *     should send `occurredAt` with the instant the tap actually happened.
+         *
+         *     When `lat`/`lon` are provided, the nearest airport (within 30 NM) is resolved and used
+         *     as the departure airport (for `offblock`/`takeoff`) or arrival airport
+         *     (for `landing`/`onblock`).
+         */
+        post: operations["recordFlightSessionEvent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/audit-log": {
         parameters: {
             query?: never;
@@ -2916,6 +2977,93 @@ export interface components {
                  */
                 totalPages: number;
             };
+        };
+        FlightSession: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            /**
+             * @description Session lifecycle state. `onblock` events complete the session.
+             * @enum {string}
+             */
+            status: "open" | "completed" | "discarded";
+            /**
+             * @description Aircraft registration; required by the time the session goes on blocks
+             * @example D-EFGH
+             */
+            aircraftReg?: string | null;
+            /**
+             * @description Departure airport, provided explicitly or resolved from GPS coordinates
+             * @example EDDF
+             */
+            departureIcao?: string | null;
+            /**
+             * @description Arrival airport, provided explicitly or resolved from GPS coordinates
+             * @example EDDH
+             */
+            arrivalIcao?: string | null;
+            /**
+             * Format: date-time
+             * @description Off-block instant (chocks off / engine start) in UTC
+             */
+            offBlockAt?: string | null;
+            /**
+             * Format: date-time
+             * @description Takeoff instant in UTC
+             */
+            takeoffAt?: string | null;
+            /**
+             * Format: date-time
+             * @description Landing instant in UTC
+             */
+            landingAt?: string | null;
+            /**
+             * Format: date-time
+             * @description On-block instant (chocks on / engine shutdown) in UTC
+             */
+            onBlockAt?: string | null;
+            /**
+             * Format: uuid
+             * @description ID of the flight log entry created when the session was completed
+             */
+            flightId?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        FlightSessionEvent: {
+            /**
+             * @description Which block/flight time instant this event records
+             * @enum {string}
+             */
+            type: "offblock" | "takeoff" | "landing" | "onblock";
+            /**
+             * Format: date-time
+             * @description When the event actually happened (UTC). Defaults to the server clock; send this when the tap was queued offline.
+             */
+            occurredAt?: string | null;
+            /**
+             * @description Aircraft registration. Can be sent with any event; required by the time the session goes on blocks.
+             * @example D-EFGH
+             */
+            aircraftReg?: string | null;
+            /**
+             * @description Explicit airport for this event (departure for offblock/takeoff, arrival for landing/onblock). Takes precedence over lat/lon.
+             * @example EDDF
+             */
+            icao?: string | null;
+            /**
+             * Format: double
+             * @description GPS latitude used to resolve the nearest airport
+             */
+            lat?: number | null;
+            /**
+             * Format: double
+             * @description GPS longitude used to resolve the nearest airport
+             */
+            lon?: number | null;
         };
         Airport: {
             /**
@@ -6381,6 +6529,92 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    getCurrentFlightSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The open flight session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightSession"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    discardCurrentFlightSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session discarded */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    recordFlightSessionEvent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FlightSessionEvent"];
+            };
+        };
+        responses: {
+            /** @description Event applied to the existing session (or ignored as a duplicate) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightSession"];
+                };
+            };
+            /** @description New session opened (offblock) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightSession"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            /** @description No open session for takeoff/landing/onblock events */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     listAdminAuditLog: {
