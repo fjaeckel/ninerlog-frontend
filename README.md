@@ -110,6 +110,7 @@ docker build -t ninerlog-frontend .
 
 ## Documentation
 
+- [Developer Guide](docs/DEVELOPER_GUIDE.md) — In-depth architecture, styling system, and how to add new pages, hooks, forms, and components
 - [Testing Guide](docs/TESTING.md) — Unit (Vitest) and E2E (Playwright) testing
 - [Internationalization Guide](docs/I18N_DEVELOPER_GUIDE.md) — Adding translatable strings
 - [Translation Guide](docs/TRANSLATION_GUIDE.md) — Contributing translations (currently EN + DE)

@@ -3927,6 +3927,8 @@ export interface components {
              * @description Last successful login timestamp
              */
             lastLoginAt?: string;
+            /** @description Whether the user has verified their email address and completed sign-up */
+            emailVerified: boolean;
             twoFactorEnabled: boolean;
             /** @description Whether the account is disabled by admin */
             disabled: boolean;

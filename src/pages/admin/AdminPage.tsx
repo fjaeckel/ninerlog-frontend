@@ -217,7 +217,12 @@ function UsersTab() {
               {data?.data?.map((u) => (
                 <tr key={u.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td className="px-4 py-3"><div className="font-medium text-slate-700 dark:text-slate-200">{u.name}</div><div className="text-xs text-slate-400">{u.email}</div></td>
-                  <td className="px-4 py-3">{u.disabled ? <span className="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs">{t('admin.users.disabled')}</span> : u.locked ? <span className="badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs">{t('admin.users.locked')}</span> : <span className="badge badge-current text-xs">{t('admin.users.active')}</span>}</td>
+                  <td className="px-4 py-3"><div className="flex flex-col items-start gap-1">
+                    {u.disabled ? <span className="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs">{t('admin.users.disabled')}</span> : u.locked ? <span className="badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs">{t('admin.users.locked')}</span> : <span className="badge badge-current text-xs">{t('admin.users.active')}</span>}
+                    {u.emailVerified
+                      ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.verified')}</span>
+                      : <span className="text-amber-600 dark:text-amber-400 text-xs font-medium" title={t('admin.users.unverifiedTitle')}>{t('admin.users.unverified')}</span>}
+                  </div></td>
                   <td className="px-4 py-3">{u.twoFactorEnabled ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.enabled')}</span> : <span className="text-slate-400 text-xs">{t('admin.users.off')}</span>}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{u.flightCount}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{u.aircraftCount}</td>
@@ -246,7 +251,12 @@ function UsersTab() {
                   <div className="font-medium text-slate-700 dark:text-slate-200">{u.name}</div>
                   <div className="text-xs text-slate-400">{u.email}</div>
                 </div>
-                <div>{u.disabled ? <span className="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs">{t('admin.users.disabled')}</span> : u.locked ? <span className="badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs">{t('admin.users.locked')}</span> : <span className="badge badge-current text-xs">{t('admin.users.active')}</span>}</div>
+                <div className="flex flex-col items-end gap-1">
+                  {u.disabled ? <span className="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs">{t('admin.users.disabled')}</span> : u.locked ? <span className="badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs">{t('admin.users.locked')}</span> : <span className="badge badge-current text-xs">{t('admin.users.active')}</span>}
+                  {u.emailVerified
+                    ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.verified')}</span>
+                    : <span className="text-amber-600 dark:text-amber-400 text-xs font-medium">{t('admin.users.unverified')}</span>}
+                </div>
               </div>
               <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                 <span>{u.flightCount} {t('admin.users.flights')}</span>
