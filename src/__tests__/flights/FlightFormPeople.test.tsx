@@ -29,37 +29,35 @@ vi.mock('../../hooks/useContacts', () => ({
   useCreateContact: () => ({ mutate: vi.fn() }),
 }));
 
-describe('FlightForm People Section', () => {
+describe('FlightForm Crew Section', () => {
   const mockOnClose = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders People on Board section collapsed by default', () => {
+  it('renders Crew section expanded by default (not a collapsible drawer)', () => {
     render(<FlightForm onClose={mockOnClose} />);
-    expect(screen.getByText('People on Board')).toBeInTheDocument();
-    // When collapsed, the Add button should not be visible
-    expect(screen.queryByText('Add')).not.toBeInTheDocument();
-  });
-
-  it('expands People section when clicked', async () => {
-    const user = userEvent.setup();
-    render(<FlightForm onClose={mockOnClose} />);
-    await user.click(screen.getByText('People on Board'));
-    // After expanding, the crew name input should be visible
+    expect(screen.getByText('Crew')).toBeInTheDocument();
+    // Crew is always visible — the add-name input should be present without any expand click
     expect(screen.getByPlaceholderText('Person name')).toBeInTheDocument();
   });
 
-  it('renders Advanced Times section collapsed by default', () => {
+  it('renders Instrument / IFR section collapsed by default', () => {
     render(<FlightForm onClose={mockOnClose} />);
-    expect(screen.getByText('Advanced Times')).toBeInTheDocument();
+    expect(screen.getByText('Instrument / IFR')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/ifr time/i)).not.toBeInTheDocument();
   });
 
-  it('expands Advanced Times and shows simulated/ground fields', async () => {
+  it('renders Training & Currency section collapsed by default', () => {
+    render(<FlightForm onClose={mockOnClose} />);
+    expect(screen.getByText('Training & Currency')).toBeInTheDocument();
+  });
+
+  it('expands Training & Currency and shows simulated/ground fields', async () => {
     const user = userEvent.setup();
     render(<FlightForm onClose={mockOnClose} />);
-    await user.click(screen.getByText('Advanced Times'));
+    await user.click(screen.getByText('Training & Currency'));
     expect(screen.getByLabelText('Simulated Flight Time')).toBeInTheDocument();
     expect(screen.getByLabelText('Ground Training Time')).toBeInTheDocument();
   });
@@ -72,24 +70,17 @@ describe('FlightForm People Section', () => {
   it('adds a crew member', async () => {
     const user = userEvent.setup();
     render(<FlightForm onClose={mockOnClose} />);
-    // Expand people section
-    await user.click(screen.getByText('People on Board'));
-    // Type a name
+    // Crew section is already expanded — no need to click to reveal it
     const nameInput = screen.getByPlaceholderText('Person name');
     await user.type(nameInput, 'John Smith');
-    // Click add
     const addBtn = screen.getByRole('button', { name: /add/i });
     await user.click(addBtn);
-    // Verify crew member appears
     expect(screen.getByText('John Smith')).toBeInTheDocument();
   });
 
   it('removes a crew member', async () => {
     const user = userEvent.setup();
     render(<FlightForm onClose={mockOnClose} />);
-    // Expand people section
-    await user.click(screen.getByText('People on Board'));
-    // Add a crew member
     await user.type(screen.getByPlaceholderText('Person name'), 'Jane Doe');
     await user.click(screen.getByRole('button', { name: /add/i }));
     expect(screen.getByText('Jane Doe')).toBeInTheDocument();
@@ -101,7 +92,6 @@ describe('FlightForm People Section', () => {
   it('shows crew role badge', async () => {
     const user = userEvent.setup();
     render(<FlightForm onClose={mockOnClose} />);
-    await user.click(screen.getByText('People on Board'));
     await user.type(screen.getByPlaceholderText('Person name'), 'Test Pilot');
     // Select Examiner role (unique text)
     const roleSelect = screen.getByDisplayValue('Passenger');
@@ -114,16 +104,11 @@ describe('FlightForm People Section', () => {
     expect(crewRow).toBeTruthy();
   });
 
-  it('shows crew count badge when collapsed', async () => {
+  it('shows crew count badge next to the Crew heading', async () => {
     const user = userEvent.setup();
     render(<FlightForm onClose={mockOnClose} />);
-    // Expand, add, collapse
-    await user.click(screen.getByText('People on Board'));
     await user.type(screen.getByPlaceholderText('Person name'), 'Person 1');
     await user.click(screen.getByRole('button', { name: /add/i }));
-    // Collapse the section
-    await user.click(screen.getByText('People on Board'));
-    // Should still show count badge
     expect(screen.getByText('1')).toBeInTheDocument();
   });
 });
