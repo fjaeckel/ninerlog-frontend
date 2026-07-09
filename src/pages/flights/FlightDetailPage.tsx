@@ -62,6 +62,14 @@ export default function FlightDetailPage() {
     (flight.approaches && flight.approaches.length > 0) ||
     !!flight.isIpc;
 
+  const hasTrainingData =
+    (flight.simulatedFlightTime ?? 0) > 0 ||
+    (flight.groundTrainingTime ?? 0) > 0 ||
+    (flight.multiPilotTime ?? 0) > 0 ||
+    !!flight.fstdType ||
+    !!flight.isFlightReview ||
+    !!flight.isProficiencyCheck;
+
   const handleDelete = async () => {
     await deleteFlight.mutateAsync(flight.id);
     navigate('/flights');
@@ -77,8 +85,6 @@ export default function FlightDetailPage() {
     { label: t('fields.nightTime'), value: flight.nightTime },
     { label: t('detail.sicTime'), value: flight.sicTime || 0 },
     { label: t('detail.dualGiven'), value: flight.dualGivenTime || 0 },
-    { label: t('detail.simulatedFlight'), value: flight.simulatedFlightTime || 0 },
-    { label: t('detail.groundTraining'), value: flight.groundTrainingTime || 0 },
   ];
 
   return (
@@ -180,6 +186,9 @@ export default function FlightDetailPage() {
             {flight.distance > 0 && (
               <DetailRow label={t('fields.distance')} value={`${flight.distance.toFixed(1)} NM`} mono />
             )}
+            {flight.launchMethod && (
+              <DetailRow label={t('fields.launchMethod')} value={t(`launchMethods.${flight.launchMethod === 'self-launch' ? 'selfLaunch' : flight.launchMethod}`, { defaultValue: flight.launchMethod })} />
+            )}
           </dl>
         </div>
 
@@ -195,6 +204,9 @@ export default function FlightDetailPage() {
                 </dd>
               </div>
             ))}
+            {flight.picName && (
+              <DetailRow label={t('fields.picName')} value={flight.picName} />
+            )}
           </dl>
         </div>
 
@@ -272,6 +284,52 @@ export default function FlightDetailPage() {
           </div>
         )}
 
+        {/* Training & Currency */}
+        {hasTrainingData && (
+          <div className="card">
+            <h2 className="section-title mb-4">{t('detail.trainingAndCurrency')}</h2>
+            <dl className="space-y-3">
+              <div className="flex justify-between">
+                <dt className="text-slate-500 dark:text-slate-400">{t('fields.simulatedFlightTime')}</dt>
+                <dd className={`font-medium font-mono tabular-nums ${(flight.simulatedFlightTime ?? 0) > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
+                  {fmtDuration(flight.simulatedFlightTime ?? 0)}
+                </dd>
+              </div>
+              {flight.fstdType && (
+                <DetailRow label={t('fields.fstdType')} value={flight.fstdType} />
+              )}
+              <div className="flex justify-between">
+                <dt className="text-slate-500 dark:text-slate-400">{t('fields.groundTrainingTime')}</dt>
+                <dd className={`font-medium font-mono tabular-nums ${(flight.groundTrainingTime ?? 0) > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
+                  {fmtDuration(flight.groundTrainingTime ?? 0)}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-slate-500 dark:text-slate-400">{t('fields.multiPilotTime')}</dt>
+                <dd className={`font-medium font-mono tabular-nums ${(flight.multiPilotTime ?? 0) > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
+                  {fmtDuration(flight.multiPilotTime ?? 0)}
+                </dd>
+              </div>
+              {flight.isFlightReview && (
+                <div className="flex justify-between">
+                  <dt className="text-slate-500 dark:text-slate-400">{t('fields.isFlightReview')}</dt>
+                  <dd>
+                    <span className="badge-info text-xs">{t('detail.yes')}</span>
+                  </dd>
+                </div>
+              )}
+              {flight.isProficiencyCheck && (
+                <div className="flex justify-between">
+                  <dt className="text-slate-500 dark:text-slate-400">{t('fields.isProficiencyCheck')}</dt>
+                  <dd>
+                    <span className="badge-info text-xs">{t('detail.yes')}</span>
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </div>
+        )}
+
         {/* Remarks & Comments */}
         <div className="card">
           <h2 className="section-title mb-4">{t('detail.remarksAndComments')}</h2>
@@ -294,13 +352,19 @@ export default function FlightDetailPage() {
                 <dd className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{flight.instructorComments}</dd>
               </div>
             )}
+            {flight.endorsements && (
+              <div>
+                <dt className="text-slate-500 dark:text-slate-400 text-sm mb-1">{t('fields.endorsements')}</dt>
+                <dd className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{flight.endorsements}</dd>
+              </div>
+            )}
           </dl>
         </div>
 
         {/* Crew Members */}
         {flight.crewMembers && flight.crewMembers.length > 0 && (
           <div className="card">
-            <h2 className="section-title mb-4">{t('detail.peopleOnBoard')}</h2>
+            <h2 className="section-title mb-4">{t('sections.crew')}</h2>
             <div className="space-y-2">
               {flight.crewMembers.map((member) => (
                 <div key={member.id} className="flex items-center gap-2 text-sm">

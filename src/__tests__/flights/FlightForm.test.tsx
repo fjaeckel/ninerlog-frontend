@@ -181,15 +181,15 @@ describe('FlightForm', () => {
     });
   });
 
-  it('renders time fields in advanced drawer', async () => {
+  it('renders time fields in the Instrument / IFR drawer', async () => {
     const user = userEvent.setup();
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    // IFR Time is inside the collapsed Advanced Times drawer
+    // IFR Time is inside the collapsed Instrument / IFR drawer
     expect(screen.queryByLabelText(/ifr time/i)).not.toBeInTheDocument();
 
-    // Expand Advanced Times
-    await user.click(screen.getByRole('button', { name: /advanced times/i }));
+    // Expand Instrument / IFR
+    await user.click(screen.getByRole('button', { name: /instrument \/ ifr/i }));
 
     expect(screen.getByLabelText(/ifr time/i)).toBeInTheDocument();
   });

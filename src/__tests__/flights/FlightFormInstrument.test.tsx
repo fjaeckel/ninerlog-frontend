@@ -42,22 +42,25 @@ describe('FlightForm Instrument Tracking', () => {
     } as any);
   });
 
-  it('renders instrument tracking fields when advanced section is expanded', async () => {
+  it('renders instrument tracking fields when Instrument / IFR section is expanded', async () => {
     const user = userEvent.setup();
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    // Expand advanced section
-    await user.click(screen.getByText('Advanced Times'));
+    // Expand Instrument / IFR section
+    await user.click(screen.getByText('Instrument / IFR'));
 
     expect(screen.getByLabelText(/actual instrument/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/simulated instrument/i)).toBeInTheDocument();
     expect(screen.getByText('Approaches')).toBeInTheDocument();
     expect(screen.getByLabelText(/holds/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/instrument proficiency check/i)).toBeInTheDocument();
+
+    // Flight Review lives in the separate Training & Currency section
+    await user.click(screen.getByText('Training & Currency'));
     expect(screen.getByLabelText(/flight review/i)).toBeInTheDocument();
   });
 
-  it('does not show instrument fields when advanced section is collapsed', () => {
+  it('does not show instrument fields when Instrument / IFR section is collapsed', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
     expect(screen.queryByLabelText(/actual instrument/i)).not.toBeInTheDocument();
@@ -87,8 +90,8 @@ describe('FlightForm Instrument Tracking', () => {
     fireEvent.change(screen.getByLabelText('Landing'), { target: { value: '16:45' } });
     fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '16:55' } });
 
-    // Expand advanced section and fill instrument fields
-    await user.click(screen.getByText('Advanced Times'));
+    // Expand Instrument / IFR section and fill instrument fields
+    await user.click(screen.getByText('Instrument / IFR'));
 
     fireEvent.change(screen.getByLabelText(/actual instrument/i), { target: { value: '30' } });
     fireEvent.change(screen.getByLabelText(/simulated instrument/i), { target: { value: '18' } });
@@ -98,6 +101,9 @@ describe('FlightForm Instrument Tracking', () => {
     await user.click(addButton); // second approach
     fireEvent.change(screen.getByLabelText(/holds/i), { target: { value: '1' } });
     await user.click(screen.getByLabelText(/instrument proficiency check/i));
+
+    // Expand Training & Currency section for Flight Review
+    await user.click(screen.getByText('Training & Currency'));
     await user.click(screen.getByLabelText(/flight review/i));
 
     fireEvent.submit(screen.getByRole('button', { name: /log flight/i }).closest('form')!);
@@ -165,8 +171,9 @@ describe('FlightForm Instrument Tracking', () => {
 
     renderWithProviders(<FlightForm flightId="flight-1" onClose={mockOnClose} />);
 
-    // Expand advanced section
-    await user.click(screen.getByText('Advanced Times'));
+    // Expand Instrument / IFR and Training & Currency sections
+    await user.click(screen.getByText('Instrument / IFR'));
+    await user.click(screen.getByText('Training & Currency'));
 
     await waitFor(() => {
       expect(screen.getByLabelText(/actual instrument/i)).toHaveValue(30);
@@ -182,7 +189,8 @@ describe('FlightForm Instrument Tracking', () => {
     const user = userEvent.setup();
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
-    await user.click(screen.getByText('Advanced Times'));
+    await user.click(screen.getByText('Instrument / IFR'));
+    await user.click(screen.getByText('Training & Currency'));
 
     expect(screen.getByLabelText(/actual instrument/i)).toHaveValue(0);
     expect(screen.getByLabelText(/simulated instrument/i)).toHaveValue(0);
@@ -196,7 +204,7 @@ describe('FlightForm Instrument Tracking', () => {
   it('renders proficiency check checkbox', async () => {
     const user = userEvent.setup();
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
-    await user.click(screen.getByText('Advanced Times'));
+    await user.click(screen.getByText('Training & Currency'));
     const checkbox = screen.getByLabelText(/proficiency check \(FCL/i);
     expect(checkbox).toBeInTheDocument();
     expect(checkbox).not.toBeChecked();
@@ -205,7 +213,7 @@ describe('FlightForm Instrument Tracking', () => {
   it('can toggle proficiency check checkbox', async () => {
     const user = userEvent.setup();
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
-    await user.click(screen.getByText('Advanced Times'));
+    await user.click(screen.getByText('Training & Currency'));
     const checkbox = screen.getByLabelText(/proficiency check \(FCL/i);
     await user.click(checkbox);
     expect(checkbox).toBeChecked();

@@ -93,8 +93,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     route: true,
     times: true,
     landings: true,
-    people: false,
-    advanced: false,
+    instrument: false,
+    training: false,
     remarks: true,
   });
 
@@ -325,7 +325,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         ...(data.takeoffsDay !== undefined && { takeoffsDay: data.takeoffsDay }),
         ...(data.takeoffsNight !== undefined && { takeoffsNight: data.takeoffsNight }),
         remarks: data.remarks || null,
-        // Auto-derive instructor & PIC names from crew (single source of truth: People on Board).
+        // Auto-derive instructor & PIC names from crew (single source of truth: Crew section).
         instructorName: crewMembers.find((m) => m.role === 'Instructor')?.name ?? null,
         instructorComments: data.instructorComments || null,
         simulatedFlightTime: data.simulatedFlightTime,
@@ -681,99 +681,92 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         </fieldset>
       )}
 
-      {/* People & Crew Section (Collapsible) — right after route */}
+      {/* Crew — always visible: determines auto-calculated Solo/Dual/SIC time, not optional metadata */}
       <fieldset>
-        <button
-          type="button"
-          onClick={() => toggleSection('people')}
-          className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3 w-full text-left"
-        >
-          {expandedSections.people ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          {t('form.peopleOnBoard')}
-          {crewMembers.length > 0 && <span className="badge-info text-xs ml-2">{crewMembers.length}</span>}
-        </button>
-        {expandedSections.people && (
-          <div className="space-y-3">
-            {/* Crew list */}
-            {crewMembers.map((member, idx) => (
-              <div key={idx} className="flex items-center gap-2 text-sm bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2">
-                <span className="badge-info text-xs">{member.role}</span>
-                <span className="flex-1 font-medium text-slate-700 dark:text-slate-200">{member.name}</span>
-                <button
-                  type="button"
-                  onClick={() => setCrewMembers((prev) => prev.filter((_, i) => i !== idx))}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-red-500"
-                  aria-label={`Remove ${member.name}`}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-
-            {/* Add crew member */}
-            <div className="flex flex-wrap gap-2">
-              <div className="flex-1 min-w-[150px] relative">
-                <input
-                  type="text"
-                  value={crewNameInput}
-                  onChange={(e) => { setCrewNameInput(e.target.value); setCrewSearch(e.target.value); }}
-                  placeholder={t('form.personName')}
-                  className="input text-sm"
-                />
-                {contactResults && contactResults.length > 0 && crewNameInput.length >= 2 && (
-                  <div className="absolute z-20 top-full left-0 right-0 mt-1 max-h-32 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg">
-                    {contactResults.map((c) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        className="w-full text-left px-3 py-1.5 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                        onClick={() => { setCrewNameInput(c.name); setCrewSearch(''); }}
-                      >
-                        {c.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <select
-                value={crewRoleInput}
-                onChange={(e) => setCrewRoleInput(e.target.value as CrewRole)}
-                className="input text-sm w-auto"
-              >
-                <option value="PIC">{t('crewRoles.PIC')}</option>
-                <option value="SIC">{t('crewRoles.SIC')}</option>
-                <option value="Instructor">{t('crewRoles.Instructor')}</option>
-                <option value="Student">{t('crewRoles.Student')}</option>
-                <option value="Passenger">{t('crewRoles.Passenger')}</option>
-                <option value="SafetyPilot">{t('crewRoles.SafetyPilot')}</option>
-                <option value="Examiner">{t('crewRoles.Examiner')}</option>
-              </select>
+        <legend className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">
+          {t('sections.crew')}
+          {crewMembers.length > 0 && <span className="badge-info text-xs">{crewMembers.length}</span>}
+        </legend>
+        <div className="space-y-3">
+          {/* Crew list */}
+          {crewMembers.map((member, idx) => (
+            <div key={idx} className="flex items-center gap-2 text-sm bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2">
+              <span className="badge-info text-xs">{member.role}</span>
+              <span className="flex-1 font-medium text-slate-700 dark:text-slate-200">{member.name}</span>
               <button
                 type="button"
-                disabled={!crewNameInput.trim()}
-                onClick={() => {
-                  if (crewNameInput.trim()) {
-                    setCrewMembers((prev) => [...prev, { name: crewNameInput.trim(), role: crewRoleInput, contactId: null }]);
-                    createContact.mutate({ name: crewNameInput.trim() });
-                    setCrewNameInput('');
-                    setCrewSearch('');
-                  }
-                }}
-                className="btn-secondary btn-sm text-xs"
+                onClick={() => setCrewMembers((prev) => prev.filter((_, i) => i !== idx))}
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-red-500"
+                aria-label={`Remove ${member.name}`}
               >
-                <Plus className="w-3.5 h-3.5" /> {t('common:add')}
+                <X className="w-4 h-4" />
               </button>
             </div>
+          ))}
 
-            {/* Instructor comments — only shown when an instructor is on board */}
-            {crewMembers.some((m) => m.role === 'Instructor') && (
-              <div className="mt-3">
-                <label htmlFor="instructorComments" className="form-label">{t('fields.instructorComments', { defaultValue: 'Instructor Comments' })}</label>
-                <input {...register('instructorComments')} id="instructorComments" className="input text-sm" placeholder={t('form.instructorRemarks')} />
-              </div>
-            )}
+          {/* Add crew member */}
+          <div className="flex flex-wrap gap-2">
+            <div className="flex-1 min-w-[150px] relative">
+              <input
+                type="text"
+                value={crewNameInput}
+                onChange={(e) => { setCrewNameInput(e.target.value); setCrewSearch(e.target.value); }}
+                placeholder={t('form.personName')}
+                className="input text-sm"
+              />
+              {contactResults && contactResults.length > 0 && crewNameInput.length >= 2 && (
+                <div className="absolute z-20 top-full left-0 right-0 mt-1 max-h-32 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg">
+                  {contactResults.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className="w-full text-left px-3 py-1.5 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      onClick={() => { setCrewNameInput(c.name); setCrewSearch(''); }}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <select
+              value={crewRoleInput}
+              onChange={(e) => setCrewRoleInput(e.target.value as CrewRole)}
+              className="input text-sm w-auto"
+            >
+              <option value="PIC">{t('crewRoles.PIC')}</option>
+              <option value="SIC">{t('crewRoles.SIC')}</option>
+              <option value="Instructor">{t('crewRoles.Instructor')}</option>
+              <option value="Student">{t('crewRoles.Student')}</option>
+              <option value="Passenger">{t('crewRoles.Passenger')}</option>
+              <option value="SafetyPilot">{t('crewRoles.SafetyPilot')}</option>
+              <option value="Examiner">{t('crewRoles.Examiner')}</option>
+            </select>
+            <button
+              type="button"
+              disabled={!crewNameInput.trim()}
+              onClick={() => {
+                if (crewNameInput.trim()) {
+                  setCrewMembers((prev) => [...prev, { name: crewNameInput.trim(), role: crewRoleInput, contactId: null }]);
+                  createContact.mutate({ name: crewNameInput.trim() });
+                  setCrewNameInput('');
+                  setCrewSearch('');
+                }
+              }}
+              className="btn-secondary btn-sm text-xs"
+            >
+              <Plus className="w-3.5 h-3.5" /> {t('common:add')}
+            </button>
           </div>
-        )}
+
+          {/* Instructor comments — only shown when an instructor is on board */}
+          {crewMembers.some((m) => m.role === 'Instructor') && (
+            <div className="mt-3">
+              <label htmlFor="instructorComments" className="form-label">{t('fields.instructorComments', { defaultValue: 'Instructor Comments' })}</label>
+              <input {...register('instructorComments')} id="instructorComments" className="input text-sm" placeholder={t('form.instructorRemarks')} />
+            </div>
+          )}
+        </div>
       </fieldset>
 
       {/* Total block time (edit mode only) */}
@@ -835,21 +828,35 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               </div>
               <p className="form-helper">{t('form.autoFromCrew')}</p>
             </div>
+            <div>
+              <label className="form-label">{t('fields.sicTime')}</label>
+              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
+                {formatDuration(existingFlight.sicTime || 0, fmt)}h
+              </div>
+              <p className="form-helper">{t('form.autoFromCrew')}</p>
+            </div>
+            <div>
+              <label className="form-label">{t('detail.dualGiven')}</label>
+              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
+                {formatDuration(existingFlight.dualGivenTime || 0, fmt)}h
+              </div>
+              <p className="form-helper">{t('form.autoFromInstructorRole')}</p>
+            </div>
           </div>
         </fieldset>
       )}
 
-      {/* Advanced Times Section (Collapsible) */}
+      {/* Instrument / IFR Section (Collapsible) */}
       <fieldset>
         <button
           type="button"
-          onClick={() => toggleSection('advanced')}
+          onClick={() => toggleSection('instrument')}
           className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3 w-full text-left"
         >
-          {expandedSections.advanced ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          {t('sections.advancedTimes')}
+          {expandedSections.instrument ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          {t('sections.instrument')}
         </button>
-        {expandedSections.advanced && (
+        {expandedSections.instrument && (
           <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
@@ -865,17 +872,123 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               <p className="form-helper">Minutes</p>
             </div>
             <div>
-              <label htmlFor="simulatedFlightTime" className="form-label">{t('fields.simulatedFlightTime')}</label>
+              <label htmlFor="actualInstrumentTime" className="form-label">{t('fields.actualInstrumentTime')}</label>
               <input
-                {...register('simulatedFlightTime', { valueAsNumber: true })}
+                {...register('actualInstrumentTime', { valueAsNumber: true })}
                 type="number"
-                id="simulatedFlightTime"
+                id="actualInstrumentTime"
                 step="1"
                 min="0"
                 className="input"
               />
-              <p className="form-helper">{t('form.minutesFtd')}</p>
+              <p className="form-helper">{t('form.minutesImc')}</p>
             </div>
+            <div>
+              <label htmlFor="simulatedInstrumentTime" className="form-label">{t('fields.simulatedInstrumentTime')}</label>
+              <input
+                {...register('simulatedInstrumentTime', { valueAsNumber: true })}
+                type="number"
+                id="simulatedInstrumentTime"
+                step="1"
+                min="0"
+                className="input"
+              />
+              <p className="form-helper">{t('form.minutesHood')}</p>
+            </div>
+            <div>
+              <label htmlFor="holds" className="form-label">{t('fields.holds')}</label>
+              <input
+                {...register('holds', { valueAsNumber: true })}
+                type="number"
+                id="holds"
+                min="0"
+                className="input"
+              />
+              <p className="form-helper">{t('form.holdingProcedures')}</p>
+            </div>
+          </div>
+
+          {/* Approaches — own subsection */}
+          <div className="mt-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                {t('fields.approaches')} {approaches.length > 0 && <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full">{approaches.length}</span>}
+              </span>
+              <button
+                type="button"
+                onClick={() => setApproaches([...approaches, { type: 'ILS', airport: '', runway: '' }])}
+                className="btn-ghost btn-sm text-xs flex items-center gap-1"
+              >
+                <Plus size={12} /> {t('addApproach')}
+              </button>
+            </div>
+            {approaches.length === 0 && (
+              <p className="text-xs text-slate-400 dark:text-slate-500 italic">{t('form.noApproachesLogged')}</p>
+            )}
+            {approaches.length > 0 && (
+              <div className="space-y-2">
+                <div className="sr-only sm:not-sr-only sm:grid sm:grid-cols-[2fr_1fr_1fr_auto] gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium px-0.5">
+                  <span>{t('approachType')}</span><span>{t('approachAirport')}</span><span>{t('approachRunway')}</span><span></span>
+                </div>
+                {approaches.map((appr, idx) => (
+                  <div key={idx} className="grid grid-cols-[2fr_1fr_1fr_auto] gap-1.5 items-center">
+                    <select
+                      value={appr.type}
+                      onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], type: e.target.value }; setApproaches(a); }}
+                      className="input text-sm py-1.5"
+                    >
+                      {APPROACH_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <input
+                      value={appr.airport}
+                      onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], airport: e.target.value.toUpperCase() }; setApproaches(a); }}
+                      className="input text-sm py-1.5"
+                      placeholder="ICAO"
+                      maxLength={4}
+                    />
+                    <input
+                      value={appr.runway}
+                      onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], runway: e.target.value }; setApproaches(a); }}
+                      className="input text-sm py-1.5"
+                      placeholder="Rwy"
+                      maxLength={4}
+                    />
+                    <button type="button" onClick={() => setApproaches(approaches.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20">
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="form-helper mt-2">{t('form.approachHelper')}</p>
+          </div>
+
+          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer mt-3">
+            <input
+              {...register('isIpc')}
+              type="checkbox"
+              id="isIpc"
+              className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+            />
+            {t('form.ipcLabel')}
+          </label>
+          </>
+        )}
+      </fieldset>
+
+      {/* Training & Currency Section (Collapsible) */}
+      <fieldset>
+        <button
+          type="button"
+          onClick={() => toggleSection('training')}
+          className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3 w-full text-left"
+        >
+          {expandedSections.training ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          {t('sections.training')}
+        </button>
+        {expandedSections.training && (
+          <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
               <label htmlFor="groundTrainingTime" className="form-label">{t('fields.groundTrainingTime')}</label>
               <input
@@ -888,168 +1001,19 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               />
               <p className="form-helper">{t('form.minutes')}</p>
             </div>
-            {isEditing && existingFlight && (
-              <>
-                <div>
-                  <label className="form-label">{t('fields.sicTime')}</label>
-                  <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-                    {formatDuration(existingFlight.sicTime || 0, fmt)}h
-                  </div>
-                  <p className="form-helper">{t('form.autoFromCrew', { defaultValue: 'Auto from crew roles' })}</p>
-                </div>
-                <div>
-                  <label className="form-label">{t('detail.dualGiven')}</label>
-                  <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-                    {formatDuration(existingFlight.dualGivenTime || 0, fmt)}h
-                  </div>
-                  <p className="form-helper">{t('form.autoFromInstructorRole')}</p>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Instrument Tracking */}
-          <div className="mt-4">
-            <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">{t('form.instrumentTracking')}</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div>
-                <label htmlFor="actualInstrumentTime" className="form-label">{t('fields.actualInstrumentTime')}</label>
-                <input
-                  {...register('actualInstrumentTime', { valueAsNumber: true })}
-                  type="number"
-                  id="actualInstrumentTime"
-                  step="1"
-                  min="0"
-                  className="input"
-                />
-                <p className="form-helper">{t('form.minutesImc')}</p>
-              </div>
-              <div>
-                <label htmlFor="simulatedInstrumentTime" className="form-label">{t('fields.simulatedInstrumentTime')}</label>
-                <input
-                  {...register('simulatedInstrumentTime', { valueAsNumber: true })}
-                  type="number"
-                  id="simulatedInstrumentTime"
-                  step="1"
-                  min="0"
-                  className="input"
-                />
-                <p className="form-helper">{t('form.minutesHood')}</p>
-              </div>
-              <div>
-                <label htmlFor="holds" className="form-label">{t('fields.holds')}</label>
-                <input
-                  {...register('holds', { valueAsNumber: true })}
-                  type="number"
-                  id="holds"
-                  min="0"
-                  className="input"
-                />
-                <p className="form-helper">{t('form.holdingProcedures')}</p>
-              </div>
+            <div>
+              <label htmlFor="simulatedFlightTime" className="form-label">{t('fields.simulatedFlightTime')}</label>
+              <input
+                {...register('simulatedFlightTime', { valueAsNumber: true })}
+                type="number"
+                id="simulatedFlightTime"
+                step="1"
+                min="0"
+                className="input"
+              />
+              <p className="form-helper">{t('form.minutesFtd')}</p>
             </div>
-
-            {/* Approaches — own subsection */}
-            <div className="mt-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {t('fields.approaches')} {approaches.length > 0 && <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full">{approaches.length}</span>}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setApproaches([...approaches, { type: 'ILS', airport: '', runway: '' }])}
-                  className="btn-ghost btn-sm text-xs flex items-center gap-1"
-                >
-                  <Plus size={12} /> {t('addApproach')}
-                </button>
-              </div>
-              {approaches.length === 0 && (
-                <p className="text-xs text-slate-400 dark:text-slate-500 italic">{t('form.noApproachesLogged')}</p>
-              )}
-              {approaches.length > 0 && (
-                <div className="space-y-2">
-                  <div className="sr-only sm:not-sr-only sm:grid sm:grid-cols-[2fr_1fr_1fr_auto] gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium px-0.5">
-                    <span>{t('approachType')}</span><span>{t('approachAirport')}</span><span>{t('approachRunway')}</span><span></span>
-                  </div>
-                  {approaches.map((appr, idx) => (
-                    <div key={idx} className="grid grid-cols-[2fr_1fr_1fr_auto] gap-1.5 items-center">
-                      <select
-                        value={appr.type}
-                        onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], type: e.target.value }; setApproaches(a); }}
-                        className="input text-sm py-1.5"
-                      >
-                        {APPROACH_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                      <input
-                        value={appr.airport}
-                        onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], airport: e.target.value.toUpperCase() }; setApproaches(a); }}
-                        className="input text-sm py-1.5"
-                        placeholder="ICAO"
-                        maxLength={4}
-                      />
-                      <input
-                        value={appr.runway}
-                        onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], runway: e.target.value }; setApproaches(a); }}
-                        className="input text-sm py-1.5"
-                        placeholder="Rwy"
-                        maxLength={4}
-                      />
-                      <button type="button" onClick={() => setApproaches(approaches.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20">
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <p className="form-helper mt-2">{t('form.approachHelper')}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mt-3">
-              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-                <input
-                  {...register('isIpc')}
-                  type="checkbox"
-                  id="isIpc"
-                  className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
-                />
-                {t('form.ipcLabel')}
-              </label>
-              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-                <input
-                  {...register('isFlightReview')}
-                  type="checkbox"
-                  id="isFlightReview"
-                  className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
-                />
-                {t('form.flightReviewLabel')}
-              </label>
-              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-                <input
-                  {...register('isProficiencyCheck')}
-                  type="checkbox"
-                  id="isProficiencyCheck"
-                  className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
-                />
-                {t('form.proficiencyCheckLabel')}
-              </label>
-            </div>
-
-            {/* FSTD Type — shown when simulated flight time > 0 */}
-            {(watch('simulatedFlightTime') > 0 || watch('fstdType')) && (
-              <div className="mt-3">
-                <label htmlFor="fstdType" className="form-label">{t('fields.fstdType')}</label>
-                <input
-                  {...register('fstdType')}
-                  id="fstdType"
-                  className="input"
-                  placeholder="e.g. FNPT II, FFS A320, BATD"
-                />
-                <p className="form-helper">{t('form.fstdHelper')}</p>
-              </div>
-            )}
-
-            {/* Multi-Pilot Time */}
-            <div className="mt-3">
+            <div>
               <label htmlFor="multiPilotTime" className="form-label">{t('fields.multiPilotTime')}</label>
               <input
                 {...register('multiPilotTime', { valueAsNumber: true })}
@@ -1061,6 +1025,41 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               />
               <p className="form-helper">{t('form.multiPilotHelper')}</p>
             </div>
+          </div>
+
+          {/* FSTD Type — shown when simulated flight time > 0 */}
+          {(watch('simulatedFlightTime') > 0 || watch('fstdType')) && (
+            <div className="mt-3">
+              <label htmlFor="fstdType" className="form-label">{t('fields.fstdType')}</label>
+              <input
+                {...register('fstdType')}
+                id="fstdType"
+                className="input"
+                placeholder="e.g. FNPT II, FFS A320, BATD"
+              />
+              <p className="form-helper">{t('form.fstdHelper')}</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+              <input
+                {...register('isFlightReview')}
+                type="checkbox"
+                id="isFlightReview"
+                className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+              />
+              {t('form.flightReviewLabel')}
+            </label>
+            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+              <input
+                {...register('isProficiencyCheck')}
+                type="checkbox"
+                id="isProficiencyCheck"
+                className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+              />
+              {t('form.proficiencyCheckLabel')}
+            </label>
           </div>
           </>
         )}
