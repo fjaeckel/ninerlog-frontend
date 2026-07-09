@@ -56,6 +56,32 @@
   "windowOpensLabel": "Experience window opens {{date}}",
   "windowClosedHint": "Recently revalidated — flights logged before this date don't count toward the next revalidation.",
   "launchesCount": "{{current}} / {{required}} launches",
+  "expiryBanner": {
+    "headingExpired": "Action needed to fly again",
+    "headingExpiring": "Renewal coming up",
+    "subtitle_one": "{{count}} item needs action to stay current.",
+    "subtitle_other": "{{count}} items need action to stay current.",
+    "showMore": "Show {{count}} more",
+    "showLess": "Show less",
+    "nextSteps": {
+      "training_flight": {
+        "expiring": "Fly the required hours, landings and refresher training with an instructor before the expiry date to revalidate without a check.",
+        "expired": "Contact an instructor or training organisation — renewal now requires refresher training and a proficiency check with an examiner."
+      },
+      "proficiency_check": {
+        "expiring": "Book a proficiency check with an examiner before the expiry date.",
+        "expired": "Book a proficiency check (or IPC) with an examiner or instructor to reactivate it. Refresher training may also be required."
+      },
+      "flight_review": {
+        "expiring": "Schedule a flight review (1h ground + 1h flight) with a CFI before it's due.",
+        "expired": "You're overdue for a flight review — schedule one with a CFI before acting as PIC."
+      },
+      "generic": {
+        "expiring": "Complete the requirements shown below before the expiry date.",
+        "expired": "This has expired — check the requirements below or contact your instructor/examiner to renew it."
+      }
+    }
+  },
   "ruleDescriptions": {
     "easa_sep_tmg": "Requires 12h total flight time + 6h as PIC + 12 takeoffs & landings + 1h refresher training with instructor within the 12 months preceding the expiry date of the rating (EASA FCL.740.A(b)(1))",
     "easa_mep_set": "Requires proficiency check, or 10 route sectors + 1h refresher training with instructor within the 12 months preceding the expiry date (EASA FCL.740.A(b)(2))",

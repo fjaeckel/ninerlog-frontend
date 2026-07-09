@@ -56,6 +56,32 @@
   "windowOpensLabel": "Erfahrungs-Zeitfenster öffnet am {{date}}",
   "windowClosedHint": "Kürzlich verlängert — Flüge vor diesem Datum zählen nicht für die nächste Verlängerung.",
   "launchesCount": "{{current}} / {{required}} Starts",
+  "expiryBanner": {
+    "headingExpired": "Handlungsbedarf, um wieder fliegen zu dürfen",
+    "headingExpiring": "Verlängerung steht an",
+    "subtitle_one": "{{count}} Punkt erfordert eine Maßnahme, um gültig zu bleiben.",
+    "subtitle_other": "{{count}} Punkte erfordern eine Maßnahme, um gültig zu bleiben.",
+    "showMore": "{{count}} weitere anzeigen",
+    "showLess": "Weniger anzeigen",
+    "nextSteps": {
+      "training_flight": {
+        "expiring": "Absolvieren Sie die erforderlichen Flugstunden, Landungen und die Auffrischungsschulung mit einem Fluglehrer vor dem Ablaufdatum, um ohne Überprüfung zu verlängern.",
+        "expired": "Kontaktieren Sie einen Fluglehrer oder eine ATO — für die Wiederinkraftsetzung sind jetzt Auffrischungsschulung und eine Befähigungsüberprüfung durch einen Prüfer erforderlich."
+      },
+      "proficiency_check": {
+        "expiring": "Vereinbaren Sie vor dem Ablaufdatum eine Befähigungsüberprüfung mit einem Prüfer.",
+        "expired": "Vereinbaren Sie eine Befähigungsüberprüfung (bzw. IPC) mit einem Prüfer oder Fluglehrer zur Wiederinkraftsetzung. Zusätzlich kann Auffrischungsschulung erforderlich sein."
+      },
+      "flight_review": {
+        "expiring": "Vereinbaren Sie rechtzeitig eine Flugüberprüfung (1h Theorie + 1h Flug) mit einem Fluglehrer.",
+        "expired": "Ihre Flugüberprüfung ist überfällig — vereinbaren Sie eine mit einem Fluglehrer, bevor Sie als PIC fliegen."
+      },
+      "generic": {
+        "expiring": "Erfüllen Sie die unten aufgeführten Anforderungen vor dem Ablaufdatum.",
+        "expired": "Dies ist abgelaufen — prüfen Sie die Anforderungen unten oder kontaktieren Sie Ihren Fluglehrer/Prüfer zur Verlängerung."
+      }
+    }
+  },
   "ruleDescriptions": {
     "easa_sep_tmg": "Erfordert 12h Gesamtflugzeit + 6h als PIC + 12 Starts & Landungen + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum der Berechtigung (EASA FCL.740.A(b)(1))",
     "easa_mep_set": "Erfordert Befähigungsüberprüfung oder 10 Streckenabschnitte + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum (EASA FCL.740.A(b)(2))",

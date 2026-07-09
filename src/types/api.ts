@@ -268,6 +268,8 @@ export interface ClassRatingCurrency {
   windowOpen?: boolean;
   message: string;
   ruleDescription?: string;
+  /** Key into currency.json `ruleDescriptions` (e.g. "easa_sep_tmg") identifying which revalidation/renewal rule applies. */
+  ruleDescriptionKey?: string;
   progress?: CurrencyProgress;
   requirements?: CurrencyRequirement[];
   launchMethodCurrency?: LaunchMethodCurrency[];

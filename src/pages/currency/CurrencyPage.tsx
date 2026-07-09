@@ -4,6 +4,7 @@ import { useAllCurrencyStatus } from '../../hooks/useCurrency';
 import { useCredentials } from '../../hooks/useCredentials';
 import { useLicenses } from '../../hooks/useLicenses';
 import { CurrencyCard } from '../../components/currency/CurrencyCard';
+import { CurrencyExpiryBanner } from '../../components/currency/CurrencyExpiryBanner';
 import { ChevronDown, ChevronRight, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { isPast, differenceInDays } from 'date-fns';
 import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
@@ -89,6 +90,10 @@ export default function CurrencyPage() {
 
       {isLoading && (
         <div className="text-center py-12 text-slate-400 dark:text-slate-500">{t('loading')}</div>
+      )}
+
+      {!isLoading && currencyStatus && (
+        <CurrencyExpiryBanner ratings={currencyStatus.ratings} flightReview={currencyStatus.flightReview} />
       )}
 
       {/* Class Rating Currency — grouped by license */}
