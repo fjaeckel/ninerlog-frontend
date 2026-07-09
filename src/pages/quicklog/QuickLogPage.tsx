@@ -6,7 +6,8 @@ import {
 } from 'lucide-react';
 import { PageWrapper, PageHeader } from '../../components/ui/PageWrapper';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { useAircraft } from '../../hooks/useAircraft';
+import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
+import { extractApiError } from '../../lib/errors';
 import {
   useCurrentFlightSession,
   useRecordFlightSessionEvent,
@@ -20,6 +21,7 @@ import {
 import { loadQuickLogQueue } from '../../lib/quickLogQueue';
 
 const LAST_REG_KEY = 'ninerlog.quicklog.lastReg';
+const NEW_AIRCRAFT_OPTION = '__new__';
 
 // Best-effort GPS fix: resolves null rather than blocking the tap when the
 // phone can't produce a position quickly (cockpit, airplane mode, denied).
@@ -73,6 +75,7 @@ export default function QuickLogPage() {
   const { t } = useTranslation(['quicklog', 'common']);
   const { data: session, isLoading } = useCurrentFlightSession();
   const { data: aircraft } = useAircraft();
+  const createAircraft = useCreateAircraft();
   const recordEvent = useRecordFlightSessionEvent();
   const discardSession = useDiscardFlightSession();
   useQuickLogQueueSync();
@@ -83,6 +86,14 @@ export default function QuickLogPage() {
   const [queuedCount, setQueuedCount] = useState(() => loadQuickLogQueue().length);
   const [completedFlightId, setCompletedFlightId] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
+
+  // Quick-add new aircraft state
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [quickAddReg, setQuickAddReg] = useState('');
+  const [quickAddType, setQuickAddType] = useState('');
+  const [quickAddMake, setQuickAddMake] = useState('');
+  const [quickAddModel, setQuickAddModel] = useState('');
+  const [quickAddError, setQuickAddError] = useState<string | null>(null);
 
   const openSession = session?.status === 'open' ? session : null;
   const nextEvent = nextEventFor(openSession);
@@ -97,6 +108,40 @@ export default function QuickLogPage() {
   // Single-plane pilots get their aircraft preselected without an extra tap
   const effectiveReg = selectedReg || (aircraft?.length === 1 ? aircraft[0].registration : '');
   const activeReg = openSession?.aircraftReg ?? effectiveReg;
+
+  const handleAircraftSelect = (value: string) => {
+    if (value === NEW_AIRCRAFT_OPTION) {
+      setShowQuickAdd(true);
+      return;
+    }
+    setSelectedReg(value);
+    setShowQuickAdd(false);
+  };
+
+  const handleQuickAdd = async () => {
+    const regUppercase = quickAddReg.trim().toUpperCase();
+    if (!regUppercase || !quickAddType || !quickAddMake || !quickAddModel) return;
+    setQuickAddError(null);
+    try {
+      await createAircraft.mutateAsync({
+        registration: regUppercase,
+        type: quickAddType.toUpperCase(),
+        make: quickAddMake,
+        model: quickAddModel,
+        isComplex: false,
+        isHighPerformance: false,
+        isTailwheel: false,
+      });
+      setSelectedReg(regUppercase);
+      setShowQuickAdd(false);
+      setQuickAddReg('');
+      setQuickAddType('');
+      setQuickAddMake('');
+      setQuickAddModel('');
+    } catch (error) {
+      setQuickAddError(extractApiError(error, t('quicklog:failedToQuickAdd')));
+    }
+  };
 
   const handleTap = async (type: FlightSessionEventType) => {
     setErrorMessage(null);
@@ -213,19 +258,82 @@ export default function QuickLogPage() {
         {openSession?.aircraftReg ? (
           <p className="text-lg font-semibold text-slate-900 dark:text-white">{openSession.aircraftReg}</p>
         ) : (
-          <select
-            id="quicklog-aircraft"
-            value={effectiveReg}
-            onChange={(e) => setSelectedReg(e.target.value)}
-            className="input w-full"
-          >
-            <option value="">{t('quicklog:selectAircraft')}</option>
-            {aircraft?.map((a) => (
-              <option key={a.id} value={a.registration}>
-                {a.registration} — {a.type}
-              </option>
-            ))}
-          </select>
+          <div>
+            <select
+              id="quicklog-aircraft"
+              value={showQuickAdd ? NEW_AIRCRAFT_OPTION : effectiveReg}
+              onChange={(e) => handleAircraftSelect(e.target.value)}
+              className="input w-full"
+            >
+              <option value="">{t('quicklog:selectAircraft')}</option>
+              {aircraft?.map((a) => (
+                <option key={a.id} value={a.registration}>
+                  {a.registration} — {a.type}
+                </option>
+              ))}
+              <option value={NEW_AIRCRAFT_OPTION}>{t('quicklog:addNewAircraft')}</option>
+            </select>
+
+            {/* Quick-add aircraft inline form */}
+            {showQuickAdd && (
+              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+                  {t('quicklog:quickAddTitle')}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    value={quickAddReg}
+                    onChange={(e) => setQuickAddReg(e.target.value.toUpperCase())}
+                    className="input text-sm"
+                    placeholder={t('quicklog:registrationPlaceholder')}
+                    autoComplete="off"
+                  />
+                  <input
+                    type="text"
+                    value={quickAddType}
+                    onChange={(e) => setQuickAddType(e.target.value.toUpperCase())}
+                    className="input text-sm"
+                    placeholder={t('quicklog:typePlaceholder')}
+                  />
+                  <input
+                    type="text"
+                    value={quickAddMake}
+                    onChange={(e) => setQuickAddMake(e.target.value)}
+                    className="input text-sm"
+                    placeholder={t('quicklog:makePlaceholder')}
+                  />
+                  <input
+                    type="text"
+                    value={quickAddModel}
+                    onChange={(e) => setQuickAddModel(e.target.value)}
+                    className="input text-sm"
+                    placeholder={t('quicklog:modelPlaceholder')}
+                  />
+                </div>
+                {quickAddError && (
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">{quickAddError}</p>
+                )}
+                <div className="flex gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleQuickAdd()}
+                    disabled={!quickAddReg || !quickAddType || !quickAddMake || !quickAddModel || createAircraft.isPending}
+                    className="btn-primary btn-sm text-xs"
+                  >
+                    {createAircraft.isPending ? t('common:saving') : t('quicklog:quickAddSave')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickAdd(false)}
+                    className="btn-ghost btn-sm text-xs"
+                  >
+                    {t('quicklog:skip')}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

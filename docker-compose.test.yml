@@ -120,8 +120,8 @@ services:
       DATABASE_URL: postgresql://testuser:testpass@postgres-test:5432/ninerlog_test?sslmode=disable
       PORT: 3000
       GIN_MODE: test
-      JWT_SECRET: test-jwt-secret
-      REFRESH_SECRET: test-refresh-secret
+      JWT_SECRET: "e2e-test-jwt-secret-key-minimum-32-chars"
+      REFRESH_SECRET: "e2e-test-refresh-secret-key-minimum-32"
       JWT_EXPIRES_IN: 15m
       REFRESH_EXPIRES_IN: 7d
       CORS_ORIGIN: "*"
