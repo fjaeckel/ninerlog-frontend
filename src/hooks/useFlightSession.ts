@@ -120,9 +120,12 @@ export async function flushQuickLogQueue(): Promise<number> {
 }
 
 /**
- * Flushes the offline queue on mount and whenever the connection returns,
- * refreshing the session (and logbook, in case a queued onblock completed a
- * flight) after a successful replay.
+ * Flushes the offline queue on mount, whenever the connection returns, and
+ * whenever the app comes back to the foreground. The 'online' event never
+ * fires on iOS Safari/PWA when the tab was suspended rather than actually
+ * offline, so the visibility listener is what catches "pilot reopens the
+ * app back in coverage" on iPhone — there's no Background Sync API there
+ * to do it for us while the app is closed.
  */
 export function useQuickLogQueueSync() {
   const queryClient = useQueryClient();
@@ -136,11 +139,16 @@ export function useQuickLogQueueSync() {
         queryClient.invalidateQueries({ queryKey: ['flights'] });
       }
     };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void flush();
+    };
     void flush();
     window.addEventListener('online', flush);
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
       cancelled = true;
       window.removeEventListener('online', flush);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, [queryClient]);
 }
