@@ -28,7 +28,7 @@ export const useStatsByClass = () => {
   return useQuery<StatsByClassResponse>({
     queryKey: ['stats', 'by-class'],
     queryFn: async (): Promise<StatsByClassResponse> => {
-      const res = await fetch(`${API_BASE}/reports/stats-by-class`, {
+      const res = await fetch(`${API_BASE}/reports/stats-by-class?months=0`, {
         headers: {
           'Content-Type': 'application/json',
           ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
