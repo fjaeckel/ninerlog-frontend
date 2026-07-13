@@ -1,0 +1,13 @@
+# Override for GitHub Actions
+# - Adjusts API build context to local checkout
+
+services:
+  api-test:
+    build:
+      context: ./ninerlog-api
+
+  frontend-dev:
+    user: "${HOST_UID}:${HOST_GID}"
+
+  frontend-e2e:
+    user: "${HOST_UID}:${HOST_GID}"
