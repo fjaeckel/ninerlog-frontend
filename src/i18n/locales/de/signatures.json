@@ -1,0 +1,88 @@
+{
+  "signaturePad": {
+    "ariaLabel": "Unterschriftsfeld",
+    "hint": "Unterschrieben. Mit \"Löschen\" erneut versuchen.",
+    "emptyHint": "Unterschrift oben zeichnen",
+    "clear": "Löschen"
+  },
+  "section": {
+    "title": "Fluglehrer-Unterschrift",
+    "lockedBanner": "Dieser Flug ist durch eine Fluglehrer-Unterschrift gesperrt und kann nicht bearbeitet werden.",
+    "signedBy": "Unterschrieben von {{name}} am {{date}}",
+    "voidAction": "Unterschrift widerrufen",
+    "voidDialogTitle": "Unterschrift widerrufen",
+    "voidDialogDescription": "Dadurch wird der Flug zur Bearbeitung entsperrt. Anschließend ist eine neue Unterschrift erforderlich.",
+    "voidReasonLabel": "Grund",
+    "voidReasonPlaceholder": "z. B. Korrektur eines Eingabefehlers",
+    "voidConfirm": "Unterschrift widerrufen",
+    "voiding": "Wird widerrufen...",
+    "signNow": "Jetzt unterschreiben",
+    "requestByEmail": "Per E-Mail anfragen",
+    "getShareableLink": "Teilbaren Link erhalten",
+    "pendingStatus": "Warte auf Fluglehrer-Unterschrift",
+    "pendingSentTo": "Gesendet an {{email}}",
+    "pendingNotSent": "Noch nicht gesendet — bei Bedarf senden oder Link unten teilen",
+    "pendingExpires": "Läuft ab am {{date}}",
+    "resend": "Erneut senden",
+    "revoke": "Anfrage stornieren",
+    "revoking": "Wird storniert...",
+    "resendConfirmTitle": "Unterschriftsanfrage stornieren",
+    "resendConfirmDescription": "Der Fluglehrer kann den bereits gesendeten Link dann nicht mehr zum Unterschreiben verwenden.",
+    "noSignature": "Dieser Flug wurde noch nicht unterschrieben."
+  },
+  "liveDialog": {
+    "title": "Diesen Flug unterschreiben",
+    "description": "Lassen Sie den Fluglehrer unten unterschreiben.",
+    "signerName": "Name des Fluglehrers",
+    "signerNamePlaceholder": "Jane Instructor",
+    "credentialNumber": "Lizenznummer (optional)",
+    "submit": "Unterschreiben",
+    "signing": "Wird unterschrieben...",
+    "signatureRequired": "Bitte zeichnen Sie eine Unterschrift, bevor Sie fortfahren."
+  },
+  "emailDialog": {
+    "title": "Unterschrift per E-Mail anfragen",
+    "description": "Geben Sie die E-Mail-Adresse des Fluglehrers ein, um jetzt einen Link zu senden, oder lassen Sie das Feld leer, um später zu senden.",
+    "email": "E-Mail des Fluglehrers",
+    "emailPlaceholder": "instructor@example.com",
+    "expiresIn": "Link läuft ab in",
+    "sendNow": "Anfrage senden",
+    "saveForLater": "Ohne Senden speichern",
+    "sending": "Wird gesendet..."
+  },
+  "linkDialog": {
+    "title": "Teilbarer Unterschrifts-Link",
+    "description": "Teilen Sie diesen Link oder QR-Code mit dem Fluglehrer. Jeder mit dem Link kann diesen Flug bis zum Ablauf unterschreiben.",
+    "copy": "Link kopieren",
+    "copied": "Kopiert!",
+    "expiresIn": "Läuft ab"
+  },
+  "expiry": {
+    "hours24": "24 Stunden",
+    "days3": "3 Tage",
+    "days7": "7 Tage",
+    "days30": "30 Tage"
+  },
+  "publicPage": {
+    "title": "Logbucheintrag unterschreiben",
+    "loading": "Wird geladen...",
+    "invalidTitle": "Link ungültig",
+    "invalidDescription": "Dieser Unterschrifts-Link ist ungültig oder wurde bereits verwendet.",
+    "expiredTitle": "Link abgelaufen",
+    "expiredDescription": "Dieser Unterschrifts-Link ist abgelaufen. Bitten Sie den Piloten um einen neuen Link.",
+    "successTitle": "Unterschrift erfasst",
+    "successDescription": "Vielen Dank! Sie können diese Seite jetzt schließen.",
+    "flightSummary": "Flugdetails",
+    "date": "Datum",
+    "aircraft": "Luftfahrzeug",
+    "route": "Route",
+    "totalTime": "Gesamtzeit",
+    "dualTime": "Doppelsteuerzeit",
+    "signerName": "Ihr Name",
+    "signerNamePlaceholder": "Jane Instructor",
+    "credentialNumber": "Lizenznummer (optional)",
+    "submit": "Diesen Eintrag unterschreiben",
+    "submitting": "Wird übermittelt...",
+    "signatureRequired": "Bitte zeichnen Sie eine Unterschrift, bevor Sie fortfahren."
+  }
+}

@@ -5,6 +5,7 @@ import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
 import FlightForm from '../../components/flights/FlightForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { SignatureSection } from '../../components/flights/SignatureSection';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
@@ -360,6 +361,9 @@ export default function FlightDetailPage() {
             )}
           </dl>
         </div>
+
+        {/* Instructor Signature */}
+        <SignatureSection flight={flight} />
 
         {/* Crew Members */}
         {flight.crewMembers && flight.crewMembers.length > 0 && (

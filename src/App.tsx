@@ -28,6 +28,7 @@ const ExportPage = lazyWithRetry(() => import('./pages/export/ExportPage'));
 const CurrencyPage = lazyWithRetry(() => import('./pages/currency/CurrencyPage'));
 const AdminPage = lazyWithRetry(() => import('./pages/admin/AdminPage'));
 const HelpPage = lazyWithRetry(() => import('./pages/help/HelpPage'));
+const SignPage = lazyWithRetry(() => import('./pages/SignPage'));
 
 function PageLoader() {
   return (
@@ -66,6 +67,7 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/new-password" element={<NewPasswordPage />} />
+        <Route path="/sign" element={<SignPage />} />
 
         {/* Protected routes */}
         <Route element={<Layout />}>

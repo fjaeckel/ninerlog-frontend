@@ -176,6 +176,7 @@
     "updated": "Updated {{date}}"
   },
   "form": {
+    "lockedBySignature": "This flight is locked by an instructor signature and can't be edited. Void the signature (on the flight detail page) to make changes.",
     "routeAndTimesUtc": "Route & Times (UTC)",
     "takeoffsAndLandings": "Takeoffs & Landings",
     "autoCalculatedValues": "Auto-Calculated Values",

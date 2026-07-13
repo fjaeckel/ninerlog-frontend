@@ -176,6 +176,7 @@
     "updated": "Aktualisiert {{date}}"
   },
   "form": {
+    "lockedBySignature": "Dieser Flug ist durch eine Fluglehrer-Unterschrift gesperrt und kann nicht bearbeitet werden. Widerrufen Sie die Unterschrift (auf der Flugdetailseite), um Änderungen vorzunehmen.",
     "routeAndTimesUtc": "Strecke & Zeiten (UTC)",
     "takeoffsAndLandings": "Starts & Landungen",
     "autoCalculatedValues": "Automatisch berechnete Werte",

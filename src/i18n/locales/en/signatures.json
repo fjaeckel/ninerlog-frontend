@@ -1,0 +1,88 @@
+{
+  "signaturePad": {
+    "ariaLabel": "Signature drawing area",
+    "hint": "Signed. Use Clear to redo.",
+    "emptyHint": "Draw your signature above",
+    "clear": "Clear"
+  },
+  "section": {
+    "title": "Instructor Signature",
+    "lockedBanner": "This flight is locked by an instructor signature and can't be edited.",
+    "signedBy": "Signed by {{name}} on {{date}}",
+    "voidAction": "Void signature",
+    "voidDialogTitle": "Void signature",
+    "voidDialogDescription": "This unlocks the flight for editing. A new signature will be required afterwards.",
+    "voidReasonLabel": "Reason",
+    "voidReasonPlaceholder": "e.g. correcting a data entry error",
+    "voidConfirm": "Void signature",
+    "voiding": "Voiding...",
+    "signNow": "Sign now",
+    "requestByEmail": "Request via email",
+    "getShareableLink": "Get shareable link",
+    "pendingStatus": "Awaiting instructor signature",
+    "pendingSentTo": "Sent to {{email}}",
+    "pendingNotSent": "Not sent yet — send when ready or share the link below",
+    "pendingExpires": "Expires {{date}}",
+    "resend": "Resend",
+    "revoke": "Cancel request",
+    "revoking": "Cancelling...",
+    "resendConfirmTitle": "Cancel signature request",
+    "resendConfirmDescription": "The instructor will no longer be able to sign using the link already sent to them.",
+    "noSignature": "This flight hasn't been signed yet."
+  },
+  "liveDialog": {
+    "title": "Sign this flight",
+    "description": "Have the instructor draw their signature below.",
+    "signerName": "Instructor name",
+    "signerNamePlaceholder": "Jane Instructor",
+    "credentialNumber": "Certificate number (optional)",
+    "submit": "Sign",
+    "signing": "Signing...",
+    "signatureRequired": "Please draw a signature before submitting."
+  },
+  "emailDialog": {
+    "title": "Request signature by email",
+    "description": "Enter the instructor's email to send a signing link now, or leave it blank to send later.",
+    "email": "Instructor email",
+    "emailPlaceholder": "instructor@example.com",
+    "expiresIn": "Link expires in",
+    "sendNow": "Send request",
+    "saveForLater": "Save without sending",
+    "sending": "Sending..."
+  },
+  "linkDialog": {
+    "title": "Shareable signing link",
+    "description": "Share this link or QR code with the instructor. Anyone with the link can sign this flight until it expires.",
+    "copy": "Copy link",
+    "copied": "Copied!",
+    "expiresIn": "Expires"
+  },
+  "expiry": {
+    "hours24": "24 hours",
+    "days3": "3 days",
+    "days7": "7 days",
+    "days30": "30 days"
+  },
+  "publicPage": {
+    "title": "Sign Logbook Entry",
+    "loading": "Loading...",
+    "invalidTitle": "Link invalid",
+    "invalidDescription": "This signing link is invalid or has already been used.",
+    "expiredTitle": "Link expired",
+    "expiredDescription": "This signing link has expired. Ask the pilot to send you a new one.",
+    "successTitle": "Signature recorded",
+    "successDescription": "Thank you! You can now close this page.",
+    "flightSummary": "Flight details",
+    "date": "Date",
+    "aircraft": "Aircraft",
+    "route": "Route",
+    "totalTime": "Total time",
+    "dualTime": "Dual time",
+    "signerName": "Your name",
+    "signerNamePlaceholder": "Jane Instructor",
+    "credentialNumber": "Certificate number (optional)",
+    "submit": "Sign this entry",
+    "submitting": "Submitting...",
+    "signatureRequired": "Please draw a signature before submitting."
+  }
+}
