@@ -43,15 +43,6 @@ export function SignatureSection({ flight }: { flight: Flight }) {
 
   const imageUrl = useFlightSignatureImageUrl(flight.id, activeSignature?.id);
 
-  // useFlightSignatureImageUrl creates a fresh blob: URL per signature; it
-  // doesn't know when we're done with an old one, so release it here.
-  useEffect(() => {
-    const url = imageUrl.data;
-    return () => {
-      if (url) URL.revokeObjectURL(url);
-    };
-  }, [imageUrl.data]);
-
   return (
     <div className="card">
       <h2 className="section-title mb-4 flex items-center gap-2">
