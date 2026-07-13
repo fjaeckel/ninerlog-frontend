@@ -106,8 +106,15 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # Service Worker
-    location /service-worker.js {
+    # Service worker + its registration bootstrap — see nginx.conf for why
+    # these must be no-cache (the real filenames are sw.js/registerSW.js,
+    # not service-worker.js).
+    location = /sw.js {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
+        add_header Expires 0;
+    }
+    location = /registerSW.js {
         add_header Cache-Control "no-cache, no-store, must-revalidate";
         add_header Pragma "no-cache";
         add_header Expires 0;
