@@ -43,6 +43,15 @@ export function SignatureSection({ flight }: { flight: Flight }) {
 
   const imageUrl = useFlightSignatureImageUrl(flight.id, activeSignature?.id);
 
+  // useFlightSignatureImageUrl creates a fresh blob: URL per signature; it
+  // doesn't know when we're done with an old one, so release it here.
+  useEffect(() => {
+    const url = imageUrl.data;
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [imageUrl.data]);
+
   return (
     <div className="card">
       <h2 className="section-title mb-4 flex items-center gap-2">
@@ -65,13 +74,17 @@ export function SignatureSection({ flight }: { flight: Flight }) {
               </dt>
             </div>
           </dl>
-          {imageUrl.data && (
+          {imageUrl.data ? (
             <img
               src={imageUrl.data}
               alt={t('signaturePad.ariaLabel')}
-              className="border border-slate-200 dark:border-slate-700 rounded-lg bg-white max-h-24"
+              className="border border-slate-200 dark:border-slate-700 rounded-lg bg-white max-w-full h-auto max-h-40 object-contain"
             />
-          )}
+          ) : imageUrl.isLoading ? (
+            <div className="h-40 w-64 max-w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 animate-pulse" />
+          ) : imageUrl.isError ? (
+            <p className="text-xs text-slate-400 dark:text-slate-500">{t('section.noSignature')}</p>
+          ) : null}
           <button onClick={() => setShowVoidDialog(true)} className="btn-secondary text-sm">
             {t('section.voidAction')}
           </button>
@@ -180,7 +193,8 @@ function LiveSignDialog({ flightId, onClose }: { flightId: string; onClose: () =
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const signatureImage = signatureRef.current?.toBase64Png();
+    const stamp = credentialNumber.trim() ? `${t('stampPrefix')} ${credentialNumber.trim()}` : undefined;
+    const signatureImage = signatureRef.current?.toBase64Png(stamp);
     if (!signatureImage) {
       setError(t('liveDialog.signatureRequired'));
       return;
@@ -226,6 +240,7 @@ function LiveSignDialog({ flightId, onClose }: { flightId: string; onClose: () =
             onChange={(e) => setCredentialNumber(e.target.value)}
             className="input"
           />
+          {credentialNumber.trim() && <p className="form-helper">{t('liveDialog.credentialNumberHint')}</p>}
         </div>
         <SignatureCanvas ref={signatureRef} onChange={setHasDrawing} />
         <button type="submit" disabled={signLive.isPending || !signerName || !hasDrawing} className="btn-primary w-full">

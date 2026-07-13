@@ -49,4 +49,62 @@ describe('SignatureCanvas', () => {
 
     expect(ref.current?.isEmpty()).toBe(false);
   });
+
+  it('returns null from toBase64Png() when nothing has been drawn', () => {
+    const ref = createRef<SignatureCanvasHandle>();
+    render(<SignatureCanvas ref={ref} />);
+    expect(ref.current?.toBase64Png()).toBeNull();
+  });
+
+  it('returns a base64 string once something has been drawn, with or without a stamp', () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,aGVsbG8=');
+    const ref = createRef<SignatureCanvasHandle>();
+    render(<SignatureCanvas ref={ref} />);
+
+    const canvas = screen.getByRole('img', { name: /signature/i });
+    fireEvent.pointerDown(canvas, { clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(canvas, { clientX: 20, clientY: 20 });
+
+    expect(ref.current?.toBase64Png()).toBe('aGVsbG8=');
+    expect(ref.current?.toBase64Png('Cert. No. 12345')).toBe('aGVsbG8=');
+  });
+
+  it('does not resize (and so does not wipe) the canvas backing store once a stroke has started', () => {
+    // Regression test: the canvas used to eagerly re-apply its backing
+    // store size whenever the container's ResizeObserver fired again,
+    // which reset all pixel content. A resize mid-signature is a realistic
+    // scenario (a dialog settling its layout, a mobile keyboard opening),
+    // so once the user has started drawing, resizing must become a no-op.
+    let resizeCallback: ResizeObserverCallback | undefined;
+    const OriginalResizeObserver = globalThis.ResizeObserver;
+    class FakeResizeObserver {
+      constructor(cb: ResizeObserverCallback) {
+        resizeCallback = cb;
+      }
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+    }
+    globalThis.ResizeObserver = FakeResizeObserver as unknown as typeof ResizeObserver;
+
+    try {
+      const ref = createRef<SignatureCanvasHandle>();
+      render(<SignatureCanvas ref={ref} />);
+
+      const canvas = screen.getByRole('img', { name: /signature/i }) as HTMLCanvasElement;
+      fireEvent.pointerDown(canvas, { clientX: 10, clientY: 10 });
+      fireEvent.pointerMove(canvas, { clientX: 20, clientY: 20 });
+
+      const widthAfterStroke = canvas.width;
+      const heightAfterStroke = canvas.height;
+
+      // Simulate the container reporting a new size mid-signature.
+      resizeCallback?.([] as unknown as ResizeObserverEntry[], {} as ResizeObserver);
+
+      expect(canvas.width).toBe(widthAfterStroke);
+      expect(canvas.height).toBe(heightAfterStroke);
+    } finally {
+      globalThis.ResizeObserver = OriginalResizeObserver;
+    }
+  });
 });

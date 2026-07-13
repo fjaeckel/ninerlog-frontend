@@ -47,7 +47,8 @@ export default function SignPage() {
     e.preventDefault();
     setFormError(null);
 
-    const signatureImage = signatureRef.current?.toBase64Png();
+    const stamp = credentialNumber.trim() ? `${t('stampPrefix')} ${credentialNumber.trim()}` : undefined;
+    const signatureImage = signatureRef.current?.toBase64Png(stamp);
     if (!signatureImage) {
       setFormError(t('publicPage.signatureRequired'));
       return;
@@ -143,6 +144,7 @@ export default function SignPage() {
                 onChange={(e) => setCredentialNumber(e.target.value)}
                 className="input"
               />
+              {credentialNumber.trim() && <p className="form-helper">{t('publicPage.credentialNumberHint')}</p>}
             </div>
 
             <SignatureCanvas ref={signatureRef} onChange={setHasDrawing} />

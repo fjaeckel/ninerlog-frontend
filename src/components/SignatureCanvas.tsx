@@ -3,8 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/cn';
 
 export interface SignatureCanvasHandle {
-  /** Returns the drawn signature as raw base64 PNG (no "data:image/png;base64," prefix), or null if nothing has been drawn. */
-  toBase64Png: () => string | null;
+  /**
+   * Returns the drawn signature as raw base64 PNG (no
+   * "data:image/png;base64," prefix), or null if nothing has been drawn.
+   * If `stampText` is given, it's rendered into the bottom-right corner of
+   * the exported image (e.g. the instructor's certificate number) — it is
+   * NOT shown on the live pad, only baked into the saved artifact.
+   */
+  toBase64Png: (stampText?: string) => string | null;
   clear: () => void;
   isEmpty: () => boolean;
 }
@@ -28,6 +34,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle, SignatureCanvas
     const drawingRef = useRef(false);
     const hasInkRef = useRef(false);
     const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+    const sizeRef = useRef<{ width: number; height: number } | null>(null);
     const [hasInk, setHasInk] = useState(false);
 
     const getContext = useCallback(() => {
@@ -36,20 +43,44 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle, SignatureCanvas
       return canvas.getContext('2d');
     }, []);
 
+    const applyPenStyle = (ctx: CanvasRenderingContext2D) => {
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#111827';
+    };
+
     // Size the backing store for the device pixel ratio so strokes stay
     // crisp, while the CSS size is driven by the responsive container.
+    //
+    // Once the user has drawn anything, this deliberately becomes a no-op:
+    // resizing recreates the canvas's backing store (wiping its pixels),
+    // and a container can legitimately report a new size mid-signature
+    // (e.g. a dialog settling its layout, a virtual keyboard opening on
+    // mobile). Restoring the old content across that reset previously went
+    // through an async `Image` round-trip drawn onto an *already
+    // dpr-scaled* context — a double-scale bug that could silently corrupt
+    // or blank out the captured signature. Simplest robust fix: the pad
+    // locks its size at the first stroke.
     const resizeCanvas = useCallback(() => {
+      if (hasInkRef.current) return;
       const canvas = canvasRef.current;
       const container = containerRef.current;
       if (!canvas || !container) return;
 
-      const priorHadInk = hasInkRef.current;
-      const priorContent = priorHadInk ? canvas.toDataURL('image/png') : null;
-
       const dpr = window.devicePixelRatio || 1;
       const rect = container.getBoundingClientRect();
-      const width = Math.max(rect.width, 1);
+      const width = Math.max(Math.round(rect.width), 1);
       const height = 200;
+
+      // ResizeObserver fires once immediately on observe() and then again
+      // on any real change — skip re-applying an identical size so we
+      // don't reset context state (stroke style etc.) for no reason.
+      if (sizeRef.current && sizeRef.current.width === width && sizeRef.current.height === height) {
+        return;
+      }
+      sizeRef.current = { width, height };
+
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       canvas.style.width = `${width}px`;
@@ -58,18 +89,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle, SignatureCanvas
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
       ctx.scale(dpr, dpr);
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.lineWidth = 2.5;
-      ctx.strokeStyle = '#111827';
-
-      // Restore prior drawing across a resize (e.g. orientation change)
-      // rather than silently discarding the signature.
-      if (priorContent) {
-        const img = new Image();
-        img.onload = () => ctx.drawImage(img, 0, 0, width, height);
-        img.src = priorContent;
-      }
+      applyPenStyle(ctx);
     }, []);
 
     useEffect(() => {
@@ -129,14 +149,43 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle, SignatureCanvas
       hasInkRef.current = false;
       setHasInk(false);
       onChange?.(false);
-    }, [getContext, onChange]);
+      // Now that the pad is empty again, let it track the container's
+      // current size in case it changed while locked during drawing.
+      resizeCanvas();
+    }, [getContext, onChange, resizeCanvas]);
 
     useImperativeHandle(
       ref,
       () => ({
-        toBase64Png: () => {
-          if (!hasInkRef.current || !canvasRef.current) return null;
-          const dataUrl = canvasRef.current.toDataURL('image/png');
+        toBase64Png: (stampText?: string) => {
+          const canvas = canvasRef.current;
+          if (!hasInkRef.current || !canvas) return null;
+
+          let source: HTMLCanvasElement = canvas;
+          if (stampText && stampText.trim()) {
+            const stamped = document.createElement('canvas');
+            stamped.width = canvas.width;
+            stamped.height = canvas.height;
+            const sctx = stamped.getContext('2d');
+            if (sctx) {
+              // Raw pixel-for-pixel copy first (identity transform), then
+              // switch to CSS-pixel coordinates for the text so its size
+              // matches what applyPenStyle/getPoint use elsewhere.
+              sctx.drawImage(canvas, 0, 0);
+              const dpr = window.devicePixelRatio || 1;
+              sctx.scale(dpr, dpr);
+              const cssWidth = canvas.width / dpr;
+              const cssHeight = canvas.height / dpr;
+              sctx.font = '13px system-ui, sans-serif';
+              sctx.fillStyle = '#4b5563';
+              sctx.textAlign = 'right';
+              sctx.textBaseline = 'bottom';
+              sctx.fillText(stampText.trim(), cssWidth - 8, cssHeight - 6);
+              source = stamped;
+            }
+          }
+
+          const dataUrl = source.toDataURL('image/png');
           const prefix = 'base64,';
           const idx = dataUrl.indexOf(prefix);
           return idx === -1 ? null : dataUrl.slice(idx + prefix.length);

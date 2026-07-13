@@ -1,4 +1,5 @@
 {
+  "stampPrefix": "Cert. No.",
   "signaturePad": {
     "ariaLabel": "Signature drawing area",
     "hint": "Signed. Use Clear to redo.",
@@ -28,7 +29,8 @@
     "revoking": "Cancelling...",
     "resendConfirmTitle": "Cancel signature request",
     "resendConfirmDescription": "The instructor will no longer be able to sign using the link already sent to them.",
-    "noSignature": "This flight hasn't been signed yet."
+    "noSignature": "This flight hasn't been signed yet.",
+    "signedBadge": "Signed"
   },
   "liveDialog": {
     "title": "Sign this flight",
@@ -36,6 +38,7 @@
     "signerName": "Instructor name",
     "signerNamePlaceholder": "Jane Instructor",
     "credentialNumber": "Certificate number (optional)",
+    "credentialNumberHint": "If provided, this is written next to your signature.",
     "submit": "Sign",
     "signing": "Signing...",
     "signatureRequired": "Please draw a signature before submitting."
@@ -81,6 +84,7 @@
     "signerName": "Your name",
     "signerNamePlaceholder": "Jane Instructor",
     "credentialNumber": "Certificate number (optional)",
+    "credentialNumberHint": "If provided, this is written next to your signature.",
     "submit": "Sign this entry",
     "submitting": "Submitting...",
     "signatureRequired": "Please draw a signature before submitting."

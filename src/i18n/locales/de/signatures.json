@@ -1,4 +1,5 @@
 {
+  "stampPrefix": "Lizenz-Nr.",
   "signaturePad": {
     "ariaLabel": "Unterschriftsfeld",
     "hint": "Unterschrieben. Mit \"Löschen\" erneut versuchen.",
@@ -28,7 +29,8 @@
     "revoking": "Wird storniert...",
     "resendConfirmTitle": "Unterschriftsanfrage stornieren",
     "resendConfirmDescription": "Der Fluglehrer kann den bereits gesendeten Link dann nicht mehr zum Unterschreiben verwenden.",
-    "noSignature": "Dieser Flug wurde noch nicht unterschrieben."
+    "noSignature": "Dieser Flug wurde noch nicht unterschrieben.",
+    "signedBadge": "Unterschrieben"
   },
   "liveDialog": {
     "title": "Diesen Flug unterschreiben",
@@ -36,6 +38,7 @@
     "signerName": "Name des Fluglehrers",
     "signerNamePlaceholder": "Jane Instructor",
     "credentialNumber": "Lizenznummer (optional)",
+    "credentialNumberHint": "Falls angegeben, wird diese neben Ihrer Unterschrift vermerkt.",
     "submit": "Unterschreiben",
     "signing": "Wird unterschrieben...",
     "signatureRequired": "Bitte zeichnen Sie eine Unterschrift, bevor Sie fortfahren."
@@ -81,6 +84,7 @@
     "signerName": "Ihr Name",
     "signerNamePlaceholder": "Jane Instructor",
     "credentialNumber": "Lizenznummer (optional)",
+    "credentialNumberHint": "Falls angegeben, wird diese neben Ihrer Unterschrift vermerkt.",
     "submit": "Diesen Eintrag unterschreiben",
     "submitting": "Wird übermittelt...",
     "signatureRequired": "Bitte zeichnen Sie eine Unterschrift, bevor Sie fortfahren."
