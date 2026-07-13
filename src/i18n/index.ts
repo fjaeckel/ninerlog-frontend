@@ -19,6 +19,7 @@ import enHelp from './locales/en/help.json';
 import enBackups from './locales/en/backups.json';
 import enOnboarding from './locales/en/onboarding.json';
 import enQuicklog from './locales/en/quicklog.json';
+import enSignatures from './locales/en/signatures.json';
 
 // German namespaces
 import deCommon from './locales/de/common.json';
@@ -37,6 +38,7 @@ import deHelp from './locales/de/help.json';
 import deBackups from './locales/de/backups.json';
 import deOnboarding from './locales/de/onboarding.json';
 import deQuicklog from './locales/de/quicklog.json';
+import deSignatures from './locales/de/signatures.json';
 
 export const supportedLanguages = ['en', 'de'] as const;
 export type SupportedLanguage = (typeof supportedLanguages)[number];
@@ -68,6 +70,7 @@ i18n
         backups: enBackups,
         onboarding: enOnboarding,
         quicklog: enQuicklog,
+        signatures: enSignatures,
       },
       de: {
         common: deCommon,
@@ -86,6 +89,7 @@ i18n
         backups: deBackups,
         onboarding: deOnboarding,
         quicklog: deQuicklog,
+        signatures: deSignatures,
       },
     },
     fallbackLng: 'en',
@@ -93,7 +97,7 @@ i18n
     ns: [
       'common', 'auth', 'nav', 'flights', 'aircraft', 'dashboard',
       'currency', 'licenses', 'credentials', 'reports', 'settings',
-      'import', 'help', 'backups', 'onboarding', 'quicklog',
+      'import', 'help', 'backups', 'onboarding', 'quicklog', 'signatures',
     ],
     interpolation: {
       escapeValue: false, // React already escapes

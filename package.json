@@ -82,7 +82,7 @@
     "workbox-cli": "^7.4.1"
   },
   "overrides": {
-    "js-yaml": ">=4.1.2",
+    "js-yaml": ">=4.1.2 <5.0.0",
     "serialize-javascript": ">=7.0.5",
     "tmp": ">=0.2.7",
     "uuid": ">=14.0.0"

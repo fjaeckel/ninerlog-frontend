@@ -67,6 +67,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const createFlight = useCreateFlight();
   const updateFlight = useUpdateFlight();
   const { data: existingFlight } = useFlight(flightId || '');
+  const isLocked = !!existingFlight?.signatureId;
   const { data: aircraftList } = useAircraft();
   const createAircraft = useCreateAircraft();
   const { data: recentFlightsData } = useFlights({ page: 1, pageSize: 1, sortBy: 'date', sortOrder: 'desc' });
@@ -367,6 +368,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           {apiError}
         </div>
       )}
+      {isLocked && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-sm text-amber-800 dark:text-amber-300">
+          {t('form.lockedBySignature')}
+        </div>
+      )}
       {/* Auto-fill from last flight — prominent banner */}
       {!isEditing && lastFlight && (
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex items-center justify-between gap-3">
@@ -386,6 +392,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         </div>
       )}
 
+      <fieldset disabled={isLocked} className="space-y-6 border-0 p-0 m-0 min-w-0">
       {/* Basic Info */}
       <fieldset>
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('sections.basic')}</legend>
@@ -1093,10 +1100,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           <p className="form-helper">{t('form.endorsementsHelper')}</p>
         </div>
       </div>
+      </fieldset>
 
       {/* Submit */}
       <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-        <button type="submit" disabled={isSubmitting} className="btn-primary flex-1">
+        <button type="submit" disabled={isSubmitting || isLocked} className="btn-primary flex-1">
           {isSubmitting ? t('saving') : isEditing ? t('updateFlight') : t('logFlight')}
         </button>
         <button type="button" onClick={onClose} className="btn-secondary flex-1">

@@ -50,13 +50,20 @@ async function isGateEnabled(): Promise<boolean> {
  * render immediately.
  */
 export function BetaGate({ children }: { children: ReactNode }) {
-  const [authorized, setAuthorized] = useState(false);
-  const [checking, setChecking] = useState(true);
+  // The public signing page is opened by an instructor with no NinerLog
+  // account (from an emailed or shared link) — they can't have a beta
+  // access code, so this path skips the gate entirely.
+  const bypassGate =
+    typeof window !== 'undefined' && window.location.pathname.startsWith('/sign');
+
+  const [authorized, setAuthorized] = useState(bypassGate);
+  const [checking, setChecking] = useState(!bypassGate);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    if (bypassGate) return;
     (async () => {
       // First check if the gate is even enabled
       const enabled = await isGateEnabled();

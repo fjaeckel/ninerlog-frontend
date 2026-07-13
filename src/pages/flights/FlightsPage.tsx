@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Pencil, Trash2, Search, X } from 'lucide-react';
+import { Pencil, Trash2, Search, X, ShieldCheck } from 'lucide-react';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
@@ -392,7 +392,15 @@ export default function FlightsPage() {
                       {fmtDate(flight.date)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-800 dark:text-slate-100">
-                      {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
+                      <span className="inline-flex items-center gap-1.5">
+                        {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
+                        {flight.signatureId && (
+                          <ShieldCheck
+                            className="w-3.5 h-3.5 text-green-600 dark:text-green-400 shrink-0"
+                            aria-label={t('signatures:section.signedBadge')}
+                          />
+                        )}
+                      </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">
                       <span className="font-medium">{flight.aircraftReg}</span>

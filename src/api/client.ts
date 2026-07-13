@@ -66,7 +66,11 @@ apiClient.use({
       url.includes('/auth/2fa/') ||
       url.includes('/auth/register') ||
       url.includes('/auth/refresh') ||
-      url.includes('/auth/password-reset');
+      url.includes('/auth/password-reset') ||
+      // Defense-in-depth: the public /sign/{token} endpoints never require
+      // auth and the backend never emits 401 from them, but an anonymous
+      // instructor has no refresh token — never redirect them to /login.
+      url.includes('/sign/');
     if (isAuthEndpoint) return response;
 
     // Avoid infinite loops: only retry once per request

@@ -788,6 +788,190 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/flights/{flightId}/signatures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List signature history for a flight
+         * @description Returns every signature attempt for the flight (pending, completed, revoked, voided, expired), newest first.
+         */
+        get: operations["listFlightSignatures"];
+        put?: never;
+        /**
+         * Create a deferred signature request
+         * @description Starts a token-based signature request for the flight. If
+         *     `instructorEmail` is supplied, the request email is sent immediately;
+         *     if omitted, the request is created pending-and-unsent so the owner can
+         *     send it later (once they have an address) or share the returned
+         *     `signUrl` directly (e.g. as a QR code, over WhatsApp). Only one
+         *     pending request may exist per flight at a time.
+         */
+        post: operations["createSignatureRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/flights/{flightId}/signatures/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a live (in-person) signature
+         * @description Records a signature captured on the flight owner's own device while
+         *     the instructor is physically present. Completes synchronously; no
+         *     token or email is involved.
+         */
+        post: operations["signFlightLive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/flights/{flightId}/signatures/{signatureId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single signature */
+        get: operations["getFlightSignature"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/flights/{flightId}/signatures/{signatureId}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the signature image
+         * @description Returns the signer's drawn signature as a PNG image.
+         */
+        get: operations["getFlightSignatureImage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/flights/{flightId}/signatures/{signatureId}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resend or regenerate a pending signature request
+         * @description Rotates the request's token (invalidating any previously shared
+         *     link/QR) and, if `instructorEmail` is supplied, updates the delivery
+         *     address and (re)sends the request email. Calling this with no body
+         *     just regenerates the link/QR without emailing anyone. Only valid
+         *     while the request is still pending.
+         */
+        post: operations["resendSignatureRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/flights/{flightId}/signatures/{signatureId}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke a pending signature request
+         * @description Cancels a still-pending request before anyone has signed it. No reason required.
+         */
+        post: operations["revokeSignatureRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/flights/{flightId}/signatures/{signatureId}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Void a completed signature
+         * @description Invalidates an already-completed signature (a reason is required for
+         *     the audit trail) and unlocks the flight for editing again. Editing
+         *     and re-signing after a void is the expected "revalidation" workflow.
+         */
+        post: operations["voidFlightSignature"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sign/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get public signing info for a token
+         * @description Unauthenticated endpoint used by the recipient of a signing link
+         *     (email or shared URL/QR) to review the flight before signing. Never
+         *     returns 401/403: an invalid, already-used, or revoked/voided token is
+         *     reported as 404, and an expired token as 410, both with the same
+         *     generic message so a caller cannot enumerate token state.
+         */
+        get: operations["getPublicSignatureInfo"];
+        put?: never;
+        /**
+         * Complete a signature via a public link
+         * @description Records the instructor's signature against a valid pending token.
+         *     Deliberately returns a minimal body — no flight or owner details are
+         *     echoed back to an unauthenticated caller.
+         */
+        post: operations["completePublicSignature"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/airports/{icaoCode}": {
         parameters: {
             query?: never;
@@ -2381,6 +2565,14 @@ export interface components {
              * @example 2026-01-30T16:00:00Z
              */
             updatedAt: string;
+            /**
+             * Format: uuid
+             * @description Present iff the flight is locked by a completed, non-voided
+             *     instructor signature. Void the signature (see
+             *     /flights/{flightId}/signatures/{signatureId}/void) to unlock it
+             *     for editing.
+             */
+            signatureId?: string | null;
         };
         FlightCreate: {
             /**
@@ -4103,6 +4295,108 @@ export interface components {
                 totalPages: number;
             };
         };
+        FlightSignature: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            flightId: string;
+            /**
+             * @description live = captured in person with no token; deferred = token-based, delivered by email and/or a shareable link/QR
+             * @enum {string}
+             */
+            method: "live" | "deferred";
+            /** @enum {string} */
+            status: "pending" | "completed" | "revoked" | "voided" | "expired";
+            instructorName?: string | null;
+            instructorCredentialNumber?: string | null;
+            /** Format: email */
+            instructorEmail?: string | null;
+            /** Format: date-time */
+            emailSentAt?: string | null;
+            emailSendCount: number;
+            /** Format: date-time */
+            tokenExpiresAt?: string | null;
+            /** Format: date-time */
+            signedAt?: string | null;
+            /** Format: date-time */
+            voidedAt?: string | null;
+            voidedReason?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        /** @description A FlightSignature plus the one-time signing URL. The URL is only ever returned from the create/resend calls that generated it — it is not retrievable again afterwards, so the owner must copy/share it (or its QR code) immediately, or resend to get a fresh one. */
+        SignatureRequestCreated: components["schemas"]["FlightSignature"] & {
+            /**
+             * Format: uri
+             * @example https://app.ninerlog.com/sign?token=3q2-7w15QSf9jZ0mF8x1uQhz6cQd8k2r9m5b0nJH8k4
+             */
+            signUrl: string;
+        };
+        CreateLiveSignatureRequest: {
+            /** @example Jane Instructor */
+            signerName: string;
+            /** @description e.g. CFI certificate number */
+            credentialNumber?: string | null;
+            /**
+             * Format: byte
+             * @description PNG-encoded signature image, base64. Max 500KB decoded.
+             */
+            signatureImage: string;
+        };
+        CreateSignatureRequestRequest: {
+            /**
+             * Format: email
+             * @description If supplied, the request email is sent immediately. Omit to create a pending-and-unsent request.
+             */
+            instructorEmail?: string | null;
+            /**
+             * @description Clamped server-side to [1, 720] hours (30 days max). Defaults to 168 (7 days).
+             * @default 168
+             */
+            expiresInHours: number | null;
+        };
+        ResendSignatureRequestRequest: {
+            /**
+             * Format: email
+             * @description If supplied, updates the delivery address and sends the request email. Omit to just rotate the token/link without emailing anyone.
+             */
+            instructorEmail?: string | null;
+        };
+        VoidSignatureRequest: {
+            /** @example Entered wrong dual time, correcting before re-signing */
+            reason: string;
+        };
+        /** @description Deliberately minimal — no owner PII beyond the flight's own logged details. */
+        PublicSignatureInfo: {
+            /**
+             * @description Always "pending" on a 200 response; any other state is reported via 404/410 instead.
+             * @enum {string}
+             */
+            status: "pending";
+            /** Format: date */
+            flightDate: string;
+            aircraftReg: string;
+            aircraftType: string;
+            route?: string | null;
+            /** @description Total block time in minutes */
+            totalTime: number;
+            dualTime?: number;
+            /** @description Prefill, if the owner supplied one when creating the request. */
+            instructorName?: string | null;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        CompleteSignatureRequest: {
+            signerName: string;
+            credentialNumber?: string | null;
+            /**
+             * Format: byte
+             * @description PNG-encoded signature image, base64. Max 500KB decoded.
+             */
+            signatureImage: string;
+        };
         Error: {
             /**
              * @description Error message
@@ -4202,6 +4496,10 @@ export interface components {
         AircraftId: string;
         /** @description Flight UUID */
         FlightId: string;
+        /** @description Flight signature UUID */
+        SignatureId: string;
+        /** @description Opaque single-use signing token from an emailed or shared link */
+        SignatureToken: string;
         /** @description Credential UUID */
         CredentialId: string;
         /** @description Import UUID */
@@ -5836,6 +6134,15 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+            /** @description Flight is locked by a completed instructor signature */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     deleteFlight: {
@@ -5859,6 +6166,380 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+            /** @description Flight is locked by a completed instructor signature */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listFlightSignatures: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Flight UUID */
+                flightId: components["parameters"]["FlightId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signature history */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightSignature"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createSignatureRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Flight UUID */
+                flightId: components["parameters"]["FlightId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CreateSignatureRequestRequest"];
+            };
+        };
+        responses: {
+            /** @description Signature request created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignatureRequestCreated"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            /** @description Flight is already locked, or a pending signature request already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    signFlightLive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Flight UUID */
+                flightId: components["parameters"]["FlightId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLiveSignatureRequest"];
+            };
+        };
+        responses: {
+            /** @description Signature recorded, flight is now locked */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightSignature"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            /** @description Flight is already locked by a completed signature */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getFlightSignature: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Flight UUID */
+                flightId: components["parameters"]["FlightId"];
+                /** @description Flight signature UUID */
+                signatureId: components["parameters"]["SignatureId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signature details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightSignature"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getFlightSignatureImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Flight UUID */
+                flightId: components["parameters"]["FlightId"];
+                /** @description Flight signature UUID */
+                signatureId: components["parameters"]["SignatureId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signature image */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    resendSignatureRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Flight UUID */
+                flightId: components["parameters"]["FlightId"];
+                /** @description Flight signature UUID */
+                signatureId: components["parameters"]["SignatureId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ResendSignatureRequestRequest"];
+            };
+        };
+        responses: {
+            /** @description Request updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignatureRequestCreated"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            /** @description Signature request is not pending */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    revokeSignatureRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Flight UUID */
+                flightId: components["parameters"]["FlightId"];
+                /** @description Flight signature UUID */
+                signatureId: components["parameters"]["SignatureId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Request revoked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightSignature"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            /** @description Signature request is not pending */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    voidFlightSignature: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Flight UUID */
+                flightId: components["parameters"]["FlightId"];
+                /** @description Flight signature UUID */
+                signatureId: components["parameters"]["SignatureId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoidSignatureRequest"];
+            };
+        };
+        responses: {
+            /** @description Signature voided, flight unlocked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightSignature"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            /** @description Signature is not completed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getPublicSignatureInfo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Opaque single-use signing token from an emailed or shared link */
+                token: components["parameters"]["SignatureToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Flight summary and request status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicSignatureInfo"];
+                };
+            };
+            /** @description This signing link is invalid or has already been used */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description This signing link has expired */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    completePublicSignature: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Opaque single-use signing token from an emailed or shared link */
+                token: components["parameters"]["SignatureToken"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompleteSignatureRequest"];
+            };
+        };
+        responses: {
+            /** @description Signature recorded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Signature recorded. Thank you! */
+                        message: string;
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            /** @description This signing link is invalid or has already been used */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description This signing link has expired */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     getAirport: {

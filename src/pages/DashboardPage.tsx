@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Clock, Plane, ArrowDownToLine, BadgeCheck } from 'lucide-react';
+import { Clock, Plane, ArrowDownToLine, BadgeCheck, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useFlights } from '../hooks/useFlights';
 import { useMyStatistics } from '../hooks/useStatistics';
@@ -228,6 +228,12 @@ export default function DashboardPage() {
                     {flight.arrivalIcao || '—'}
                   </span>
                   <span className="ml-2 text-sm text-slate-500 dark:text-slate-400 truncate">{flight.aircraftReg}</span>
+                  {flight.signatureId && (
+                    <ShieldCheck
+                      className="w-3.5 h-3.5 text-green-600 dark:text-green-400 shrink-0"
+                      aria-label={t('signatures:section.signedBadge')}
+                    />
+                  )}
                 </div>
                 <div className="flex items-center gap-3 whitespace-nowrap">
                   <span className="data-sm text-slate-800 dark:text-slate-100">{fmtDuration(flight.totalTime)}</span>
