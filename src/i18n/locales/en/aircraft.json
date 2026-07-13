@@ -58,6 +58,8 @@
     "MEP_SEA": "MEP (Sea) — Multi Engine Piston",
     "SET_LAND": "SET (Land) — Single Engine Turboprop",
     "SET_SEA": "SET (Sea) — Single Engine Turboprop",
-    "TMG": "TMG — Touring Motor Glider"
+    "TMG": "TMG — Touring Motor Glider",
+    "GLIDER": "GLIDER — Sailplane",
+    "OTHER": "OTHER — Other"
   }
 }

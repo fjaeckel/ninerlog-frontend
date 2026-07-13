@@ -48,6 +48,9 @@ const flightSchema = z.object({
   isFlightReview: z.boolean(),
   isProficiencyCheck: z.boolean(),
   launchMethod: z.string().optional().or(z.literal('')),
+  launches: z.number().int().min(0).optional(),
+  releaseAltitude: z.number().int().min(0).optional(),
+  releaseAltitudeRef: z.string().optional().or(z.literal('')),
   // Phase 6c regulatory compliance fields
   picName: z.string().optional().or(z.literal('')),
   multiPilotTime: z.number().min(0),
@@ -152,6 +155,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       isFlightReview: false,
       isProficiencyCheck: false,
       launchMethod: '',
+      launches: undefined,
+      releaseAltitude: undefined,
+      releaseAltitudeRef: '',
       picName: '',
       multiPilotTime: 0,
       fstdType: '',
@@ -189,6 +195,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isFlightReview: existingFlight.isFlightReview || false,
         isProficiencyCheck: existingFlight.isProficiencyCheck || false,
         launchMethod: existingFlight.launchMethod || '',
+        launches: existingFlight.launches ?? undefined,
+        releaseAltitude: existingFlight.releaseAltitude ?? undefined,
+        releaseAltitudeRef: existingFlight.releaseAltitudeRef || '',
         picName: existingFlight.picName || '',
         multiPilotTime: existingFlight.multiPilotTime || 0,
         fstdType: existingFlight.fstdType || '',
@@ -306,6 +315,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   )?.aircraftClass;
   const showLaunchMethod = currentAircraftClass === 'TMG' || currentAircraftClass === 'GLIDER' ||
     (currentAircraftClass && currentAircraftClass.toLowerCase().includes('glider'));
+  // A pure sailplane (not a TMG/motorglider): no IFR or night privilege.
+  const isPureGlider = currentAircraftClass === 'GLIDER' ||
+    (!!currentAircraftClass && currentAircraftClass.toLowerCase().includes('glider') && currentAircraftClass !== 'TMG');
 
   const onSubmit = async (data: FlightFormData) => {
     try {
@@ -342,6 +354,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isFlightReview: data.isFlightReview,
         isProficiencyCheck: data.isProficiencyCheck,
         launchMethod: (data.launchMethod || null) as any,
+        ...(data.launches !== undefined && { launches: data.launches }),
+        releaseAltitude: data.releaseAltitude ?? null,
+        releaseAltitudeRef: (data.releaseAltitudeRef || null) as any,
         picName: crewMembers.find((m) => m.role === 'PIC')?.name ?? null,
         multiPilotTime: data.multiPilotTime,
         fstdType: data.fstdType || null,
@@ -671,12 +686,52 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       {showLaunchMethod && (
         <fieldset>
           <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('fields.launchMethod')}</legend>
-          <select {...register('launchMethod')} id="launchMethod" className="input w-auto">
-            <option value="">{t('form.notSpecified')}</option>
-            <option value="winch">{t('form.winchLaunch')}</option>
-            <option value="aerotow">{t('form.aerotow')}</option>
-            <option value="self-launch">{t('form.selfLaunch')}</option>
-          </select>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 [&>*]:min-w-0">
+            <div>
+              <label htmlFor="launchMethod" className="form-label">{t('fields.launchMethod')}</label>
+              <select {...register('launchMethod')} id="launchMethod" className="input">
+                <option value="">{t('form.notSpecified')}</option>
+                <option value="winch">{t('form.winchLaunch')}</option>
+                <option value="aerotow">{t('form.aerotow')}</option>
+                <option value="self-launch">{t('form.selfLaunch')}</option>
+                <option value="bungee">{t('launchMethods.bungee')}</option>
+                <option value="auto-tow">{t('launchMethods.autoTow')}</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="launches" className="form-label">{t('fields.launches')}</label>
+              <input
+                {...register('launches', { valueAsNumber: true })}
+                type="number"
+                id="launches"
+                step="1"
+                min="0"
+                placeholder="1"
+                className="input"
+              />
+              <p className="form-helper">{t('form.launchesHelper')}</p>
+            </div>
+            <div>
+              <label htmlFor="releaseAltitude" className="form-label">{t('fields.releaseAltitude')}</label>
+              <input
+                {...register('releaseAltitude', { valueAsNumber: true })}
+                type="number"
+                id="releaseAltitude"
+                step="1"
+                min="0"
+                className="input"
+              />
+              <p className="form-helper">{t('form.metres')}</p>
+            </div>
+            <div>
+              <label htmlFor="releaseAltitudeRef" className="form-label">{t('fields.releaseAltitudeRef')}</label>
+              <select {...register('releaseAltitudeRef')} id="releaseAltitudeRef" className="input">
+                <option value="">{t('form.notSpecified')}</option>
+                <option value="AGL">AGL</option>
+                <option value="AMSL">AMSL</option>
+              </select>
+            </div>
+          </div>
           <p className="form-helper mt-1">{t('form.requiredForSpl')}</p>
         </fieldset>
       )}
@@ -859,18 +914,20 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         {expandedSections.instrument && (
           <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div>
-              <label htmlFor="ifrTime" className="form-label">{t('fields.ifrTime')}</label>
-              <input
-                {...register('ifrTime', { valueAsNumber: true })}
-                type="number"
-                id="ifrTime"
-                step="1"
-                min="0"
-                className="input"
-              />
-              <p className="form-helper">Minutes</p>
-            </div>
+            {!isPureGlider && (
+              <div>
+                <label htmlFor="ifrTime" className="form-label">{t('fields.ifrTime')}</label>
+                <input
+                  {...register('ifrTime', { valueAsNumber: true })}
+                  type="number"
+                  id="ifrTime"
+                  step="1"
+                  min="0"
+                  className="input"
+                />
+                <p className="form-helper">Minutes</p>
+              </div>
+            )}
             <div>
               <label htmlFor="actualInstrumentTime" className="form-label">{t('fields.actualInstrumentTime')}</label>
               <input
