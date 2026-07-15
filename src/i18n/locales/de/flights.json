@@ -201,6 +201,7 @@
     "proficiencyCheckLabel": "Befähigungsüberprüfung (FCL.740.A / §61.58)",
     "fstdHelper": "FSTD-Typbezeichnung (EASA AMC1 Sp. 22 / FAA §61.51)",
     "multiPilotHelper": "Minuten auf Mehrerbesatzungsflugzeug (EASA AMC1 Sp. 10)",
+    "multiPilotAutoHelper": "Automatisch aus Besatzung (PIC/SIC-Rolle = Mehrpilotenbetrieb) — keine Eingabe nötig",
     "picNameHelper": "Name des verantwortlichen Piloten (EASA AMC1 Sp. 12). Automatisch wenn leer.",
     "endorsementsHelper": "EASA AMC1 Sp. 24 / FAA §61.51(h) — getrennt von Pilotenbemerkungen",
     "autoFromCrew": "Auto aus Besatzung",

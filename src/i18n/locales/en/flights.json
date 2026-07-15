@@ -201,6 +201,7 @@
     "proficiencyCheckLabel": "Proficiency Check (FCL.740.A / §61.58)",
     "fstdHelper": "FSTD type designation (EASA AMC1 Col 22 / FAA §61.51)",
     "multiPilotHelper": "Minutes on multi-pilot aircraft (EASA AMC1 Col 10)",
+    "multiPilotAutoHelper": "Auto-filled from crew (PIC/SIC role = multi-pilot operation) — no need to enter",
     "picNameHelper": "Name of pilot-in-command (EASA AMC1 Col 12). Auto-set if left empty.",
     "endorsementsHelper": "EASA AMC1 Col 24 / FAA §61.51(h) — separate from pilot remarks",
     "autoFromCrew": "Auto from crew",

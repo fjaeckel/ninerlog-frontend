@@ -78,7 +78,7 @@ export default function FlightDetailPage() {
 
   const timeFields = [
     { label: t('detail.totalBlockTime'), value: flight.totalTime },
-    { label: t('detail.pilotFunction'), value: -1, text: flight.isPic ? 'PIC' : flight.isDual ? 'Dual' : '—' },
+    { label: t('detail.pilotFunction'), value: -1, text: flight.isPic ? 'PIC' : flight.isDual ? 'Dual' : (flight.sicTime || 0) > 0 ? 'SIC' : '—' },
     { label: t('fields.picTime'), value: flight.picTime },
     { label: t('detail.dualTime'), value: flight.dualTime },
     { label: t('fields.soloTime'), value: flight.soloTime },
