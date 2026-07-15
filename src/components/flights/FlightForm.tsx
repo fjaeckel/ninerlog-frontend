@@ -831,7 +831,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <div>
               <label className="form-label">{t('form.function')}</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
-                {existingFlight.isPic ? 'PIC' : existingFlight.isDual ? 'Dual' : '—'}
+                {existingFlight.isPic ? 'PIC' : existingFlight.isDual ? 'Dual' : (existingFlight.sicTime || 0) > 0 ? 'SIC' : '—'}
               </div>
               <p className="form-helper">{t('form.autoFromCrew')}</p>
             </div>
@@ -1030,7 +1030,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 min="0"
                 className="input"
               />
-              <p className="form-helper">{t('form.multiPilotHelper')}</p>
+              <p className="form-helper">
+                {crewMembers.some((m) => m.role === 'PIC' || m.role === 'SIC')
+                  ? t('form.multiPilotAutoHelper')
+                  : t('form.multiPilotHelper')}
+              </p>
             </div>
           </div>
 

@@ -420,7 +420,7 @@ export default function FlightsPage() {
                             ? 'badge-expiring'
                             : 'badge-neutral'
                       }`}>
-                        {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : '—'}
+                        {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : (flight.sicTime || 0) > 0 ? 'SIC' : '—'}
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
