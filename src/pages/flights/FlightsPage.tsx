@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Pencil, Trash2, Search, X, ShieldCheck } from 'lucide-react';
+import { Pencil, Trash2, ShieldCheck } from 'lucide-react';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
 import FlightForm from '../../components/flights/FlightForm';
+import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import type { operations } from '../../api/schema';
@@ -74,7 +75,7 @@ export default function FlightsPage() {
     pageSize: 20,
     sortBy,
     sortOrder,
-    ...(searchDebounced ? { search: searchDebounced } : {}),
+    ...(searchDebounced ? { q: searchDebounced } : {}),
     ...(startDate ? { startDate } : {}),
     ...(endDate ? { endDate } : {}),
     ...(aircraftReg ? { aircraftReg } : {}),
@@ -149,7 +150,14 @@ export default function FlightsPage() {
     );
   }
 
-  if (error) {
+  // Errors while an advanced search query is active (typically a 400 for an
+  // invalid query) are shown inline under the search bar instead of replacing
+  // the whole page, so the user can correct the query.
+  const searchError = error && searchDebounced
+    ? ((error as { error?: string }).error ?? t('flights:searchError'))
+    : null;
+
+  if (error && !searchError) {
     return (
       <div className="mx-auto max-w-[960px] py-6">
         <div className="card text-center py-12">
@@ -200,30 +208,8 @@ export default function FlightsPage() {
         </div>
       )}
 
-      {/* Search Bar */}
-      <div className="mb-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('flights:searchPlaceholder')}
-            className="input pl-10 pr-10"
-            aria-label={t('flights:searchPlaceholder')}
-          />
-          {search && (
-            <button
-              onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-3"
-              aria-label={t('flights:clearSearch')}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )
-          }
-        </div>
-      </div>
+      {/* Search Bar — advanced query with tag autocomplete */}
+      <FlightSearchBar value={search} onChange={setSearch} error={searchError} />
 
       {/* Filter toggle + sort controls */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
