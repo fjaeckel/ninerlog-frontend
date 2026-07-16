@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { LogOut } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useAuthStore } from '../stores/authStore';
+import { useLogout } from '../hooks/useAuth';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { useUpdateProfile, useChangePassword, useDeleteAccount, useDeleteAllFlights, useDeleteAllUserData } from '../hooks/useProfile';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
 import { useSetup2FA, useVerify2FA, useDisable2FA } from '../hooks/useTwoFactor';
@@ -16,9 +19,16 @@ import BackupsPage from './backups/BackupsPage';
 import { BaselineSection } from '../components/profile/BaselineSection';
 
 export default function ProfilePage() {
-  const { t } = useTranslation('settings');
+  const { t } = useTranslation(['settings', 'common']);
   const { user, updateUser } = useAuthStore();
   const navigate = useNavigate();
+  const logout = useLogout();
+
+  const handleLogout = async () => {
+    useOnboardingStore.getState().close();
+    await logout.mutateAsync();
+    navigate('/login');
+  };
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
   const deleteAccount = useDeleteAccount();
@@ -163,7 +173,17 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-[640px] mx-auto px-4 py-8">
-      <h1 className="page-title mb-6">{t('title')}</h1>
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <h1 className="page-title">{t('title')}</h1>
+        <button
+          onClick={handleLogout}
+          disabled={logout.isPending}
+          className="inline-flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+        >
+          <LogOut className="w-4 h-4" aria-hidden="true" />
+          {t('common:logout')}
+        </button>
+      </div>
 
       {/* Tab Navigation — select on mobile, tabs on sm+ */}
       <div className="sm:hidden mb-6">

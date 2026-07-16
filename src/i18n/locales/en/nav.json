@@ -18,5 +18,8 @@
   "profileSettings": "Profile & Settings",
   "home": "Home",
   "addFlight": "Add Flight",
-  "more": "More"
+  "more": "More",
+  "sectionLogbook": "Logbook",
+  "sectionData": "Data",
+  "sectionAccount": "Account"
 }

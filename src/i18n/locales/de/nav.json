@@ -18,5 +18,8 @@
   "profileSettings": "Profil & Einstellungen",
   "home": "Start",
   "addFlight": "Flug hinzufügen",
-  "more": "Mehr"
+  "more": "Mehr",
+  "sectionLogbook": "Flugbuch",
+  "sectionData": "Daten",
+  "sectionAccount": "Konto"
 }
