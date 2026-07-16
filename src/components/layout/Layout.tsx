@@ -70,6 +70,17 @@ export default function Layout() {
 
         <div className="flex items-center gap-1 sm:gap-2">
           <ThemeSwitcher className="hidden sm:flex" />
+          {/* Report a bug — mobile/tablet only; the desktop sidebar has its own entry */}
+          <a
+            href="https://ninerlog.com/report-a-bug"
+            target="_blank"
+            rel="noopener noreferrer"
+            title={t('nav:reportBugTooltip')}
+            aria-label={t('nav:reportBug')}
+            className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors tap-none"
+          >
+            <Bug className="w-5 h-5" aria-hidden="true" />
+          </a>
           {/* User avatar */}
           <button
             onClick={() => navigate('/profile')}
@@ -155,11 +166,10 @@ export default function Layout() {
         <BottomNavItem to="/dashboard" tourId="dashboard" label={t('nav:home')} icon={<LayoutDashboard className="w-5 h-5" />} />
         <BottomNavItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
         <Link
-          to="/flights"
-          state={{ openForm: true }}
+          to="/quicklog"
           data-tour="add-flight"
           className="flex flex-col items-center justify-center -mt-6 active:scale-95 transition-transform tap-none"
-          aria-label={t('nav:addFlight')}
+          aria-label={t('nav:quickLog')}
         >
           <span className="w-14 h-14 gradient-brand text-white rounded-full flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-900">
             <Plus className="w-6 h-6" />
@@ -190,35 +200,24 @@ export default function Layout() {
             <div className="flex justify-center pt-3 pb-2">
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
             </div>
-            <nav className="px-4 pb-4 space-y-1" aria-label="More navigation">
-              <MoreMenuItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+            <nav className="px-4 pb-4 space-y-1 max-h-[70vh] overflow-y-auto" aria-label="More navigation">
+              <MoreMenuGroup label={t('nav:sectionLogbook')} />
               <MoreMenuItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+
+              <MoreMenuGroup label={t('nav:sectionData')} />
               <MoreMenuItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+
+              <MoreMenuGroup label={t('nav:sectionAccount')} />
               <MoreMenuItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuExternalItem
-                href="https://ninerlog.com/report-a-bug"
-                label={t('nav:reportBug')}
-                title={t('nav:reportBugTooltip')}
-                icon={<Bug className="w-5 h-5" />}
-                onClick={() => setShowMoreMenu(false)}
-              />
               {user?.isAdmin && (
                 <MoreMenuItem to="/admin" label={t('nav:admin')} icon={<ShieldCheck className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               )}
-              <div className="border-t border-slate-100 dark:border-slate-700 my-2" />
-              <button
-                onClick={() => { setShowMoreMenu(false); handleLogout(); }}
-                className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-              >
-                <LogOut className="w-5 h-5" />
-                {t('common:logout')}
-              </button>
             </nav>
           </div>
         </>
@@ -305,6 +304,14 @@ function MoreMenuItem({ to, label, icon, onClick }: { to: string; label: string;
   );
 }
 
+function MoreMenuGroup({ label }: { label: string }) {
+  return (
+    <div className="px-3 pt-3 pb-1 first:pt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      {label}
+    </div>
+  );
+}
+
 function SidebarExternalItem({ href, label, title, icon }: { href: string; label: string; title?: string; icon: React.ReactNode }) {
   return (
     <a
@@ -313,23 +320,6 @@ function SidebarExternalItem({ href, label, title, icon }: { href: string; label
       rel="noopener noreferrer"
       title={title}
       className="relative flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors tap-none text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
-    >
-      <span className="shrink-0" aria-hidden="true">{icon}</span>
-      <span className="flex-1">{label}</span>
-      <ExternalLink className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-    </a>
-  );
-}
-
-function MoreMenuExternalItem({ href, label, title, icon, onClick }: { href: string; label: string; title?: string; icon: React.ReactNode; onClick: () => void }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      title={title}
-      onClick={onClick}
-      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
     >
       <span className="shrink-0" aria-hidden="true">{icon}</span>
       <span className="flex-1">{label}</span>
