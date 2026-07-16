@@ -6026,6 +6026,47 @@ export interface operations {
                 isDual?: boolean;
                 /** @description Free-text search across registration, type, ICAO codes, and remarks */
                 search?: string;
+                /**
+                 * @description Advanced search query. Combines free-text terms and field tags with
+                 *     boolean logic; all conditions are evaluated in the database and can
+                 *     be combined with the other filter parameters (which are ANDed).
+                 *
+                 *     **Syntax**
+                 *     - Bare terms match across registration, type, ICAO codes, route,
+                 *       remarks, instructor, PIC name, and crew names: `EDDF checkride`
+                 *     - Tags: `field:value` (contains for text, equals otherwise),
+                 *       `field=value` (exact), `field!=value`, and `>`, `>=`, `<`, `<=`
+                 *       for numeric, duration, date, and time-of-day fields.
+                 *     - Boolean operators `AND`, `OR`, `NOT` (case-insensitive) and
+                 *       parentheses. Adjacent terms are implicitly ANDed; `-term` negates.
+                 *     - Quote values containing spaces: `crew:"John Doe"`.
+                 *     - `*` is a wildcard in text values: `reg:D-E*`.
+                 *     - Durations accept minutes (`90`), `H:MM` (`1:30`), or hours
+                 *       (`1.5h`). Dates accept `YYYY`, `YYYY-MM`, or `YYYY-MM-DD`
+                 *       (partial dates match the whole period). Times of day are `HH:MM`
+                 *       UTC. Booleans are `true`/`false`.
+                 *
+                 *     **Tags** (aliases in parentheses): date; aircraftReg (reg,
+                 *     registration, aircraft); aircraftType (type, model); departureIcao
+                 *     (departure, from, dep); arrivalIcao (arrival, to, arr); route;
+                 *     remarks (comments); offBlockTime (offBlock); onBlockTime (onBlock);
+                 *     departureTime (takeoffTime); arrivalTime (landingTime); totalTime
+                 *     (total); picTime; dualTime; nightTime (night); ifrTime (ifr);
+                 *     soloTime (solo); crossCountryTime (xc, crossCountry); sicTime;
+                 *     dualGivenTime (dualGiven); simulatedFlightTime (simTime);
+                 *     groundTrainingTime; actualInstrumentTime; simulatedInstrumentTime
+                 *     (hoodTime); multiPilotTime; landings; landingsDay; landingsNight;
+                 *     takeoffsDay; takeoffsNight; holds; approaches; approachType;
+                 *     distance; isPic; isDual; isIpc (ipc); isFlightReview (flightReview,
+                 *     bfr); isProficiencyCheck (proficiencyCheck); signed; instructorName
+                 *     (instructor); instructorComments; picName; crew; fstdType (fstd);
+                 *     endorsements; launchMethod (launch); createdAt; updatedAt.
+                 *
+                 *     Example: `q=(departure:EDDF OR arrival:EDDF) AND nightTime>0 NOT remarks:cancelled`
+                 *
+                 *     An invalid query returns 400 with a description of the problem.
+                 */
+                q?: string;
                 /** @description Page number (1-indexed) */
                 page?: number;
                 /** @description Number of items per page */
@@ -6052,6 +6093,7 @@ export interface operations {
                     "application/json": components["schemas"]["PaginatedFlights"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
         };
     };
