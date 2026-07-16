@@ -78,12 +78,15 @@
     "selectTopic": "Select help topic",
     "sections": {
       "gettingStarted": "Getting Started",
+      "dashboard": "Dashboard",
+      "flights": "Logging Flights",
+      "quicklog": "Quick Log",
       "aircraft": "Aircraft",
+      "currency": "Currency & Recency",
       "licenses": "Licenses & Ratings",
       "credentials": "Credentials",
-      "flights": "Logging Flights",
+      "signatures": "Instructor Signatures",
       "importExport": "Import & Export",
-      "currency": "Currency & Recency",
       "reports": "Reports & Maps",
       "profile": "Profile & Settings",
       "admin": "Admin Console"

@@ -78,12 +78,15 @@
     "selectTopic": "Hilfethema auswählen",
     "sections": {
       "gettingStarted": "Erste Schritte",
+      "dashboard": "Übersicht",
+      "flights": "Flüge eintragen",
+      "quicklog": "Quick Log",
       "aircraft": "Flugzeuge",
+      "currency": "Gültigkeit & Recency",
       "licenses": "Lizenzen & Berechtigungen",
       "credentials": "Nachweise",
-      "flights": "Flüge eintragen",
+      "signatures": "Fluglehrer-Signaturen",
       "importExport": "Import & Export",
-      "currency": "Gültigkeit & Recency",
       "reports": "Berichte & Karten",
       "profile": "Profil & Einstellungen",
       "admin": "Admin-Konsole"
