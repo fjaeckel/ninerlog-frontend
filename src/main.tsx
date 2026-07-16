@@ -12,9 +12,18 @@ import { initWebVitals } from './lib/web-vitals';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
+      // Always revalidate against the live API so navigating to a page shows
+      // the newest data. Cached data is still served instantly while a
+      // background refetch runs (stale-while-revalidate), so there is no
+      // loading flash — but the user never sees stale data after navigation
+      // or returning to the app. Hooks that need slower-changing data (e.g.
+      // useBaseline, useBackups, useSignatures) opt out with their own
+      // staleTime.
+      staleTime: 0,
+      refetchOnMount: true,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
       retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
