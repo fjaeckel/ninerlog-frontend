@@ -6,3 +6,7 @@ test-results/
 playwright-report/
 coverage/
 .lighthouseci/
+
+# Local-only Help Base preview (dev scaffolding, not part of the build)
+/preview.html
+/src/preview.tsx
