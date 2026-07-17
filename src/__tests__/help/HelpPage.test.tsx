@@ -140,11 +140,11 @@ describe('HelpPage', () => {
 
   it('renders theme-aware figures within help content', () => {
     const { container } = renderWithProviders(<HelpPage />);
-    // Getting Started embeds figure: images which render as inline SVG.
-    // Figures use a 640-wide viewBox, distinguishing them from the 24x24
-    // lucide nav icons — this guards against the figure: scheme being
-    // stripped by the markdown URL sanitizer (which yields a broken <img>).
-    const figure = container.querySelector('svg[viewBox^="0 0 640"]');
+    // Getting Started embeds figure: images which render as real annotated
+    // screenshots served from /help/<id>-<theme>.png — this guards against
+    // the figure: scheme being stripped by the markdown URL sanitizer
+    // (which would otherwise yield a broken <img> with no src).
+    const figure = container.querySelector('img[src^="/help/"][src$="-light.png"]');
     expect(figure).toBeInTheDocument();
   });
 
