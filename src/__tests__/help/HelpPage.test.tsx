@@ -141,7 +141,11 @@ describe('HelpPage', () => {
   it('renders theme-aware figures within help content', () => {
     const { container } = renderWithProviders(<HelpPage />);
     // Getting Started embeds figure: images which render as inline SVG.
-    expect(container.querySelector('svg')).toBeInTheDocument();
+    // Figures use a 640-wide viewBox, distinguishing them from the 24x24
+    // lucide nav icons — this guards against the figure: scheme being
+    // stripped by the markdown URL sanitizer (which yields a broken <img>).
+    const figure = container.querySelector('svg[viewBox^="0 0 640"]');
+    expect(figure).toBeInTheDocument();
   });
 
   it('navigates to Quick Log and shows offline guidance', async () => {
@@ -151,7 +155,7 @@ describe('HelpPage', () => {
     const btn = screen.getAllByRole('button').find((b) => b.textContent?.trim() === 'Quick Log');
     await user.click(btn!);
 
-    expect(screen.getByText(/works offline/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /works offline/i })).toBeInTheDocument();
   });
 
   it('navigates to Instructor Signatures and explains locking', async () => {

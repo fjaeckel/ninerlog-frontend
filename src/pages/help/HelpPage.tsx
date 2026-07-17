@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import Markdown from 'react-markdown';
+import Markdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { HelpCircle, Plane, Award, FileText, PlaneTakeoff, Upload, Shield, BarChart3, User, ShieldCheck, BookOpen, Search, X, Bug, ExternalLink, Compass, LayoutDashboard, Timer, PenLine } from 'lucide-react';
 import { useHelpContent, helpSectionIds, type HelpSectionId } from './content';
@@ -191,6 +191,9 @@ export default function HelpPage() {
               <article className="prose prose-slate dark:prose-invert prose-sm sm:prose-base max-w-none prose-headings:scroll-mt-20 prose-h1:text-2xl prose-h2:text-xl prose-h2:border-b prose-h2:border-slate-200 prose-h2:dark:border-slate-700 prose-h2:pb-2 prose-table:text-sm prose-th:bg-slate-50 prose-th:dark:bg-slate-800 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-blockquote:border-blue-300 prose-blockquote:dark:border-blue-700 prose-blockquote:bg-blue-50/50 prose-blockquote:dark:bg-blue-900/10 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg print:prose-base">
                 <Markdown
                   remarkPlugins={[remarkGfm]}
+                  // Preserve our custom `figure:` image scheme, which the
+                  // default sanitizer would otherwise strip to an empty URL.
+                  urlTransform={(url) => (url.startsWith('figure:') ? url : defaultUrlTransform(url))}
                   components={{
                     img: ({ src, alt }) => {
                       if (typeof src === 'string' && src.startsWith('figure:')) {
