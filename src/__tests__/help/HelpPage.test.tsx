@@ -129,4 +129,42 @@ describe('HelpPage', () => {
     expect(screen.getByText(/check your currency/i)).toBeInTheDocument();
     expect(screen.getByText(/add your credentials/i)).toBeInTheDocument();
   });
+
+  it('exposes navigation for the newly added feature sections', () => {
+    renderWithProviders(<HelpPage />);
+    const labels = screen.getAllByRole('button').map((b) => b.textContent?.trim());
+    expect(labels).toContain('Dashboard');
+    expect(labels).toContain('Quick Log');
+    expect(labels).toContain('Instructor Signatures');
+  });
+
+  it('renders theme-aware figures within help content', () => {
+    const { container } = renderWithProviders(<HelpPage />);
+    // Getting Started embeds figure: images which render as real annotated
+    // screenshots served from /help/<id>-<theme>.png — this guards against
+    // the figure: scheme being stripped by the markdown URL sanitizer
+    // (which would otherwise yield a broken <img> with no src).
+    const figure = container.querySelector('img[src^="/help/"][src$="-light.png"]');
+    expect(figure).toBeInTheDocument();
+  });
+
+  it('navigates to Quick Log and shows offline guidance', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<HelpPage />);
+
+    const btn = screen.getAllByRole('button').find((b) => b.textContent?.trim() === 'Quick Log');
+    await user.click(btn!);
+
+    expect(screen.getByRole('heading', { name: /works offline/i })).toBeInTheDocument();
+  });
+
+  it('navigates to Instructor Signatures and explains locking', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<HelpPage />);
+
+    const btn = screen.getAllByRole('button').find((b) => b.textContent?.includes('Signatures'));
+    await user.click(btn!);
+
+    expect(screen.getByText(/a signed flight is locked/i)).toBeInTheDocument();
+  });
 });

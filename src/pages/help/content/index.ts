@@ -15,12 +15,15 @@ function brand(text: string): string {
 
 export const helpSectionIds = [
   'getting-started',
+  'dashboard',
+  'flights',
+  'quicklog',
   'aircraft',
+  'currency',
   'licenses',
   'credentials',
-  'flights',
+  'signatures',
   'import-export',
-  'currency',
   'reports',
   'profile',
   'admin',
