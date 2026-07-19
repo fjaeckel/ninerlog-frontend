@@ -29,7 +29,26 @@
     "isComplex": "Complex",
     "isHighPerformance": "High Performance",
     "isTailwheel": "Tailwheel",
-    "isActive": "Active"
+    "isActive": "Active",
+    "homeAirfield": "Home Airfield",
+    "defaultDepartureIcao": "Default departure airfield",
+    "defaultArrivalIcao": "Default arrival airfield"
+  },
+  "stats": {
+    "totalTime": "Total Time",
+    "flights": "Flights",
+    "landings": "Landings",
+    "night": "night",
+    "lastFlown": "Last Flown",
+    "staleDays": "{{days}} days ago",
+    "neverFlown": "No flights logged with this aircraft yet.",
+    "last90Days": "Last 90 Days",
+    "landingsCount_one": "{{count}} landing",
+    "landingsCount_other": "{{count}} landings",
+    "until": "until {{date}}",
+    "modelRecency_one": "Model {{type}}: {{count}} landing in 90 days",
+    "modelRecency_other": "Model {{type}}: {{count}} landings in 90 days",
+    "modelLastFlown": "last flown {{date}}"
   },
   "classes": {
     "SEP_LAND": "SEP (Land)",
@@ -49,7 +68,13 @@
     "characteristics": "Characteristics",
     "activeInFleet": "Active in fleet",
     "classHelper": "Used for currency tracking. Choose a standard class or enter a custom value.",
-    "failedToSave": "Failed to save aircraft. Please try again."
+    "failedToSave": "Failed to save aircraft. Please try again.",
+    "loggingDefaults": "Logging defaults (departure / arrival)",
+    "departurePlaceholder": "Departure, e.g. LSZH",
+    "arrivalPlaceholder": "Arrival, e.g. LSZH",
+    "defaultsHelper": "Prefilled in the flight form when you pick this aircraft. Set both to your home airfield for local flying.",
+    "renameFlights_one": "Also update {{count}} logged flight from {{oldRegistration}} to the new registration",
+    "renameFlights_other": "Also update {{count}} logged flights from {{oldRegistration}} to the new registration"
   },
   "classOptions": {
     "SEP_LAND": "SEP (Land) — Single Engine Piston",

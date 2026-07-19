@@ -29,7 +29,26 @@
     "isComplex": "Komplex",
     "isHighPerformance": "Hochleistung",
     "isTailwheel": "Spornrad",
-    "isActive": "Aktiv"
+    "isActive": "Aktiv",
+    "homeAirfield": "Heimatflugplatz",
+    "defaultDepartureIcao": "Standard-Startflugplatz",
+    "defaultArrivalIcao": "Standard-Zielflugplatz"
+  },
+  "stats": {
+    "totalTime": "Gesamtzeit",
+    "flights": "Flüge",
+    "landings": "Landungen",
+    "night": "Nacht",
+    "lastFlown": "Zuletzt geflogen",
+    "staleDays": "vor {{days}} Tagen",
+    "neverFlown": "Noch keine Flüge mit diesem Flugzeug geloggt.",
+    "last90Days": "Letzte 90 Tage",
+    "landingsCount_one": "{{count}} Landung",
+    "landingsCount_other": "{{count}} Landungen",
+    "until": "bis {{date}}",
+    "modelRecency_one": "Muster {{type}}: {{count}} Landung in 90 Tagen",
+    "modelRecency_other": "Muster {{type}}: {{count}} Landungen in 90 Tagen",
+    "modelLastFlown": "zuletzt geflogen {{date}}"
   },
   "classes": {
     "SEP_LAND": "SEP (Land)",
@@ -49,7 +68,13 @@
     "characteristics": "Eigenschaften",
     "activeInFleet": "Aktiv in der Flotte",
     "classHelper": "Für Gültigkeitstracking. Wählen Sie eine Standardklasse oder geben Sie einen eigenen Wert ein.",
-    "failedToSave": "Flugzeug konnte nicht gespeichert werden."
+    "failedToSave": "Flugzeug konnte nicht gespeichert werden.",
+    "loggingDefaults": "Logbuch-Vorgaben (Start / Ziel)",
+    "departurePlaceholder": "Start, z. B. LSZH",
+    "arrivalPlaceholder": "Ziel, z. B. LSZH",
+    "defaultsHelper": "Wird beim Auswählen dieses Flugzeugs im Flugformular vorausgefüllt. Für Platzrunden beide auf den Heimatflugplatz setzen.",
+    "renameFlights_one": "{{count}} geloggten Flug von {{oldRegistration}} auf das neue Kennzeichen aktualisieren",
+    "renameFlights_other": "{{count}} geloggte Flüge von {{oldRegistration}} auf das neue Kennzeichen aktualisieren"
   },
   "classOptions": {
     "SEP_LAND": "SEP (Land) — Einmotorig Kolben",

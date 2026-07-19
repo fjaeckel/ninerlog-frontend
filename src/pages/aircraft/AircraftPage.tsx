@@ -1,15 +1,27 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAircraft, useDeleteAircraft } from '../../hooks/useAircraft';
+import { useAircraft, useAircraftStats, useDeleteAircraft } from '../../hooks/useAircraft';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import { useRecencyPrefs } from '../../hooks/useRecencyPrefs';
+import { recencyLevel, RECENCY_DOT_CLASSES, RECENCY_REQUIRED_LANDINGS } from '../../lib/recency';
 import AircraftForm from '../../components/aircraft/AircraftForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { SkeletonGrid } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import HelpLink from '../../components/ui/HelpLink';
 
+const STALE_AFTER_DAYS = 90;
+
+function daysSince(dateStr: string): number {
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / (24 * 60 * 60 * 1000));
+}
+
 export default function AircraftPage() {
   const { t } = useTranslation('aircraft');
   const { data: aircraft, isLoading, error } = useAircraft();
+  const { data: aircraftStats } = useAircraftStats();
+  const { fmtDuration, fmtDate } = useFormatPrefs();
+  const recencyPrefs = useRecencyPrefs();
   const deleteAircraft = useDeleteAircraft();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -109,7 +121,12 @@ export default function AircraftPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {aircraft.map((ac) => (
+          {aircraft.map((ac) => {
+            const stats = aircraftStats?.byReg.get(ac.registration.toUpperCase());
+            const typeStats = aircraftStats?.byType.get(ac.type.toUpperCase());
+            const staleDays = stats?.lastFlightDate ? daysSince(stats.lastFlightDate) : null;
+            const isStale = ac.isActive && staleDays !== null && staleDays >= STALE_AFTER_DAYS;
+            return (
             <div key={ac.id} className="card">
               <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
                 {/* Identity */}
@@ -172,6 +189,113 @@ export default function AircraftPage() {
                       )}
                     </dd>
                   </div>
+                  {(ac.defaultDepartureIcao || ac.defaultArrivalIcao) && (
+                    <div>
+                      <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        {t('fields.homeAirfield')}
+                      </dt>
+                      <dd className="mt-0.5 font-medium text-slate-700 dark:text-slate-200">
+                        {ac.defaultDepartureIcao === ac.defaultArrivalIcao || !ac.defaultArrivalIcao
+                          ? ac.defaultDepartureIcao
+                          : `${ac.defaultDepartureIcao ?? '—'} → ${ac.defaultArrivalIcao}`}
+                      </dd>
+                    </div>
+                  )}
+                  {/* Flight statistics aggregated from the logbook */}
+                  <div className="col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-4 pt-3 mt-1 border-t border-slate-100 dark:border-slate-700">
+                    {stats ? (
+                      <div className="flex flex-wrap gap-x-8 gap-y-2">
+                        <div>
+                          <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            {t('stats.totalTime')}
+                          </dt>
+                          <dd className="mt-0.5 font-semibold text-slate-800 dark:text-slate-100">
+                            {fmtDuration(stats.totalMinutes)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            {t('stats.flights')}
+                          </dt>
+                          <dd className="mt-0.5 font-semibold text-slate-800 dark:text-slate-100">
+                            {stats.totalFlights}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            {t('stats.landings')}
+                          </dt>
+                          <dd className="mt-0.5 font-semibold text-slate-800 dark:text-slate-100">
+                            {stats.landingsDay + stats.landingsNight}
+                            {stats.landingsNight > 0 && (
+                              <span className="ml-1 font-normal text-xs text-slate-500 dark:text-slate-400">
+                                ({stats.landingsNight} {t('stats.night')})
+                              </span>
+                            )}
+                          </dd>
+                        </div>
+                        {stats.lastFlightDate && (
+                          <div>
+                            <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                              {t('stats.lastFlown')}
+                            </dt>
+                            <dd className="mt-0.5 font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                              {fmtDate(stats.lastFlightDate)}
+                              {isStale && (
+                                <span className="badge-expiring text-xs font-normal">
+                                  {t('stats.staleDays', { days: staleDays })}
+                                </span>
+                              )}
+                            </dd>
+                          </div>
+                        )}
+                        {recencyPrefs.perRegistration && (
+                          <div>
+                            <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                              {t('stats.last90Days')}
+                            </dt>
+                            <dd className="mt-0.5 font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                              <span
+                                className={`w-2 h-2 rounded-full shrink-0 ${RECENCY_DOT_CLASSES[recencyLevel(stats.landingsLast90Days)]}`}
+                                aria-hidden="true"
+                              />
+                              {t('stats.landingsCount', {
+                                count: stats.landingsLast90Days,
+                                required: RECENCY_REQUIRED_LANDINGS,
+                              })}
+                              {stats.recencyLapsesOn && (
+                                <span className="font-normal text-xs text-slate-500 dark:text-slate-400">
+                                  {t('stats.until', { date: fmtDate(stats.recencyLapsesOn) })}
+                                </span>
+                              )}
+                            </dd>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
+                        {t('stats.neverFlown')}
+                      </p>
+                    )}
+                    {/* Model-level recency: aggregated across all registrations of this type */}
+                    {recencyPrefs.perModel && typeStats && (
+                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                        <span
+                          className={`w-2 h-2 rounded-full shrink-0 ${RECENCY_DOT_CLASSES[recencyLevel(typeStats.landingsLast90Days)]}`}
+                          aria-hidden="true"
+                        />
+                        {t('stats.modelRecency', {
+                          type: ac.type,
+                          count: typeStats.landingsLast90Days,
+                        })}
+                        {typeStats.lastFlightDate && (
+                          <span>
+                            · {t('stats.modelLastFlown', { date: fmtDate(typeStats.lastFlightDate) })}
+                          </span>
+                        )}
+                      </p>
+                    )}
+                  </div>
                   {ac.notes && (
                     <div className="col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-4">
                       <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -201,7 +325,8 @@ export default function AircraftPage() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

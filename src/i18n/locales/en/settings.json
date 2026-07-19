@@ -15,6 +15,14 @@
     "decimal": "Decimal Hours",
     "decimalExample": "1.5h"
   },
+  "recency": {
+    "title": "90-Day Recency Indicators",
+    "description": "Informational indicators showing 3 takeoffs and landings as pilot flying in the preceding 90 days, styled after EASA FCL.060(b). Shown on aircraft cards, the dashboard, and the currency page.",
+    "perModel": "Per aircraft model",
+    "perModelDesc": "Track recency per type/model (e.g. C172) across all registrations — this matches how FCL.060(b) defines recent experience.",
+    "perRegistration": "Per registration",
+    "perRegistrationDesc": "Additionally track recency per individual tail number. Purely a familiarity aid — the rule itself is defined per type/class."
+  },
   "profileInfo": {
     "title": "Profile Information",
     "name": "Name",

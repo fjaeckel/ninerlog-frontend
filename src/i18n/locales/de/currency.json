@@ -7,6 +7,24 @@
   "ratingCurrency": "Berechtigungs- & Lizenz-Gültigkeit",
   "passengerCurrency": "Passagier-Gültigkeit",
   "passengerCurrencyDesc": "Erforderliche Landungen, um Passagiere mitnehmen zu dürfen. Alleinflug ist auch ohne Passagier-Gültigkeit möglich.",
+  "aircraftRecency": {
+    "title": "90-Tage-Übung nach Muster & Kennzeichen",
+    "description": "Informativer Vertrautheitsindikator: {{required}} Starts und Landungen als steuernder Pilot (pilot flying) in den letzten 90 Tagen, angelehnt an EASA FCL.060(b). Landungen zählen, wenn Sie selbst gesteuert haben (auch mit Fluglehrer) — nicht nur solo. Die regulatorische Passagier-Gültigkeit oben wird je Klasse/Muster bewertet.",
+    "aircraft": "Flugzeug",
+    "landings90": "Landungen / 90 T.",
+    "status": "Status",
+    "lastFlown": "Zuletzt geflogen",
+    "currentUntil": "Gültig bis",
+    "kind": {
+      "model": "Muster",
+      "registration": "Kennzeichen"
+    },
+    "level": {
+      "current": "Aktuell",
+      "low": "Wenig Übung",
+      "none": "Nicht geflogen"
+    }
+  },
   "flightReview": "Flugüberprüfung",
   "noRatings": "Keine Klassenberechtigungen gefunden. Fügen Sie eine Lizenz mit Klassenberechtigungen hinzu.",
   "noCredentials": "Keine Nachweise gefunden. Fügen Sie Medicals und Zertifikate hinzu.",

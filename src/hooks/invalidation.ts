@@ -12,6 +12,7 @@ export const FLIGHT_DEPENDENT_QUERY_KEYS: readonly (readonly unknown[])[] = [
   ['stats'],
   ['statsByClass'],
   ['trends'],
+  ['aircraft', 'stats'],
 ];
 
 /**
