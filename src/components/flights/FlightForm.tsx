@@ -123,6 +123,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     reset,
     watch,
     setValue,
+    getValues,
   } = useForm<FlightFormData>({
     resolver: zodResolver(flightSchema),
     defaultValues: {
@@ -225,15 +226,30 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       (watchedReg || '').length > 0
   );
 
+  // Prefill empty airfield fields from the aircraft's logging defaults
+  const applyAircraftDefaults = useCallback(
+    (ac: Aircraft) => {
+      if (isEditing) return;
+      if (ac.defaultDepartureIcao && !getValues('departureIcao')) {
+        setValue('departureIcao', ac.defaultDepartureIcao, { shouldValidate: true });
+      }
+      if (ac.defaultArrivalIcao && !getValues('arrivalIcao')) {
+        setValue('arrivalIcao', ac.defaultArrivalIcao, { shouldValidate: true });
+      }
+    },
+    [setValue, getValues, isEditing]
+  );
+
   // Auto-fill aircraft type when registration matches a known aircraft
   const selectAircraft = useCallback(
     (ac: Aircraft) => {
       setValue('aircraftReg', ac.registration, { shouldValidate: true });
       setValue('aircraftType', ac.type, { shouldValidate: true });
+      applyAircraftDefaults(ac);
       setShowSuggestions(false);
       setShowQuickAdd(false);
     },
-    [setValue]
+    [setValue, applyAircraftDefaults]
   );
 
   // Close suggestions on outside click
@@ -257,8 +273,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   useEffect(() => {
     if (matchedAircraft && !isEditing) {
       setValue('aircraftType', matchedAircraft.type, { shouldValidate: true });
+      applyAircraftDefaults(matchedAircraft);
     }
-  }, [matchedAircraft, setValue, isEditing]);
+  }, [matchedAircraft, setValue, isEditing, applyAircraftDefaults]);
 
   // Pre-fill on-block with off-block when off-block is entered (and on-block is empty)
   // Cuts down on time-wheel scrolling on mobile.

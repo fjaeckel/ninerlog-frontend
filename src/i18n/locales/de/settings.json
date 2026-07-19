@@ -15,6 +15,14 @@
     "decimal": "Dezimalstunden",
     "decimalExample": "1,5h"
   },
+  "recency": {
+    "title": "90-Tage-Übungsindikatoren",
+    "description": "Informative Indikatoren: 3 Starts und Landungen als steuernder Pilot (pilot flying) in den letzten 90 Tagen, angelehnt an EASA FCL.060(b). Sichtbar auf Flugzeugkarten, Dashboard und Gültigkeitsseite.",
+    "perModel": "Je Flugzeugmuster",
+    "perModelDesc": "Übung je Muster (z. B. C172) über alle Kennzeichen hinweg — entspricht der Definition der fortlaufenden Flugerfahrung in FCL.060(b).",
+    "perRegistration": "Je Kennzeichen",
+    "perRegistrationDesc": "Zusätzlich Übung je einzelnem Kennzeichen verfolgen. Reiner Vertrautheitsindikator — die Regel selbst gilt je Klasse/Muster."
+  },
   "profileInfo": {
     "title": "Profilinformationen",
     "name": "Name",

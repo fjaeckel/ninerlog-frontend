@@ -7,9 +7,12 @@ import { useMyStatistics } from '../hooks/useStatistics';
 import { useCredentials } from '../hooks/useCredentials';
 import { useAllCurrencyStatus } from '../hooks/useCurrency';
 import { useStatsByClass } from '../hooks/useStatsByClass';
+import { useAircraftStats } from '../hooks/useAircraft';
 import { CurrencyCard } from '../components/currency/CurrencyCard';
 import { StatCard } from '../components/ui/StatCard';
 import { useFormatPrefs } from '../hooks/useFormatPrefs';
+import { useRecencyPrefs } from '../hooks/useRecencyPrefs';
+import { recencyLevel, RECENCY_DOT_CLASSES } from '../lib/recency';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -28,6 +31,12 @@ export default function DashboardPage() {
   const { data: currencyStatus } = useAllCurrencyStatus();
   const { data: credentials } = useCredentials();
   const { data: classStat } = useStatsByClass();
+  const { data: aircraftStats } = useAircraftStats();
+  const recencyPrefs = useRecencyPrefs();
+
+  const modelStats = [...(aircraftStats?.byType.values() ?? [])]
+    .sort((a, b) => b.totalMinutes - a.totalMinutes)
+    .slice(0, 6);
 
   const recentFlights = flightsData?.data || [];
   const totalFlights = flightsData?.pagination?.total || 0;
@@ -190,6 +199,43 @@ export default function DashboardPage() {
                   </div>
                   <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 dark:bg-blue-400 rounded-full" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Time by Aircraft Model */}
+      {modelStats.length > 0 && (
+        <div className="card mb-6" data-testid="model-stats-section">
+          <h2 className="section-title mb-4">{t('dashboard:timeByModel')}</h2>
+          <div className="space-y-2">
+            {modelStats.map((ms) => {
+              const maxMinutes = Math.max(...modelStats.map((m) => m.totalMinutes), 1);
+              const pct = (ms.totalMinutes / maxMinutes) * 100;
+              return (
+                <div key={ms.aircraftType} data-testid={`model-stat-${ms.aircraftType}`}>
+                  <div className="flex justify-between items-center text-sm mb-1 gap-2">
+                    <span className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 min-w-0">
+                      {recencyPrefs.perModel && (
+                        <span
+                          className={`w-2 h-2 rounded-full shrink-0 ${RECENCY_DOT_CLASSES[recencyLevel(ms.landingsLast90Days)]}`}
+                          title={t('dashboard:modelRecencyTitle', { count: ms.landingsLast90Days })}
+                        />
+                      )}
+                      <span className="truncate">{ms.aircraftType}</span>
+                    </span>
+                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums whitespace-nowrap">
+                      {fmtDuration(ms.totalMinutes)} · {ms.totalFlights} {t('common:flights')}
+                      {ms.lastFlightDate && (
+                        <span className="hidden sm:inline"> · {fmtDate(ms.lastFlightDate)}</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-indigo-500 dark:bg-indigo-400 rounded-full" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               );

@@ -23,6 +23,10 @@ export interface User {
   dateFormat?: 'DD.MM.YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD';
   decimalSeparator?: 'comma' | 'dot';
   preferredLocale?: 'en' | 'de';
+  /** Show informational 90-day recency per aircraft model/type (default true) */
+  recencyPerModel?: boolean;
+  /** Show informational 90-day recency per registration (default false) */
+  recencyPerRegistration?: boolean;
   createdAt: string;
   updatedAt: string;
 }

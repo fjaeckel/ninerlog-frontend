@@ -3,6 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useAllCurrencyStatus } from '../../hooks/useCurrency';
 import { useCredentials } from '../../hooks/useCredentials';
 import { useLicenses } from '../../hooks/useLicenses';
+import { useAircraftStats } from '../../hooks/useAircraft';
+import { useRecencyPrefs } from '../../hooks/useRecencyPrefs';
+import { recencyLevel, RECENCY_BADGE_CLASSES, RECENCY_REQUIRED_LANDINGS } from '../../lib/recency';
 import { CurrencyCard } from '../../components/currency/CurrencyCard';
 import { CurrencyExpiryBanner } from '../../components/currency/CurrencyExpiryBanner';
 import { ChevronDown, ChevronRight, ShieldAlert, ShieldCheck } from 'lucide-react';
@@ -36,9 +39,36 @@ export default function CurrencyPage() {
   const { data: currencyStatus, isLoading: currencyLoading } = useAllCurrencyStatus();
   const { data: credentials, isLoading: credentialsLoading } = useCredentials();
   const { data: licenses } = useLicenses();
+  const { data: aircraftStats } = useAircraftStats();
   const [expandedLicenses, setExpandedLicenses] = useState<Record<string, boolean>>({});
   const { t } = useTranslation('currency');
   const { fmtDate } = useFormatPrefs();
+
+  // Informational 90-day recency rows: models first, then registrations.
+  // Each group is gated by its user preference (Profile → Settings).
+  const recencyPrefs = useRecencyPrefs();
+  const recencyRows = [
+    ...(recencyPrefs.perModel
+      ? [...(aircraftStats?.byType.values() ?? [])].map((s) => ({
+          key: `type-${s.aircraftType}`,
+          label: s.aircraftType,
+          kind: 'model' as const,
+          landings: s.landingsLast90Days,
+          lapsesOn: s.recencyLapsesOn,
+          lastFlown: s.lastFlightDate,
+        }))
+      : []),
+    ...(recencyPrefs.perRegistration
+      ? [...(aircraftStats?.byReg.values() ?? [])].map((s) => ({
+          key: `reg-${s.registration}`,
+          label: s.registration,
+          kind: 'registration' as const,
+          landings: s.landingsLast90Days,
+          lapsesOn: s.recencyLapsesOn,
+          lastFlown: s.lastFlightDate,
+        }))
+      : []),
+  ];
 
   const toggleLicense = (licenseId: string) => {
     setExpandedLicenses((prev) => ({ ...prev, [licenseId]: !prev[licenseId] }));
@@ -273,6 +303,58 @@ export default function CurrencyPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Informational 90-day recency per model and registration */}
+      {!isLoading && recencyRows.length > 0 && (
+        <div className="mb-8" data-testid="aircraft-recency-section">
+          <h2 className="section-title mb-4">{t('aircraftRecency.title')}</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            {t('aircraftRecency.description', { required: RECENCY_REQUIRED_LANDINGS })}
+          </p>
+          <div className="card overflow-x-auto p-0">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700">
+                  <th className="px-4 py-2.5 font-medium">{t('aircraftRecency.aircraft')}</th>
+                  <th className="px-4 py-2.5 font-medium">{t('aircraftRecency.landings90')}</th>
+                  <th className="px-4 py-2.5 font-medium">{t('aircraftRecency.status')}</th>
+                  <th className="px-4 py-2.5 font-medium hidden sm:table-cell">{t('aircraftRecency.lastFlown')}</th>
+                  <th className="px-4 py-2.5 font-medium hidden sm:table-cell">{t('aircraftRecency.currentUntil')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                {recencyRows.map((row) => {
+                  const level = recencyLevel(row.landings);
+                  return (
+                    <tr key={row.key} data-testid={`recency-${row.key}`}>
+                      <td className="px-4 py-2.5">
+                        <span className="font-medium text-slate-800 dark:text-slate-100">{row.label}</span>
+                        <span className="ml-2 text-xs text-slate-400 dark:text-slate-500">
+                          {t(`aircraftRecency.kind.${row.kind}`)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 font-mono tabular-nums text-slate-700 dark:text-slate-200">
+                        {row.landings} / {RECENCY_REQUIRED_LANDINGS}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <span className={`badge text-xs ${RECENCY_BADGE_CLASSES[level]}`}>
+                          {t(`aircraftRecency.level.${level}`)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 hidden sm:table-cell text-slate-500 dark:text-slate-400 tabular-nums">
+                        {row.lastFlown ? fmtDate(row.lastFlown) : '—'}
+                      </td>
+                      <td className="px-4 py-2.5 hidden sm:table-cell text-slate-500 dark:text-slate-400 tabular-nums">
+                        {row.lapsesOn ? fmtDate(row.lapsesOn) : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

@@ -29,6 +29,9 @@
     "ifr": "IFR"
   },
   "timeByClass": "Zeit nach Flugzeugklasse",
+  "timeByModel": "Zeit nach Flugzeugmuster",
+  "modelRecencyTitle_one": "{{count}} Landung in den letzten 90 Tagen",
+  "modelRecencyTitle_other": "{{count}} Landungen in den letzten 90 Tagen",
   "classLabels": {
     "SEP_LAND": "SEP (Land)",
     "SEP_SEA": "SEP (See)",

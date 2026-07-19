@@ -269,6 +269,41 @@ export default function ProfilePage() {
               <option value="decimal">{t('timeDisplay.decimalExample')} — {t('timeDisplay.decimal')}</option>
             </select>
           </div>
+
+          <div className="card">
+            <h2 className="section-title mb-4">{t('recency.title')}</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+              {t('recency.description')}
+            </p>
+            <div className="space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={user?.recencyPerModel ?? true}
+                  onChange={async (e) => { const value = e.target.checked; try { await updateProfile.mutateAsync({ recencyPerModel: value } as any); updateUser({ recencyPerModel: value }); } catch { /* ignore */ } }}
+                  className="mt-0.5 rounded border-slate-300 dark:border-slate-600"
+                  data-testid="recency-per-model-toggle"
+                />
+                <span className="text-sm">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{t('recency.perModel')}</span>
+                  <span className="block text-slate-500 dark:text-slate-400">{t('recency.perModelDesc')}</span>
+                </span>
+              </label>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={user?.recencyPerRegistration ?? false}
+                  onChange={async (e) => { const value = e.target.checked; try { await updateProfile.mutateAsync({ recencyPerRegistration: value } as any); updateUser({ recencyPerRegistration: value }); } catch { /* ignore */ } }}
+                  className="mt-0.5 rounded border-slate-300 dark:border-slate-600"
+                  data-testid="recency-per-registration-toggle"
+                />
+                <span className="text-sm">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{t('recency.perRegistration')}</span>
+                  <span className="block text-slate-500 dark:text-slate-400">{t('recency.perRegistrationDesc')}</span>
+                </span>
+              </label>
+            </div>
+          </div>
         </div>
       )}
 

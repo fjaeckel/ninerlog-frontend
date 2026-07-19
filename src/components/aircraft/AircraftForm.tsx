@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useCreateAircraft, useUpdateAircraft, useAircraftById } from '../../hooks/useAircraft';
+import { useCreateAircraft, useUpdateAircraft, useAircraftById, useAircraftStats } from '../../hooks/useAircraft';
 import { extractApiError } from '../../lib/errors';
 
 const AIRCRAFT_CLASSES = [
@@ -22,6 +22,9 @@ const aircraftSchema = z.object({
   isTailwheel: z.boolean(),
   notes: z.string().optional().or(z.literal('')),
   isActive: z.boolean(),
+  defaultDepartureIcao: z.string().max(4).optional().or(z.literal('')),
+  defaultArrivalIcao: z.string().max(4).optional().or(z.literal('')),
+  renameFlights: z.boolean(),
 });
 
 type AircraftFormData = z.infer<typeof aircraftSchema>;
@@ -36,6 +39,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
   const createAircraft = useCreateAircraft();
   const updateAircraft = useUpdateAircraft();
   const { data: existingAircraft } = useAircraftById(aircraftId || '');
+  const { data: aircraftStats } = useAircraftStats();
   const isEditing = !!aircraftId;
 
   const [isCustomClass, setIsCustomClass] = useState(() => {
@@ -54,6 +58,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
     formState: { errors, isSubmitting },
     reset,
     setValue,
+    watch,
   } = useForm<AircraftFormData>({
     resolver: zodResolver(aircraftSchema),
     defaultValues: {
@@ -67,6 +72,9 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       isTailwheel: false,
       notes: '',
       isActive: true,
+      defaultDepartureIcao: '',
+      defaultArrivalIcao: '',
+      renameFlights: false,
     },
   });
 
@@ -87,8 +95,23 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       isTailwheel: existingAircraft.isTailwheel ?? false,
       notes: existingAircraft.notes || '',
       isActive: existingAircraft.isActive ?? true,
+      defaultDepartureIcao: existingAircraft.defaultDepartureIcao || '',
+      defaultArrivalIcao: existingAircraft.defaultArrivalIcao || '',
+      renameFlights: false,
     });
   }
+
+  // Rename detection: offer to update logged flights when the registration
+  // is being changed and flights exist under the old registration.
+  const watchedRegistration = watch('registration');
+  const originalRegistration = isEditing ? existingAircraft?.registration : undefined;
+  const registrationChanged =
+    !!originalRegistration &&
+    watchedRegistration.trim().toUpperCase() !== originalRegistration.toUpperCase();
+  const flightsOnOldRegistration = originalRegistration
+    ? aircraftStats?.byReg.get(originalRegistration.toUpperCase())?.totalFlights ?? 0
+    : 0;
+  const showRenameOption = registrationChanged && flightsOnOldRegistration > 0;
 
   const onSubmit = async (data: AircraftFormData) => {
     try {
@@ -102,11 +125,16 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         isHighPerformance: data.isHighPerformance,
         isTailwheel: data.isTailwheel,
         notes: data.notes || null,
+        defaultDepartureIcao: data.defaultDepartureIcao?.trim().toUpperCase() || null,
+        defaultArrivalIcao: data.defaultArrivalIcao?.trim().toUpperCase() || null,
         ...(isEditing ? { isActive: data.isActive } : {}),
       };
 
       if (isEditing && aircraftId) {
-        await updateAircraft.mutateAsync({ id: aircraftId, data: payload });
+        await updateAircraft.mutateAsync({
+          id: aircraftId,
+          data: { ...payload, renameFlights: showRenameOption && data.renameFlights },
+        });
       } else {
         await createAircraft.mutateAsync(payload);
       }
@@ -140,6 +168,19 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
           />
           {errors.registration && (
             <p id="err-registration" className="form-error">{errors.registration.message}</p>
+          )}
+          {showRenameOption && (
+            <label className="mt-2 flex items-start gap-2 text-sm text-amber-700 dark:text-amber-400 cursor-pointer">
+              <input
+                {...register('renameFlights')}
+                type="checkbox"
+                className="mt-0.5 rounded border-slate-300 dark:border-slate-600"
+              />
+              {t('form.renameFlights', {
+                count: flightsOnOldRegistration,
+                oldRegistration: originalRegistration,
+              })}
+            </label>
           )}
         </div>
         <div>
@@ -265,6 +306,40 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             {t('fields.isTailwheel')}
           </label>
         </div>
+      </div>
+
+      {/* Logging defaults */}
+      <div>
+        <label className="form-label">{t('form.loggingDefaults')}</label>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="defaultDepartureIcao" className="sr-only">
+              {t('fields.defaultDepartureIcao')}
+            </label>
+            <input
+              {...register('defaultDepartureIcao')}
+              type="text"
+              id="defaultDepartureIcao"
+              className="input uppercase"
+              placeholder={t('form.departurePlaceholder')}
+              maxLength={4}
+            />
+          </div>
+          <div>
+            <label htmlFor="defaultArrivalIcao" className="sr-only">
+              {t('fields.defaultArrivalIcao')}
+            </label>
+            <input
+              {...register('defaultArrivalIcao')}
+              type="text"
+              id="defaultArrivalIcao"
+              className="input uppercase"
+              placeholder={t('form.arrivalPlaceholder')}
+              maxLength={4}
+            />
+          </div>
+        </div>
+        <p className="form-helper">{t('form.defaultsHelper')}</p>
       </div>
 
       {/* Notes */}

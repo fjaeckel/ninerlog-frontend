@@ -708,6 +708,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/aircraft/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get per-aircraft flight statistics
+         * @description Aggregated flight statistics per aircraft registration for the authenticated user, computed from the logged flights.
+         */
+        get: operations["getAircraftStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/aircraft/{aircraftId}": {
         parameters: {
             query?: never;
@@ -2016,6 +2036,18 @@ export interface components {
              * @enum {string}
              */
             preferredLocale: "en" | "de";
+            /**
+             * @description Show informational 90-day landing recency (styled after EASA FCL.060(b)) per aircraft model/type.
+             * @default true
+             * @example true
+             */
+            recencyPerModel: boolean;
+            /**
+             * @description Show informational 90-day landing recency per individual aircraft registration. Off by default — FCL.060(b) recency is defined per type/class, so per-registration tracking is purely a familiarity aid.
+             * @default false
+             * @example false
+             */
+            recencyPerRegistration: boolean;
         };
         TwoFactorSetup: {
             /**
@@ -2241,6 +2273,16 @@ export interface components {
              */
             isActive: boolean;
             /**
+             * @description Default departure airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @example LSZH
+             */
+            defaultDepartureIcao?: string | null;
+            /**
+             * @description Default arrival airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @example LSZH
+             */
+            defaultArrivalIcao?: string | null;
+            /**
              * Format: date-time
              * @example 2026-01-15T10:00:00Z
              */
@@ -2294,6 +2336,16 @@ export interface components {
             aircraftClass?: string | null;
             /** @example Club aircraft, requires checkout */
             notes?: string | null;
+            /**
+             * @description Default departure airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @example LSZH
+             */
+            defaultDepartureIcao?: string | null;
+            /**
+             * @description Default arrival airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @example LSZH
+             */
+            defaultArrivalIcao?: string | null;
         };
         AircraftUpdate: {
             /** @example D-EFGH */
@@ -2319,6 +2371,116 @@ export interface components {
             notes?: string | null;
             /** @example true */
             isActive?: boolean;
+            /**
+             * @description Default departure airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @example LSZH
+             */
+            defaultDepartureIcao?: string | null;
+            /**
+             * @description Default arrival airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @example LSZH
+             */
+            defaultArrivalIcao?: string | null;
+            /**
+             * @description When true and the registration is being changed, logged flights that reference the old registration are updated to the new one.
+             * @default false
+             * @example false
+             */
+            renameFlights: boolean;
+        };
+        AircraftStats: {
+            /**
+             * @description Aircraft registration the statistics are aggregated for
+             * @example D-EFGH
+             */
+            registration: string;
+            /**
+             * @description Number of logged flights with this registration
+             * @example 42
+             */
+            totalFlights: number;
+            /**
+             * @description Total flight time in minutes with this registration
+             * @example 2530
+             */
+            totalMinutes: number;
+            /**
+             * @description Total day landings with this registration
+             * @example 55
+             */
+            landingsDay: number;
+            /**
+             * @description Total night landings with this registration
+             * @example 4
+             */
+            landingsNight: number;
+            /**
+             * @description Date (YYYY-MM-DD) of the first logged flight with this registration
+             * @example 2024-03-02
+             */
+            firstFlightDate?: string | null;
+            /**
+             * @description Date (YYYY-MM-DD) of the most recent logged flight with this registration
+             * @example 2026-06-14
+             */
+            lastFlightDate?: string | null;
+            /**
+             * @description Total landings with this registration in the preceding 90 days
+             * @example 5
+             */
+            landingsLast90Days: number;
+            /**
+             * @description Informational 90-day recency (styled after EASA FCL.060(b) day recency, 3 landings in 90 days): last date on which the 90-day landing count is still 3 or more. Only set while the count is currently 3 or more.
+             * @example 2026-09-03
+             */
+            recencyLapsesOn?: string | null;
+        };
+        AircraftTypeStats: {
+            /**
+             * @description Aircraft type/model designation the statistics are aggregated for
+             * @example C172
+             */
+            aircraftType: string;
+            /**
+             * @description Number of logged flights on this type
+             * @example 42
+             */
+            totalFlights: number;
+            /**
+             * @description Total flight time in minutes on this type
+             * @example 2530
+             */
+            totalMinutes: number;
+            /**
+             * @description Total day landings on this type
+             * @example 55
+             */
+            landingsDay: number;
+            /**
+             * @description Total night landings on this type
+             * @example 4
+             */
+            landingsNight: number;
+            /**
+             * @description Date (YYYY-MM-DD) of the first logged flight on this type
+             * @example 2024-03-02
+             */
+            firstFlightDate?: string | null;
+            /**
+             * @description Date (YYYY-MM-DD) of the most recent logged flight on this type
+             * @example 2026-06-14
+             */
+            lastFlightDate?: string | null;
+            /**
+             * @description Total landings on this type in the preceding 90 days
+             * @example 5
+             */
+            landingsLast90Days: number;
+            /**
+             * @description Informational 90-day recency (styled after EASA FCL.060(b) day recency, 3 landings in 90 days): last date on which the 90-day landing count is still 3 or more. Only set while the count is currently 3 or more.
+             * @example 2026-09-03
+             */
+            recencyLapsesOn?: string | null;
         };
         Flight: {
             /**
@@ -5242,6 +5404,10 @@ export interface operations {
                      * @enum {string}
                      */
                     preferredLocale?: "en" | "de";
+                    /** @description Show informational 90-day landing recency per aircraft model/type */
+                    recencyPerModel?: boolean;
+                    /** @description Show informational 90-day landing recency per individual aircraft registration */
+                    recencyPerRegistration?: boolean;
                 };
             };
         };
@@ -5929,6 +6095,30 @@ export interface operations {
             };
         };
     };
+    getAircraftStats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Per-registration and per-type flight statistics */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AircraftStats"][];
+                        byType: components["schemas"]["AircraftTypeStats"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
     getAircraft: {
         parameters: {
             query?: never;
@@ -6033,7 +6223,9 @@ export interface operations {
                  *
                  *     **Syntax**
                  *     - Bare terms match across registration, type, ICAO codes, route,
-                 *       remarks, instructor, PIC name, and crew names: `EDDF checkride`
+                 *       remarks, instructor, PIC name, and crew names: `EDDF checkride`.
+                 *       At most 5 bare terms per query, each at least 3 characters; use
+                 *       tagged fields (below) for additional or shorter conditions.
                  *     - Tags: `field:value` (contains for text, equals otherwise),
                  *       `field=value` (exact), `field!=value`, and `>`, `>=`, `<`, `<=`
                  *       for numeric, duration, date, and time-of-day fields.

@@ -5,9 +5,18 @@ import type { components } from '../api/schema';
 type Aircraft = components['schemas']['Aircraft'];
 type AircraftCreate = components['schemas']['AircraftCreate'];
 type AircraftUpdate = components['schemas']['AircraftUpdate'];
+type AircraftStats = components['schemas']['AircraftStats'];
+type AircraftTypeStats = components['schemas']['AircraftTypeStats'];
 type PaginatedAircraft = components['schemas']['PaginatedAircraft'];
 
-export type { Aircraft, AircraftCreate, AircraftUpdate };
+export type { Aircraft, AircraftCreate, AircraftUpdate, AircraftStats, AircraftTypeStats };
+
+export interface AircraftStatsData {
+  /** Per-registration stats, keyed by uppercased registration */
+  byReg: Map<string, AircraftStats>;
+  /** Per-type stats, keyed by uppercased type designation */
+  byType: Map<string, AircraftTypeStats>;
+}
 
 export const useAircraft = () => {
   return useQuery({
@@ -18,6 +27,29 @@ export const useAircraft = () => {
       });
       if (error) throw error;
       return (data as PaginatedAircraft)?.data ?? [];
+    },
+  });
+};
+
+/**
+ * Per-registration and per-type flight statistics, keyed uppercased so
+ * lookups are robust against case differences between fleet and flights.
+ */
+export const useAircraftStats = () => {
+  return useQuery({
+    queryKey: ['aircraft', 'stats'],
+    queryFn: async (): Promise<AircraftStatsData> => {
+      const { data, error } = await apiClient.GET('/aircraft/stats');
+      if (error) throw error;
+      const byReg = new Map<string, AircraftStats>();
+      for (const s of data?.data ?? []) {
+        byReg.set(s.registration.toUpperCase(), s);
+      }
+      const byType = new Map<string, AircraftTypeStats>();
+      for (const s of data?.byType ?? []) {
+        byType.set(s.aircraftType.toUpperCase(), s);
+      }
+      return { byReg, byType };
     },
   });
 };
