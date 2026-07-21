@@ -119,14 +119,14 @@ docker build -t ninerlog-frontend .
 
 ## Running NinerLog
 
-To run your own NinerLog instance, see [ninerlog-dockerized](https://github.com/fjaeckel/ninerlog-dockerized) for a ready-to-use Docker Compose setup with pre-built images.
+To run your own NinerLog instance, see [ninerlog](https://github.com/fjaeckel/ninerlog) for a ready-to-use Docker Compose setup with pre-built images.
 
 ## Related Repositories
 
 | Repository | Description |
 |---|---|
 | [ninerlog-api](https://github.com/fjaeckel/ninerlog-api) | Go backend REST API (includes OpenAPI spec) |
-| [ninerlog-dockerized](https://github.com/fjaeckel/ninerlog-dockerized) | Self-hosted deployment (Docker Compose) |
+| [ninerlog](https://github.com/fjaeckel/ninerlog) | Self-hosted deployment (Docker Compose) |
 | [ninerlog-website](https://github.com/fjaeckel/ninerlog-website) | Marketing website |
 
 ## Contributing
