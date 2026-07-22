@@ -1,4 +1,4 @@
-import { ShieldCheck, ShieldX, Shield, Share2, Pencil, Trash2, CalendarClock } from 'lucide-react';
+import { ShieldCheck, ShieldX, Shield, Share2, Pencil, Trash2, CalendarClock, Pause, Play } from 'lucide-react';
 import type { CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import type { CustomRuleWithStatus } from '../../types/customCurrency';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
@@ -67,19 +67,25 @@ interface Props {
   onEdit?: (id: string) => void;
   onShare?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onToggleEnabled?: (id: string, enabled: boolean) => void;
 }
 
-export function CustomCurrencyCard({ item, onEdit, onShare, onDelete }: Props) {
+export function CustomCurrencyCard({ item, onEdit, onShare, onDelete, onToggleEnabled }: Props) {
   const { rule, evaluation } = item;
   const { fmtDate } = useFormatPrefs();
-  const config = STATUS_CONFIG[evaluation.status] ?? STATUS_CONFIG.unknown;
+  const paused = !rule.enabled;
+  const config = paused ? STATUS_CONFIG.unknown : (STATUS_CONFIG[evaluation.status] ?? STATUS_CONFIG.unknown);
   const StatusIcon = config.Icon;
 
   return (
-    <div className={`card hover-lift ${config.border} ${config.bg}`} data-testid={`custom-currency-card-${rule.id}`}>
+    <div
+      className={`card hover-lift ${config.border} ${config.bg} ${paused ? 'opacity-60' : ''}`}
+      data-testid={`custom-currency-card-${rule.id}`}
+      data-paused={paused ? 'true' : 'false'}
+    >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-3 min-w-0">
-          <span className={`shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg ${config.iconWrap} text-lg`} aria-hidden="true">
+          <span className={`shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg ${config.iconWrap} text-lg ${paused ? 'grayscale' : ''}`} aria-hidden="true">
             {rule.emoji ? <span>{rule.emoji}</span> : <StatusIcon className="w-5 h-5" />}
           </span>
           <div className="min-w-0">
@@ -87,12 +93,12 @@ export function CustomCurrencyCard({ item, onEdit, onShare, onDelete }: Props) {
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 capitalize">{evaluation.windowLabel}</p>
           </div>
         </div>
-        <span className={`${config.badge} shrink-0`}>{config.label}</span>
+        <span className={`${paused ? 'badge-neutral' : config.badge} shrink-0`}>{paused ? 'PAUSED' : config.label}</span>
       </div>
 
       {rule.description && <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">{rule.description}</p>}
 
-      {evaluation.requirements.length > 0 && (
+      {!paused && evaluation.requirements.length > 0 && (
         <div className="space-y-2">
           {evaluation.requirements.map((req, i) => (
             <RequirementBar key={`${req.name}-${i}`} req={req} />
@@ -100,15 +106,31 @@ export function CustomCurrencyCard({ item, onEdit, onShare, onDelete }: Props) {
         </div>
       )}
 
-      {evaluation.expiresOn && evaluation.status !== 'expired' && (
+      {paused && (
+        <p className="text-xs text-slate-400 dark:text-slate-500">Paused — not currently tracked. Resume to evaluate again.</p>
+      )}
+
+      {!paused && evaluation.expiresOn && evaluation.status !== 'expired' && (
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-3 text-right inline-flex items-center gap-1 justify-end w-full">
           <CalendarClock className="w-3 h-3" aria-hidden="true" />
           Current until {fmtDate(evaluation.expiresOn)}
         </p>
       )}
 
-      {(onEdit || onShare || onDelete) && (
+      {(onEdit || onShare || onDelete || onToggleEnabled) && (
         <div className="flex items-center justify-end gap-1 mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50">
+          {onToggleEnabled && (
+            <button
+              type="button"
+              onClick={() => onToggleEnabled(rule.id, paused)}
+              className={`btn-ghost p-1.5 mr-auto ${paused ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'}`}
+              title={paused ? 'Resume rule' : 'Pause rule'}
+              aria-label={paused ? 'Resume rule' : 'Pause rule'}
+              data-testid={`toggle-enabled-custom-${rule.id}`}
+            >
+              {paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+            </button>
+          )}
           {onEdit && (
             <button
               type="button"

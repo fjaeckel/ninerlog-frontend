@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAllCurrencyStatus } from '../../hooks/useCurrency';
-import { useCustomCurrencies, useDeleteCustomCurrency } from '../../hooks/useCustomCurrency';
+import { useCustomCurrencies, useDeleteCustomCurrency, useSetEnabledCustomCurrency } from '../../hooks/useCustomCurrency';
 import { ShareRuleModal } from '../../components/currency/ShareRuleModal';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useCredentials } from '../../hooks/useCredentials';
@@ -44,7 +44,13 @@ export default function CurrencyPage() {
   const { data: currencyStatus, isLoading: currencyLoading } = useAllCurrencyStatus();
   const { data: customRules } = useCustomCurrencies();
   const deleteCustom = useDeleteCustomCurrency();
+  const setEnabledCustom = useSetEnabledCustomCurrency();
   const navigate = useNavigate();
+  // Active rules first; paused (disabled) rules sink to the bottom. Array sort
+  // is stable, so each group keeps its original creation order.
+  const sortedCustomRules = customRules
+    ? [...customRules].sort((a, b) => Number(b.rule.enabled) - Number(a.rule.enabled))
+    : [];
   const [shareRuleId, setShareRuleId] = useState<string | null>(null);
   const [deleteRuleId, setDeleteRuleId] = useState<string | null>(null);
   const shareRule = customRules?.find((r) => r.rule.id === shareRuleId)?.rule ?? null;
@@ -157,13 +163,14 @@ export default function CurrencyPage() {
           </div>
           {customRules && customRules.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2">
-              {customRules.map((item) => (
+              {sortedCustomRules.map((item) => (
                 <CustomCurrencyCard
                   key={item.rule.id}
                   item={item}
                   onEdit={(id) => navigate(`/currency/builder?rule=${id}`)}
                   onShare={(id) => setShareRuleId(id)}
                   onDelete={(id) => setDeleteRuleId(id)}
+                  onToggleEnabled={(id, enabled) => setEnabledCustom.mutate({ id, enabled })}
                 />
               ))}
             </div>

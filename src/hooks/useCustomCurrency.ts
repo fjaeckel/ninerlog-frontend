@@ -79,6 +79,18 @@ export const usePreviewCustomCurrency = () =>
       }),
   });
 
+export const useSetEnabledCustomCurrency = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
+      authedFetch<CustomRuleWithStatus>(`/${id}/enabled`, {
+        method: 'PUT',
+        body: JSON.stringify({ enabled }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEY }),
+  });
+};
+
 export const useSetShareCustomCurrency = () => {
   const qc = useQueryClient();
   return useMutation({

@@ -8,7 +8,7 @@ function item(overrides = {}): CustomRuleWithStatus {
   return {
     rule: {
       id: 'r1', userId: 'u1', name: 'Night landings', emoji: '🌙',
-      description: null, isShared: false, createdAt: '', updatedAt: '',
+      description: null, enabled: true, isShared: false, createdAt: '', updatedAt: '',
       definition: { window: { amount: 90, unit: 'days' }, requirements: [{ metric: 'night_landings', min: 3 }] },
       ...overrides,
     },
@@ -45,5 +45,33 @@ describe('CustomCurrencyCard actions', () => {
     const onShare = vi.fn();
     render(<CustomCurrencyCard item={item({ isShared: true })} onShare={onShare} />);
     expect(screen.getByTestId('share-custom-r1').getAttribute('aria-label')).toMatch(/shared/i);
+  });
+
+  it('renders a paused state and toggles enabled with the new value', async () => {
+    const user = userEvent.setup();
+    const onToggle = vi.fn();
+    render(<CustomCurrencyCard item={item({ enabled: false })} onToggleEnabled={onToggle} />);
+
+    const card = screen.getByTestId('custom-currency-card-r1');
+    expect(card.getAttribute('data-paused')).toBe('true');
+    expect(screen.getByText('PAUSED')).toBeInTheDocument();
+    // Progress bars are hidden while paused.
+    expect(screen.queryByTestId('custom-requirement-Night landings')).toBeNull();
+
+    const toggle = screen.getByTestId('toggle-enabled-custom-r1');
+    expect(toggle.getAttribute('aria-label')).toMatch(/resume/i);
+    await user.click(toggle);
+    // Currently paused → clicking resumes (enabled = true).
+    expect(onToggle).toHaveBeenCalledWith('r1', true);
+  });
+
+  it('pauses an enabled rule (enabled = false) on toggle', async () => {
+    const user = userEvent.setup();
+    const onToggle = vi.fn();
+    render(<CustomCurrencyCard item={item({ enabled: true })} onToggleEnabled={onToggle} />);
+    const toggle = screen.getByTestId('toggle-enabled-custom-r1');
+    expect(toggle.getAttribute('aria-label')).toMatch(/pause/i);
+    await user.click(toggle);
+    expect(onToggle).toHaveBeenCalledWith('r1', false);
   });
 });
