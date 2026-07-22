@@ -422,7 +422,7 @@ export default function CustomCurrencyBuilderPage() {
                       rule: {
                         id: 'preview', userId: '', name: current.input.name,
                         description: current.input.description, emoji: current.input.emoji,
-                        definition: current.input.definition, enabled: true, isShared: false,
+                        definition: current.input.definition, enabled: true, notify: false, isShared: false,
                         createdAt: '', updatedAt: '',
                       },
                       evaluation,

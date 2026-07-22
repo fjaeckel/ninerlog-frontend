@@ -43,6 +43,7 @@ export interface CustomCurrencyRule {
   emoji?: string | null;
   definition: CustomCurrencyRuleBody;
   enabled: boolean;
+  notify: boolean;
   isShared: boolean;
   shareToken?: string | null;
   importedFrom?: string | null;

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAllCurrencyStatus } from '../../hooks/useCurrency';
-import { useCustomCurrencies, useDeleteCustomCurrency, useSetEnabledCustomCurrency } from '../../hooks/useCustomCurrency';
+import { useCustomCurrencies, useDeleteCustomCurrency, useSetEnabledCustomCurrency, useSetNotifyCustomCurrency } from '../../hooks/useCustomCurrency';
 import { ShareRuleModal } from '../../components/currency/ShareRuleModal';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useCredentials } from '../../hooks/useCredentials';
@@ -45,6 +45,7 @@ export default function CurrencyPage() {
   const { data: customRules } = useCustomCurrencies();
   const deleteCustom = useDeleteCustomCurrency();
   const setEnabledCustom = useSetEnabledCustomCurrency();
+  const setNotifyCustom = useSetNotifyCustomCurrency();
   const navigate = useNavigate();
   // Active rules first; paused (disabled) rules sink to the bottom. Array sort
   // is stable, so each group keeps its original creation order.
@@ -171,6 +172,7 @@ export default function CurrencyPage() {
                   onShare={(id) => setShareRuleId(id)}
                   onDelete={(id) => setDeleteRuleId(id)}
                   onToggleEnabled={(id, enabled) => setEnabledCustom.mutate({ id, enabled })}
+                  onToggleNotify={(id, notify) => setNotifyCustom.mutate({ id, notify })}
                 />
               ))}
             </div>

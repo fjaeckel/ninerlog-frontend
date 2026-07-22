@@ -8,7 +8,7 @@ function item(overrides = {}): CustomRuleWithStatus {
   return {
     rule: {
       id: 'r1', userId: 'u1', name: 'Night landings', emoji: '🌙',
-      description: null, enabled: true, isShared: false, createdAt: '', updatedAt: '',
+      description: null, enabled: true, notify: false, isShared: false, createdAt: '', updatedAt: '',
       definition: { window: { amount: 90, unit: 'days' }, requirements: [{ metric: 'night_landings', min: 3 }] },
       ...overrides,
     },
@@ -73,5 +73,25 @@ describe('CustomCurrencyCard actions', () => {
     expect(toggle.getAttribute('aria-label')).toMatch(/pause/i);
     await user.click(toggle);
     expect(onToggle).toHaveBeenCalledWith('r1', false);
+  });
+
+  it('toggles notifications on when currently off', async () => {
+    const user = userEvent.setup();
+    const onToggleNotify = vi.fn();
+    render(<CustomCurrencyCard item={item({ notify: false })} onToggleNotify={onToggleNotify} />);
+    const bell = screen.getByTestId('toggle-notify-custom-r1');
+    expect(bell.getAttribute('aria-pressed')).toBe('false');
+    await user.click(bell);
+    expect(onToggleNotify).toHaveBeenCalledWith('r1', true);
+  });
+
+  it('toggles notifications off when currently on', async () => {
+    const user = userEvent.setup();
+    const onToggleNotify = vi.fn();
+    render(<CustomCurrencyCard item={item({ notify: true })} onToggleNotify={onToggleNotify} />);
+    const bell = screen.getByTestId('toggle-notify-custom-r1');
+    expect(bell.getAttribute('aria-pressed')).toBe('true');
+    await user.click(bell);
+    expect(onToggleNotify).toHaveBeenCalledWith('r1', false);
   });
 });

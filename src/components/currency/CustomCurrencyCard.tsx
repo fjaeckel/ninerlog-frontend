@@ -1,4 +1,4 @@
-import { ShieldCheck, ShieldX, Shield, Share2, Pencil, Trash2, CalendarClock, Pause, Play } from 'lucide-react';
+import { ShieldCheck, ShieldX, Shield, Share2, Pencil, Trash2, CalendarClock, Pause, Play, Bell, BellOff } from 'lucide-react';
 import type { CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import type { CustomRuleWithStatus } from '../../types/customCurrency';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
@@ -68,9 +68,10 @@ interface Props {
   onShare?: (id: string) => void;
   onDelete?: (id: string) => void;
   onToggleEnabled?: (id: string, enabled: boolean) => void;
+  onToggleNotify?: (id: string, notify: boolean) => void;
 }
 
-export function CustomCurrencyCard({ item, onEdit, onShare, onDelete, onToggleEnabled }: Props) {
+export function CustomCurrencyCard({ item, onEdit, onShare, onDelete, onToggleEnabled, onToggleNotify }: Props) {
   const { rule, evaluation } = item;
   const { fmtDate } = useFormatPrefs();
   const paused = !rule.enabled;
@@ -117,20 +118,35 @@ export function CustomCurrencyCard({ item, onEdit, onShare, onDelete, onToggleEn
         </p>
       )}
 
-      {(onEdit || onShare || onDelete || onToggleEnabled) && (
-        <div className="flex items-center justify-end gap-1 mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50">
-          {onToggleEnabled && (
-            <button
-              type="button"
-              onClick={() => onToggleEnabled(rule.id, paused)}
-              className={`btn-ghost p-1.5 mr-auto ${paused ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'}`}
-              title={paused ? 'Resume rule' : 'Pause rule'}
-              aria-label={paused ? 'Resume rule' : 'Pause rule'}
-              data-testid={`toggle-enabled-custom-${rule.id}`}
-            >
-              {paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-            </button>
-          )}
+      {(onEdit || onShare || onDelete || onToggleEnabled || onToggleNotify) && (
+        <div className="flex items-center gap-1 mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50">
+          <div className="flex items-center gap-1 mr-auto">
+            {onToggleEnabled && (
+              <button
+                type="button"
+                onClick={() => onToggleEnabled(rule.id, paused)}
+                className={`btn-ghost p-1.5 ${paused ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                title={paused ? 'Resume rule' : 'Pause rule'}
+                aria-label={paused ? 'Resume rule' : 'Pause rule'}
+                data-testid={`toggle-enabled-custom-${rule.id}`}
+              >
+                {paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+              </button>
+            )}
+            {onToggleNotify && (
+              <button
+                type="button"
+                onClick={() => onToggleNotify(rule.id, !rule.notify)}
+                className={`btn-ghost p-1.5 ${rule.notify ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                title={rule.notify ? 'Notifications on — you’ll be emailed before this lapses' : 'Notify me before this lapses'}
+                aria-label={rule.notify ? 'Notifications on' : 'Notifications off'}
+                aria-pressed={rule.notify}
+                data-testid={`toggle-notify-custom-${rule.id}`}
+              >
+                {rule.notify ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+              </button>
+            )}
+          </div>
           {onEdit && (
             <button
               type="button"
