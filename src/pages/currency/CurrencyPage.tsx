@@ -1,14 +1,17 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAllCurrencyStatus } from '../../hooks/useCurrency';
+import { useCustomCurrencies } from '../../hooks/useCustomCurrency';
 import { useCredentials } from '../../hooks/useCredentials';
 import { useLicenses } from '../../hooks/useLicenses';
 import { useAircraftStats } from '../../hooks/useAircraft';
 import { useRecencyPrefs } from '../../hooks/useRecencyPrefs';
 import { recencyLevel, RECENCY_BADGE_CLASSES, RECENCY_REQUIRED_LANDINGS } from '../../lib/recency';
 import { CurrencyCard } from '../../components/currency/CurrencyCard';
+import { CustomCurrencyCard } from '../../components/currency/CustomCurrencyCard';
 import { CurrencyExpiryBanner } from '../../components/currency/CurrencyExpiryBanner';
-import { ChevronDown, ChevronRight, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { ChevronDown, ChevronRight, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
 import { isPast, differenceInDays } from 'date-fns';
 import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
 import HelpLink from '../../components/ui/HelpLink';
@@ -37,6 +40,7 @@ const CREDENTIAL_DESCRIPTIONS: Record<string, string> = {
 
 export default function CurrencyPage() {
   const { data: currencyStatus, isLoading: currencyLoading } = useAllCurrencyStatus();
+  const { data: customRules } = useCustomCurrencies();
   const { data: credentials, isLoading: credentialsLoading } = useCredentials();
   const { data: licenses } = useLicenses();
   const { data: aircraftStats } = useAircraftStats();
@@ -124,6 +128,49 @@ export default function CurrencyPage() {
 
       {!isLoading && currencyStatus && (
         <CurrencyExpiryBanner ratings={currencyStatus.ratings} flightReview={currencyStatus.flightReview} />
+      )}
+
+      {/* Custom currency — user-authored, modular rules */}
+      {!isLoading && (
+        <div className="mb-8" data-testid="custom-currency-section">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="section-title flex items-center gap-2">
+              <Wand2 className="w-5 h-5 text-violet-500" />
+              {t('customCurrency.title', { defaultValue: 'Custom currency' })}
+            </h2>
+            <Link
+              to="/currency/builder"
+              className="btn-secondary text-sm inline-flex items-center gap-1.5"
+              data-testid="open-currency-builder"
+            >
+              <Plus className="w-4 h-4" />
+              {t('customCurrency.build', { defaultValue: 'Build a rule' })}
+            </Link>
+          </div>
+          {customRules && customRules.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {customRules.map((item) => (
+                <CustomCurrencyCard key={item.rule.id} item={item} />
+              ))}
+            </div>
+          ) : (
+            <Link
+              to="/currency/builder"
+              className="card block text-center py-8 hover-lift"
+              data-testid="custom-currency-empty"
+            >
+              <Wand2 className="w-6 h-6 mx-auto text-violet-400 mb-2" />
+              <p className="text-slate-600 dark:text-slate-300 text-sm font-medium">
+                {t('customCurrency.emptyTitle', { defaultValue: 'Build your own currency rules' })}
+              </p>
+              <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
+                {t('customCurrency.emptyHint', {
+                  defaultValue: 'Combine flights, aircraft and requirements into rules we track for you — and share them.',
+                })}
+              </p>
+            </Link>
+          )}
+        </div>
       )}
 
       {/* Class Rating Currency — grouped by license */}

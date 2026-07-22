@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CurrencyPage from '../../pages/currency/CurrencyPage';
 import * as useCurrencyHook from '../../hooks/useCurrency';
+import * as useCustomCurrencyHook from '../../hooks/useCustomCurrency';
 import * as useCredentialsHook from '../../hooks/useCredentials';
 import * as useLicensesHook from '../../hooks/useLicenses';
 import { useAuthStore } from '../../stores/authStore';
@@ -23,6 +24,10 @@ describe('CurrencyPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useAuthStore.setState({ user: { id: 'u1', name: 'Pilot', email: 'p@t.com' }, accessToken: 'tok' } as any);
+
+    vi.spyOn(useCustomCurrencyHook, 'useCustomCurrencies').mockReturnValue({
+      data: [], isLoading: false, error: null,
+    } as any);
 
     vi.spyOn(useLicensesHook, 'useLicenses').mockReturnValue({
       data: [

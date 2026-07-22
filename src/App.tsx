@@ -26,6 +26,7 @@ const MapPage = lazyWithRetry(() => import('./pages/maps/MapPage'));
 const ImportPage = lazyWithRetry(() => import('./pages/import/ImportPage'));
 const ExportPage = lazyWithRetry(() => import('./pages/export/ExportPage'));
 const CurrencyPage = lazyWithRetry(() => import('./pages/currency/CurrencyPage'));
+const CustomCurrencyBuilderPage = lazyWithRetry(() => import('./pages/currency/CustomCurrencyBuilderPage'));
 const AdminPage = lazyWithRetry(() => import('./pages/admin/AdminPage'));
 const HelpPage = lazyWithRetry(() => import('./pages/help/HelpPage'));
 const SignPage = lazyWithRetry(() => import('./pages/SignPage'));
@@ -85,6 +86,7 @@ function App() {
           <Route path="/export" element={isAuthenticated ? <ExportPage /> : <Navigate to="/login" />} />
           <Route path="/backups" element={<Navigate to="/profile" replace />} />
           <Route path="/currency" element={isAuthenticated ? <CurrencyPage /> : <Navigate to="/login" />} />
+          <Route path="/currency/builder" element={isAuthenticated ? <CustomCurrencyBuilderPage /> : <Navigate to="/login" />} />
           <Route path="/admin" element={isAuthenticated ? <AdminPage /> : <Navigate to="/login" />} />
           <Route path="/help" element={isAuthenticated ? <HelpPage /> : <Navigate to="/login" />} />
         </Route>
