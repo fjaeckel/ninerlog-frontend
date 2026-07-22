@@ -1,14 +1,19 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAllCurrencyStatus } from '../../hooks/useCurrency';
+import { useCustomCurrencies, useDeleteCustomCurrency, useSetEnabledCustomCurrency, useSetNotifyCustomCurrency } from '../../hooks/useCustomCurrency';
+import { ShareRuleModal } from '../../components/currency/ShareRuleModal';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useCredentials } from '../../hooks/useCredentials';
 import { useLicenses } from '../../hooks/useLicenses';
 import { useAircraftStats } from '../../hooks/useAircraft';
 import { useRecencyPrefs } from '../../hooks/useRecencyPrefs';
 import { recencyLevel, RECENCY_BADGE_CLASSES, RECENCY_REQUIRED_LANDINGS } from '../../lib/recency';
 import { CurrencyCard } from '../../components/currency/CurrencyCard';
+import { CustomCurrencyCard } from '../../components/currency/CustomCurrencyCard';
 import { CurrencyExpiryBanner } from '../../components/currency/CurrencyExpiryBanner';
-import { ChevronDown, ChevronRight, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { ChevronDown, ChevronRight, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
 import { isPast, differenceInDays } from 'date-fns';
 import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
 import HelpLink from '../../components/ui/HelpLink';
@@ -37,6 +42,20 @@ const CREDENTIAL_DESCRIPTIONS: Record<string, string> = {
 
 export default function CurrencyPage() {
   const { data: currencyStatus, isLoading: currencyLoading } = useAllCurrencyStatus();
+  const { data: customRules } = useCustomCurrencies();
+  const deleteCustom = useDeleteCustomCurrency();
+  const setEnabledCustom = useSetEnabledCustomCurrency();
+  const setNotifyCustom = useSetNotifyCustomCurrency();
+  const navigate = useNavigate();
+  // Active rules first; paused (disabled) rules sink to the bottom. Array sort
+  // is stable, so each group keeps its original creation order.
+  const sortedCustomRules = customRules
+    ? [...customRules].sort((a, b) => Number(b.rule.enabled) - Number(a.rule.enabled))
+    : [];
+  const [shareRuleId, setShareRuleId] = useState<string | null>(null);
+  const [deleteRuleId, setDeleteRuleId] = useState<string | null>(null);
+  const shareRule = customRules?.find((r) => r.rule.id === shareRuleId)?.rule ?? null;
+  const deleteRule = customRules?.find((r) => r.rule.id === deleteRuleId)?.rule ?? null;
   const { data: credentials, isLoading: credentialsLoading } = useCredentials();
   const { data: licenses } = useLicenses();
   const { data: aircraftStats } = useAircraftStats();
@@ -124,6 +143,57 @@ export default function CurrencyPage() {
 
       {!isLoading && currencyStatus && (
         <CurrencyExpiryBanner ratings={currencyStatus.ratings} flightReview={currencyStatus.flightReview} />
+      )}
+
+      {/* Custom currency — user-authored, modular rules */}
+      {!isLoading && (
+        <div className="mb-8" data-testid="custom-currency-section">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="section-title flex items-center gap-2">
+              <Wand2 className="w-5 h-5 text-violet-500" />
+              {t('customCurrency.title', { defaultValue: 'Custom currency' })}
+            </h2>
+            <Link
+              to="/currency/builder"
+              className="btn-secondary text-sm inline-flex items-center gap-1.5"
+              data-testid="open-currency-builder"
+            >
+              <Plus className="w-4 h-4" />
+              {t('customCurrency.build', { defaultValue: 'Build a rule' })}
+            </Link>
+          </div>
+          {customRules && customRules.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {sortedCustomRules.map((item) => (
+                <CustomCurrencyCard
+                  key={item.rule.id}
+                  item={item}
+                  onEdit={(id) => navigate(`/currency/builder?rule=${id}`)}
+                  onShare={(id) => setShareRuleId(id)}
+                  onDelete={(id) => setDeleteRuleId(id)}
+                  onToggleEnabled={(id, enabled) => setEnabledCustom.mutate({ id, enabled })}
+                  onToggleNotify={(id, notify) => setNotifyCustom.mutate({ id, notify })}
+                />
+              ))}
+            </div>
+          ) : (
+            <Link
+              to="/currency/builder"
+              className="card block text-center py-8 hover-lift"
+              data-testid="custom-currency-empty"
+            >
+              <Wand2 className="w-6 h-6 mx-auto text-violet-400 mb-2" />
+              <p className="text-slate-600 dark:text-slate-300 text-sm font-medium">
+                {t('customCurrency.emptyTitle', { defaultValue: 'Build your own currency rules' })}
+              </p>
+              <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
+                {t('customCurrency.emptyHint', {
+                  defaultValue: 'Combine flights, aircraft and requirements into rules we track for you — and share them.',
+                })}
+              </p>
+            </Link>
+          )}
+        </div>
       )}
 
       {/* Class Rating Currency — grouped by license */}
@@ -431,6 +501,24 @@ export default function CurrencyPage() {
           </p>
         </div>
       )}
+
+      {shareRule && <ShareRuleModal rule={shareRule} onClose={() => setShareRuleId(null)} />}
+
+      <ConfirmDialog
+        open={!!deleteRule}
+        title={t('customCurrency.deleteTitle', { defaultValue: 'Delete this rule?' })}
+        description={t('customCurrency.deleteDescription', {
+          defaultValue: `“${deleteRule?.name ?? ''}” will be permanently removed. This cannot be undone.`,
+          name: deleteRule?.name ?? '',
+        })}
+        confirmLabel={t('common:delete', { defaultValue: 'Delete' })}
+        isLoading={deleteCustom.isPending}
+        onCancel={() => setDeleteRuleId(null)}
+        onConfirm={async () => {
+          if (deleteRuleId) await deleteCustom.mutateAsync(deleteRuleId);
+          setDeleteRuleId(null);
+        }}
+      />
     </div>
   );
 }
