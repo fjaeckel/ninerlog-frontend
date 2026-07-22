@@ -37,7 +37,7 @@ describe('CustomCurrencyBlockEditor', () => {
     const { onChange } = setup(baseInput());
     await user.type(screen.getByTestId('block-name'), '!');
     expect(onChange).toHaveBeenCalled();
-    const last = onChange.mock.calls.at(-1)![0] as CustomRuleInput;
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0] as CustomRuleInput;
     // Controlled input: the parent didn't update `value`, so each keystroke maps
     // the original name plus the typed char.
     expect(last.name).toBe('Night landings!');
@@ -47,7 +47,7 @@ describe('CustomCurrencyBlockEditor', () => {
     const user = userEvent.setup();
     const { onChange } = setup(baseInput());
     await user.click(screen.getByRole('button', { name: /add requirement/i }));
-    const last = onChange.mock.calls.at(-1)![0] as CustomRuleInput;
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0] as CustomRuleInput;
     expect(last.definition.requirements).toHaveLength(2);
   });
 
@@ -55,7 +55,7 @@ describe('CustomCurrencyBlockEditor', () => {
     const user = userEvent.setup();
     const { onChange } = setup(baseInput());
     await user.selectOptions(screen.getByLabelText('Metric'), 'pic_time');
-    const last = onChange.mock.calls.at(-1)![0] as CustomRuleInput;
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0] as CustomRuleInput;
     expect(last.definition.requirements[0]).toMatchObject({ metric: 'pic_time', unit: 'hours' });
   });
 
@@ -63,8 +63,8 @@ describe('CustomCurrencyBlockEditor', () => {
     const user = userEvent.setup();
     const { onChange } = setup(baseInput());
     await user.click(screen.getByRole('button', { name: /add filter/i }));
-    const last = onChange.mock.calls.at(-1)![0] as CustomRuleInput;
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0] as CustomRuleInput;
     expect(last.definition.filters).toHaveLength(2);
-    expect(last.definition.filters!.at(-1)).toMatchObject({ field: 'aircraft_class', op: 'eq' });
+    expect(last.definition.filters![last.definition.filters!.length - 1]).toMatchObject({ field: 'aircraft_class', op: 'eq' });
   });
 });

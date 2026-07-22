@@ -53,6 +53,8 @@ export interface CustomCurrencyEvaluation {
   status: CurrencyStatus;
   windowLabel: string;
   requirements: CurrencyRequirement[];
+  /** Last date the rule stays current assuming no further flights (met rules only). */
+  expiresOn?: string | null;
   evaluatedAt: string;
 }
 

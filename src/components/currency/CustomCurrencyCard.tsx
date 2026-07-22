@@ -1,4 +1,4 @@
-import { ShieldCheck, ShieldX, Shield, Share2, Pencil } from 'lucide-react';
+import { ShieldCheck, ShieldX, Shield, Share2, Pencil, CalendarClock } from 'lucide-react';
 import type { CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import type { CustomRuleWithStatus } from '../../types/customCurrency';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
@@ -70,6 +70,7 @@ interface Props {
 
 export function CustomCurrencyCard({ item, onEdit, onShare }: Props) {
   const { rule, evaluation } = item;
+  const { fmtDate } = useFormatPrefs();
   const config = STATUS_CONFIG[evaluation.status] ?? STATUS_CONFIG.unknown;
   const StatusIcon = config.Icon;
 
@@ -96,6 +97,13 @@ export function CustomCurrencyCard({ item, onEdit, onShare }: Props) {
             <RequirementBar key={`${req.name}-${i}`} req={req} />
           ))}
         </div>
+      )}
+
+      {evaluation.expiresOn && evaluation.status !== 'expired' && (
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-3 text-right inline-flex items-center gap-1 justify-end w-full">
+          <CalendarClock className="w-3 h-3" aria-hidden="true" />
+          Current until {fmtDate(evaluation.expiresOn)}
+        </p>
       )}
 
       {(onEdit || onShare) && (
