@@ -96,6 +96,26 @@ export const METRIC_OPTIONS: { value: string; label: string; time: boolean }[] =
   { value: 'cross_country_time', label: 'Cross-country time', time: true },
 ];
 
+/** Class types (mirrors models.ClassType) — used for eq/in value pickers. */
+export const CLASS_TYPE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'SEP_LAND', label: 'SEP (Land)' },
+  { value: 'SEP_SEA', label: 'SEP (Sea)' },
+  { value: 'MEP_LAND', label: 'MEP (Land)' },
+  { value: 'MEP_SEA', label: 'MEP (Sea)' },
+  { value: 'SET_LAND', label: 'SET (Land)' },
+  { value: 'SET_SEA', label: 'SET (Sea)' },
+  { value: 'TMG', label: 'TMG' },
+  { value: 'IR', label: 'Instrument Rating' },
+  { value: 'OTHER', label: 'Other' },
+];
+
+/** Launch methods (mirrors flight.launch_method). */
+export const LAUNCH_METHOD_OPTIONS: { value: string; label: string }[] = [
+  { value: 'winch', label: 'Winch' },
+  { value: 'aerotow', label: 'Aerotow' },
+  { value: 'self-launch', label: 'Self-launch' },
+];
+
 export const FILTER_FIELD_OPTIONS: { value: string; label: string; ops: FilterOp[] }[] = [
   { value: 'aircraft_class', label: 'Aircraft class', ops: ['eq', 'in'] },
   { value: 'aircraft_type', label: 'Aircraft type', ops: ['eq', 'in'] },

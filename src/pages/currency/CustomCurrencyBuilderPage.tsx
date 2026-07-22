@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
-  ArrowLeft, Plus, Save, Trash2, Share2, Copy, Check, Play, AlertCircle, Download, X,
+  ArrowLeft, Plus, Save, Trash2, Share2, Copy, Check, Play, AlertCircle, Download, X, Blocks, Code2,
 } from 'lucide-react';
 import {
   useCustomCurrencies, useCreateCustomCurrency, useUpdateCustomCurrency,
@@ -10,66 +10,40 @@ import {
 } from '../../hooks/useCustomCurrency';
 import { ruleToYaml, yamlToInput, STARTER_YAML, YamlRuleError } from '../../lib/customCurrencyYaml';
 import { CustomCurrencyCard } from '../../components/currency/CustomCurrencyCard';
+import { CustomCurrencyBlockEditor } from '../../components/currency/CustomCurrencyBlockEditor';
 import type {
-  CustomCurrencyEvaluation, CustomRuleInput, CustomCurrencyRuleBody,
+  CustomCurrencyEvaluation, CustomRuleInput, CustomCurrencyRule,
 } from '../../types/customCurrency';
-import { METRIC_OPTIONS } from '../../types/customCurrency';
+
+type Mode = 'blocks' | 'yaml';
+
+const STARTER_DRAFT: CustomRuleInput = yamlToInput(STARTER_YAML);
+
+/** Map a stored rule to the editable input shape. */
+function ruleToInput(rule: CustomCurrencyRule): CustomRuleInput {
+  return { name: rule.name, emoji: rule.emoji ?? null, description: rule.description ?? null, definition: rule.definition };
+}
+
+/** Light client-side check so Save/Preview only fire on a plausible rule. The
+ *  API performs full validation. */
+function validateDraft(input: CustomRuleInput): string | null {
+  if (!input.name.trim()) return 'Give your rule a name.';
+  if (!input.definition.window || input.definition.window.amount <= 0) return 'Set a timeframe greater than zero.';
+  if (!input.definition.requirements || input.definition.requirements.length === 0) return 'Add at least one requirement.';
+  return null;
+}
 
 /** Extract a share token from a pasted value: a raw token or a URL with ?share=. */
 function parseShareToken(raw: string): string | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
   try {
-    const url = new URL(trimmed);
-    const t = url.searchParams.get('share');
+    const t = new URL(trimmed).searchParams.get('share');
     if (t) return t;
   } catch {
     /* not a URL — treat as raw token */
   }
   return trimmed;
-}
-
-function metricLabel(metric: string): string {
-  return METRIC_OPTIONS.find((m) => m.value === metric)?.label ?? metric;
-}
-
-/** A read-only, non-technical rendering of a parsed rule as stacked blocks. */
-function BlocksPreview({ definition }: { definition: CustomCurrencyRuleBody }) {
-  return (
-    <div className="space-y-2" data-testid="blocks-preview">
-      <div className="rounded-lg border border-sky-200 bg-sky-50/60 dark:border-sky-800/50 dark:bg-sky-900/15 px-3 py-2">
-        <p className="text-[11px] uppercase tracking-wide font-semibold text-sky-700 dark:text-sky-300">Timeframe</p>
-        <p className="text-sm text-slate-700 dark:text-slate-200">
-          Look back over the last {definition.window?.amount} {definition.window?.unit}
-        </p>
-      </div>
-      {definition.filters && definition.filters.length > 0 && (
-        <div className="rounded-lg border border-violet-200 bg-violet-50/60 dark:border-violet-800/50 dark:bg-violet-900/15 px-3 py-2">
-          <p className="text-[11px] uppercase tracking-wide font-semibold text-violet-700 dark:text-violet-300">Only these flights</p>
-          <ul className="text-sm text-slate-700 dark:text-slate-200 list-disc list-inside">
-            {definition.filters.map((f, i) => (
-              <li key={i}>
-                {f.field.replace(/_/g, ' ')}
-                {f.op === 'eq' && ` = ${f.value}`}
-                {f.op === 'in' && ` in ${(f.values ?? []).join(', ')}`}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 dark:border-emerald-800/50 dark:bg-emerald-900/15 px-3 py-2">
-        <p className="text-[11px] uppercase tracking-wide font-semibold text-emerald-700 dark:text-emerald-300">You need</p>
-        <ul className="text-sm text-slate-700 dark:text-slate-200 list-disc list-inside">
-          {definition.requirements?.map((r, i) => (
-            <li key={i}>
-              at least {r.min} {r.label || metricLabel(r.metric)}
-              {r.unit ? ` (${r.unit})` : ''}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
 }
 
 export default function CustomCurrencyBuilderPage() {
@@ -85,8 +59,11 @@ export default function CustomCurrencyBuilderPage() {
   const importRule = useImportSharedRule();
   const sharedRule = useSharedRule(shareParam);
 
+  const [mode, setMode] = useState<Mode>('blocks');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<CustomRuleInput>(STARTER_DRAFT);
   const [yamlText, setYamlText] = useState<string>(STARTER_YAML);
+  const [modeError, setModeError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [evaluation, setEvaluation] = useState<CustomCurrencyEvaluation | null>(null);
   const [importValue, setImportValue] = useState('');
@@ -94,23 +71,26 @@ export default function CustomCurrencyBuilderPage() {
 
   const currentRule = editingId ? rules?.find((r) => r.rule.id === editingId) : undefined;
 
-  // Parse the YAML on every change so the block preview and buttons react.
-  const parsed = useMemo<{ input?: CustomRuleInput; error?: string }>(() => {
-    try {
-      return { input: yamlToInput(yamlText) };
-    } catch (e) {
-      return { error: e instanceof YamlRuleError ? e.message : 'Invalid rule' };
+  // The current input + error depend on the active editing surface.
+  const current = useMemo<{ input?: CustomRuleInput; error?: string }>(() => {
+    if (mode === 'yaml') {
+      try {
+        return { input: yamlToInput(yamlText) };
+      } catch (e) {
+        return { error: e instanceof YamlRuleError ? e.message : 'Invalid rule' };
+      }
     }
-  }, [yamlText]);
+    const err = validateDraft(draft);
+    return err ? { input: draft, error: err } : { input: draft };
+  }, [mode, yamlText, draft]);
 
-  const parseError = parsed.error ?? null;
-
-  // Debounced live preview against the user's real flights. All state updates
-  // happen inside the timeout callback (never synchronously in the effect body).
+  // Debounced live preview against real flights. State updates only happen
+  // inside the timeout callback, never synchronously in the effect body.
   const previewRef = useRef(preview);
   previewRef.current = preview;
+  const previewInput = current.error ? undefined : current.input;
   useEffect(() => {
-    const definition = parsed.input?.definition;
+    const definition = previewInput?.definition;
     const handle = setTimeout(() => {
       if (!definition) {
         setEvaluation(null);
@@ -122,10 +102,27 @@ export default function CustomCurrencyBuilderPage() {
       });
     }, 500);
     return () => clearTimeout(handle);
-  }, [parsed.input]);
+  }, [previewInput]);
+
+  function switchMode(next: Mode) {
+    if (next === mode) return;
+    setModeError(null);
+    if (next === 'yaml') {
+      setYamlText(ruleToYaml(draft));
+      setMode('yaml');
+    } else {
+      try {
+        setDraft(yamlToInput(yamlText));
+        setMode('blocks');
+      } catch (e) {
+        setModeError(e instanceof YamlRuleError ? e.message : 'Fix the YAML before switching to blocks.');
+      }
+    }
+  }
 
   function startNew() {
     setEditingId(null);
+    setDraft(STARTER_DRAFT);
     setYamlText(STARTER_YAML);
     setSaveError(null);
   }
@@ -134,18 +131,19 @@ export default function CustomCurrencyBuilderPage() {
     const item = rules?.find((r) => r.rule.id === id);
     if (!item) return;
     setEditingId(id);
+    setDraft(ruleToInput(item.rule));
     setYamlText(ruleToYaml(item.rule));
     setSaveError(null);
   }
 
   async function handleSave() {
-    if (!parsed.input) return;
+    if (!current.input || current.error) return;
     setSaveError(null);
     try {
       if (editingId) {
-        await updateRule.mutateAsync({ id: editingId, input: parsed.input });
+        await updateRule.mutateAsync({ id: editingId, input: current.input });
       } else {
-        const created = await createRule.mutateAsync(parsed.input);
+        const created = await createRule.mutateAsync(current.input);
         setEditingId(created.rule.id);
       }
     } catch (e) {
@@ -197,6 +195,7 @@ export default function CustomCurrencyBuilderPage() {
   }
 
   const saving = createRule.isPending || updateRule.isPending;
+  const canSave = !!current.input && !current.error;
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-4">
@@ -309,33 +308,68 @@ export default function CustomCurrencyBuilderPage() {
         {/* Editor + preview */}
         <section className="space-y-4">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            {/* YAML editor */}
+            {/* Editor */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Rule (YAML)</h2>
+                {/* Mode toggle */}
+                <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5" role="tablist" aria-label="Editor mode">
+                  <button
+                    type="button"
+                    onClick={() => switchMode('blocks')}
+                    className={`text-xs px-2.5 py-1 rounded-md inline-flex items-center gap-1.5 ${mode === 'blocks' ? 'bg-sky-500 text-white' : 'text-slate-600 dark:text-slate-300'}`}
+                    data-testid="mode-blocks"
+                    aria-selected={mode === 'blocks'}
+                    role="tab"
+                  >
+                    <Blocks className="w-3.5 h-3.5" /> Blocks
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => switchMode('yaml')}
+                    className={`text-xs px-2.5 py-1 rounded-md inline-flex items-center gap-1.5 ${mode === 'yaml' ? 'bg-sky-500 text-white' : 'text-slate-600 dark:text-slate-300'}`}
+                    data-testid="mode-yaml"
+                    aria-selected={mode === 'yaml'}
+                    role="tab"
+                  >
+                    <Code2 className="w-3.5 h-3.5" /> YAML
+                  </button>
+                </div>
                 <span className="text-xs text-slate-400">{editingId ? 'Editing' : 'New'}</span>
               </div>
-              <textarea
-                value={yamlText}
-                onChange={(e) => setYamlText(e.target.value)}
-                spellCheck={false}
-                rows={20}
-                className="input font-mono text-xs leading-relaxed w-full"
-                data-testid="yaml-editor"
-              />
-              {parseError && (
-                <p className="text-xs text-red-600 inline-flex items-start gap-1.5" data-testid="parse-error">
-                  <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {parseError}
+
+              {modeError && (
+                <p className="text-xs text-red-600 inline-flex items-start gap-1.5" data-testid="mode-error">
+                  <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {modeError}
                 </p>
               )}
+
+              {mode === 'blocks' ? (
+                <CustomCurrencyBlockEditor value={draft} onChange={setDraft} />
+              ) : (
+                <textarea
+                  value={yamlText}
+                  onChange={(e) => setYamlText(e.target.value)}
+                  spellCheck={false}
+                  rows={22}
+                  className="input font-mono text-xs leading-relaxed w-full"
+                  data-testid="yaml-editor"
+                />
+              )}
+
+              {current.error && (
+                <p className="text-xs text-red-600 inline-flex items-start gap-1.5" data-testid="rule-error">
+                  <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {current.error}
+                </p>
+              )}
+
               <div className="flex flex-wrap items-center gap-2">
-                <button type="button" onClick={handleSave} disabled={!parsed.input || saving} className="btn-primary text-sm inline-flex items-center gap-1.5" data-testid="save-rule">
+                <button type="button" onClick={handleSave} disabled={!canSave || saving} className="btn-primary text-sm inline-flex items-center gap-1.5" data-testid="save-rule">
                   <Save className="w-4 h-4" /> {saving ? 'Saving…' : editingId ? 'Save changes' : 'Create rule'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => parsed.input && preview.mutate(parsed.input.definition, { onSuccess: setEvaluation })}
-                  disabled={!parsed.input}
+                  onClick={() => canSave && current.input && preview.mutate(current.input.definition, { onSuccess: setEvaluation })}
+                  disabled={!canSave}
                   className="btn-secondary text-sm inline-flex items-center gap-1.5"
                   data-testid="preview-rule"
                 >
@@ -367,25 +401,22 @@ export default function CustomCurrencyBuilderPage() {
             {/* Live preview */}
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Live preview</h2>
-              {parsed.input ? (
-                <>
-                  <BlocksPreview definition={parsed.input.definition} />
-                  {evaluation ? (
-                    <CustomCurrencyCard
-                      item={{
-                        rule: {
-                          id: 'preview', userId: '', name: parsed.input.name,
-                          description: parsed.input.description, emoji: parsed.input.emoji,
-                          definition: parsed.input.definition, isShared: false,
-                          createdAt: '', updatedAt: '',
-                        },
-                        evaluation,
-                      }}
-                    />
-                  ) : (
-                    <p className="text-xs text-slate-400">{preview.isPending ? 'Evaluating against your flights…' : 'Preview updates as you type.'}</p>
-                  )}
-                </>
+              {current.input ? (
+                evaluation ? (
+                  <CustomCurrencyCard
+                    item={{
+                      rule: {
+                        id: 'preview', userId: '', name: current.input.name,
+                        description: current.input.description, emoji: current.input.emoji,
+                        definition: current.input.definition, isShared: false,
+                        createdAt: '', updatedAt: '',
+                      },
+                      evaluation,
+                    }}
+                  />
+                ) : (
+                  <p className="text-xs text-slate-400">{preview.isPending ? 'Evaluating against your flights…' : 'Preview updates as you edit.'}</p>
+                )
               ) : (
                 <p className="text-sm text-slate-400">Fix the rule to see a preview.</p>
               )}
