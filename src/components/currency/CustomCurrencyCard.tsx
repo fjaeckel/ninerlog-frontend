@@ -1,4 +1,4 @@
-import { ShieldCheck, ShieldX, Shield, Share2, Pencil, CalendarClock } from 'lucide-react';
+import { ShieldCheck, ShieldX, Shield, Share2, Pencil, Trash2, CalendarClock } from 'lucide-react';
 import type { CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import type { CustomRuleWithStatus } from '../../types/customCurrency';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
@@ -66,9 +66,10 @@ interface Props {
   item: CustomRuleWithStatus;
   onEdit?: (id: string) => void;
   onShare?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
-export function CustomCurrencyCard({ item, onEdit, onShare }: Props) {
+export function CustomCurrencyCard({ item, onEdit, onShare, onDelete }: Props) {
   const { rule, evaluation } = item;
   const { fmtDate } = useFormatPrefs();
   const config = STATUS_CONFIG[evaluation.status] ?? STATUS_CONFIG.unknown;
@@ -106,26 +107,42 @@ export function CustomCurrencyCard({ item, onEdit, onShare }: Props) {
         </p>
       )}
 
-      {(onEdit || onShare) && (
-        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50">
+      {(onEdit || onShare || onDelete) && (
+        <div className="flex items-center justify-end gap-1 mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/50">
           {onEdit && (
             <button
               type="button"
               onClick={() => onEdit(rule.id)}
-              className="btn-ghost text-xs inline-flex items-center gap-1.5"
+              className="btn-ghost p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
+              title="Edit rule"
+              aria-label="Edit rule"
               data-testid={`edit-custom-${rule.id}`}
             >
-              <Pencil className="w-3.5 h-3.5" /> Edit
+              <Pencil className="w-4 h-4" />
             </button>
           )}
           {onShare && (
             <button
               type="button"
               onClick={() => onShare(rule.id)}
-              className="btn-ghost text-xs inline-flex items-center gap-1.5"
+              className={`btn-ghost p-1.5 ${rule.isShared ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'}`}
+              title={rule.isShared ? 'Shared — manage link' : 'Share rule'}
+              aria-label={rule.isShared ? 'Shared — manage link' : 'Share rule'}
               data-testid={`share-custom-${rule.id}`}
             >
-              <Share2 className="w-3.5 h-3.5" /> {rule.isShared ? 'Shared' : 'Share'}
+              <Share2 className="w-4 h-4" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(rule.id)}
+              className="btn-ghost p-1.5 text-slate-500 hover:text-red-600 dark:hover:text-red-400"
+              title="Delete rule"
+              aria-label="Delete rule"
+              data-testid={`delete-custom-${rule.id}`}
+            >
+              <Trash2 className="w-4 h-4" />
             </button>
           )}
         </div>

@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAllCurrencyStatus } from '../../hooks/useCurrency';
-import { useCustomCurrencies } from '../../hooks/useCustomCurrency';
+import { useCustomCurrencies, useDeleteCustomCurrency } from '../../hooks/useCustomCurrency';
+import { ShareRuleModal } from '../../components/currency/ShareRuleModal';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useCredentials } from '../../hooks/useCredentials';
 import { useLicenses } from '../../hooks/useLicenses';
 import { useAircraftStats } from '../../hooks/useAircraft';
@@ -41,6 +43,12 @@ const CREDENTIAL_DESCRIPTIONS: Record<string, string> = {
 export default function CurrencyPage() {
   const { data: currencyStatus, isLoading: currencyLoading } = useAllCurrencyStatus();
   const { data: customRules } = useCustomCurrencies();
+  const deleteCustom = useDeleteCustomCurrency();
+  const navigate = useNavigate();
+  const [shareRuleId, setShareRuleId] = useState<string | null>(null);
+  const [deleteRuleId, setDeleteRuleId] = useState<string | null>(null);
+  const shareRule = customRules?.find((r) => r.rule.id === shareRuleId)?.rule ?? null;
+  const deleteRule = customRules?.find((r) => r.rule.id === deleteRuleId)?.rule ?? null;
   const { data: credentials, isLoading: credentialsLoading } = useCredentials();
   const { data: licenses } = useLicenses();
   const { data: aircraftStats } = useAircraftStats();
@@ -150,7 +158,13 @@ export default function CurrencyPage() {
           {customRules && customRules.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {customRules.map((item) => (
-                <CustomCurrencyCard key={item.rule.id} item={item} />
+                <CustomCurrencyCard
+                  key={item.rule.id}
+                  item={item}
+                  onEdit={(id) => navigate(`/currency/builder?rule=${id}`)}
+                  onShare={(id) => setShareRuleId(id)}
+                  onDelete={(id) => setDeleteRuleId(id)}
+                />
               ))}
             </div>
           ) : (
@@ -478,6 +492,24 @@ export default function CurrencyPage() {
           </p>
         </div>
       )}
+
+      {shareRule && <ShareRuleModal rule={shareRule} onClose={() => setShareRuleId(null)} />}
+
+      <ConfirmDialog
+        open={!!deleteRule}
+        title={t('customCurrency.deleteTitle', { defaultValue: 'Delete this rule?' })}
+        description={t('customCurrency.deleteDescription', {
+          defaultValue: `“${deleteRule?.name ?? ''}” will be permanently removed. This cannot be undone.`,
+          name: deleteRule?.name ?? '',
+        })}
+        confirmLabel={t('common:delete', { defaultValue: 'Delete' })}
+        isLoading={deleteCustom.isPending}
+        onCancel={() => setDeleteRuleId(null)}
+        onConfirm={async () => {
+          if (deleteRuleId) await deleteCustom.mutateAsync(deleteRuleId);
+          setDeleteRuleId(null);
+        }}
+      />
     </div>
   );
 }

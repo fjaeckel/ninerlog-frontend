@@ -49,6 +49,8 @@ function parseShareToken(raw: string): string | null {
 export default function CustomCurrencyBuilderPage() {
   const [params, setParams] = useSearchParams();
   const shareParam = params.get('share');
+  const ruleParam = params.get('rule');
+  const consumedRuleParam = useRef(false);
 
   const { data: rules, isLoading } = useCustomCurrencies();
   const createRule = useCreateCustomCurrency();
@@ -103,6 +105,18 @@ export default function CustomCurrencyBuilderPage() {
     }, 500);
     return () => clearTimeout(handle);
   }, [previewInput]);
+
+  // Deep link from the Currency page "Edit" action: ?rule=<id> auto-opens that
+  // rule once the list has loaded. Consumed once so "New rule" isn't overridden.
+  useEffect(() => {
+    if (consumedRuleParam.current || !ruleParam || !rules) return;
+    const match = rules.find((r) => r.rule.id === ruleParam);
+    if (match) {
+      consumedRuleParam.current = true;
+      loadRule(ruleParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rules, ruleParam]);
 
   function switchMode(next: Mode) {
     if (next === mode) return;
