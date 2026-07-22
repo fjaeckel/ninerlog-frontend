@@ -351,7 +351,7 @@ export default function CustomCurrencyBuilderPage() {
                   onChange={(e) => setYamlText(e.target.value)}
                   spellCheck={false}
                   rows={22}
-                  className="input font-mono text-xs leading-relaxed w-full"
+                  className="input font-mono text-xs leading-relaxed w-full min-h-[24rem] resize-y"
                   data-testid="yaml-editor"
                 />
               )}
