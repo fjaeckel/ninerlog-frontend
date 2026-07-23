@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateAircraft, useUpdateAircraft, useAircraftById, useAircraftStats } from '../../hooks/useAircraft';
 import { extractApiError } from '../../lib/errors';
+import { normalizeLocation } from '../../lib/airport';
 
 const AIRCRAFT_CLASSES = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
@@ -22,8 +23,8 @@ const aircraftSchema = z.object({
   isTailwheel: z.boolean(),
   notes: z.string().optional().or(z.literal('')),
   isActive: z.boolean(),
-  defaultDepartureIcao: z.string().max(4).optional().or(z.literal('')),
-  defaultArrivalIcao: z.string().max(4).optional().or(z.literal('')),
+  defaultDepartureIcao: z.string().max(100).optional().or(z.literal('')),
+  defaultArrivalIcao: z.string().max(100).optional().or(z.literal('')),
   renameFlights: z.boolean(),
 });
 
@@ -125,8 +126,8 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         isHighPerformance: data.isHighPerformance,
         isTailwheel: data.isTailwheel,
         notes: data.notes || null,
-        defaultDepartureIcao: data.defaultDepartureIcao?.trim().toUpperCase() || null,
-        defaultArrivalIcao: data.defaultArrivalIcao?.trim().toUpperCase() || null,
+        defaultDepartureIcao: data.defaultDepartureIcao ? normalizeLocation(data.defaultDepartureIcao) || null : null,
+        defaultArrivalIcao: data.defaultArrivalIcao ? normalizeLocation(data.defaultArrivalIcao) || null : null,
         ...(isEditing ? { isActive: data.isActive } : {}),
       };
 
@@ -320,9 +321,9 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
               {...register('defaultDepartureIcao')}
               type="text"
               id="defaultDepartureIcao"
-              className="input uppercase"
+              className="input"
               placeholder={t('form.departurePlaceholder')}
-              maxLength={4}
+              maxLength={100}
             />
           </div>
           <div>
@@ -333,9 +334,9 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
               {...register('defaultArrivalIcao')}
               type="text"
               id="defaultArrivalIcao"
-              className="input uppercase"
+              className="input"
               placeholder={t('form.arrivalPlaceholder')}
-              maxLength={4}
+              maxLength={100}
             />
           </div>
         </div>

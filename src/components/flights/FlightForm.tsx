@@ -8,6 +8,7 @@ import { useCreateFlight, useUpdateFlight, useFlight, useFlights } from '../../h
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { useSearchContacts, useCreateContact } from '../../hooks/useContacts';
 import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
+import { normalizeLocation } from '../../lib/airport';
 import { extractApiError } from '../../lib/errors';
 import { useAuthStore } from '../../stores/authStore';
 import type { Aircraft } from '../../hooks/useAircraft';
@@ -23,8 +24,8 @@ const flightSchema = z.object({
   date: z.string().min(1, 'Date is required'),
   aircraftReg: z.string().min(1, 'Aircraft registration is required'),
   aircraftType: z.string().min(1, 'Aircraft type is required'),
-  departureIcao: z.string().min(1, 'Departure ICAO is required').max(4),
-  arrivalIcao: z.string().min(1, 'Arrival ICAO is required').max(4),
+  departureIcao: z.string().min(1, 'Departure is required').max(100),
+  arrivalIcao: z.string().min(1, 'Arrival is required').max(100),
   offBlockTime: z.string().min(1, 'Off-block time is required'),
   onBlockTime: z.string().min(1, 'On-block time is required'),
   departureTime: z.string().optional().or(z.literal('')),
@@ -331,8 +332,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         date: data.date,
         aircraftReg: data.aircraftReg.toUpperCase(),
         aircraftType: data.aircraftType.toUpperCase(),
-        departureIcao: data.departureIcao.toUpperCase(),
-        arrivalIcao: data.arrivalIcao.toUpperCase(),
+        departureIcao: normalizeLocation(data.departureIcao),
+        arrivalIcao: normalizeLocation(data.arrivalIcao),
         offBlockTime: data.offBlockTime + ':00',
         onBlockTime: data.onBlockTime + ':00',
         departureTime: data.departureTime ? data.departureTime + ':00' : undefined,
@@ -545,9 +546,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               {...register('departureIcao')}
               type="text"
               id="departureIcao"
-              className="input uppercase"
-              placeholder="EDDF"
-              maxLength={4}
+              className="input"
+              placeholder={t('form.locationPlaceholder')}
+              maxLength={100}
             />
             {errors.departureIcao && (
               <p className="form-error">{errors.departureIcao.message}</p>
@@ -561,15 +562,16 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               {...register('arrivalIcao')}
               type="text"
               id="arrivalIcao"
-              className="input uppercase"
-              placeholder="EDDH"
-              maxLength={4}
+              className="input"
+              placeholder={t('form.locationPlaceholder')}
+              maxLength={100}
             />
             {errors.arrivalIcao && (
               <p className="form-error">{errors.arrivalIcao.message}</p>
             )}
           </div>
         </div>
+        <p className="form-helper -mt-2 mb-4">{t('form.locationHelper')}</p>
 
         {/* Off-Block → On-Block → Takeoff → Landing */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 [&>*]:min-w-0">
