@@ -112,9 +112,19 @@ export function CustomCurrencyBlockEditor({ value, onChange }: Props) {
 
   const onReqMetricChange = (i: number, metric: string) => {
     const meta = metricMeta(metric);
-    const next: CurrencyRequirementDef = { ...reqs[i], metric };
+    const prev = reqs[i];
+    const next: CurrencyRequirementDef = { ...prev, metric };
     if (!meta?.time) delete next.unit;
     else if (!next.unit) next.unit = 'hours';
+    // Keep the label in sync with the metric unless the pilot typed their own.
+    // Blocks mode has no label field, so an untouched or metric-derived label
+    // should follow the selected metric rather than go stale (e.g. "Night
+    // landings" left behind after switching the metric to Takeoffs).
+    const prevDefault = metricMeta(prev.metric)?.label;
+    if (!prev.label || prev.label === prevDefault) {
+      if (meta?.label) next.label = meta.label;
+      else delete next.label;
+    }
     updateReq(i, next);
   };
 
