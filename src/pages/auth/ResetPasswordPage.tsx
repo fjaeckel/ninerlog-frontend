@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRequestPasswordReset } from '../../hooks/useAuth';
+import { createLogger } from '../../lib/logger';
+
+const log = createLogger('ResetPassword');
 
 const resetSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -32,7 +35,7 @@ export default function ResetPasswordPage() {
       await requestReset.mutateAsync(data);
       setSuccess(true);
     } catch (err: unknown) {
-      console.error('[ResetPassword] request failed:', err);
+      log.error('reset request failed', { err });
       const message =
         (err && typeof err === 'object' && 'error' in err && typeof (err as Record<string, unknown>).error === 'string')
           ? (err as Record<string, unknown>).error as string

@@ -6,6 +6,9 @@ import {
   useDeletePasskey,
   passkeysSupported,
 } from '../../hooks/usePasskeys';
+import { createLogger } from '../../lib/logger';
+
+const log = createLogger('PasskeySection');
 
 function formatDate(value: string | undefined, locale: string): string {
   if (!value) return '—';
@@ -33,7 +36,7 @@ export function PasskeySection() {
       await registerPasskey.mutateAsync(label.trim() || undefined);
       setLabel('');
     } catch (err) {
-      console.error(err);
+      log.error('passkey registration failed', { err });
       setError(t('passkeys.registerFailed'));
     }
   };
@@ -43,7 +46,7 @@ export function PasskeySection() {
     try {
       await deletePasskey.mutateAsync(id);
     } catch (err) {
-      console.error(err);
+      log.error('passkey deletion failed', { err });
       setError(t('passkeys.deleteFailed'));
     }
   };

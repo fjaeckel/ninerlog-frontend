@@ -1,5 +1,8 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { isChunkLoadError } from '../lib/lazyWithRetry';
+import { createLogger } from '../lib/logger';
+
+const log = createLogger('ErrorBoundary');
 
 interface Props {
   children: ReactNode;
@@ -23,9 +26,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    // Log to console — surfaces in DevTools and the iOS Web Inspector.
-    // eslint-disable-next-line no-console
-    console.error('[ErrorBoundary]', error, info);
+    // Surfaces in DevTools and the iOS Web Inspector.
+    log.error('uncaught render error', {
+      err: error,
+      componentStack: info.componentStack,
+    });
   }
 
   private handleReload = (): void => {

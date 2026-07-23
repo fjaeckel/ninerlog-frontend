@@ -1,5 +1,8 @@
 import { onCLS, onFCP, onLCP, onTTFB } from 'web-vitals';
 import type { Metric } from 'web-vitals';
+import { createLogger } from './logger';
+
+const log = createLogger('web-vitals');
 
 /**
  * Report Core Web Vitals metrics.
@@ -7,9 +10,13 @@ import type { Metric } from 'web-vitals';
  * During development, they're logged to the console.
  */
 function reportWebVital(metric: Metric) {
-  // Log to console in development
+  // Log in development
   if (import.meta.env.DEV) {
-    console.log(`[Web Vital] ${metric.name}: ${metric.value.toFixed(2)} (${metric.rating})`);
+    log.debug('web vital measured', {
+      name: metric.name,
+      value: Number(metric.value.toFixed(2)),
+      rating: metric.rating,
+    });
   }
 
   // In production, send to analytics if configured
