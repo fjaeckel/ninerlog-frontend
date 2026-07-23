@@ -59,6 +59,27 @@ describe('CustomCurrencyBlockEditor', () => {
     expect(last.definition.requirements[0]).toMatchObject({ metric: 'pic_time', unit: 'hours' });
   });
 
+  it('auto-computes the requirement label from the selected metric', async () => {
+    const user = userEvent.setup();
+    const withLabel = baseInput();
+    // A metric-derived label, exactly as the starter YAML seeds it.
+    withLabel.definition.requirements = [{ metric: 'night_landings', min: 3, label: 'Night landings' }];
+    const { onChange } = setup(withLabel);
+    await user.selectOptions(screen.getByLabelText('Metric'), 'takeoffs');
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0] as CustomRuleInput;
+    expect(last.definition.requirements[0]).toMatchObject({ metric: 'takeoffs', label: 'Takeoffs' });
+  });
+
+  it('preserves a pilot-authored custom label when the metric changes', async () => {
+    const user = userEvent.setup();
+    const custom = baseInput();
+    custom.definition.requirements = [{ metric: 'night_landings', min: 3, label: 'My night ritual' }];
+    const { onChange } = setup(custom);
+    await user.selectOptions(screen.getByLabelText('Metric'), 'takeoffs');
+    const last = onChange.mock.calls[onChange.mock.calls.length - 1][0] as CustomRuleInput;
+    expect(last.definition.requirements[0]).toMatchObject({ metric: 'takeoffs', label: 'My night ritual' });
+  });
+
   it('adds a filter with a default field', async () => {
     const user = userEvent.setup();
     const { onChange } = setup(baseInput());
