@@ -117,16 +117,16 @@ export default function BackupsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <p className="text-sm text-slate-500 dark:text-slate-400">{t('subtitle')}</p>
         <button
           onClick={() => {
             setEditing(null);
             setShowForm(true);
           }}
-          className="btn-primary"
+          className="btn-primary self-start sm:self-auto whitespace-nowrap"
         >
-          {t('addDestination')}
+          + {t('addDestination')}
         </button>
       </div>
 
