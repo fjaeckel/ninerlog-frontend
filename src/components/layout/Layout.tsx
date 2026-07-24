@@ -44,6 +44,13 @@ export default function Layout() {
     navigate('/login');
   };
 
+  // The "More" sheet lists its entries rarely-used → frequently-used, so the
+  // thumb-nearest items sit at the very bottom. If the list is tall enough to
+  // scroll, land on that bottom (Quick Log, Aircraft…) instead of the top.
+  const scrollToBottomOnMount = (el: HTMLElement | null) => {
+    if (el) el.scrollTop = el.scrollHeight;
+  };
+
   const initials = user?.name
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : user?.email?.[0]?.toUpperCase() || '?';
@@ -218,25 +225,32 @@ export default function Layout() {
             <div className="flex justify-center pt-3 pb-2">
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
             </div>
-            <nav className="px-4 pb-4 space-y-1 max-h-[70vh] overflow-y-auto" aria-label="More navigation">
-              <MoreMenuGroup label={t('nav:sectionLogbook')} />
-              <MoreMenuItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-
-              <MoreMenuGroup label={t('nav:sectionData')} />
-              <MoreMenuItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-
+            {/* Ordered for thumb reach: rarely-used items up top, frequently-used
+                ones at the bottom nearest the thumb — Quick Log last of all.
+                Opens scrolled to the bottom so the important items land first. */}
+            <nav
+              ref={scrollToBottomOnMount}
+              className="px-4 pb-4 space-y-1 max-h-[70vh] overflow-y-auto"
+              aria-label="More navigation"
+            >
               <MoreMenuGroup label={t('nav:sectionAccount')} />
-              <MoreMenuItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               {user?.isAdmin && (
                 <MoreMenuItem to="/admin" label={t('nav:admin')} icon={<ShieldCheck className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               )}
+              <MoreMenuItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+
+              <MoreMenuGroup label={t('nav:sectionData')} />
+              <MoreMenuItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+
+              <MoreMenuGroup label={t('nav:sectionLogbook')} />
+              <MoreMenuItem to="/credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
             </nav>
           </div>
         </>
