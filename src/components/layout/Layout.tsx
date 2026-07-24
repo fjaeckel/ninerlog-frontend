@@ -63,10 +63,27 @@ export default function Layout() {
         className="fixed top-0 inset-x-0 h-[calc(3.5rem+env(safe-area-inset-top))] lg:h-[calc(4rem+env(safe-area-inset-top))] surface-glass border-b z-[1010] flex items-center justify-between px-4 lg:px-6 pt-safe-top tap-none"
         role="banner"
       >
-        <Link to="/dashboard" className="flex items-center gap-2.5 group" aria-label={APP_NAME}>
-          <LogoMark size={32} decorative className="drop-shadow-sm transition-transform group-hover:scale-[1.04] group-active:scale-95" />
-          <span className="text-lg font-bold tracking-tight text-gradient-brand">{APP_NAME}</span>
-        </Link>
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
+          <Link to="/dashboard" className="flex items-center gap-2.5 group" aria-label={APP_NAME}>
+            <LogoMark size={32} decorative className="drop-shadow-sm transition-transform group-hover:scale-[1.04] group-active:scale-95" />
+            <span className="text-lg font-bold tracking-tight text-gradient-brand">{APP_NAME}</span>
+          </Link>
+          {/* Quick Log — compact entry next to the logo; the mobile FAB now opens the full flight form */}
+          <NavLink
+            to="/quicklog"
+            title={t('nav:quickLog')}
+            aria-label={t('nav:quickLog')}
+            className={({ isActive }) =>
+              `lg:hidden inline-flex items-center justify-center w-9 h-9 rounded-full transition-colors tap-none ${
+                isActive
+                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/25 dark:text-blue-400'
+                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
+              }`
+            }
+          >
+            <Timer className="w-5 h-5" aria-hidden="true" />
+          </NavLink>
+        </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
           <ThemeSwitcher className="hidden sm:flex" />
@@ -166,10 +183,11 @@ export default function Layout() {
         <BottomNavItem to="/dashboard" tourId="dashboard" label={t('nav:home')} icon={<LayoutDashboard className="w-5 h-5" />} />
         <BottomNavItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
         <Link
-          to="/quicklog"
+          to="/flights"
+          state={{ openForm: true }}
           data-tour="add-flight"
           className="flex flex-col items-center justify-center -mt-6 active:scale-95 transition-transform tap-none"
-          aria-label={t('nav:quickLog')}
+          aria-label={t('nav:addFlight')}
         >
           <span className="w-14 h-14 gradient-brand text-white rounded-full flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-900">
             <Plus className="w-6 h-6" />
@@ -202,6 +220,7 @@ export default function Layout() {
             </div>
             <nav className="px-4 pb-4 space-y-1 max-h-[70vh] overflow-y-auto" aria-label="More navigation">
               <MoreMenuGroup label={t('nav:sectionLogbook')} />
+              <MoreMenuItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
