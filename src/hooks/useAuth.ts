@@ -84,10 +84,21 @@ export const useLogout = () => {
 
   return useMutation({
     mutationFn: async () => {
-      // Optional: Call logout endpoint if you have one
-      // await apiClient.post('/auth/logout');
+      // Revoke the refresh token server-side. Clearing local state alone left
+      // the token valid in the database for its full lifetime, so a retained
+      // copy could resurrect the session after the user had logged out.
+      const refreshToken = useAuthStore.getState().refreshToken;
+      if (!refreshToken) return;
+      try {
+        await apiClient.POST('/auth/logout', { body: { refreshToken } });
+      } catch {
+        // Best effort: never trap the user in a signed-in UI because the
+        // revocation call failed. Local state is cleared regardless below.
+      }
     },
-    onSuccess: () => {
+    // onSettled rather than onSuccess so local state is cleared even if the
+    // request throws.
+    onSettled: () => {
       clearAuth();
     },
   });
