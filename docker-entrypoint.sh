@@ -93,15 +93,8 @@ server {
     ssl_session_cache shared:SSL:10m;
     ssl_session_tickets off;
 
-    # HSTS
-    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
-
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; manifest-src 'self'" always;
+    # Security headers (shared include; see security-headers.conf)
+    include /etc/nginx/security-headers.conf;
 
     root /usr/share/nginx/html;
     index index.html;
@@ -110,11 +103,13 @@ server {
     # these must be no-cache (the real filenames are sw.js/registerSW.js,
     # not service-worker.js).
     location = /sw.js {
+        include /etc/nginx/security-headers.conf;
         add_header Cache-Control "no-cache, no-store, must-revalidate";
         add_header Pragma "no-cache";
         add_header Expires 0;
     }
     location = /registerSW.js {
+        include /etc/nginx/security-headers.conf;
         add_header Cache-Control "no-cache, no-store, must-revalidate";
         add_header Pragma "no-cache";
         add_header Expires 0;
@@ -122,12 +117,14 @@ server {
 
     # Static assets with long cache
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)\$ {
+        include /etc/nginx/security-headers.conf;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
 
     # Health check
     location /health {
+        include /etc/nginx/security-headers.conf;
         access_log off;
         default_type text/plain;
         return 200 "healthy\n";
