@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   PlaneTakeoff, PlaneLanding, Timer, CheckCircle2, Trash2, WifiOff, ArrowRight,

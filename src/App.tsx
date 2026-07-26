@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router';
 import { useAuthStore } from './stores/authStore';
 import { useTheme } from './hooks/useTheme';
 import { bootstrapPromise } from './api/client';

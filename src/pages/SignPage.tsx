@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { usePublicSignatureInfo, useCompletePublicSignature } from '../hooks/useSignatures';
 import { SignatureCanvas, type SignatureCanvasHandle } from '../components/SignatureCanvas';

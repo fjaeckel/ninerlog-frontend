@@ -9,7 +9,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import HelpPage from './pages/help/HelpPage';
 import { ThemeSwitcher } from './components/ui/ThemeSwitcher';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
