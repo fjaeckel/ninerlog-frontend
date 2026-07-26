@@ -20,6 +20,7 @@ FROM nginx:1.31-alpine
 
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
+COPY security-headers.conf /etc/nginx/security-headers.conf
 
 # Copy built assets from builder
 COPY --from=builder /build/dist /usr/share/nginx/html
