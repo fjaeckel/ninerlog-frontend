@@ -14,16 +14,31 @@ EOF
 
 # Beta access gate configuration
 # When BETA_PASSWORD is set, users must enter the code to access the site.
-# The map matches the X-Beta-Token header against the configured password.
+#
+# The X-Beta-Token header carries a *derived* value, never the access code
+# itself: SHA-256 over BETA_TOKEN_PREFIX + the code. The browser derives it
+# once (see src/components/BetaGate.tsx) and the map below only ever holds
+# that derivation, so the code is neither transmitted, stored in
+# localStorage, nor written into an nginx config file.
+#
+# The prefix is domain separation, not a secret. Without it the stored value
+# is a bare SHA-256 of a short human-typed string, which a leaked token could
+# be reversed to via a rainbow table — and beta codes get reused. Keep this
+# string byte-identical to BETA_TOKEN_PREFIX in BetaGate.tsx; changing it
+# invalidates every stored token and forces users to re-enter the code.
+BETA_TOKEN_PREFIX="ninerlog-beta:v1:"
 BETA_PASSWORD="${BETA_PASSWORD:-}"
 
 if [ -n "$BETA_PASSWORD" ]; then
-  BETA_HASH=$(printf '%s' "$BETA_PASSWORD" | sha256sum | cut -d' ' -f1)
+  BETA_HASH=$(printf '%s%s' "$BETA_TOKEN_PREFIX" "$BETA_PASSWORD" | sha256sum | cut -d' ' -f1)
+  # $BETA_HASH is 64 hex chars by construction, so nothing operator-supplied
+  # is interpolated into the generated config. Writing $BETA_PASSWORD here
+  # instead would let a code containing a quote or a semicolon close the map
+  # block and append arbitrary nginx directives.
   cat > /etc/nginx/beta-gate.conf <<BETAEOF
-# Beta gate ENABLED — password required
+# Beta gate ENABLED — access code required
 map \$http_x_beta_token \$beta_valid {
-    default     "no";
-    "$BETA_PASSWORD" "yes";
+    default      "no";
     "$BETA_HASH" "yes";
 }
 BETAEOF
@@ -133,8 +148,9 @@ server {
         return 200 "healthy\n";
     }
 
-    # Beta verify
+    # Beta verify — rate limited, see the beta_verify zone in nginx.conf
     location = /beta-verify {
+        limit_req zone=beta_verify burst=10 nodelay;
         default_type text/plain;
         if (\$beta_valid = "yes") {
             return 200 'ok';

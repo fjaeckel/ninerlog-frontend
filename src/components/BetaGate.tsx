@@ -1,13 +1,34 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { APP_NAME } from '../lib/config';
 
-const BETA_TOKEN_KEY = 'ninerlog_beta_token';
+const BETA_TOKEN_KEY = 'ninerlog_beta_token_v1';
 
-async function hashValue(value: string): Promise<string> {
+// Key used before the token derivation changed. Its values are no longer
+// accepted by the server, so they are cleared rather than migrated.
+const LEGACY_BETA_TOKEN_KEY = 'ninerlog_beta_token';
+
+// Domain separation for the derived token. Must stay byte-identical to
+// BETA_TOKEN_PREFIX in docker-entrypoint.sh — the server compares against
+// SHA-256 over exactly this prefix plus the access code. It is not a secret;
+// it exists so a leaked token is not a bare SHA-256 of a short, frequently
+// reused string that a rainbow table would reverse to the code itself.
+const BETA_TOKEN_PREFIX = 'ninerlog-beta:v1:';
+
+async function sha256Hex(value: string): Promise<string> {
   const data = new TextEncoder().encode(value);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Derives the value sent in X-Beta-Token from the access code the user typed.
+ * The raw code never leaves this function: it is not sent to the server, not
+ * persisted, and not written into any nginx config. The derived token is the
+ * only credential the gate accepts, so it is what we transmit and store.
+ */
+export async function deriveBetaToken(accessCode: string): Promise<string> {
+  return sha256Hex(BETA_TOKEN_PREFIX + accessCode);
 }
 
 /**
@@ -73,6 +94,10 @@ export function BetaGate({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Tokens under the old key can no longer be verified — drop them so a
+      // stale value doesn't linger in localStorage after the re-prompt.
+      localStorage.removeItem(LEGACY_BETA_TOKEN_KEY);
+
       // Gate is enabled — check if we have a stored token
       const stored = localStorage.getItem(BETA_TOKEN_KEY);
       if (stored) {
@@ -92,10 +117,12 @@ export function BetaGate({ children }: { children: ReactNode }) {
     setError('');
     setSubmitting(true);
 
-    const valid = await verifyToken(password);
+    // Derive first, verify second: the server only ever sees the derived
+    // token, so the access code itself never reaches the wire or the logs.
+    const token = await deriveBetaToken(password);
+    const valid = await verifyToken(token);
     if (valid) {
-      const hashed = await hashValue(password);
-      localStorage.setItem(BETA_TOKEN_KEY, hashed);
+      localStorage.setItem(BETA_TOKEN_KEY, token);
       setAuthorized(true);
     } else {
       setError('Invalid access code');
