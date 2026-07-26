@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2, ShieldCheck } from 'lucide-react';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';

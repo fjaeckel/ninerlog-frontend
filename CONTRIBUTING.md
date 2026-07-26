@@ -59,7 +59,7 @@ scripts/            → Build and generation scripts
 | State management | Zustand |
 | Server state | TanStack Query |
 | Forms | React Hook Form + Zod |
-| Routing | react-router-dom |
+| Routing | react-router |
 | i18n | i18next |
 | Unit testing | Vitest |
 | E2E testing | Playwright |
