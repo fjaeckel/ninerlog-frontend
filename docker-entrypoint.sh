@@ -12,33 +12,6 @@ window.ENV = {
 };
 EOF
 
-# Beta access gate configuration
-# When BETA_PASSWORD is set, users must enter the code to access the site.
-# The map matches the X-Beta-Token header against the configured password.
-BETA_PASSWORD="${BETA_PASSWORD:-}"
-
-if [ -n "$BETA_PASSWORD" ]; then
-  BETA_HASH=$(printf '%s' "$BETA_PASSWORD" | sha256sum | cut -d' ' -f1)
-  cat > /etc/nginx/beta-gate.conf <<BETAEOF
-# Beta gate ENABLED — password required
-map \$http_x_beta_token \$beta_valid {
-    default     "no";
-    "$BETA_PASSWORD" "yes";
-    "$BETA_HASH" "yes";
-}
-BETAEOF
-  echo "Beta gate ENABLED"
-else
-  cat > /etc/nginx/beta-gate.conf <<BETAEOF
-# Beta gate DISABLED — no BETA_PASSWORD set
-map \$http_x_beta_token \$beta_valid {
-    default "yes";
-    ""      "yes";
-}
-BETAEOF
-  echo "Beta gate disabled (no BETA_PASSWORD set)"
-fi
-
 # TLS / HTTPS configuration
 # When TLS_DOMAIN is set and certs exist, enable HTTPS with HTTP redirect.
 # Certs are expected at /etc/letsencrypt/live/$TLS_DOMAIN/ (mounted from host).
@@ -131,15 +104,6 @@ server {
         access_log off;
         default_type text/plain;
         return 200 "healthy\n";
-    }
-
-    # Beta verify
-    location = /beta-verify {
-        default_type text/plain;
-        if (\$beta_valid = "yes") {
-            return 200 'ok';
-        }
-        return 403 'forbidden';
     }
 
     # API proxy
