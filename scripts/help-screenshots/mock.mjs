@@ -33,12 +33,8 @@ export async function installApiMocks(page, state) {
     const url = new URL(request.url());
     const method = request.method();
 
-    if (!url.pathname.includes('/api/v1/') && url.pathname !== '/beta-verify') {
+    if (!url.pathname.includes('/api/v1/')) {
       return route.continue();
-    }
-
-    if (url.pathname === '/beta-verify') {
-      return json(route, 200, {});
     }
 
     const path = url.pathname.split('/api/v1')[1] || '';
