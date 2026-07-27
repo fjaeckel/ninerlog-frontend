@@ -20,26 +20,14 @@
     <title>NinerLog - Pilot Logbook</title>
     <!-- Runtime environment variables (injected by docker-entrypoint.sh) -->
     <script src="/env-config.js"></script>
-    <!-- Update document title if APP_NAME is configured -->
-    <script>
-      if (window.ENV && window.ENV.VITE_APP_NAME) {
-        document.title = window.ENV.VITE_APP_NAME + ' - Pilot Logbook';
-      }
-    </script>
+    <!-- Title + pre-paint theme bootstrap. Kept in a file rather than inline
+         so the CSP can drop 'unsafe-inline' from script-src. Must stay a
+         classic, non-deferred script: it has to run before first paint. -->
+    <script src="/app-init.js"></script>
   </head>
   <body>
     <noscript>NinerLog requires JavaScript to run.</noscript>
-    <!-- Prevent flash of wrong theme -->
-    <script>
-      (function() {
-        try {
-          var stored = JSON.parse(localStorage.getItem('ninerlog-theme') || '{}');
-          var theme = stored.state && stored.state.theme;
-          var dark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          if (dark) document.documentElement.classList.add('dark');
-        } catch(e) {}
-      })();
-    </script>
+    <!-- Theme is applied from /app-init.js in <head>, before first paint. -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
