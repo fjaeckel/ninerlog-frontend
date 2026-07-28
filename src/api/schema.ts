@@ -95,6 +95,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Log out
+         * @description Revokes the supplied refresh token so the session cannot be resumed. Always returns 204: revocation is idempotent and the endpoint must not reveal whether a given token existed.
+         */
+        post: operations["logoutUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/refresh": {
         parameters: {
             query?: never;
@@ -109,26 +129,6 @@ export interface paths {
          * @description Use refresh token to obtain a new access token
          */
         post: operations["refreshToken"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Log out
-         * @description Revokes the supplied refresh token so the session cannot be resumed.
-         */
-        post: operations["logoutUser"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1338,6 +1338,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/reports/analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get full logbook analytics
+         * @description Returns the complete analytics payload backing the Reports page in a single round trip: experience totals, monthly and yearly series, breakdowns by aircraft type/registration/class/category, airports, countries and routes, instructor and crew time, instrument approach types, flying-pattern distributions (day of week, hour of day, month of year, flight duration), and personal records.
+         *     All time values are in minutes and all distances in nautical miles. Every section is scoped to the requested timeframe except `records.allTime`, which is deliberately computed over the whole logbook so records stay stable as the timeframe changes.
+         */
+        get: operations["getFlightAnalytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/contacts": {
         parameters: {
             query?: never;
@@ -2293,12 +2314,12 @@ export interface components {
              */
             isActive: boolean;
             /**
-             * @description Default departure airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @description Default departure location (ICAO code or free-text place name) prefilled when logging a flight with this aircraft
              * @example LSZH
              */
             defaultDepartureIcao?: string | null;
             /**
-             * @description Default arrival airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @description Default arrival location (ICAO code or free-text place name) prefilled when logging a flight with this aircraft
              * @example LSZH
              */
             defaultArrivalIcao?: string | null;
@@ -2357,12 +2378,12 @@ export interface components {
             /** @example Club aircraft, requires checkout */
             notes?: string | null;
             /**
-             * @description Default departure airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @description Default departure location (ICAO code or free-text place name) prefilled when logging a flight with this aircraft
              * @example LSZH
              */
             defaultDepartureIcao?: string | null;
             /**
-             * @description Default arrival airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @description Default arrival location (ICAO code or free-text place name) prefilled when logging a flight with this aircraft
              * @example LSZH
              */
             defaultArrivalIcao?: string | null;
@@ -2392,12 +2413,12 @@ export interface components {
             /** @example true */
             isActive?: boolean;
             /**
-             * @description Default departure airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @description Default departure location (ICAO code or free-text place name) prefilled when logging a flight with this aircraft
              * @example LSZH
              */
             defaultDepartureIcao?: string | null;
             /**
-             * @description Default arrival airfield (ICAO) prefilled when logging a flight with this aircraft
+             * @description Default arrival location (ICAO code or free-text place name) prefilled when logging a flight with this aircraft
              * @example LSZH
              */
             defaultArrivalIcao?: string | null;
@@ -2529,12 +2550,12 @@ export interface components {
              */
             aircraftType: string;
             /**
-             * @description ICAO code of departure airport
+             * @description Departure location — an ICAO code (resolved to coordinates for maps/distance) or a free-text place name for off-airport sites
              * @example EDDF
              */
             departureIcao?: string | null;
             /**
-             * @description ICAO code of arrival airport
+             * @description Arrival location — an ICAO code (resolved to coordinates for maps/distance) or a free-text place name for off-airport sites
              * @example EDDH
              */
             arrivalIcao?: string | null;
@@ -2767,12 +2788,12 @@ export interface components {
             /** @example C172 */
             aircraftType: string;
             /**
-             * @description Departure airport ICAO code
+             * @description Departure location — an ICAO code (resolved to coordinates for maps/distance) or a free-text place name for off-airport sites
              * @example EDDF
              */
             departureIcao: string;
             /**
-             * @description Arrival airport ICAO code
+             * @description Arrival location — an ICAO code (resolved to coordinates for maps/distance) or a free-text place name for off-airport sites
              * @example EDDH
              */
             arrivalIcao: string;
@@ -4579,6 +4600,297 @@ export interface components {
              */
             signatureImage: string;
         };
+        FlightAnalytics: {
+            range: components["schemas"]["AnalyticsRange"];
+            totals: components["schemas"]["AnalyticsTotals"];
+            /** @description One entry per calendar month in the timeframe that has at least one flight, oldest first. */
+            monthly: components["schemas"]["AnalyticsMonthPoint"][];
+            /** @description One entry per calendar year in the timeframe that has at least one flight, oldest first. */
+            yearly: components["schemas"]["AnalyticsYearPoint"][];
+            byAircraftType: components["schemas"]["AnalyticsAircraftRow"][];
+            byRegistration: components["schemas"]["AnalyticsAircraftRow"][];
+            byClass: components["schemas"]["AnalyticsGroupRow"][];
+            /** @description Aircraft categories (tailwheel, complex, high performance). A flight can appear in more than one category. */
+            byCategory: components["schemas"]["AnalyticsGroupRow"][];
+            byAirport: components["schemas"]["AnalyticsAirportRow"][];
+            byCountry: components["schemas"]["AnalyticsCountryRow"][];
+            byRoute: components["schemas"]["AnalyticsRouteRow"][];
+            /** @description Dual received, grouped by the instructor named on the flight. */
+            byInstructor: components["schemas"]["AnalyticsPersonRow"][];
+            /** @description Time flown alongside each logged crew member. */
+            byCrew: components["schemas"]["AnalyticsPersonRow"][];
+            /** @description Instrument approaches flown, grouped by approach type. */
+            approachTypes: components["schemas"]["AnalyticsApproachTypeRow"][];
+            /** @description Always seven entries, Monday (1) through Sunday (7), including days with no flights. */
+            dayOfWeek: components["schemas"]["AnalyticsBucketRow"][];
+            /** @description Always 24 entries, 00–23 UTC, keyed by off-block time (falling back to take-off time). Flights with neither time recorded are omitted. */
+            hourOfDay: components["schemas"]["AnalyticsBucketRow"][];
+            /** @description Always twelve entries, January (1) through December (12), including months with no flights. */
+            monthOfYear: components["schemas"]["AnalyticsBucketRow"][];
+            /** @description Flight-length histogram. Buckets are fixed - under 30m, 30–60m, 1–2h, 2–3h, 3–5h, over 5h. */
+            durationBuckets: components["schemas"]["AnalyticsBucketRow"][];
+            records: components["schemas"]["AnalyticsRecords"];
+        };
+        AnalyticsRange: {
+            /**
+             * @description Requested timeframe in months. 0 means all time.
+             * @example 12
+             */
+            months: number;
+            /** @description True when the payload covers the entire logbook. */
+            allTime: boolean;
+            /**
+             * @description First date included in the timeframe. Null when allTime is true.
+             * @example 2025-08-01
+             */
+            from?: string | null;
+            /**
+             * @description Last date included in the timeframe (the current date).
+             * @example 2026-07-27
+             */
+            to?: string | null;
+        };
+        AnalyticsTotals: {
+            /** @example 214 */
+            totalFlights: number;
+            /**
+             * @description Total block time.
+             * @example 23480
+             */
+            totalMinutes: number;
+            picMinutes: number;
+            sicMinutes: number;
+            /** @description Dual instruction received. */
+            dualMinutes: number;
+            /** @description Instruction given as an instructor. */
+            dualGivenMinutes: number;
+            soloMinutes: number;
+            nightMinutes: number;
+            ifrMinutes: number;
+            actualInstrumentMinutes: number;
+            /** @description Hood/simulated instrument time in an aircraft. */
+            simulatedInstrumentMinutes: number;
+            crossCountryMinutes: number;
+            /** @description EASA AMC1 FCL.050 column 10. */
+            multiPilotMinutes: number;
+            /** @description FSTD/simulator time. Not included in totalMinutes. */
+            simulatedFlightMinutes: number;
+            /** @description Ground instruction. Not included in totalMinutes. */
+            groundTrainingMinutes: number;
+            landingsDay: number;
+            landingsNight: number;
+            takeoffsDay: number;
+            takeoffsNight: number;
+            approaches: number;
+            holds: number;
+            /**
+             * Format: double
+             * @description Great-circle distance summed over all flights with known departure and arrival airports.
+             * @example 18422.5
+             */
+            distanceNm: number;
+            distinctRegistrations: number;
+            distinctTypes: number;
+            /** @description Unique airports visited as either departure or arrival. */
+            distinctAirports: number;
+            /** @description Unique countries of the visited airports that resolve against the airport database. */
+            distinctCountries: number;
+            /** @example 2024-03-02 */
+            firstFlightDate?: string | null;
+            /** @example 2026-07-14 */
+            lastFlightDate?: string | null;
+        };
+        AnalyticsMonthPoint: {
+            /**
+             * @description Calendar month, YYYY-MM.
+             * @example 2026-07
+             */
+            month: string;
+            flights: number;
+            totalMinutes: number;
+            picMinutes: number;
+            sicMinutes: number;
+            dualMinutes: number;
+            dualGivenMinutes: number;
+            soloMinutes: number;
+            nightMinutes: number;
+            ifrMinutes: number;
+            landingsDay: number;
+            landingsNight: number;
+            /** Format: double */
+            distanceNm: number;
+            /** @description Running total of block time from the very first logged flight up to and including this month, so the curve reflects true career hours even when the timeframe starts later. */
+            cumulativeMinutes: number;
+        };
+        AnalyticsYearPoint: {
+            /** @example 2026 */
+            year: number;
+            flights: number;
+            totalMinutes: number;
+            picMinutes: number;
+            dualMinutes: number;
+            nightMinutes: number;
+            ifrMinutes: number;
+            landings: number;
+            /** Format: double */
+            distanceNm: number;
+        };
+        AnalyticsAircraftRow: {
+            /**
+             * @description Aircraft type designation, or registration for byRegistration rows.
+             * @example C172
+             */
+            label: string;
+            /**
+             * @description Aircraft type for byRegistration rows, or make/model where known.
+             * @example Cessna 172S
+             */
+            subLabel?: string | null;
+            flights: number;
+            totalMinutes: number;
+            picMinutes: number;
+            dualMinutes: number;
+            nightMinutes: number;
+            ifrMinutes: number;
+            landings: number;
+            /** Format: double */
+            distanceNm: number;
+            firstFlightDate?: string | null;
+            lastFlightDate?: string | null;
+        };
+        AnalyticsGroupRow: {
+            /** @example SEP_LAND */
+            label: string;
+            flights: number;
+            totalMinutes: number;
+            picMinutes: number;
+            dualMinutes: number;
+            landings: number;
+        };
+        AnalyticsAirportRow: {
+            /** @example EDNY */
+            icao: string;
+            /**
+             * @description Null when the code does not resolve against the airport database.
+             * @example Friedrichshafen Airport
+             */
+            name?: string | null;
+            /** @example DE */
+            country?: string | null;
+            /** Format: double */
+            latitude?: number | null;
+            /** Format: double */
+            longitude?: number | null;
+            departures: number;
+            arrivals: number;
+            /** @description Flights touching this airport. A local flight departing and arriving here counts once. */
+            flights: number;
+        };
+        AnalyticsCountryRow: {
+            /**
+             * @description ISO 3166-1 alpha-2 country code from the airport database.
+             * @example DE
+             */
+            country: string;
+            /** @description Distinct airports visited in this country. */
+            airports: number;
+            flights: number;
+        };
+        AnalyticsRouteRow: {
+            /** @example EDNY */
+            departureIcao: string;
+            /** @example LSZH */
+            arrivalIcao: string;
+            flights: number;
+            totalMinutes: number;
+            /**
+             * Format: double
+             * @description Great-circle distance of a single leg on this route.
+             */
+            distanceNm: number;
+        };
+        AnalyticsPersonRow: {
+            /** @example J. Smith */
+            name: string;
+            /**
+             * @description Crew role, for byCrew rows only.
+             * @example PIC
+             */
+            role?: string | null;
+            flights: number;
+            totalMinutes: number;
+            lastFlightDate?: string | null;
+        };
+        AnalyticsApproachTypeRow: {
+            /** @example ILS */
+            type: string;
+            count: number;
+        };
+        AnalyticsBucketRow: {
+            /**
+             * @description Bucket index. Day of week 1–7 (Monday first), hour of day 0–23 UTC, month of year 1–12, duration bucket 0–5.
+             * @example 1
+             */
+            key: number;
+            /**
+             * @description Stable machine label for the bucket. Clients localize by key.
+             * @example <30m
+             */
+            label: string;
+            flights: number;
+            totalMinutes: number;
+        };
+        AnalyticsRecords: {
+            longestFlight?: components["schemas"]["AnalyticsFlightRef"];
+            longestDistanceFlight?: components["schemas"]["AnalyticsFlightRef"];
+            /**
+             * @description Date with the most flights logged.
+             * @example 2026-05-17
+             */
+            busiestDay?: string | null;
+            busiestDayFlights: number;
+            /**
+             * @description Calendar month with the most block time.
+             * @example 2026-05
+             */
+            busiestMonth?: string | null;
+            busiestMonthMinutes?: number;
+            /** @example 2026 */
+            busiestYear?: number | null;
+            busiestYearMinutes?: number;
+            /** @description Longest run of consecutive calendar months with at least one flight, within the timeframe. */
+            longestStreakMonths: number;
+            /** @description Consecutive months with at least one flight ending at the current month. */
+            currentStreakMonths: number;
+            /** @description Number of calendar months in the timeframe with at least one flight. */
+            activeMonths: number;
+            /** @description Null when the logbook is empty. */
+            daysSinceLastFlight?: number | null;
+            farthestAirport?: components["schemas"]["AnalyticsAirportRow"];
+            /**
+             * Format: double
+             * @description Great-circle distance from the home base to the farthest visited airport.
+             */
+            farthestAirportNm?: number;
+            /**
+             * @description Most-visited airport, used as the reference point for farthestAirport.
+             * @example EDNY
+             */
+            homeBase?: string | null;
+        };
+        AnalyticsFlightRef: {
+            /** Format: uuid */
+            id: string;
+            /** @example 2026-05-17 */
+            date: string;
+            aircraftReg?: string | null;
+            aircraftType?: string | null;
+            departureIcao?: string | null;
+            arrivalIcao?: string | null;
+            totalMinutes: number;
+            /** Format: double */
+            distanceNm: number;
+        };
         Error: {
             /**
              * @description Error message
@@ -4868,6 +5180,31 @@ export interface operations {
             };
         };
     };
+    logoutUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    refreshToken: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Session revoked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+        };
+    };
     refreshToken: {
         parameters: {
             query?: never;
@@ -4900,31 +5237,6 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
-        };
-    };
-    logoutUser: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    refreshToken: string;
-                };
-            };
-        };
-        responses: {
-            /** @description Session revoked */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            400: components["responses"]["BadRequest"];
         };
     };
     changePassword: {
@@ -6251,9 +6563,9 @@ export interface operations {
                 endDate?: string;
                 /** @description Filter by aircraft registration */
                 aircraftReg?: string;
-                /** @description Filter by departure airport ICAO code */
+                /** @description Filter by departure location (ICAO code or free-text place name) */
                 departureIcao?: string;
-                /** @description Filter by arrival airport ICAO code */
+                /** @description Filter by arrival location (ICAO code or free-text place name) */
                 arrivalIcao?: string;
                 /** @description Filter by PIC flights only */
                 isPic?: boolean;
@@ -7263,6 +7575,33 @@ export interface operations {
                     };
                 };
             };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getFlightAnalytics: {
+        parameters: {
+            query?: {
+                /** @description Number of months to include, counted from the start of the month `months` months ago. 0 means all time. */
+                months?: number;
+                /** @description Maximum number of rows returned per ranked breakdown (aircraft, airports, routes, instructors, crew). */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Full analytics payload */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightAnalytics"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
         };
     };

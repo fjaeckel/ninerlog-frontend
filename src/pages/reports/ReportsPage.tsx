@@ -1,280 +1,923 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  PieChart, Pie, Cell,
-  AreaChart, Area,
-} from 'recharts';
-import { useTrends, useStatsByClass } from '../../hooks/useReports';
-import { exportTrendsToCSV, exportTrendsToPDF } from '../../lib/exportReports';
-import { StatCard } from '../../components/ui/StatCard';
+  BarChart3,
+  Clock,
+  Plane,
+  ArrowDownToLine,
+  MapPin,
+  Globe2,
+  Route,
+  Moon,
+  Gauge,
+  CalendarClock,
+  Trophy,
+  Flame,
+  Timer,
+  Navigation,
+} from 'lucide-react';
+import {
+  ANALYTICS_RANGES,
+  useAnalytics,
+  type AnalyticsAircraftRow,
+  type AnalyticsAirportRow,
+  type AnalyticsBucketRow,
+  type AnalyticsCountryRow,
+  type AnalyticsFlightRef,
+  type AnalyticsGroupRow,
+  type AnalyticsPersonRow,
+  type AnalyticsRouteRow,
+  type FlightAnalytics,
+} from '../../hooks/useAnalytics';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import { exportAnalyticsToCSV, exportAnalyticsToPDF } from '../../lib/exportReports';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
-import { useFormatPrefs } from '../../hooks/useFormatPrefs';
-
-const COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#ec4899', '#6366f1'];
-
-type TimeRange = 0 | 6 | 12 | 24;
+import { EmptyState } from '../../components/ui/EmptyState';
+import { useChartTheme } from '../../components/reports/chartTheme';
+import { SectionNav, ReportSectionBlock, type ReportSection } from '../../components/reports/SectionNav';
+import {
+  Meter,
+  RankedBars,
+  ReportCard,
+  StatTile,
+  type TableColumn,
+} from '../../components/reports/primitives';
+import {
+  CumulativeHoursChart,
+  MonthlyHoursChart,
+  PatternChart,
+  RoleCompositionChart,
+} from '../../components/reports/charts';
 
 export default function ReportsPage() {
-  const { t } = useTranslation('reports');
-  const [months, setMonths] = useState<TimeRange>(12);
-  const { data: trends, isLoading, error } = useTrends(months);
-  const { data: statsByClass } = useStatsByClass(months);
-  const { fmtDuration, dateFormatPref } = useFormatPrefs();
-  const fmt = fmtDuration;
+  const { t, i18n } = useTranslation('reports');
+  const [months, setMonths] = useState<number>(12);
+  const { data, isLoading, isFetching, error } = useAnalytics(months);
+  const { fmtDuration, fmtDate, dateFormatPref } = useFormatPrefs();
+  const theme = useChartTheme();
+
+  const num = useMemo(
+    () => (v: number, digits = 0) =>
+      v.toLocaleString(i18n.language, { maximumFractionDigits: digits, minimumFractionDigits: digits }),
+    [i18n.language]
+  );
+  const nm = (v: number) => `${num(Math.round(v))} NM`;
+
+  const sections: ReportSection[] = [
+    { id: 'overview', label: t('sections.overview') },
+    { id: 'experience', label: t('sections.experience') },
+    { id: 'aircraft', label: t('sections.aircraft') },
+    { id: 'places', label: t('sections.places') },
+    { id: 'instrument', label: t('sections.instrument') },
+    { id: 'patterns', label: t('sections.patterns') },
+    { id: 'records', label: t('sections.records') },
+  ];
 
   if (isLoading) {
     return (
       <div className="mx-auto max-w-[1280px] py-6">
-        <SkeletonList rows={3} />
+        <SkeletonList rows={4} />
       </div>
     );
   }
 
-  if (error) {
+  if (error || !data) {
     return (
       <div className="mx-auto max-w-[1280px] py-6">
         <ErrorState
-          title={t('failedToLoad', 'Failed to load reports')}
-          message={t('failedToLoadMessage', 'An error occurred while loading flight trends. Please try again.')}
+          title={t('failedToLoad')}
+          message={t('failedToLoadMessage')}
         />
       </div>
     );
   }
 
-  const monthly = trends?.monthly ?? [];
-  const byAircraft = trends?.byAircraftType ?? [];
+  const { totals, records } = data;
+  const empty = totals.totalFlights === 0;
 
-  const totalMinutes = monthly.reduce((s, m) => s + m.totalMinutes, 0);
-  const totalFlights = monthly.reduce((s, m) => s + m.totalFlights, 0);
+  // Role composition is charted per year. It is folded from `monthly` rather
+  // than `yearly` because only the monthly series carries the SIC split, and
+  // both series cover exactly the same timeframe.
+  const roleByYear = foldRoleByYear(data);
 
-  const handleExportCSV = () => {
-    if (trends) exportTrendsToCSV(trends.monthly, trends.byAircraftType);
-  };
-
-  const handleExportPDF = () => {
-    if (trends) exportTrendsToPDF(trends.monthly, trends.byAircraftType, dateFormatPref);
-  };
+  const rangeLabel = data.range.allTime
+    ? t('range.allTimeDescription')
+    : t('range.windowDescription', {
+        from: data.range.from ? fmtDate(data.range.from) : '',
+        to: data.range.to ? fmtDate(data.range.to) : '',
+      });
 
   return (
     <div className="mx-auto max-w-[1280px] py-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="page-title">{t('title')}</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {t('flightReports', 'Flight trends and statistics')}
-          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{rangeLabel}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {/* Time range selector */}
-          <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-            {([6, 12, 24, 0] as TimeRange[]).map((m) => (
+        <div className="flex flex-wrap items-center gap-2">
+          <div
+            className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
+            role="group"
+            aria-label={t('timeRange')}
+          >
+            {ANALYTICS_RANGES.map((m) => (
               <button
                 key={m}
                 onClick={() => setMonths(m)}
+                aria-pressed={months === m}
                 className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                   months === m
                     ? 'bg-blue-600 text-white'
                     : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
-                {m === 0 ? t('allTime') : `${m}mo`}
+                {m === 0 ? t('allTime') : t('range.months', { count: m })}
               </button>
             ))}
           </div>
-          {/* Export buttons */}
-          <button onClick={handleExportCSV} className="btn-secondary btn-sm text-xs" disabled={!trends}>
+          <button
+            onClick={() => exportAnalyticsToCSV(data)}
+            className="btn-secondary btn-sm text-xs"
+            disabled={empty}
+          >
             {t('exportCsv')}
           </button>
-          <button onClick={handleExportPDF} className="btn-secondary btn-sm text-xs" disabled={!trends}>
+          <button
+            onClick={() => exportAnalyticsToPDF(data, dateFormatPref)}
+            className="btn-secondary btn-sm text-xs"
+            disabled={empty}
+          >
             {t('exportPdf')}
           </button>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Flights" value={totalFlights.toString()} />
-        <StatCard label="Total Time" value={fmt(totalMinutes)} />
-        <StatCard label="Aircraft Types" value={byAircraft.length.toString()} />
-        <StatCard label="Avg Time/Month" value={monthly.length > 0 ? fmt(Math.round(totalMinutes / monthly.length)) : '0h 0m'} />
-      </div>
-
-      {/* Block Hours Over Time */}
-      {monthly.length > 0 ? (
+      {empty ? (
+        <EmptyState
+          icon={<BarChart3 className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600" />}
+          title={t('empty.title')}
+          description={t('empty.description')}
+        />
+      ) : (
         <>
-          <div className="card mb-6">
-            <h2 className="section-title mb-4">{t('blockHoursOverTime')}</h2>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={monthly} margin={{ top: 5, right: 20, left: 10, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fontSize: 12, fill: '#94a3b8' }}
-                    tickFormatter={(v) => {
-                      const [y, m] = v.split('-');
-                      return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m) - 1]} ${y.slice(2)}`;
-                    }}
-                    label={{ value: t('axisMonth', 'Month'), position: 'insideBottom', offset: -2, fill: '#94a3b8', fontSize: 12 }}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12, fill: '#94a3b8' }}
-                    tickFormatter={(v: number) => String(Math.round(v / 60))}
-                    label={{ value: t('axisHours', 'Hours'), angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 12 }}
-                  />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc', fontSize: '13px' }}
-                    labelFormatter={(v) => {
-                      const [y, m] = String(v).split('-');
-                      return `${['January','February','March','April','May','June','July','August','September','October','November','December'][parseInt(m) - 1]} ${y}`;
-                    }}
-                    formatter={(value: unknown) => [fmt(Number(value)), '']}
-                  />
-                  <Legend />
-                  <Area type="monotone" dataKey="picMinutes" name="PIC" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-                  <Area type="monotone" dataKey="dualMinutes" name="Dual" stackId="1" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          <SectionNav sections={sections} />
 
-          {/* Flights Per Month (bar chart) */}
-          <div className="card mb-6">
-            <h2 className="section-title mb-4">{t('flightsPerMonth')}</h2>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthly} margin={{ top: 5, right: 20, left: 10, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fontSize: 12, fill: '#94a3b8' }}
-                    tickFormatter={(v) => {
-                      const [, m] = v.split('-');
-                      return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m) - 1];
-                    }}
-                    label={{ value: t('axisMonth', 'Month'), position: 'insideBottom', offset: -2, fill: '#94a3b8', fontSize: 12 }}
+          {/* Refetching holds the previous render at reduced opacity instead of
+              collapsing the page back into skeletons. */}
+          <div className={isFetching ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
+            {/* ── Overview ── */}
+            <ReportSectionBlock id="overview" title={t('sections.overview')} description={t('sections.overviewHint')}>
+              <div className="hero-greeting mb-4">
+                <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium uppercase tracking-wider text-blue-100/80">
+                      {t('hero.totalTime')}
+                    </p>
+                    <p className="text-4xl sm:text-5xl font-bold text-white mt-1 leading-none">
+                      {fmtDuration(totals.totalMinutes)}
+                    </p>
+                    <p className="text-sm text-blue-100/80 mt-2">
+                      {t('hero.acrossFlights', { count: totals.totalFlights })}
+                      {totals.firstFlightDate && ` · ${t('hero.since', { date: fmtDate(totals.firstFlightDate) })}`}
+                    </p>
+                  </div>
+                  <dl className="flex gap-6 text-white/90">
+                    <div>
+                      <dt className="text-xs uppercase tracking-wide text-blue-100/70">{t('hero.pic')}</dt>
+                      <dd className="text-xl font-semibold">{fmtDuration(totals.picMinutes)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs uppercase tracking-wide text-blue-100/70">{t('hero.distance')}</dt>
+                      <dd className="text-xl font-semibold">{nm(totals.distanceNm)}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <StatTile
+                  label={t('kpi.flights')}
+                  value={num(totals.totalFlights)}
+                  detail={t('kpi.activeMonths', { count: records.activeMonths })}
+                  icon={<Plane className="w-4 h-4" />}
+                  accent="blue"
+                />
+                <StatTile
+                  label={t('kpi.landings')}
+                  value={num(totals.landingsDay + totals.landingsNight)}
+                  detail={t('kpi.dayNight', { day: totals.landingsDay, night: totals.landingsNight })}
+                  icon={<ArrowDownToLine className="w-4 h-4" />}
+                  accent="amber"
+                />
+                <StatTile
+                  label={t('kpi.airports')}
+                  value={num(totals.distinctAirports)}
+                  detail={t('kpi.countries', { count: totals.distinctCountries })}
+                  icon={<MapPin className="w-4 h-4" />}
+                  accent="green"
+                />
+                <StatTile
+                  label={t('kpi.lastFlight')}
+                  value={
+                    records.daysSinceLastFlight != null
+                      ? t('kpi.daysAgo', { count: records.daysSinceLastFlight })
+                      : '—'
+                  }
+                  detail={totals.lastFlightDate ? fmtDate(totals.lastFlightDate) : undefined}
+                  icon={<CalendarClock className="w-4 h-4" />}
+                  accent="violet"
+                />
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                <ReportCard
+                  title={t('chart.careerHours')}
+                  hint={t('chart.careerHoursHint')}
+                  table={{
+                    rows: data.monthly,
+                    columns: [
+                      { key: 'month', header: t('table.month'), numeric: false, render: (r) => r.month },
+                      { key: 'flights', header: t('flights'), render: (r) => r.flights },
+                      { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+                      { key: 'cum', header: t('table.career'), render: (r) => fmtDuration(r.cumulativeMinutes) },
+                    ],
+                  }}
+                >
+                  <CumulativeHoursChart
+                    data={data.monthly}
+                    theme={theme}
+                    fmtDuration={fmtDuration}
+                    emptyLabel={t('noData')}
                   />
-                  <YAxis
-                    tick={{ fontSize: 12, fill: '#94a3b8' }}
-                    allowDecimals={false}
-                    label={{ value: t('axisFlights', 'Flights'), angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 12 }}
+                </ReportCard>
+
+                <ReportCard
+                  title={t('chart.monthlyHours')}
+                  hint={t('chart.monthlyHoursHint')}
+                  table={{
+                    rows: data.monthly,
+                    columns: [
+                      { key: 'month', header: t('table.month'), numeric: false, render: (r) => r.month },
+                      { key: 'flights', header: t('flights'), render: (r) => r.flights },
+                      { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+                      { key: 'ldg', header: t('table.landings'), render: (r) => r.landingsDay + r.landingsNight },
+                    ],
+                  }}
+                >
+                  <MonthlyHoursChart
+                    data={data.monthly}
+                    theme={theme}
+                    fmtDuration={fmtDuration}
+                    emptyLabel={t('noData')}
                   />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc', fontSize: '13px' }}
+                </ReportCard>
+              </div>
+            </ReportSectionBlock>
+
+            {/* ── Experience ── */}
+            <ReportSectionBlock
+              id="experience"
+              title={t('sections.experience')}
+              description={t('sections.experienceHint')}
+            >
+              <div className="grid gap-4 lg:grid-cols-2 mb-4">
+                <ReportCard title={t('chart.timeBreakdown')} hint={t('chart.timeBreakdownHint')}>
+                  <div className="space-y-3">
+                    {(
+                      [
+                        ['role.pic', totals.picMinutes],
+                        ['role.sic', totals.sicMinutes],
+                        ['role.dual', totals.dualMinutes],
+                        ['role.dualGiven', totals.dualGivenMinutes],
+                        ['role.solo', totals.soloMinutes],
+                        ['role.multiPilot', totals.multiPilotMinutes],
+                        ['role.night', totals.nightMinutes],
+                        ['role.ifr', totals.ifrMinutes],
+                        ['role.crossCountry', totals.crossCountryMinutes],
+                      ] as const
+                    )
+                      .filter(([, v]) => v > 0)
+                      .map(([key, value]) => (
+                        <Meter
+                          key={key}
+                          label={t(key)}
+                          value={value}
+                          total={totals.totalMinutes}
+                          formatted={fmtDuration(value)}
+                          color={theme.accent}
+                        />
+                      ))}
+                  </div>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-4">{t('chart.overlapNote')}</p>
+                </ReportCard>
+
+                <ReportCard
+                  title={t('chart.roleByYear')}
+                  hint={t('chart.roleByYearHint')}
+                  table={{
+                    rows: data.yearly,
+                    columns: [
+                      { key: 'year', header: t('table.year'), numeric: false, render: (r) => r.year },
+                      { key: 'flights', header: t('flights'), render: (r) => r.flights },
+                      { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+                      { key: 'pic', header: t('role.pic'), render: (r) => fmtDuration(r.picMinutes) },
+                      { key: 'dual', header: t('role.dual'), render: (r) => fmtDuration(r.dualMinutes) },
+                      { key: 'night', header: t('role.night'), render: (r) => fmtDuration(r.nightMinutes) },
+                      { key: 'dist', header: t('table.distance'), render: (r) => nm(r.distanceNm) },
+                    ],
+                  }}
+                >
+                  <RoleCompositionChart
+                    data={roleByYear}
+                    theme={theme}
+                    fmtDuration={fmtDuration}
+                    emptyLabel={t('noData')}
                   />
-                  <Bar dataKey="totalFlights" name="Flights" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+                </ReportCard>
+              </div>
+
+              {(data.byInstructor.length > 0 || data.byCrew.length > 0) && (
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {data.byInstructor.length > 0 && (
+                    <ReportCard
+                      title={t('chart.instructors')}
+                      hint={t('chart.instructorsHint')}
+                      table={{ rows: data.byInstructor, columns: personColumns(t, fmtDuration, fmtDate) }}
+                    >
+                      <RankedBars
+                        color={theme.accent}
+                        emptyLabel={t('noData')}
+                        rows={data.byInstructor.map((p) => ({
+                          key: p.name,
+                          label: p.name,
+                          value: p.totalMinutes,
+                          formatted: fmtDuration(p.totalMinutes),
+                          meta: t('flightCount', { count: p.flights }),
+                        }))}
+                      />
+                    </ReportCard>
+                  )}
+                  {data.byCrew.length > 0 && (
+                    <ReportCard
+                      title={t('chart.crew')}
+                      hint={t('chart.crewHint')}
+                      table={{ rows: data.byCrew, columns: personColumns(t, fmtDuration, fmtDate, true) }}
+                    >
+                      <RankedBars
+                        color={theme.accent}
+                        emptyLabel={t('noData')}
+                        rows={data.byCrew.map((p) => ({
+                          key: `${p.name}-${p.role ?? ''}`,
+                          label: p.name,
+                          subLabel: p.role,
+                          value: p.totalMinutes,
+                          formatted: fmtDuration(p.totalMinutes),
+                          meta: t('flightCount', { count: p.flights }),
+                        }))}
+                      />
+                    </ReportCard>
+                  )}
+                </div>
+              )}
+            </ReportSectionBlock>
+
+            {/* ── Aircraft ── */}
+            <ReportSectionBlock id="aircraft" title={t('sections.aircraft')} description={t('sections.aircraftHint')}>
+              <div className="grid gap-4 lg:grid-cols-2 mb-4">
+                <ReportCard
+                  title={t('chart.byType')}
+                  hint={t('chart.byTypeHint', { count: totals.distinctTypes })}
+                  table={{ rows: data.byAircraftType, columns: aircraftColumns(t, fmtDuration, fmtDate, nm) }}
+                >
+                  <RankedBars
+                    color={theme.accent}
+                    emptyLabel={t('noData')}
+                    rows={data.byAircraftType.map((a) => ({
+                      key: a.label,
+                      label: a.label,
+                      subLabel: a.subLabel,
+                      value: a.totalMinutes,
+                      formatted: fmtDuration(a.totalMinutes),
+                      meta: t('flightCount', { count: a.flights }),
+                    }))}
+                  />
+                </ReportCard>
+
+                <ReportCard
+                  title={t('chart.byRegistration')}
+                  hint={t('chart.byRegistrationHint', { count: totals.distinctRegistrations })}
+                  table={{ rows: data.byRegistration, columns: aircraftColumns(t, fmtDuration, fmtDate, nm) }}
+                >
+                  <RankedBars
+                    color={theme.accent}
+                    emptyLabel={t('noData')}
+                    rows={data.byRegistration.map((a) => ({
+                      key: a.label,
+                      label: a.label,
+                      subLabel: a.subLabel,
+                      value: a.totalMinutes,
+                      formatted: fmtDuration(a.totalMinutes),
+                      meta: t('flightCount', { count: a.flights }),
+                    }))}
+                  />
+                </ReportCard>
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                <ReportCard
+                  title={t('chart.byClass')}
+                  hint={t('chart.byClassHint')}
+                  table={{ rows: data.byClass, columns: groupColumns(t, fmtDuration) }}
+                >
+                  <RankedBars
+                    color={theme.accent}
+                    emptyLabel={t('noData')}
+                    rows={data.byClass.map((g) => ({
+                      key: g.label,
+                      label: t(`classLabels.${g.label}`, { defaultValue: g.label.replace(/_/g, ' ') }),
+                      value: g.totalMinutes,
+                      formatted: fmtDuration(g.totalMinutes),
+                      meta: t('flightCount', { count: g.flights }),
+                    }))}
+                  />
+                </ReportCard>
+
+                <ReportCard
+                  title={t('chart.byCategory')}
+                  hint={t('chart.byCategoryHint')}
+                  table={{ rows: data.byCategory, columns: groupColumns(t, fmtDuration) }}
+                >
+                  <RankedBars
+                    color={theme.accent}
+                    emptyLabel={t('noCategoryData')}
+                    rows={data.byCategory.map((g) => ({
+                      key: g.label,
+                      label: t(`categoryLabels.${g.label}`, { defaultValue: g.label }),
+                      value: g.totalMinutes,
+                      formatted: fmtDuration(g.totalMinutes),
+                      meta: t('flightCount', { count: g.flights }),
+                    }))}
+                  />
+                </ReportCard>
+              </div>
+            </ReportSectionBlock>
+
+            {/* ── Places ── */}
+            <ReportSectionBlock id="places" title={t('sections.places')} description={t('sections.placesHint')}>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <StatTile
+                  label={t('kpi.distanceFlown')}
+                  value={nm(totals.distanceNm)}
+                  icon={<Route className="w-4 h-4" />}
+                  accent="blue"
+                />
+                <StatTile
+                  label={t('kpi.airportsVisited')}
+                  value={num(totals.distinctAirports)}
+                  icon={<MapPin className="w-4 h-4" />}
+                  accent="green"
+                />
+                <StatTile
+                  label={t('kpi.countriesVisited')}
+                  value={num(totals.distinctCountries)}
+                  icon={<Globe2 className="w-4 h-4" />}
+                  accent="violet"
+                />
+                <StatTile
+                  label={t('kpi.homeBase')}
+                  value={records.homeBase ?? '—'}
+                  detail={data.byAirport[0]?.name ?? undefined}
+                  icon={<Navigation className="w-4 h-4" />}
+                  accent="amber"
+                />
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2 mb-4">
+                <ReportCard
+                  title={t('chart.topAirports')}
+                  hint={t('chart.topAirportsHint')}
+                  table={{ rows: data.byAirport, columns: airportColumns(t) }}
+                >
+                  <RankedBars
+                    color={theme.accent}
+                    emptyLabel={t('noAirportData')}
+                    rows={data.byAirport.slice(0, 12).map((a) => ({
+                      key: a.icao,
+                      label: a.icao,
+                      subLabel: a.name,
+                      value: a.flights,
+                      formatted: num(a.flights),
+                      meta: t('flightsShort'),
+                    }))}
+                  />
+                </ReportCard>
+
+                <ReportCard
+                  title={t('chart.countries')}
+                  hint={t('chart.countriesHint')}
+                  table={{ rows: data.byCountry, columns: countryColumns(t) }}
+                >
+                  <RankedBars
+                    color={theme.accent}
+                    emptyLabel={t('noAirportData')}
+                    rows={data.byCountry.slice(0, 12).map((c) => ({
+                      key: c.country,
+                      label: countryName(c.country, i18n.language),
+                      subLabel: c.country,
+                      value: c.flights,
+                      formatted: num(c.flights),
+                      meta: t('airportCount', { count: c.airports }),
+                    }))}
+                  />
+                </ReportCard>
+              </div>
+
+              <ReportCard
+                title={t('chart.topRoutes')}
+                hint={t('chart.topRoutesHint')}
+                table={{ rows: data.byRoute, columns: routeColumns(t, fmtDuration, nm) }}
+              >
+                <RankedBars
+                  color={theme.accent}
+                  emptyLabel={t('noAirportData')}
+                  rows={data.byRoute.slice(0, 10).map((r) => ({
+                    key: `${r.departureIcao}-${r.arrivalIcao}`,
+                    label: `${r.departureIcao} → ${r.arrivalIcao}`,
+                    subLabel: r.distanceNm > 0 ? nm(r.distanceNm) : null,
+                    value: r.flights,
+                    formatted: num(r.flights),
+                    meta: t('flightsShort'),
+                  }))}
+                />
+              </ReportCard>
+            </ReportSectionBlock>
+
+            {/* ── Instrument ── */}
+            <ReportSectionBlock
+              id="instrument"
+              title={t('sections.instrument')}
+              description={t('sections.instrumentHint')}
+            >
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <StatTile
+                  label={t('kpi.ifrTime')}
+                  value={fmtDuration(totals.ifrMinutes)}
+                  detail={t('kpi.ofTotal', {
+                    pct: pct(totals.ifrMinutes, totals.totalMinutes),
+                  })}
+                  icon={<Gauge className="w-4 h-4" />}
+                  accent="blue"
+                />
+                <StatTile
+                  label={t('kpi.approaches')}
+                  value={num(totals.approaches)}
+                  detail={t('kpi.holds', { count: totals.holds })}
+                  icon={<Navigation className="w-4 h-4" />}
+                  accent="violet"
+                />
+                <StatTile
+                  label={t('kpi.nightTime')}
+                  value={fmtDuration(totals.nightMinutes)}
+                  detail={t('kpi.nightLandings', { count: totals.landingsNight })}
+                  icon={<Moon className="w-4 h-4" />}
+                  accent="slate"
+                />
+                <StatTile
+                  label={t('kpi.actualInstrument')}
+                  value={fmtDuration(totals.actualInstrumentMinutes)}
+                  detail={t('kpi.simulatedInstrument', {
+                    time: fmtDuration(totals.simulatedInstrumentMinutes),
+                  })}
+                  icon={<Clock className="w-4 h-4" />}
+                  accent="green"
+                />
+              </div>
+
+              <ReportCard
+                title={t('chart.approachTypes')}
+                hint={t('chart.approachTypesHint')}
+                table={{
+                  rows: data.approachTypes,
+                  columns: [
+                    { key: 'type', header: t('table.approachType'), numeric: false, render: (r) => r.type },
+                    { key: 'count', header: t('table.count'), render: (r) => r.count },
+                  ],
+                }}
+              >
+                <RankedBars
+                  color={theme.accent}
+                  emptyLabel={t('noApproachData')}
+                  rows={data.approachTypes.map((a) => ({
+                    key: a.type,
+                    label: a.type === 'Unspecified' ? t('approach.unspecified') : a.type,
+                    value: a.count,
+                    formatted: num(a.count),
+                  }))}
+                />
+              </ReportCard>
+            </ReportSectionBlock>
+
+            {/* ── Patterns ── */}
+            <ReportSectionBlock id="patterns" title={t('sections.patterns')} description={t('sections.patternsHint')}>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <ReportCard
+                  title={t('chart.dayOfWeek')}
+                  hint={t('chart.dayOfWeekHint')}
+                  table={{ rows: data.dayOfWeek, columns: bucketColumns(t, fmtDuration, (r) => dayName(r.key, i18n.language)) }}
+                >
+                  <PatternChart
+                    data={data.dayOfWeek}
+                    theme={theme}
+                    labelFor={(r) => dayName(r.key, i18n.language)}
+                    fmtValue={(v) => num(v)}
+                    emptyLabel={t('noData')}
+                  />
+                </ReportCard>
+
+                <ReportCard
+                  title={t('chart.hourOfDay')}
+                  hint={t('chart.hourOfDayHint')}
+                  table={{ rows: data.hourOfDay, columns: bucketColumns(t, fmtDuration, (r) => `${r.label}:00`) }}
+                >
+                  <PatternChart
+                    data={data.hourOfDay}
+                    theme={theme}
+                    labelFor={(r) => (r.key % 3 === 0 ? r.label : '')}
+                    fmtValue={(v) => num(v)}
+                    emptyLabel={t('noTimeData')}
+                  />
+                </ReportCard>
+
+                <ReportCard
+                  title={t('chart.seasonality')}
+                  hint={t('chart.seasonalityHint')}
+                  table={{
+                    rows: data.monthOfYear,
+                    columns: bucketColumns(t, fmtDuration, (r) => monthName(r.key, i18n.language)),
+                  }}
+                >
+                  <PatternChart
+                    data={data.monthOfYear}
+                    theme={theme}
+                    labelFor={(r) => monthName(r.key, i18n.language)}
+                    fmtValue={(v) => num(v)}
+                    emptyLabel={t('noData')}
+                  />
+                </ReportCard>
+
+                <ReportCard
+                  title={t('chart.flightLength')}
+                  hint={t('chart.flightLengthHint')}
+                  table={{ rows: data.durationBuckets, columns: bucketColumns(t, fmtDuration, (r) => r.label) }}
+                >
+                  <PatternChart
+                    data={data.durationBuckets}
+                    theme={theme}
+                    labelFor={(r) => r.label}
+                    fmtValue={(v) => num(v)}
+                    emptyLabel={t('noData')}
+                  />
+                </ReportCard>
+              </div>
+            </ReportSectionBlock>
+
+            {/* ── Records ── */}
+            <ReportSectionBlock id="records" title={t('sections.records')} description={t('sections.recordsHint')}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <RecordCard
+                  icon={<Timer className="w-4 h-4" />}
+                  label={t('records.longestFlight')}
+                  value={records.longestFlight ? fmtDuration(records.longestFlight.totalMinutes) : '—'}
+                  detail={records.longestFlight ? flightRefLabel(records.longestFlight, fmtDate) : undefined}
+                />
+                <RecordCard
+                  icon={<Route className="w-4 h-4" />}
+                  label={t('records.longestDistance')}
+                  value={records.longestDistanceFlight ? nm(records.longestDistanceFlight.distanceNm) : '—'}
+                  detail={
+                    records.longestDistanceFlight
+                      ? flightRefLabel(records.longestDistanceFlight, fmtDate)
+                      : undefined
+                  }
+                />
+                <RecordCard
+                  icon={<Navigation className="w-4 h-4" />}
+                  label={t('records.farthestAirport')}
+                  value={records.farthestAirport?.icao ?? '—'}
+                  detail={
+                    records.farthestAirport
+                      ? `${records.farthestAirport.name ?? ''}${
+                          records.farthestAirportNm ? ` · ${nm(records.farthestAirportNm)}` : ''
+                        }`
+                      : undefined
+                  }
+                />
+                <RecordCard
+                  icon={<Plane className="w-4 h-4" />}
+                  label={t('records.busiestDay')}
+                  value={records.busiestDayFlights > 0 ? t('flightCount', { count: records.busiestDayFlights }) : '—'}
+                  detail={records.busiestDay ? fmtDate(records.busiestDay) : undefined}
+                />
+                <RecordCard
+                  icon={<Trophy className="w-4 h-4" />}
+                  label={t('records.busiestMonth')}
+                  value={records.busiestMonthMinutes ? fmtDuration(records.busiestMonthMinutes) : '—'}
+                  detail={records.busiestMonth ? longMonth(records.busiestMonth, i18n.language) : undefined}
+                />
+                <RecordCard
+                  icon={<Flame className="w-4 h-4" />}
+                  label={t('records.streak')}
+                  value={t('records.monthCount', { count: records.currentStreakMonths })}
+                  detail={t('records.longestStreak', { count: records.longestStreakMonths })}
+                />
+              </div>
+            </ReportSectionBlock>
           </div>
         </>
-      ) : (
-        <div className="card text-center py-12 mb-6">
-          <p className="text-slate-500 dark:text-slate-400">
-            {t('noData')}
-          </p>
-        </div>
       )}
-
-      {/* Hours by Aircraft Type */}
-      {byAircraft.length > 0 && (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="card">
-            <h2 className="section-title mb-4">{t('hoursByAircraftType')}</h2>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={byAircraft}
-                    dataKey="totalMinutes"
-                    nameKey="aircraftType"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={90}
-                    label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                    labelLine={false}
-                  >
-                    {byAircraft.map((_, idx) => (
-                      <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc', fontSize: '13px' }}
-                    formatter={(value: unknown) => [fmt(Number(value)), 'Time']}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="card">
-            <h2 className="section-title mb-4">{t('aircraftTypeBreakdown', 'Aircraft Type Breakdown')}</h2>
-            <div className="space-y-3">
-              {byAircraft.map((ac, idx) => {
-                const maxMinutes = byAircraft[0]?.totalMinutes || 1;
-                const pct = (ac.totalMinutes / maxMinutes) * 100;
-                return (
-                  <div key={ac.aircraftType}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="font-medium text-slate-700 dark:text-slate-300">{ac.aircraftType}</span>
-                      <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
-                        {fmt(ac.totalMinutes)} · {ac.totalFlights} flights
-                      </span>
-                    </div>
-                    <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{ width: `${pct}%`, backgroundColor: COLORS[idx % COLORS.length] }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PIC & Dual Time by Category */}
-      {(() => {
-        const classRows = statsByClass?.byClass?.filter(c => c.class !== 'Unclassified' && (c.picMinutes > 0 || c.dualMinutes > 0)) ?? [];
-        const categoryRows = statsByClass?.byCategory?.filter(c => c.picMinutes > 0 || c.dualMinutes > 0) ?? [];
-        const allRows = [
-          ...classRows.map(c => ({ label: c.class.replace(/_/g, ' '), picMinutes: c.picMinutes, dualMinutes: c.dualMinutes, flights: c.flights })),
-          ...categoryRows.map(c => ({ label: c.category, picMinutes: c.picMinutes, dualMinutes: c.dualMinutes, flights: c.flights })),
-        ];
-        if (allRows.length === 0) return null;
-        return (
-          <div className="card mt-6">
-            <h2 className="section-title mb-4">{t('timeByCategory', 'Time by Aircraft Category')}</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="text-left py-2 pr-4 font-medium text-slate-500 dark:text-slate-400">{t('category', 'Category')}</th>
-                    <th className="text-right py-2 px-4 font-medium text-slate-500 dark:text-slate-400">PIC</th>
-                    <th className="text-right py-2 px-4 font-medium text-slate-500 dark:text-slate-400">Dual</th>
-                    <th className="text-right py-2 pl-4 font-medium text-slate-500 dark:text-slate-400">{t('flights', 'Flights')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allRows.map(row => (
-                    <tr key={row.label} className="border-b border-slate-100 dark:border-slate-800 last:border-0">
-                      <td className="py-2 pr-4 font-medium text-slate-700 dark:text-slate-300">{row.label}</td>
-                      <td className="py-2 px-4 text-right font-mono tabular-nums text-slate-600 dark:text-slate-400">{fmt(row.picMinutes)}</td>
-                      <td className="py-2 px-4 text-right font-mono tabular-nums text-slate-600 dark:text-slate-400">{fmt(row.dualMinutes)}</td>
-                      <td className="py-2 pl-4 text-right font-mono tabular-nums text-slate-600 dark:text-slate-400">{row.flights}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
+}
+
+/** A single personal best. Not a chart — the number is the whole story. */
+function RecordCard({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  detail?: string;
+}) {
+  return (
+    <div className="card hover-lift">
+      <div className="flex items-center gap-2 mb-2">
+        <span
+          className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300 shrink-0"
+          aria-hidden="true"
+        >
+          {icon}
+        </span>
+        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
+      </div>
+      <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 leading-none">{value}</p>
+      {detail && <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 truncate">{detail}</p>}
+    </div>
+  );
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+type Translate = (key: string, opts?: Record<string, unknown>) => string;
+
+function pct(value: number, total: number) {
+  return total > 0 ? Math.round((value / total) * 100) : 0;
+}
+
+function flightRefLabel(ref: AnalyticsFlightRef, fmtDate: (d: string) => string) {
+  const route = [ref.departureIcao, ref.arrivalIcao].filter(Boolean).join(' → ');
+  return [fmtDate(ref.date), ref.aircraftReg, route].filter(Boolean).join(' · ');
+}
+
+/**
+ * Groups the monthly series into calendar years. Used for the role stack,
+ * which needs the SIC split that the yearly series does not carry.
+ */
+function foldRoleByYear(data: FlightAnalytics) {
+  const byYear = new Map<string, { year: string; picMinutes: number; sicMinutes: number; dualMinutes: number }>();
+  for (const m of data.monthly) {
+    const year = m.month.slice(0, 4);
+    const row = byYear.get(year) ?? { year, picMinutes: 0, sicMinutes: 0, dualMinutes: 0 };
+    row.picMinutes += m.picMinutes;
+    row.sicMinutes += m.sicMinutes;
+    row.dualMinutes += m.dualMinutes;
+    byYear.set(year, row);
+  }
+  return [...byYear.values()];
+}
+
+function countryName(code: string, locale: string) {
+  try {
+    return new Intl.DisplayNames([locale], { type: 'region' }).of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
+function dayName(isoDow: number, locale: string) {
+  // 2024-01-01 was a Monday, so ISO day 1..7 maps onto that week directly.
+  const date = new Date(Date.UTC(2024, 0, isoDow));
+  return date.toLocaleDateString(locale, { weekday: 'short' });
+}
+
+function monthName(month: number, locale: string) {
+  return new Date(Date.UTC(2024, month - 1, 1)).toLocaleDateString(locale, { month: 'short' });
+}
+
+/** Renders an API `YYYY-MM` key as a readable month and year. */
+function longMonth(month: string, locale: string) {
+  const [y, m] = month.split('-');
+  return new Date(Date.UTC(Number(y), Number(m) - 1, 1)).toLocaleDateString(locale, {
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function aircraftColumns(
+  t: Translate,
+  fmtDuration: (m: number) => string,
+  fmtDate: (d: string) => string,
+  nm: (v: number) => string
+): TableColumn<AnalyticsAircraftRow>[] {
+  return [
+    { key: 'label', header: t('table.aircraft'), numeric: false, render: (r) => r.label },
+    { key: 'flights', header: t('flights'), render: (r) => r.flights },
+    { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+    { key: 'pic', header: t('role.pic'), render: (r) => fmtDuration(r.picMinutes) },
+    { key: 'dual', header: t('role.dual'), render: (r) => fmtDuration(r.dualMinutes) },
+    { key: 'night', header: t('role.night'), render: (r) => fmtDuration(r.nightMinutes) },
+    { key: 'ldg', header: t('table.landings'), render: (r) => r.landings },
+    { key: 'dist', header: t('table.distance'), render: (r) => nm(r.distanceNm) },
+    { key: 'last', header: t('table.lastFlight'), render: (r) => (r.lastFlightDate ? fmtDate(r.lastFlightDate) : '—') },
+  ];
+}
+
+function groupColumns(t: Translate, fmtDuration: (m: number) => string): TableColumn<AnalyticsGroupRow>[] {
+  return [
+    { key: 'label', header: t('table.group'), numeric: false, render: (r) => r.label.replace(/_/g, ' ') },
+    { key: 'flights', header: t('flights'), render: (r) => r.flights },
+    { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+    { key: 'pic', header: t('role.pic'), render: (r) => fmtDuration(r.picMinutes) },
+    { key: 'dual', header: t('role.dual'), render: (r) => fmtDuration(r.dualMinutes) },
+    { key: 'ldg', header: t('table.landings'), render: (r) => r.landings },
+  ];
+}
+
+function airportColumns(t: Translate): TableColumn<AnalyticsAirportRow>[] {
+  return [
+    { key: 'icao', header: t('table.airport'), numeric: false, render: (r) => r.icao },
+    { key: 'name', header: t('table.name'), numeric: false, render: (r) => r.name ?? '—' },
+    { key: 'country', header: t('table.country'), numeric: false, render: (r) => r.country ?? '—' },
+    { key: 'dep', header: t('table.departures'), render: (r) => r.departures },
+    { key: 'arr', header: t('table.arrivals'), render: (r) => r.arrivals },
+    { key: 'flights', header: t('flights'), render: (r) => r.flights },
+  ];
+}
+
+function countryColumns(t: Translate): TableColumn<AnalyticsCountryRow>[] {
+  return [
+    { key: 'country', header: t('table.country'), numeric: false, render: (r) => r.country },
+    { key: 'airports', header: t('table.airports'), render: (r) => r.airports },
+    { key: 'flights', header: t('flights'), render: (r) => r.flights },
+  ];
+}
+
+function routeColumns(
+  t: Translate,
+  fmtDuration: (m: number) => string,
+  nm: (v: number) => string
+): TableColumn<AnalyticsRouteRow>[] {
+  return [
+    { key: 'from', header: t('table.from'), numeric: false, render: (r) => r.departureIcao },
+    { key: 'to', header: t('table.to'), numeric: false, render: (r) => r.arrivalIcao },
+    { key: 'flights', header: t('flights'), render: (r) => r.flights },
+    { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+    { key: 'dist', header: t('table.distance'), render: (r) => (r.distanceNm > 0 ? nm(r.distanceNm) : '—') },
+  ];
+}
+
+function personColumns(
+  t: Translate,
+  fmtDuration: (m: number) => string,
+  fmtDate: (d: string) => string,
+  withRole = false
+): TableColumn<AnalyticsPersonRow>[] {
+  const cols: TableColumn<AnalyticsPersonRow>[] = [
+    { key: 'name', header: t('table.name'), numeric: false, render: (r) => r.name },
+  ];
+  if (withRole) {
+    cols.push({ key: 'role', header: t('table.role'), numeric: false, render: (r) => r.role ?? '—' });
+  }
+  cols.push(
+    { key: 'flights', header: t('flights'), render: (r) => r.flights },
+    { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+    { key: 'last', header: t('table.lastFlight'), render: (r) => (r.lastFlightDate ? fmtDate(r.lastFlightDate) : '—') }
+  );
+  return cols;
+}
+
+function bucketColumns(
+  t: Translate,
+  fmtDuration: (m: number) => string,
+  label: (row: AnalyticsBucketRow) => string
+): TableColumn<AnalyticsBucketRow>[] {
+  return [
+    { key: 'bucket', header: t('table.bucket'), numeric: false, render: (r) => label(r) },
+    { key: 'flights', header: t('flights'), render: (r) => r.flights },
+    { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+  ];
 }
