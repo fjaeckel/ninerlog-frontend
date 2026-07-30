@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2, ShieldCheck } from 'lucide-react';
@@ -9,6 +9,7 @@ import FlightForm from '../../components/flights/FlightForm';
 import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import { selectExtraFlightColumns } from '../../components/flights/flightTableColumns';
 import type { operations } from '../../api/schema';
 
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
@@ -101,6 +102,11 @@ export default function FlightsPage() {
 
   const { data, isLoading, error } = useFlights(params);
 
+  const flights = useMemo(() => data?.data || [], [data]);
+  // Optional table columns — which ones are worth showing depends on the
+  // flights on this page, how many fit depends on the table's own width.
+  const extraColumns = useMemo(() => selectExtraFlightColumns(flights), [flights]);
+
   const handleDelete = async (id: string) => {
     setDeleteTarget(id);
   };
@@ -134,7 +140,7 @@ export default function FlightsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[960px] py-6">
+      <div className="mx-auto max-w-[960px] xl:max-w-[1600px] py-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48"></div>
           <div className="card p-0">
@@ -169,11 +175,10 @@ export default function FlightsPage() {
     );
   }
 
-  const flights = data?.data || [];
   const pagination = data?.pagination;
 
   return (
-    <div className="mx-auto max-w-[960px] py-6">
+    <div className="mx-auto max-w-[960px] xl:max-w-[1600px] py-6">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="page-title">{t('flights:pageTitle')}</h1>
@@ -353,7 +358,9 @@ export default function FlightsPage() {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto card p-0">
+          {/* @container: the optional columns below react to the width this
+              table actually gets, not to the viewport size. */}
+          <div className="overflow-x-auto card p-0 @container">
             <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm" aria-label={t('flights:pageTitle')}>
               <thead className="bg-slate-50 dark:bg-slate-800/50">
                 <tr>
@@ -362,8 +369,22 @@ export default function FlightsPage() {
                   <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableAircraft')}</th>
                   <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableOffOnBlock')}</th>
                   <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableTotal')}</th>
+                  {extraColumns.time.map((col) => (
+                    <th
+                      key={col.labelKey}
+                      title={t(`flights:${col.titleKey}`)}
+                      className={`px-3 py-3 text-right font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap ${col.revealClass}`}
+                    >
+                      {t(`flights:${col.labelKey}`)}
+                    </th>
+                  ))}
                   <th className="px-4 py-3 text-center font-medium text-slate-500 dark:text-slate-400">{t('flights:tableFunction')}</th>
                   <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLdg')}</th>
+                  {extraColumns.remarksRevealClass && (
+                    <th className={`px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400 ${extraColumns.remarksRevealClass}`}>
+                      {t('flights:tableRemarks')}
+                    </th>
+                  )}
                   <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400" />
                 </tr>
               </thead>
@@ -398,6 +419,19 @@ export default function FlightsPage() {
                     <td className="px-4 py-3 whitespace-nowrap text-right font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">
                       {fmtDuration(flight.totalTime)}
                     </td>
+                    {extraColumns.time.map((col) => {
+                      const minutes = col.minutes(flight);
+                      return (
+                        <td
+                          key={col.labelKey}
+                          className={`px-3 py-3 whitespace-nowrap text-right font-mono tabular-nums ${
+                            minutes > 0 ? 'text-slate-600 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'
+                          } ${col.revealClass}`}
+                        >
+                          {minutes > 0 ? fmtDuration(minutes) : '—'}
+                        </td>
+                      );
+                    })}
                     <td className="px-4 py-3 whitespace-nowrap text-center">
                       <span className={`badge ${
                         flight.isPic
@@ -412,6 +446,13 @@ export default function FlightsPage() {
                     <td className="px-4 py-3 whitespace-nowrap text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
                       {flight.allLandings}
                     </td>
+                    {extraColumns.remarksRevealClass && (
+                      <td className={`px-4 py-3 text-slate-500 dark:text-slate-400 ${extraColumns.remarksRevealClass}`}>
+                        <span className="block max-w-[28ch] truncate" title={flight.remarks || undefined}>
+                          {flight.remarks || '—'}
+                        </span>
+                      </td>
+                    )}
                     <td className="px-4 py-3 whitespace-nowrap text-right">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleEdit(flight.id); }}
