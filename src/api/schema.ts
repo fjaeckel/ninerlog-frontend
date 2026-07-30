@@ -2560,6 +2560,16 @@ export interface components {
              */
             arrivalIcao?: string | null;
             /**
+             * @description Airport name resolved live from the airport database for display. Not stored with the flight. Null when departureIcao does not resolve against the airport database (e.g. a free-text off-airport site).
+             * @example Frankfurt am Main Airport
+             */
+            readonly departureAirportName?: string | null;
+            /**
+             * @description Airport name resolved live from the airport database for display. Not stored with the flight. Null when arrivalIcao does not resolve against the airport database (e.g. a free-text off-airport site).
+             * @example Hamburg Airport
+             */
+            readonly arrivalAirportName?: string | null;
+            /**
              * Format: time
              * @description Off-block time (chocks off / engine start) in UTC. Marks the beginning of block time per EASA FCL.010 / FAA 14 CFR 1.1.
              * @example 14:15:00
@@ -5741,6 +5751,8 @@ export interface operations {
                     name?: string;
                     /** Format: email */
                     email?: string;
+                    /** @description Current password. Required when changing the email address. The new address is marked unverified and a verification link is sent to it before it is trusted again. */
+                    currentPassword?: string;
                     /**
                      * @description Preferred time display format
                      * @enum {string}

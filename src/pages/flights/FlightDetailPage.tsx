@@ -9,6 +9,7 @@ import { SignatureSection } from '../../components/flights/SignatureSection';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import { formatAirportLabel } from '../../lib/airport';
 
 export default function FlightDetailPage() {
   const { flightId } = useParams<{ flightId: string }>();
@@ -53,6 +54,11 @@ export default function FlightDetailPage() {
 
   const totalLandings = flight.allLandings;
   const totalTakeoffs = flight.takeoffsDay + flight.takeoffsNight;
+
+  // Airport names are resolved by the API and are null for off-airport sites,
+  // in which case the raw stored location is shown.
+  const departureLabel = formatAirportLabel(flight.departureIcao, flight.departureAirportName);
+  const arrivalLabel = formatAirportLabel(flight.arrivalIcao, flight.arrivalAirportName);
 
   const hasInstrumentData =
     (flight.ifrTime ?? 0) > 0 ||
@@ -100,7 +106,10 @@ export default function FlightDetailPage() {
             <ArrowLeft className="w-4 h-4" />
             {t('detail.backToFlights')}
           </button>
-          <h1 className="page-title truncate">
+          <h1
+            className="page-title truncate"
+            title={`${departureLabel} → ${arrivalLabel}`}
+          >
             {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
@@ -167,14 +176,14 @@ export default function FlightDetailPage() {
           <h2 className="section-title mb-4">{t('detail.aircraftAndRoute')}</h2>
           <dl className="space-y-3">
             <DetailRow label={t('detail.aircraft')} value={`${flight.aircraftReg} (${flight.aircraftType})`} />
-            <DetailRow label={t('detail.departure')} value={flight.departureIcao || '—'} />
+            <DetailRow label={t('detail.departure')} value={departureLabel} />
             {flight.offBlockTime && (
               <DetailRow label={t('detail.offBlock')} value={`${flight.offBlockTime.slice(0, 5)} UTC`} mono />
             )}
             {flight.departureTime && (
               <DetailRow label={t('detail.takeoff')} value={`${flight.departureTime.slice(0, 5)} UTC`} mono />
             )}
-            <DetailRow label={t('detail.arrival')} value={flight.arrivalIcao || '—'} />
+            <DetailRow label={t('detail.arrival')} value={arrivalLabel} />
             {flight.arrivalTime && (
               <DetailRow label={t('detail.landing')} value={`${flight.arrivalTime.slice(0, 5)} UTC`} mono />
             )}
