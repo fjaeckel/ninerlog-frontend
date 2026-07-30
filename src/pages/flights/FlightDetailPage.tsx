@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
@@ -14,6 +14,11 @@ import { formatAirportLabel } from '../../lib/airport';
 export default function FlightDetailPage() {
   const { flightId } = useParams<{ flightId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  // The list passes its query string along so going back keeps the search,
+  // filters, sort and page the user came from.
+  const listSearch = (location.state as { listSearch?: string } | null)?.listSearch ?? '';
+  const flightsListPath = `/flights${listSearch}`;
   const { t } = useTranslation('flights');
   const { data: flight, isLoading, error } = useFlight(flightId || '');
   const deleteFlight = useDeleteFlight();
@@ -46,7 +51,7 @@ export default function FlightDetailPage() {
         <ErrorState
           title={t('detail.flightNotFound')}
           message={t('detail.flightNotFoundMessage')}
-          onRetry={() => navigate('/flights')}
+          onRetry={() => navigate(flightsListPath)}
         />
       </div>
     );
@@ -79,7 +84,7 @@ export default function FlightDetailPage() {
 
   const handleDelete = async () => {
     await deleteFlight.mutateAsync(flight.id);
-    navigate('/flights');
+    navigate(flightsListPath);
   };
 
   const timeFields = [
@@ -100,7 +105,7 @@ export default function FlightDetailPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="min-w-0">
           <button
-            onClick={() => navigate('/flights')}
+            onClick={() => navigate(flightsListPath)}
             className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 mb-2 inline-flex items-center gap-1"
           >
             <ArrowLeft className="w-4 h-4" />
