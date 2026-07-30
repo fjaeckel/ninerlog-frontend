@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeLocation } from '../../lib/airport';
+import { normalizeLocation, formatAirportLabel } from '../../lib/airport';
 
 describe('normalizeLocation', () => {
   it('upper-cases values that look like an ICAO code', () => {
@@ -26,5 +26,34 @@ describe('normalizeLocation', () => {
   it('trims surrounding whitespace', () => {
     expect(normalizeLocation('  eddf  ')).toBe('EDDF');
     expect(normalizeLocation('  Meadow strip  ')).toBe('Meadow strip');
+  });
+});
+
+describe('formatAirportLabel', () => {
+  it('combines the resolved name with the code', () => {
+    expect(formatAirportLabel('EDDF', 'Frankfurt am Main Airport')).toBe(
+      'Frankfurt am Main Airport (EDDF)'
+    );
+  });
+
+  it('falls back to the raw location when no name was resolved', () => {
+    expect(formatAirportLabel('EDDF', null)).toBe('EDDF');
+    expect(formatAirportLabel('EDDF', undefined)).toBe('EDDF');
+  });
+
+  it('leaves free-text off-airport sites unchanged', () => {
+    expect(formatAirportLabel('Meadow strip', null)).toBe('Meadow strip');
+  });
+
+  it('uses the fallback for empty or missing locations', () => {
+    expect(formatAirportLabel(null, null)).toBe('—');
+    expect(formatAirportLabel(undefined, null)).toBe('—');
+    expect(formatAirportLabel('', null)).toBe('—');
+    expect(formatAirportLabel('   ', null)).toBe('—');
+    expect(formatAirportLabel(null, null, '?')).toBe('?');
+  });
+
+  it('trims the code it renders', () => {
+    expect(formatAirportLabel('  EDDF  ', null)).toBe('EDDF');
   });
 });
