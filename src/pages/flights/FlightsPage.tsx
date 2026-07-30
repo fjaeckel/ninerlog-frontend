@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2, ShieldCheck } from 'lucide-react';
 import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
@@ -13,6 +13,9 @@ import { selectExtraFlightColumns } from '../../components/flights/flightTableCo
 import type { operations } from '../../api/schema';
 
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
+type SortField = 'date' | 'totalTime' | 'createdAt';
+
+const SORT_FIELDS: SortField[] = ['date', 'totalTime', 'createdAt'];
 
 export default function FlightsPage() {
   const { t } = useTranslation(['flights', 'common']);
@@ -20,39 +23,84 @@ export default function FlightsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
-  const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState<'date' | 'totalTime' | 'createdAt'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Search, filters, sort and page live in the URL query string so they
+  // survive a trip to a flight's detail page and back (and stay shareable).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const param = useCallback((key: string) => searchParams.get(key) ?? '', [searchParams]);
+
+  const pageParam = Number(searchParams.get('page'));
+  const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+  const sortByParam = param('sortBy') as SortField;
+  const sortBy: SortField = SORT_FIELDS.includes(sortByParam) ? sortByParam : 'date';
+  const sortOrder: 'asc' | 'desc' = param('sortOrder') === 'asc' ? 'asc' : 'desc';
+  const searchQuery = param('q');
+  const startDate = param('startDate');
+  const endDate = param('endDate');
+  const aircraftReg = param('aircraftReg');
+  const departureIcao = param('departureIcao');
+  const arrivalIcao = param('arrivalIcao');
+  const functionParam = param('function');
+  const functionFilter: '' | 'pic' | 'dual' = functionParam === 'pic' || functionParam === 'dual' ? functionParam : '';
+  const logbookLicenseId = param('logbook');
+
+  // Replace rather than push: filtering is not a navigation step the user
+  // wants to walk back through, but the current filters must be part of the
+  // history entry so the browser (and the detail page's back link) restore them.
+  const updateParams = useCallback(
+    (updates: Record<string, string>, { keepPage = false }: { keepPage?: boolean } = {}) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          for (const [key, value] of Object.entries(updates)) {
+            if (value) next.set(key, value);
+            else next.delete(key);
+          }
+          if (!keepPage) next.delete('page');
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
+
   const [showForm, setShowForm] = useState(() => {
     const state = location.state as Record<string, unknown> | null;
     return !!state?.openForm;
   });
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
+  // Filters restored from the URL start expanded, so they are not applied invisibly.
+  const [showFilters, setShowFilters] = useState(
+    () => !!(startDate || endDate || aircraftReg || departureIcao || arrivalIcao || functionFilter)
+  );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  // Search & filter state
-  const [search, setSearch] = useState('');
-  const [searchDebounced, setSearchDebounced] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [aircraftReg, setAircraftReg] = useState('');
-  const [departureIcao, setDepartureIcao] = useState('');
-  const [arrivalIcao, setArrivalIcao] = useState('');
-  const [functionFilter, setFunctionFilter] = useState<'' | 'pic' | 'dual'>('');
-  const [logbookLicenseId, setLogbookLicenseId] = useState<string>('');
+  // The search input keeps its own state so typing stays responsive; the URL
+  // is only written after the debounce.
+  const [search, setSearch] = useState(searchQuery);
+  const syncedQuery = useRef(searchQuery);
 
   const { data: licenses } = useLicenses();
   const separateLogbookLicenses = licenses?.filter((l) => l.requiresSeparateLogbook) || [];
 
-  // Debounce search input
+  // Query changed outside the input (back/forward, clear all) — adopt it.
   useEffect(() => {
+    if (searchQuery !== syncedQuery.current) {
+      syncedQuery.current = searchQuery;
+      setSearch(searchQuery);
+    }
+  }, [searchQuery]);
+
+  // Debounce search input into the URL
+  useEffect(() => {
+    if (search === syncedQuery.current) return;
     const timer = setTimeout(() => {
-      setSearchDebounced(search);
-      setPage(1);
+      syncedQuery.current = search;
+      updateParams({ q: search });
     }, 300);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, updateParams]);
 
   // Open form modal when navigated with state.openForm (e.g. from bottom nav + button)
   const locationState = location.state as Record<string, unknown> | null;
@@ -66,17 +114,17 @@ export default function FlightsPage() {
   }
   useEffect(() => {
     if (shouldOpenForm) {
-      // Clear the state so refreshing doesn't re-open
-      navigate(location.pathname, { replace: true, state: {} });
+      // Clear the state so refreshing doesn't re-open (keeping the active filters)
+      navigate(`${location.pathname}${location.search}`, { replace: true, state: {} });
     }
-  }, [shouldOpenForm, location.pathname, navigate]);
+  }, [shouldOpenForm, location.pathname, location.search, navigate]);
 
   const params: ListFlightsParams = {
     page,
     pageSize: 20,
     sortBy,
     sortOrder,
-    ...(searchDebounced ? { q: searchDebounced } : {}),
+    ...(searchQuery ? { q: searchQuery } : {}),
     ...(startDate ? { startDate } : {}),
     ...(endDate ? { endDate } : {}),
     ...(aircraftReg ? { aircraftReg } : {}),
@@ -90,15 +138,18 @@ export default function FlightsPage() {
   const activeFilterCount = [startDate, endDate, aircraftReg, departureIcao, arrivalIcao, functionFilter].filter(Boolean).length;
 
   const clearFilters = useCallback(() => {
+    syncedQuery.current = '';
     setSearch('');
-    setStartDate('');
-    setEndDate('');
-    setAircraftReg('');
-    setDepartureIcao('');
-    setArrivalIcao('');
-    setFunctionFilter('');
-    setPage(1);
-  }, []);
+    updateParams({
+      q: '',
+      startDate: '',
+      endDate: '',
+      aircraftReg: '',
+      departureIcao: '',
+      arrivalIcao: '',
+      function: '',
+    });
+  }, [updateParams, setSearch]);
 
   const { data, isLoading, error } = useFlights(params);
 
@@ -128,14 +179,13 @@ export default function FlightsPage() {
     setEditingFlight(null);
   };
 
-  const toggleSort = (field: 'date' | 'totalTime' | 'createdAt') => {
-    if (sortBy === field) {
-      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortBy(field);
-      setSortOrder('desc');
-    }
-    setPage(1);
+  const toggleSort = (field: SortField) => {
+    const order = sortBy === field && sortOrder === 'desc' ? 'asc' : 'desc';
+    updateParams({ sortBy: field === 'date' ? '' : field, sortOrder: order === 'desc' ? '' : order });
+  };
+
+  const goToPage = (target: number) => {
+    updateParams({ page: target > 1 ? String(target) : '' }, { keepPage: true });
   };
 
   if (isLoading) {
@@ -159,7 +209,7 @@ export default function FlightsPage() {
   // Errors while an advanced search query is active (typically a 400 for an
   // invalid query) are shown inline under the search bar instead of replacing
   // the whole page, so the user can correct the query.
-  const searchError = error && searchDebounced
+  const searchError = error && searchQuery
     ? ((error as { error?: string }).error ?? t('flights:searchError'))
     : null;
 
@@ -200,7 +250,7 @@ export default function FlightsPage() {
           <label className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">{t('flights:logbook')}</label>
           <select
             value={logbookLicenseId}
-            onChange={(e) => { setLogbookLicenseId(e.target.value); setPage(1); }}
+            onChange={(e) => updateParams({ logbook: e.target.value })}
             className="input text-sm py-1.5 w-auto"
           >
             <option value="">{t('flights:allFlights')}</option>
@@ -260,7 +310,7 @@ export default function FlightsPage() {
               <input
                 type="date"
                 value={startDate}
-                onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+                onChange={(e) => updateParams({ startDate: e.target.value })}
                 className="input text-sm"
               />
             </div>
@@ -269,7 +319,7 @@ export default function FlightsPage() {
               <input
                 type="date"
                 value={endDate}
-                onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
+                onChange={(e) => updateParams({ endDate: e.target.value })}
                 className="input text-sm"
               />
             </div>
@@ -278,7 +328,7 @@ export default function FlightsPage() {
               <input
                 type="text"
                 value={aircraftReg}
-                onChange={(e) => { setAircraftReg(e.target.value); setPage(1); }}
+                onChange={(e) => updateParams({ aircraftReg: e.target.value })}
                 placeholder="D-EFGH"
                 className="input text-sm"
               />
@@ -288,7 +338,7 @@ export default function FlightsPage() {
               <input
                 type="text"
                 value={departureIcao}
-                onChange={(e) => { setDepartureIcao(e.target.value.toUpperCase()); setPage(1); }}
+                onChange={(e) => updateParams({ departureIcao: e.target.value.toUpperCase() })}
                 placeholder="EDDF"
                 maxLength={4}
                 className="input text-sm uppercase"
@@ -299,7 +349,7 @@ export default function FlightsPage() {
               <input
                 type="text"
                 value={arrivalIcao}
-                onChange={(e) => { setArrivalIcao(e.target.value.toUpperCase()); setPage(1); }}
+                onChange={(e) => updateParams({ arrivalIcao: e.target.value.toUpperCase() })}
                 placeholder="EDDH"
                 maxLength={4}
                 className="input text-sm uppercase"
@@ -309,7 +359,7 @@ export default function FlightsPage() {
               <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterFunction')}</label>
               <select
                 value={functionFilter}
-                onChange={(e) => { setFunctionFilter(e.target.value as '' | 'pic' | 'dual'); setPage(1); }}
+                onChange={(e) => updateParams({ function: e.target.value })}
                 className="input text-sm"
               >
                 <option value="">{t('flights:filterAll')}</option>
@@ -393,7 +443,7 @@ export default function FlightsPage() {
                   <tr
                     key={flight.id}
                     className="hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition-colors"
-                    onClick={() => navigate(`/flights/${flight.id}`)}
+                    onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
                   >
                     <td className="px-4 py-3 whitespace-nowrap text-slate-800 dark:text-slate-200">
                       {fmtDate(flight.date)}
@@ -479,7 +529,7 @@ export default function FlightsPage() {
           {pagination && pagination.totalPages > 1 && (
             <div className="flex justify-center items-center gap-4 mt-8">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={() => goToPage(Math.max(1, page - 1))}
                 disabled={page <= 1}
                 className="btn-secondary text-sm"
               >
@@ -489,7 +539,7 @@ export default function FlightsPage() {
                 {t('flights:pagination', { page: pagination.page, totalPages: pagination.totalPages })}
               </span>
               <button
-                onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                onClick={() => goToPage(Math.min(pagination.totalPages, page + 1))}
                 disabled={page >= pagination.totalPages}
                 className="btn-secondary text-sm"
               >
