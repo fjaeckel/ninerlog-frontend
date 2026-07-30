@@ -33,3 +33,35 @@ export function formatAirportLabel(
   if (!code) return fallback;
   return name ? `${name} (${code})` : code;
 }
+
+/** A stored location split into its code and its human-readable name. */
+export interface AirportParts {
+  /** The ICAO/local code, or null when the location is a free-text site name. */
+  code: string | null;
+  /** The resolved airport name, or the raw free-text site name. */
+  name: string | null;
+}
+
+/**
+ * Splits a stored location into a code and a name so a layout can give each its
+ * own typography instead of squeezing "Name (CODE)" into a single string.
+ *
+ * Free-text off-airport sites have no code — the stored value *is* the name, so
+ * it is returned as `name` and `code` stays null.
+ */
+export function splitAirportLabel(
+  location: string | null | undefined,
+  name: string | null | undefined,
+  fallback = '—'
+): AirportParts {
+  const value = location?.trim();
+  if (!value) return { code: fallback, name: null };
+
+  const resolvedName = name?.trim() || null;
+  if (/^[a-z0-9]{1,4}$/i.test(value)) {
+    return { code: value.toUpperCase(), name: resolvedName };
+  }
+  // A location the database could still resolve keeps its name; otherwise the
+  // free-text value itself is all we have to show.
+  return resolvedName ? { code: null, name: resolvedName } : { code: null, name: value };
+}

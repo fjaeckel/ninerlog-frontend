@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
 import FlightForm from '../../components/flights/FlightForm';
+import FlightRouteCard from '../../components/flights/FlightRouteCard';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { SignatureSection } from '../../components/flights/SignatureSection';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { formatAirportLabel } from '../../lib/airport';
+import { cn } from '../../lib/cn';
 
 export default function FlightDetailPage() {
   const { flightId } = useParams<{ flightId: string }>();
@@ -177,47 +179,20 @@ export default function FlightDetailPage() {
       {/* Flight Details */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Aircraft & Route */}
-        <div className="card">
-          <h2 className="section-title mb-4">{t('detail.aircraftAndRoute')}</h2>
-          <dl className="space-y-3">
-            <DetailRow label={t('detail.aircraft')} value={`${flight.aircraftReg} (${flight.aircraftType})`} />
-            <DetailRow label={t('detail.departure')} value={departureLabel} />
-            {flight.offBlockTime && (
-              <DetailRow label={t('detail.offBlock')} value={`${flight.offBlockTime.slice(0, 5)} UTC`} mono />
-            )}
-            {flight.departureTime && (
-              <DetailRow label={t('detail.takeoff')} value={`${flight.departureTime.slice(0, 5)} UTC`} mono />
-            )}
-            <DetailRow label={t('detail.arrival')} value={arrivalLabel} />
-            {flight.arrivalTime && (
-              <DetailRow label={t('detail.landing')} value={`${flight.arrivalTime.slice(0, 5)} UTC`} mono />
-            )}
-            {flight.onBlockTime && (
-              <DetailRow label={t('detail.onBlock')} value={`${flight.onBlockTime.slice(0, 5)} UTC`} mono />
-            )}
-            {flight.route && (
-              <DetailRow label={t('fields.route')} value={flight.route} mono />
-            )}
-            {flight.distance > 0 && (
-              <DetailRow label={t('fields.distance')} value={`${flight.distance.toFixed(1)} NM`} mono />
-            )}
-            {flight.launchMethod && (
-              <DetailRow label={t('fields.launchMethod')} value={t(`launchMethods.${flight.launchMethod === 'self-launch' ? 'selfLaunch' : flight.launchMethod}`, { defaultValue: flight.launchMethod })} />
-            )}
-          </dl>
-        </div>
+        <FlightRouteCard flight={flight} />
 
         {/* Flight Times */}
         <div className="card">
           <h2 className="section-title mb-4">{t('detail.blockTimes')}</h2>
           <dl className="space-y-3">
             {timeFields.map(({ label, value, text }) => (
-              <div key={label} className="flex justify-between">
-                <dt className="text-slate-500 dark:text-slate-400">{label}</dt>
-                <dd className={`font-medium ${value > 0 || text ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'} ${!text ? 'font-mono tabular-nums' : ''}`}>
-                  {text ?? fmtDuration(value)}
-                </dd>
-              </div>
+              <DetailRow
+                key={label}
+                label={label}
+                value={text ?? fmtDuration(value)}
+                mono={!text}
+                muted={value <= 0 && !text}
+              />
             ))}
             {flight.picName && (
               <DetailRow label={t('fields.picName')} value={flight.picName} />
@@ -231,16 +206,22 @@ export default function FlightDetailPage() {
           <dl className="space-y-3">
             <DetailRow label={t('fields.dayTakeoffs')} value={String(flight.takeoffsDay)} mono />
             <DetailRow label={t('fields.nightTakeoffs')} value={String(flight.takeoffsNight)} mono />
-            <div className="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-2">
-              <dt className="text-slate-500 dark:text-slate-400 font-medium">{t('detail.totalTakeoffs')}</dt>
-              <dd className="font-bold text-slate-800 dark:text-slate-100 font-mono tabular-nums">{totalTakeoffs}</dd>
-            </div>
+            <DetailRow
+              label={t('detail.totalTakeoffs')}
+              value={String(totalTakeoffs)}
+              mono
+              strong
+              className="border-t border-slate-200 dark:border-slate-700 pt-2"
+            />
             <DetailRow label={t('fields.dayLandings')} value={String(flight.landingsDay)} mono />
             <DetailRow label={t('fields.nightLandings')} value={String(flight.landingsNight)} mono />
-            <div className="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-2">
-              <dt className="text-slate-500 dark:text-slate-400 font-medium">{t('detail.totalLandings')}</dt>
-              <dd className="font-bold text-slate-800 dark:text-slate-100 font-mono tabular-nums">{totalLandings}</dd>
-            </div>
+            <DetailRow
+              label={t('detail.totalLandings')}
+              value={String(totalLandings)}
+              mono
+              strong
+              className="border-t border-slate-200 dark:border-slate-700 pt-2"
+            />
           </dl>
         </div>
 
@@ -249,33 +230,16 @@ export default function FlightDetailPage() {
           <div className="card">
             <h2 className="section-title mb-4">{t('detail.instrumentAndApproaches')}</h2>
             <dl className="space-y-3">
-              <div className="flex justify-between">
-                <dt className="text-slate-500 dark:text-slate-400">{t('fields.ifrTime')}</dt>
-                <dd className={`font-medium font-mono tabular-nums ${flight.ifrTime > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
-                  {fmtDuration(flight.ifrTime)}
-                </dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-slate-500 dark:text-slate-400">{t('fields.actualInstrumentTime')}</dt>
-                <dd className={`font-medium font-mono tabular-nums ${(flight.actualInstrumentTime ?? 0) > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
-                  {fmtDuration(flight.actualInstrumentTime ?? 0)}
-                </dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-slate-500 dark:text-slate-400">{t('fields.simulatedInstrumentTime')}</dt>
-                <dd className={`font-medium font-mono tabular-nums ${(flight.simulatedInstrumentTime ?? 0) > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
-                  {fmtDuration(flight.simulatedInstrumentTime ?? 0)}
-                </dd>
-              </div>
+              <DurationRow label={t('fields.ifrTime')} minutes={flight.ifrTime} />
+              <DurationRow label={t('fields.actualInstrumentTime')} minutes={flight.actualInstrumentTime ?? 0} />
+              <DurationRow label={t('fields.simulatedInstrumentTime')} minutes={flight.simulatedInstrumentTime ?? 0} />
               <DetailRow label={t('fields.holds')} value={String(flight.holds ?? 0)} mono />
               <DetailRow label={t('fields.approaches')} value={String(flight.approachesCount ?? 0)} mono />
               {flight.isIpc && (
-                <div className="flex justify-between">
-                  <dt className="text-slate-500 dark:text-slate-400">{t('fields.isIpc')}</dt>
-                  <dd>
-                    <span className="badge-info text-xs">{t('detail.yes')}</span>
-                  </dd>
-                </div>
+                <DetailRow
+                  label={t('fields.isIpc')}
+                  value={<span className="badge-info text-xs">{t('detail.yes')}</span>}
+                />
               )}
               {flight.approaches && flight.approaches.length > 0 && (
                 <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
@@ -304,42 +268,23 @@ export default function FlightDetailPage() {
           <div className="card">
             <h2 className="section-title mb-4">{t('detail.trainingAndCurrency')}</h2>
             <dl className="space-y-3">
-              <div className="flex justify-between">
-                <dt className="text-slate-500 dark:text-slate-400">{t('fields.simulatedFlightTime')}</dt>
-                <dd className={`font-medium font-mono tabular-nums ${(flight.simulatedFlightTime ?? 0) > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
-                  {fmtDuration(flight.simulatedFlightTime ?? 0)}
-                </dd>
-              </div>
+              <DurationRow label={t('fields.simulatedFlightTime')} minutes={flight.simulatedFlightTime ?? 0} />
               {flight.fstdType && (
                 <DetailRow label={t('fields.fstdType')} value={flight.fstdType} />
               )}
-              <div className="flex justify-between">
-                <dt className="text-slate-500 dark:text-slate-400">{t('fields.groundTrainingTime')}</dt>
-                <dd className={`font-medium font-mono tabular-nums ${(flight.groundTrainingTime ?? 0) > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
-                  {fmtDuration(flight.groundTrainingTime ?? 0)}
-                </dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-slate-500 dark:text-slate-400">{t('fields.multiPilotTime')}</dt>
-                <dd className={`font-medium font-mono tabular-nums ${(flight.multiPilotTime ?? 0) > 0 ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>
-                  {fmtDuration(flight.multiPilotTime ?? 0)}
-                </dd>
-              </div>
+              <DurationRow label={t('fields.groundTrainingTime')} minutes={flight.groundTrainingTime ?? 0} />
+              <DurationRow label={t('fields.multiPilotTime')} minutes={flight.multiPilotTime ?? 0} />
               {flight.isFlightReview && (
-                <div className="flex justify-between">
-                  <dt className="text-slate-500 dark:text-slate-400">{t('fields.isFlightReview')}</dt>
-                  <dd>
-                    <span className="badge-info text-xs">{t('detail.yes')}</span>
-                  </dd>
-                </div>
+                <DetailRow
+                  label={t('fields.isFlightReview')}
+                  value={<span className="badge-info text-xs">{t('detail.yes')}</span>}
+                />
               )}
               {flight.isProficiencyCheck && (
-                <div className="flex justify-between">
-                  <dt className="text-slate-500 dark:text-slate-400">{t('fields.isProficiencyCheck')}</dt>
-                  <dd>
-                    <span className="badge-info text-xs">{t('detail.yes')}</span>
-                  </dd>
-                </div>
+                <DetailRow
+                  label={t('fields.isProficiencyCheck')}
+                  value={<span className="badge-info text-xs">{t('detail.yes')}</span>}
+                />
               )}
             </dl>
           </div>
@@ -405,13 +350,43 @@ export default function FlightDetailPage() {
   );
 }
 
-function DetailRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+interface DetailRowProps {
+  label: string;
+  value: ReactNode;
+  /** Tabular values (times, counts, distances). */
+  mono?: boolean;
+  /** Dim a zero/empty value without dropping the row. */
+  muted?: boolean;
+  /** Totals and other rows that summarise the ones above them. */
+  strong?: boolean;
+  className?: string;
+}
+
+function DetailRow({ label, value, mono, muted, strong, className }: DetailRowProps) {
   return (
-    <div className="flex justify-between">
-      <dt className="text-slate-500 dark:text-slate-400">{label}</dt>
-      <dd className={`font-medium text-slate-800 dark:text-slate-100 ${mono ? 'font-mono tabular-nums' : ''}`}>
+    // gap-4 keeps a gutter between label and value once either of them wraps;
+    // the label may take at most half the row so the value keeps room to wrap
+    // into rather than being squeezed to one character per line.
+    <div className={cn('flex justify-between items-baseline gap-4', className)}>
+      <dt className={cn('text-slate-500 dark:text-slate-400 max-w-[55%] shrink-0 break-words', strong && 'font-medium')}>
+        {label}
+      </dt>
+      <dd
+        className={cn(
+          'min-w-0 text-right break-words font-medium',
+          muted ? 'text-slate-300 dark:text-slate-600' : 'text-slate-800 dark:text-slate-100',
+          mono && 'font-mono tabular-nums',
+          strong && 'font-bold'
+        )}
+      >
         {value}
       </dd>
     </div>
   );
+}
+
+/** A duration in minutes, dimmed when the flight logged none of it. */
+function DurationRow({ label, minutes }: { label: string; minutes: number }) {
+  const { fmtDuration } = useFormatPrefs();
+  return <DetailRow label={label} value={fmtDuration(minutes)} mono muted={minutes <= 0} />;
 }

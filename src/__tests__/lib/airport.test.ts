@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeLocation, formatAirportLabel } from '../../lib/airport';
+import { normalizeLocation, formatAirportLabel, splitAirportLabel } from '../../lib/airport';
 
 describe('normalizeLocation', () => {
   it('upper-cases values that look like an ICAO code', () => {
@@ -55,5 +55,39 @@ describe('formatAirportLabel', () => {
 
   it('trims the code it renders', () => {
     expect(formatAirportLabel('  EDDF  ', null)).toBe('EDDF');
+  });
+});
+
+describe('splitAirportLabel', () => {
+  it('keeps the code and the resolved name apart', () => {
+    expect(splitAirportLabel('EDDF', 'Frankfurt am Main Airport')).toEqual({
+      code: 'EDDF',
+      name: 'Frankfurt am Main Airport',
+    });
+  });
+
+  it('upper-cases the code and drops an empty name', () => {
+    expect(splitAirportLabel('eddf', null)).toEqual({ code: 'EDDF', name: null });
+    expect(splitAirportLabel('  eddf  ', '   ')).toEqual({ code: 'EDDF', name: null });
+  });
+
+  it('treats free-text off-airport sites as a name without a code', () => {
+    expect(splitAirportLabel('Meadow strip', null)).toEqual({
+      code: null,
+      name: 'Meadow strip',
+    });
+  });
+
+  it('prefers a resolved name over a long raw location', () => {
+    expect(splitAirportLabel('Frankfurt', 'Frankfurt am Main Airport')).toEqual({
+      code: null,
+      name: 'Frankfurt am Main Airport',
+    });
+  });
+
+  it('uses the fallback as the code for empty or missing locations', () => {
+    expect(splitAirportLabel(null, null)).toEqual({ code: '—', name: null });
+    expect(splitAirportLabel('  ', null)).toEqual({ code: '—', name: null });
+    expect(splitAirportLabel(undefined, null, '?')).toEqual({ code: '?', name: null });
   });
 });
