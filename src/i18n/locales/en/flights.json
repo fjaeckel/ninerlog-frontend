@@ -239,6 +239,7 @@
     "takeoff": "Takeoff",
     "landing": "Landing",
     "onBlock": "On-Block",
+    "utc": "UTC",
     "totalBlockTime": "Total Block Time",
     "pilotFunction": "Pilot Function",
     "dualTime": "Dual Time",
