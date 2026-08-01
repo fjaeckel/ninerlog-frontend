@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import {
   ANALYTICS_RANGES,
+  DEFAULT_ANALYTICS_MONTHS,
   useAnalytics,
   type AnalyticsAircraftRow,
   type AnalyticsAirportRow,
@@ -52,7 +53,7 @@ import {
 
 export default function ReportsPage() {
   const { t, i18n } = useTranslation('reports');
-  const [months, setMonths] = useState<number>(12);
+  const [months, setMonths] = useState<number>(DEFAULT_ANALYTICS_MONTHS);
   const { data, isLoading, isFetching, error } = useAnalytics(months);
   const { fmtDuration, fmtDate, dateFormatPref } = useFormatPrefs();
   const theme = useChartTheme();
@@ -94,7 +95,9 @@ export default function ReportsPage() {
   }
 
   const { totals, records } = data;
-  const empty = totals.totalFlights === 0;
+  // Totals carry the initial-hours snapshot, so a logbook with nothing logged
+  // but hours carried forward is not empty — the pilot has experience to show.
+  const empty = totals.totalFlights === 0 && totals.totalMinutes === 0;
 
   // Role composition is charted per year. It is folded from `monthly` rather
   // than `yearly` because only the monthly series carries the SIC split, and
@@ -182,6 +185,16 @@ export default function ReportsPage() {
                       {t('hero.acrossFlights', { count: totals.totalFlights })}
                       {totals.firstFlightDate && ` · ${t('hero.since', { date: fmtDate(totals.firstFlightDate) })}`}
                     </p>
+                    {/* Prior experience that was never entered as flights. It
+                        only reaches the totals, so say so where they are shown. */}
+                    {data.baseline && (
+                      <p className="text-xs text-blue-100/80 mt-1">
+                        {t('hero.includesBaseline', {
+                          time: fmtDuration(data.baseline.totalMinutes),
+                          date: fmtDate(data.baseline.baselineDate),
+                        })}
+                      </p>
+                    )}
                   </div>
                   <dl className="flex gap-6 text-white/90">
                     <div>
@@ -311,6 +324,9 @@ export default function ReportsPage() {
                       ))}
                   </div>
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-4">{t('chart.overlapNote')}</p>
+                  {data.baseline && (
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{t('chart.baselineNote')}</p>
+                  )}
                 </ReportCard>
 
                 <ReportCard

@@ -18,11 +18,13 @@ test.describe('Reports Page', () => {
     await expect(page.getByRole('heading', { name: 'Reports' })).toBeVisible({ timeout: 10000 });
   });
 
-  test('should have time range selector', async ({ page }) => {
+  test('should have time range selector defaulting to all time', async ({ page }) => {
     await page.getByRole('link', { name: 'Reports' }).first().click();
     await expect(page.getByRole('button', { name: '6mo' })).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole('button', { name: '12mo' })).toBeVisible();
     await expect(page.getByRole('button', { name: '24mo' })).toBeVisible();
+    // The page opens on career totals so it agrees with the dashboard.
+    await expect(page.getByRole('button', { name: 'All time' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   test('should have export buttons', async ({ page }) => {

@@ -63,6 +63,29 @@ describe('exportAnalyticsToCSV', () => {
     }
   });
 
+  it('records the carried-forward hours behind the totals', () => {
+    exportAnalyticsToCSV({
+      ...empty,
+      baseline: {
+        baselineDate: '2020-06-30',
+        totalFlights: 400,
+        totalMinutes: 30000,
+        picMinutes: 24000,
+        dualMinutes: 0,
+        nightMinutes: 0,
+        ifrMinutes: 0,
+        landingsDay: 600,
+        landingsNight: 0,
+      },
+    });
+    expect(captured).toContain('Initial hours,500h 0m carried forward as of 2020-06-30');
+  });
+
+  it('omits the initial-hours line when no snapshot applies', () => {
+    exportAnalyticsToCSV(empty);
+    expect(captured).not.toContain('Initial hours');
+  });
+
   it('quotes fields containing commas, quotes or newlines', () => {
     exportAnalyticsToCSV({
       ...empty,

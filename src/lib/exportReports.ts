@@ -43,6 +43,15 @@ function rangeLabel(a: FlightAnalytics): string {
 }
 
 /**
+ * Notes the initial-hours snapshot folded into the totals, so an exported
+ * report explains why its totals exceed the flights it lists.
+ */
+function baselineLabel(a: FlightAnalytics): string | null {
+  if (!a.baseline) return null;
+  return `${fmt(a.baseline.totalMinutes)} carried forward as of ${a.baseline.baselineDate}`;
+}
+
+/**
  * Exports every section of the report as one multi-block CSV. Each block is
  * a titled table separated by a blank line — the shape spreadsheet users
  * expect from a report export, and stable enough to diff between runs.
@@ -59,6 +68,8 @@ export function exportAnalyticsToCSV(a: FlightAnalytics) {
   lines.push(`${APP_NAME} flight report`);
   lines.push(csvRow(['Timeframe', rangeLabel(a)]));
   lines.push(csvRow(['Generated', new Date().toISOString().slice(0, 10)]));
+  const carried = baselineLabel(a);
+  if (carried) lines.push(csvRow(['Initial hours', carried]));
   lines.push('');
 
   const t = a.totals;
@@ -215,6 +226,7 @@ function esc(v: unknown): string {
 export function exportAnalyticsToPDF(a: FlightAnalytics, dateFormatPref: DateFormatPref = 'DD.MM.YYYY') {
   const t = a.totals;
   const r = a.records;
+  const carried = baselineLabel(a);
 
   const table = (title: string, header: string[], rows: (string | number)[][]) => {
     if (rows.length === 0) return '';
@@ -249,7 +261,9 @@ export function exportAnalyticsToPDF(a: FlightAnalytics, dateFormatPref: DateFor
 </style>
 </head><body>
 <h1>${esc(APP_NAME)} flight report</h1>
-<p class="meta">${esc(rangeLabel(a))} &middot; generated ${esc(formatDate(new Date(), dateFormatPref))}</p>
+<p class="meta">${esc(rangeLabel(a))} &middot; generated ${esc(formatDate(new Date(), dateFormatPref))}${
+    carried ? ` &middot; includes ${esc(carried)}` : ''
+  }</p>
 
 <div class="summary">
   <div class="stat"><div class="stat-value">${esc(fmt(t.totalMinutes))}</div><div class="stat-label">Block time</div></div>

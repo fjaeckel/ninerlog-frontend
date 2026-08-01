@@ -50,7 +50,8 @@
     "distance": "Distance",
     "acrossFlights_one": "Across {{count}} flight",
     "acrossFlights_other": "Across {{count}} flights",
-    "since": "since {{date}}"
+    "since": "since {{date}}",
+    "includesBaseline": "Includes {{time}} carried forward from before your logbook (as of {{date}})."
   },
   "kpi": {
     "flights": "Flights",
@@ -100,6 +101,7 @@
     "timeBreakdown": "Time breakdown",
     "timeBreakdownHint": "Each category as a share of your total block time.",
     "overlapNote": "Categories overlap — solo time is also PIC time, and night and IFR time can fall in any role.",
+    "baselineNote": "Carried-forward hours count toward the totals only — the breakdowns by year, aircraft and airport cover logged flights.",
     "roleByYear": "Role split by year",
     "roleByYearHint": "PIC, dual received and SIC add up to your block time for the year.",
     "instructors": "Instructors",
