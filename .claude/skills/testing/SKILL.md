@@ -73,6 +73,21 @@ npm run test:e2e                           # terminal 2 (Playwright auto-starts 
 
 Locally Playwright starts `npm run dev` itself (`reuseExistingServer`); under `CI=1` it does not — the `frontend-dev` container serves the app. Chromium launches with `--unsafely-treat-insecure-origin-as-secure` for the in-Docker origins so WebAuthn/passkey tests get `window.PublicKeyCredential`. `E2E_MOBILE=1` adds a Pixel 5 project.
 
+## Cross-browser runs — on demand only
+
+Default runs are **chromium-only**; nothing browser-matrix related is attached to push/PR/merge. Opt in with `E2E_BROWSERS` or `--project`:
+
+```bash
+npm run test:e2e:cross                        # chromium + webkit + msedge
+npm run test:e2e:compat                       # capability probe only, no API needed
+scripts/run-cross-browser-e2e.sh --docker webkit
+npx playwright test --project=webkit
+```
+
+Projects: `chromium`, `chrome`, `msedge`, `webkit`, `firefox`, `mobile-chrome`, `mobile-safari`. `webkit` is Playwright's WebKit build — the Safari *engine*, not Safari.app. Passkey specs skip on non-Chromium (the virtual authenticator is CDP-only). `src/__tests__/e2e/browser-compat.spec.ts` probes the browser features the app depends on and `scripts/browser-compat-matrix.mjs` merges the per-browser JSON into a support table.
+
+Full detail, including known per-browser divergences: `docs/CROSS_BROWSER_TESTING.md`.
+
 Use `helpers.ts` (`uniqueEmail`, registration/login, onboarding-tour dismissal) rather than re-rolling setup — the first-run tour will otherwise intercept clicks.
 
 Unit tests in Docker: `docker compose -f docker-compose.test.yml --profile test up --build --abort-on-container-exit`.

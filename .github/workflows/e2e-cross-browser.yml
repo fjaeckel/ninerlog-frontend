@@ -1,0 +1,141 @@
+name: Cross-Browser E2E
+
+# ON DEMAND ONLY — never on push, pull_request or merge.
+# The matrix multiplies a non-parallel suite by the number of browsers; the
+# per-PR gate stays chromium-only in e2e.yml.
+on:
+  workflow_dispatch:
+    inputs:
+      browsers:
+        description: 'Comma-separated projects: chromium, chrome, msedge, webkit, firefox, mobile-chrome, mobile-safari'
+        required: false
+        default: 'chromium,webkit,msedge'
+      compat_only:
+        description: 'Only run the capability probe (fast, no API needed)'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-cross-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cross-browser:
+    name: Playwright (${{ inputs.browsers }})
+    runs-on: self-hosted
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout frontend
+        uses: actions/checkout@v7
+
+      - name: Checkout API (for docker build)
+        if: ${{ !inputs.compat_only }}
+        uses: actions/checkout@v7
+        with:
+          repository: fjaeckel/ninerlog-api
+          token: ${{ secrets.PROJECT_REPO_TOKEN }}
+          path: ../ninerlog-api
+
+      - name: Start API + Database
+        if: ${{ !inputs.compat_only }}
+        run: docker compose -f docker-compose.test.yml --profile e2e up -d postgres-test api-test mailpit-test seaweedfs-test minio-test-init
+        env:
+          DOCKER_BUILDKIT: 1
+
+      # Playwright's own webServer is disabled under CI, so the app has to be
+      # served by the frontend-dev container (published on :5174).
+      - name: Start frontend dev server
+        run: docker compose -f docker-compose.test.yml --profile e2e up -d --wait frontend-dev
+        env:
+          DOCKER_BUILDKIT: 1
+
+      - name: Wait for API to be healthy
+        if: ${{ !inputs.compat_only }}
+        run: |
+          for i in $(seq 1 30); do
+            if docker compose -f docker-compose.test.yml exec -T api-test wget --no-verbose --tries=1 --spider http://localhost:3000/health 2>/dev/null; then
+              echo "API is healthy"
+              exit 0
+            fi
+            echo "Waiting for API... ($i/30)"
+            sleep 2
+          done
+          echo "API failed to start"
+          docker compose -f docker-compose.test.yml logs api-test
+          exit 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Bundled engines (chromium/webkit/firefox) and branded channels
+      # (chrome/msedge) install differently, so split the requested list.
+      - name: Install Playwright browsers
+        run: |
+          BUNDLED=""
+          BRANDED=""
+          IFS=',' read -ra REQUESTED <<< "${{ inputs.browsers }}"
+          for b in "${REQUESTED[@]}"; do
+            case "$(echo "$b" | xargs)" in
+              chromium|mobile-chrome) BUNDLED="$BUNDLED chromium" ;;
+              webkit|mobile-safari)   BUNDLED="$BUNDLED webkit" ;;
+              firefox)                BUNDLED="$BUNDLED firefox" ;;
+              chrome)                 BRANDED="$BRANDED chrome" ;;
+              msedge)                 BRANDED="$BRANDED msedge" ;;
+              *) echo "Unknown browser: $b" >&2; exit 1 ;;
+            esac
+          done
+          [ -n "$BUNDLED" ] && npx playwright install --with-deps $(echo $BUNDLED | tr ' ' '\n' | sort -u | tr '\n' ' ')
+          [ -n "$BRANDED" ] && npx playwright install --with-deps $(echo $BRANDED | tr ' ' '\n' | sort -u | tr '\n' ' ')
+          exit 0
+
+      - name: Run cross-browser E2E
+        run: |
+          if [ "${{ inputs.compat_only }}" = "true" ]; then
+            bash scripts/run-cross-browser-e2e.sh --compat-only
+          else
+            bash scripts/run-cross-browser-e2e.sh
+          fi
+        env:
+          E2E_BROWSERS: ${{ inputs.browsers }}
+          PLAYWRIGHT_BASE_URL: http://localhost:5174
+          # MailPit is only reachable by name from inside the compose network.
+          PLAYWRIGHT_MAILPIT_URL: http://localhost:8025
+
+      - name: Publish capability matrix to the job summary
+        if: ${{ !cancelled() }}
+        run: node scripts/browser-compat-matrix.mjs --markdown >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dump logs on failure
+        if: failure() && !inputs.compat_only
+        run: docker compose -f docker-compose.test.yml --profile e2e logs
+
+      - name: Stop services
+        if: always()
+        run: docker compose -f docker-compose.test.yml --profile e2e down -v || true
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-cross-browser
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload capability matrix
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: browser-compat-matrix
+          path: test-results/browser-compat/
+          retention-days: 14

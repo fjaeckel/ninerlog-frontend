@@ -33,7 +33,16 @@ async function installVirtualAuthenticator(page: Page): Promise<VirtualAuth> {
 }
 
 test.describe('Passkeys (WebAuthn)', () => {
-  test.beforeEach(async ({ request, page }) => {
+  test.beforeEach(async ({ request, page, browserName }) => {
+    // The virtual authenticator is installed over the Chrome DevTools
+    // Protocol, which only Chromium-family browsers speak. WebKit and Firefox
+    // have no equivalent, so the ceremony cannot be driven there at all —
+    // passkey support in those browsers has to be verified manually.
+    test.skip(
+      browserName !== 'chromium',
+      `WebAuthn e2e needs the CDP virtual authenticator (Chromium-only); ${browserName} cannot run it`,
+    );
+
     // Skip if the API is not configured for WebAuthn (no WEBAUTHN_RP_ID).
     const probe = await request.post('/api/v1/auth/webauthn/login/options', { data: {} });
     test.skip(probe.status() === 503, 'WebAuthn is not configured on the API server');

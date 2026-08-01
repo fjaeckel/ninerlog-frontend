@@ -12,6 +12,8 @@
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:cross": "bash scripts/run-cross-browser-e2e.sh",
+    "test:e2e:compat": "bash scripts/run-cross-browser-e2e.sh --compat-only chromium webkit firefox",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",

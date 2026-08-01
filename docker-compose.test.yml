@@ -42,6 +42,41 @@ services:
     networks:
       - test-network
 
+  # On-demand cross-browser run. Same stack as frontend-e2e, but builds the
+  # branded Chrome/Edge into the image and runs the browser matrix.
+  #   E2E_BROWSERS=chromium,webkit,msedge \
+  #     docker compose -f docker-compose.test.yml --profile e2e-cross up --build \
+  #       --abort-on-container-exit --exit-code-from frontend-e2e-cross
+  frontend-e2e-cross:
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
+      args:
+        INSTALL_BRANDED_BROWSERS: "1"
+    container_name: ninerlog-frontend-e2e-cross
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - PLAYWRIGHT_BASE_URL=http://app.ninerlog.test:5173
+      - HOME=/root
+      - E2E_BROWSERS=${E2E_BROWSERS:-chromium,webkit,msedge}
+    command: npm run test:e2e:cross
+    profiles:
+      - e2e-cross
+    depends_on:
+      frontend-dev:
+        condition: service_healthy
+      api-test:
+        condition: service_healthy
+      minio-test-init:
+        condition: service_completed_successfully
+    networks:
+      - test-network
+
   # Frontend dev server for E2E tests
   frontend-dev:
     build:
@@ -65,6 +100,7 @@ services:
       start_period: 15s
     profiles:
       - e2e
+      - e2e-cross
     networks:
       test-network:
         aliases:
@@ -78,8 +114,13 @@ services:
     expose:
       - "8025"
       - "1025"
+    ports:
+      # Published so a Playwright run on the host (not in the compose network)
+      # can poll for verification mails via PLAYWRIGHT_MAILPIT_URL.
+      - "8025:8025"
     profiles:
       - e2e
+      - e2e-cross
     networks:
       - test-network
 
@@ -100,6 +141,7 @@ services:
       - /var/lib/postgresql
     profiles:
       - e2e
+      - e2e-cross
     networks:
       - test-network
 
@@ -146,6 +188,7 @@ services:
       start_period: 10s
     profiles:
       - e2e
+      - e2e-cross
     networks:
       - test-network
 
@@ -185,6 +228,7 @@ services:
       retries: 30
     profiles:
       - e2e
+      - e2e-cross
     networks:
       - test-network
 
@@ -208,6 +252,7 @@ services:
         exit 1
     profiles:
       - e2e
+      - e2e-cross
     networks:
       - test-network
 
