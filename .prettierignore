@@ -1,0 +1,8 @@
+# Generated from the API's OpenAPI spec — never hand-formatted, never edited.
+src/api/schema.ts
+
+# Not source.
+dist
+coverage
+node_modules
+public/help
