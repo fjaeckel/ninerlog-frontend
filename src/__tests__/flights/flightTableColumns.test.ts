@@ -3,6 +3,7 @@ import {
   DEFAULT_CUSTOM_COLUMNS,
   FLIGHT_COLUMNS,
   selectFlightColumns,
+  selectFlightCardColumns,
   type FlightColumnKey,
 } from '../../components/flights/flightTableColumns';
 import type { components } from '../../api/schema';
@@ -163,6 +164,41 @@ describe('selectFlightColumns — custom mode', () => {
     // Remarks is roughly three time columns wide, so it cannot share their
     // ladder without appearing at a width it does not fit in.
     expect(revealWidth(layout.remarksRevealClass!)).toBeGreaterThan(revealWidth(layout.time[1].revealClass));
+  });
+});
+
+describe('selectFlightCardColumns', () => {
+  it('answers the same column setting the table does', () => {
+    const flights = [flight({ nightTime: 30, picTime: 90 })];
+
+    const table = selectFlightColumns(flights, custom(['nightTime']));
+    const card = selectFlightCardColumns(flights, custom(['nightTime']));
+
+    // A phone must not show what the table was told to hide
+    expect(card.offOnBlock).toBe(table.offOnBlock);
+    expect(card.function).toBe(table.function);
+    expect(card.landings).toBe(table.landings);
+  });
+
+  it('keeps the fixed columns in automatic mode', () => {
+    const card = selectFlightCardColumns([flight()], auto);
+
+    expect(card.offOnBlock).toBe(true);
+    expect(card.function).toBe(true);
+    expect(card.landings).toBe(true);
+  });
+
+  it('caps the time columns at what a phone row can hold', () => {
+    const busy = flight({ nightTime: 30, ifrTime: 20, crossCountryTime: 60, soloTime: 15 });
+
+    expect(selectFlightCardColumns([busy], auto).time).toHaveLength(3);
+  });
+
+  it('splits landings for the page, not the flight', () => {
+    const flights = [flight({ landingsNight: 0 }), flight({ landingsNight: 2 })];
+
+    expect(selectFlightCardColumns(flights, auto).landingsSplit).toBe(true);
+    expect(selectFlightCardColumns([flights[0]], auto).landingsSplit).toBe(false);
   });
 });
 

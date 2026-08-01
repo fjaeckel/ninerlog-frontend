@@ -56,18 +56,33 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
   // it follows the reader's locale, the date itself their format preference.
   const weekday = new Date(`${flight.date}T00:00:00`).toLocaleDateString(i18n.language, { weekday: 'short' });
 
+  // Every cell answers to the flights-list column setting, exactly as the
+  // table's cells do — a column switched off in Settings has to be off here
+  // too, or the setting is only telling half the truth.
+  const offOnCells: Cell[] = columns.offOnBlock
+    ? [
+        { key: 'off', label: t('tableOff'), value: (flight.offBlockTime || flight.departureTime)?.slice(0, 5) || '—' },
+        { key: 'on', label: t('tableOn'), value: (flight.onBlockTime || flight.arrivalTime)?.slice(0, 5) || '—' },
+      ]
+    : [];
+
+  const landingCells: Cell[] = columns.landings
+    ? [
+        {
+          key: 'ldg',
+          // Six columns leave ~55px each, so the day/night split drops its letters
+          // and moves them into the heading rather than truncating.
+          label: columns.landingsSplit ? t('tableLdgSplit') : t('tableLdg'),
+          value: columns.landingsSplit
+            ? `${flight.landingsDay}/${flight.landingsNight}`
+            : String(flight.allLandings),
+        },
+      ]
+    : [];
+
   const cells: Cell[] = [
-    { key: 'off', label: t('tableOff'), value: (flight.offBlockTime || flight.departureTime)?.slice(0, 5) || '—' },
-    { key: 'on', label: t('tableOn'), value: (flight.onBlockTime || flight.arrivalTime)?.slice(0, 5) || '—' },
-    {
-      key: 'ldg',
-      // Six columns leave ~55px each, so the day/night split drops its letters
-      // and moves them into the heading rather than truncating.
-      label: columns.landingsSplit ? t('tableLdgSplit') : t('tableLdg'),
-      value: columns.landingsSplit
-        ? `${flight.landingsDay}/${flight.landingsNight}`
-        : String(flight.allLandings),
-    },
+    ...offOnCells,
+    ...landingCells,
     ...columns.time.map((column) => {
       const minutes = column.minutes(flight);
       return {
@@ -133,18 +148,20 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
         {/* Everything that qualifies the entry, on one line that gives up its
             tail before it gives up a second line */}
         <p className="-mt-0.5 flex items-baseline gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-          <span
-            className={cn(
-              'shrink-0 rounded px-1 text-[10px] font-bold uppercase',
-              flight.isPic
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                : flight.isDual
-                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-                  : 'bg-slate-200 text-slate-600 dark:bg-slate-600 dark:text-slate-300'
-            )}
-          >
-            {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : (flight.sicTime || 0) > 0 ? 'SIC' : '—'}
-          </span>
+          {columns.function && (
+            <span
+              className={cn(
+                'shrink-0 rounded px-1 text-[10px] font-bold uppercase',
+                flight.isPic
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                  : flight.isDual
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                    : 'bg-slate-200 text-slate-600 dark:bg-slate-600 dark:text-slate-300'
+              )}
+            >
+              {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : (flight.sicTime || 0) > 0 ? 'SIC' : '—'}
+            </span>
+          )}
           {flight.signatureId && (
             <>
               <ShieldCheck
@@ -165,24 +182,27 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
         </p>
       </div>
 
-      {/* Readout — the table's columns, picked once for the page */}
-      <dl className="flex divide-x divide-slate-100 dark:divide-slate-700/60">
-        {cells.map((cell) => (
-          <div key={cell.key} className="min-w-0 flex-1 px-1 py-1.5 text-center">
-            <dt className="truncate text-[10px] font-medium uppercase leading-tight tracking-wider text-slate-400 dark:text-slate-500">
-              {cell.label}
-            </dt>
-            <dd
-              className={cn(
-                'truncate font-mono text-xs font-semibold leading-tight tabular-nums',
-                cell.empty ? 'text-slate-300 dark:text-slate-600' : 'text-slate-700 dark:text-slate-200'
-              )}
-            >
-              {cell.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      {/* Readout — the table's columns, picked once for the page. Absent
+          entirely when the column setting leaves nothing to put in it. */}
+      {cells.length > 0 && (
+        <dl className="flex divide-x divide-slate-100 dark:divide-slate-700/60">
+          {cells.map((cell) => (
+            <div key={cell.key} className="min-w-0 flex-1 px-1 py-1.5 text-center">
+              <dt className="truncate text-[10px] font-medium uppercase leading-tight tracking-wider text-slate-400 dark:text-slate-500">
+                {cell.label}
+              </dt>
+              <dd
+                className={cn(
+                  'truncate font-mono text-xs font-semibold leading-tight tabular-nums',
+                  cell.empty ? 'text-slate-300 dark:text-slate-600' : 'text-slate-700 dark:text-slate-200'
+                )}
+              >
+                {cell.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
     </article>
   );
 }

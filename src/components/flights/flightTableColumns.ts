@@ -219,6 +219,11 @@ export interface FlightCardColumn {
 }
 
 export interface FlightCardColumns {
+  /** The off-block / on-block pair, as two cells. */
+  offOnBlock: boolean;
+  /** The PIC/DUAL/SIC badge in the row header. */
+  function: boolean;
+  landings: boolean;
   /**
    * Whether the landings column splits day from night. Decided for the page,
    * not the flight: one card heading itself differently from the rest is the
@@ -240,7 +245,9 @@ export interface FlightCardColumns {
  *
  * Custom mode hands over to the user's own column list, in their order, for the
  * same reason it does in the table: a column they asked for is worth a slot
- * even on a page where it stays empty.
+ * even on a page where it stays empty. The fixed columns answer to the setting
+ * too — switching one off in Settings has to switch it off on a phone, or the
+ * setting is only telling half the truth.
  */
 export function selectFlightCardColumns(
   flights: Flight[],
@@ -248,13 +255,19 @@ export function selectFlightCardColumns(
 ): FlightCardColumns {
   const byKey = new Map(FLIGHT_COLUMNS.map((column) => [column.key, column]));
   const isTime = (key: FlightColumnKey) => byKey.get(key)?.kind === 'time';
+  const custom = prefs.mode === 'custom';
+  const selected = new Set(prefs.columns);
+  // Same question the table asks of its fixed columns.
+  const shows = (key: FlightColumnKey) => (custom ? selected.has(key) : AUTO_ALWAYS_ON.includes(key));
 
-  const order =
-    prefs.mode === 'custom'
-      ? prefs.columns.filter(isTime)
-      : CARD_TIME_PRIORITY.filter((key) => flights.some((f) => byKey.get(key)!.hasValue(f)));
+  const order = custom
+    ? prefs.columns.filter(isTime)
+    : CARD_TIME_PRIORITY.filter((key) => flights.some((f) => byKey.get(key)!.hasValue(f)));
 
   return {
+    offOnBlock: shows('offOnBlock'),
+    function: shows('function'),
+    landings: shows('landings'),
     landingsSplit: flights.some((f) => f.landingsNight > 0),
     time: order
       .slice(0, MAX_CARD_TIME_COLUMNS)

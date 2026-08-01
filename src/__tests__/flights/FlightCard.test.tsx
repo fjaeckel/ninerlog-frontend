@@ -2,7 +2,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import FlightCard from '../../components/flights/FlightCard';
-import { selectFlightCardColumns } from '../../components/flights/flightTableColumns';
+import {
+  selectFlightCardColumns,
+  type FlightColumnKey,
+} from '../../components/flights/flightTableColumns';
 import type { components } from '../../api/schema';
 
 type Flight = components['schemas']['Flight'];
@@ -161,6 +164,41 @@ describe('FlightCard', () => {
     expect(screen.queryByRole('button', { name: /edit flight/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /delete flight/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole('button')).toHaveLength(1);
+  });
+
+  it('drops the columns the flights-list setting switches off', () => {
+    // Custom mode with only night time picked: no off/on pair, no landings,
+    // no function badge — the same answer the table gives.
+    const custom = { mode: 'custom' as const, columns: ['nightTime'] as FlightColumnKey[] };
+    render(
+      <FlightCard
+        flight={mockFlight}
+        columns={selectFlightCardColumns([mockFlight], custom)}
+        onClick={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByText('Off')).not.toBeInTheDocument();
+    expect(screen.queryByText('On')).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Ldg/)).not.toBeInTheDocument();
+    expect(screen.queryByText('PIC')).not.toBeInTheDocument();
+    expect(screen.getByText('Night')).toBeInTheDocument();
+  });
+
+  it('drops the readout entirely when the setting leaves nothing in it', () => {
+    const none = { mode: 'custom' as const, columns: [] as FlightColumnKey[] };
+    const { container } = render(
+      <FlightCard
+        flight={mockFlight}
+        columns={selectFlightCardColumns([mockFlight], none)}
+        onClick={vi.fn()}
+      />
+    );
+
+    expect(container.querySelector('dl')).toBeNull();
+    // The identity of the entry survives whatever the setting says
+    expect(screen.getByText('EDDF')).toBeInTheDocument();
+    expect(screen.getByText('1h 30m')).toBeInTheDocument();
   });
 
   it('shows dashes for missing ICAO codes', () => {
