@@ -43,7 +43,12 @@ export default function DashboardPage() {
 
   // Greeting based on time of day
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? t('dashboard:greeting.morning') : hour < 18 ? t('dashboard:greeting.afternoon') : t('dashboard:greeting.evening');
+  const greeting =
+    hour < 12
+      ? t('dashboard:greeting.morning')
+      : hour < 18
+        ? t('dashboard:greeting.afternoon')
+        : t('dashboard:greeting.evening');
 
   return (
     <div className="mx-auto max-w-[1280px] py-6">
@@ -51,9 +56,7 @@ export default function DashboardPage() {
       <div className="hero-greeting mb-6">
         <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <p className="text-sm font-medium uppercase tracking-wider text-blue-100/80">
-              {greeting}
-            </p>
+            <p className="text-sm font-medium uppercase tracking-wider text-blue-100/80">{greeting}</p>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
               {user?.name || user?.email}
             </h1>
@@ -83,41 +86,47 @@ export default function DashboardPage() {
       )}
 
       {/* Credential Expiry Alerts */}
-      {credentials && credentials.length > 0 && (() => {
-        const now = new Date();
-        const expiring = credentials.filter((c) => {
-          if (!c.expiryDate) return false;
-          const days = Math.ceil((new Date(c.expiryDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-          return days <= 30;
-        });
-        if (expiring.length === 0) return null;
-        return (
-          <div className="mb-6 space-y-2">
-            {expiring.map((cred) => {
-              const days = Math.ceil((new Date(cred.expiryDate!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-              const isExpired = days < 0;
-              return (
-                <div
-                  key={cred.id}
-                  className={`rounded-lg px-4 py-3 flex items-center justify-between text-sm cursor-pointer ${
-                    isExpired
-                      ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-                      : 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
-                  }`}
-                  onClick={() => navigate('/credentials')}
-                >
-                  <span className={isExpired ? 'text-red-800 dark:text-red-300' : 'text-amber-800 dark:text-amber-300'}>
-                    {isExpired ? '⚠ ' : '⏰ '}
-                    <strong>{cred.credentialType.replace(/_/g, ' ')}</strong>
-                    {' '}{isExpired ? t('dashboard:credentialAlert.expired', { days: Math.abs(days) }) : t('dashboard:credentialAlert.expiresSoon', { days })}
-                  </span>
-                  <span className="text-xs opacity-60">View →</span>
-                </div>
-              );
-            })}
-          </div>
-        );
-      })()}
+      {credentials &&
+        credentials.length > 0 &&
+        (() => {
+          const now = new Date();
+          const expiring = credentials.filter((c) => {
+            if (!c.expiryDate) return false;
+            const days = Math.ceil((new Date(c.expiryDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            return days <= 30;
+          });
+          if (expiring.length === 0) return null;
+          return (
+            <div className="mb-6 space-y-2">
+              {expiring.map((cred) => {
+                const days = Math.ceil((new Date(cred.expiryDate!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                const isExpired = days < 0;
+                return (
+                  <div
+                    key={cred.id}
+                    className={`rounded-lg px-4 py-3 flex items-center justify-between text-sm cursor-pointer ${
+                      isExpired
+                        ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                        : 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
+                    }`}
+                    onClick={() => navigate('/credentials')}
+                  >
+                    <span
+                      className={isExpired ? 'text-red-800 dark:text-red-300' : 'text-amber-800 dark:text-amber-300'}
+                    >
+                      {isExpired ? '⚠ ' : '⏰ '}
+                      <strong>{cred.credentialType.replace(/_/g, ' ')}</strong>{' '}
+                      {isExpired
+                        ? t('dashboard:credentialAlert.expired', { days: Math.abs(days) })
+                        : t('dashboard:credentialAlert.expiresSoon', { days })}
+                    </span>
+                    <span className="text-xs opacity-60">View →</span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
       {/* Initial-hours snapshot indicator */}
       {statistics?.baseline && (
@@ -125,8 +134,7 @@ export default function DashboardPage() {
           {t('dashboard:baselineApplied', {
             hours: ((statistics.baseline.totalMinutes ?? 0) / 60).toFixed(1),
             date: statistics.baseline.baselineDate,
-            defaultValue:
-              'Includes {{hours}}h carried forward from your initial-hours snapshot (as of {{date}}).',
+            defaultValue: 'Includes {{hours}}h carried forward from your initial-hours snapshot (as of {{date}}).',
           })}
         </div>
       )}
@@ -195,7 +203,9 @@ export default function DashboardPage() {
                 <div key={cs.class} data-testid={`class-stat-${cs.class}`}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium text-slate-700 dark:text-slate-300">{classLabel}</span>
-                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{fmtDuration(cs.minutes)} · {cs.flights} {t('common:flights')} · {cs.landings} {t('common:ldg')}</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
+                      {fmtDuration(cs.minutes)} · {cs.flights} {t('common:flights')} · {cs.landings} {t('common:ldg')}
+                    </span>
                   </div>
                   <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 dark:bg-blue-400 rounded-full" style={{ width: `${pct}%` }} />
@@ -229,13 +239,14 @@ export default function DashboardPage() {
                     </span>
                     <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums whitespace-nowrap">
                       {fmtDuration(ms.totalMinutes)} · {ms.totalFlights} {t('common:flights')}
-                      {ms.lastFlightDate && (
-                        <span className="hidden sm:inline"> · {fmtDate(ms.lastFlightDate)}</span>
-                      )}
+                      {ms.lastFlightDate && <span className="hidden sm:inline"> · {fmtDate(ms.lastFlightDate)}</span>}
                     </span>
                   </div>
                   <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-500 dark:bg-indigo-400 rounded-full" style={{ width: `${pct}%` }} />
+                    <div
+                      className="h-full bg-indigo-500 dark:bg-indigo-400 rounded-full"
+                      style={{ width: `${pct}%` }}
+                    />
                   </div>
                 </div>
               );
@@ -283,7 +294,9 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-3 whitespace-nowrap">
                   <span className="data-sm text-slate-800 dark:text-slate-100">{fmtDuration(flight.totalTime)}</span>
-                  <span className="text-sm text-slate-500 dark:text-slate-400 tabular-nums">{fmtDate(flight.date)}</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400 tabular-nums">
+                    {fmtDate(flight.date)}
+                  </span>
                 </div>
               </button>
             ))}
@@ -292,10 +305,7 @@ export default function DashboardPage() {
           <div className="text-center py-8">
             <div className="text-4xl mb-3">✈</div>
             <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">{t('dashboard:noFlights')}</p>
-            <button
-              onClick={() => navigate('/flights', { state: { openForm: true } })}
-              className="btn-primary"
-            >
+            <button onClick={() => navigate('/flights', { state: { openForm: true } })} className="btn-primary">
               {t('dashboard:logFirstFlight')}
             </button>
           </div>

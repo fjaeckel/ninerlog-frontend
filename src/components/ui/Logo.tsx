@@ -58,19 +58,14 @@ interface LogoProps {
   variant?: 'inline' | 'hero';
 }
 
-export function Logo({
-  className,
-  size = 32,
-  wordmark = 'NinerLog',
-  variant = 'inline',
-}: LogoProps) {
+export function Logo({ className, size = 32, wordmark = 'NinerLog', variant = 'inline' }: LogoProps) {
   return (
     <span className={cn('inline-flex items-center gap-2', className)}>
       <LogoMark size={size} decorative />
       <span
         className={cn(
           'font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-brand-800 via-brand-700 to-brand-500 dark:from-blue-300 dark:via-blue-300 dark:to-blue-400',
-          variant === 'hero' ? 'text-3xl sm:text-4xl' : 'text-lg',
+          variant === 'hero' ? 'text-3xl sm:text-4xl' : 'text-lg'
         )}
       >
         {wordmark}

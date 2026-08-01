@@ -11,14 +11,42 @@ describe('i18n setup', () => {
   });
 
   it('has all 13 namespaces loaded for English', () => {
-    const namespaces = ['common', 'auth', 'nav', 'flights', 'aircraft', 'dashboard', 'currency', 'licenses', 'credentials', 'reports', 'settings', 'import', 'help'];
+    const namespaces = [
+      'common',
+      'auth',
+      'nav',
+      'flights',
+      'aircraft',
+      'dashboard',
+      'currency',
+      'licenses',
+      'credentials',
+      'reports',
+      'settings',
+      'import',
+      'help',
+    ];
     for (const ns of namespaces) {
       expect(i18n.hasResourceBundle('en', ns)).toBe(true);
     }
   });
 
   it('has all 13 namespaces loaded for German', () => {
-    const namespaces = ['common', 'auth', 'nav', 'flights', 'aircraft', 'dashboard', 'currency', 'licenses', 'credentials', 'reports', 'settings', 'import', 'help'];
+    const namespaces = [
+      'common',
+      'auth',
+      'nav',
+      'flights',
+      'aircraft',
+      'dashboard',
+      'currency',
+      'licenses',
+      'credentials',
+      'reports',
+      'settings',
+      'import',
+      'help',
+    ];
     for (const ns of namespaces) {
       expect(i18n.hasResourceBundle('de', ns)).toBe(true);
     }

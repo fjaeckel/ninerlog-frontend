@@ -6,13 +6,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useResetPassword } from '../../hooks/useAuth';
 
-const newPasswordSchema = z.object({
-  newPassword: z.string().min(12, 'Password must be at least 12 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+const newPasswordSchema = z
+  .object({
+    newPassword: z.string().min(12, 'Password must be at least 12 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 type NewPasswordFormData = z.infer<typeof newPasswordSchema>;
 
@@ -38,10 +40,10 @@ export default function NewPasswordPage() {
         <div className="w-full max-w-[400px]">
           <div className="card p-6 text-center">
             <div className="text-red-600 text-5xl mb-4">!</div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">{t('auth:newPassword.invalidLink')}</h2>
-            <p className="text-slate-500 dark:text-slate-400 mb-6">
-              {t('auth:newPassword.invalidLinkDescription')}
-            </p>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+              {t('auth:newPassword.invalidLink')}
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-6">{t('auth:newPassword.invalidLinkDescription')}</p>
             <Link to="/reset-password" className="btn-primary inline-flex">
               {t('auth:newPassword.requestNewLink')}
             </Link>
@@ -57,10 +59,10 @@ export default function NewPasswordPage() {
         <div className="w-full max-w-[400px]">
           <div className="card p-6 text-center">
             <div className="text-green-600 text-5xl mb-4">✓</div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">{t('auth:newPassword.success')}</h2>
-            <p className="text-slate-500 dark:text-slate-400 mb-6">
-              {t('auth:newPassword.successDescription')}
-            </p>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+              {t('auth:newPassword.success')}
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-6">{t('auth:newPassword.successDescription')}</p>
             <Link to="/login" className="btn-primary inline-flex">
               {t('auth:newPassword.backToLogin')}
             </Link>
@@ -86,9 +88,7 @@ export default function NewPasswordPage() {
         <div className="text-center">
           <div className="text-4xl mb-2">✈</div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{t('auth:newPassword.title')}</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {t('auth:newPassword.description')}
-          </p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('auth:newPassword.description')}</p>
         </div>
 
         <form className="card p-6 space-y-5" onSubmit={handleSubmit(onSubmit)}>
@@ -109,9 +109,7 @@ export default function NewPasswordPage() {
               autoComplete="new-password"
               className={`input ${errors.newPassword ? 'input-error' : ''}`}
             />
-            {errors.newPassword && (
-              <p className="form-error">{errors.newPassword.message}</p>
-            )}
+            {errors.newPassword && <p className="form-error">{errors.newPassword.message}</p>}
           </div>
 
           <div>
@@ -125,9 +123,7 @@ export default function NewPasswordPage() {
               autoComplete="new-password"
               className={`input ${errors.confirmPassword ? 'input-error' : ''}`}
             />
-            {errors.confirmPassword && (
-              <p className="form-error">{errors.confirmPassword.message}</p>
-            )}
+            {errors.confirmPassword && <p className="form-error">{errors.confirmPassword.message}</p>}
           </div>
 
           <button
@@ -135,7 +131,9 @@ export default function NewPasswordPage() {
             disabled={isSubmitting || resetPassword.isPending}
             className="btn-primary w-full btn-lg"
           >
-            {isSubmitting || resetPassword.isPending ? t('auth:newPassword.resetting') : t('auth:newPassword.resetPassword')}
+            {isSubmitting || resetPassword.isPending
+              ? t('auth:newPassword.resetting')
+              : t('auth:newPassword.resetPassword')}
           </button>
         </form>
       </div>

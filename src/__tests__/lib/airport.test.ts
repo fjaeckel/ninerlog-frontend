@@ -31,9 +31,7 @@ describe('normalizeLocation', () => {
 
 describe('formatAirportLabel', () => {
   it('combines the resolved name with the code', () => {
-    expect(formatAirportLabel('EDDF', 'Frankfurt am Main Airport')).toBe(
-      'Frankfurt am Main Airport (EDDF)'
-    );
+    expect(formatAirportLabel('EDDF', 'Frankfurt am Main Airport')).toBe('Frankfurt am Main Airport (EDDF)');
   });
 
   it('falls back to the raw location when no name was resolved', () => {

@@ -36,9 +36,7 @@ export function SignatureSection({ flight }: { flight: Flight }) {
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [showVoidDialog, setShowVoidDialog] = useState(false);
 
-  const activeSignature = flight.signatureId
-    ? signatures?.find((s) => s.id === flight.signatureId)
-    : undefined;
+  const activeSignature = flight.signatureId ? signatures?.find((s) => s.id === flight.signatureId) : undefined;
   const pendingRequest = signatures?.find((s) => s.status === 'pending');
 
   const imageUrl = useFlightSignatureImageUrl(flight.id, activeSignature?.id);
@@ -95,12 +93,8 @@ export function SignatureSection({ flight }: { flight: Flight }) {
         </div>
       )}
 
-      {showLiveDialog && (
-        <LiveSignDialog flightId={flight.id} onClose={() => setShowLiveDialog(false)} />
-      )}
-      {showRequestDialog && (
-        <RequestSignatureDialog flightId={flight.id} onClose={() => setShowRequestDialog(false)} />
-      )}
+      {showLiveDialog && <LiveSignDialog flightId={flight.id} onClose={() => setShowLiveDialog(false)} />}
+      {showRequestDialog && <RequestSignatureDialog flightId={flight.id} onClose={() => setShowRequestDialog(false)} />}
       {activeSignature && showVoidDialog && (
         <VoidSignatureDialog
           flightId={flight.id}
@@ -138,7 +132,12 @@ function VoidSignatureDialog({
   };
 
   return (
-    <Dialog open onClose={onClose} title={t('section.voidDialogTitle')} description={t('section.voidDialogDescription')}>
+    <Dialog
+      open
+      onClose={onClose}
+      title={t('section.voidDialogTitle')}
+      description={t('section.voidDialogDescription')}
+    >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-3 py-2 rounded-lg text-sm">
@@ -234,7 +233,11 @@ function LiveSignDialog({ flightId, onClose }: { flightId: string; onClose: () =
           {credentialNumber.trim() && <p className="form-helper">{t('liveDialog.credentialNumberHint')}</p>}
         </div>
         <SignatureCanvas ref={signatureRef} onChange={setHasDrawing} />
-        <button type="submit" disabled={signLive.isPending || !signerName || !hasDrawing} className="btn-primary w-full">
+        <button
+          type="submit"
+          disabled={signLive.isPending || !signerName || !hasDrawing}
+          className="btn-primary w-full"
+        >
           {signLive.isPending ? t('liveDialog.signing') : t('liveDialog.submit')}
         </button>
       </form>
@@ -336,10 +339,14 @@ function SignUrlResult({ signUrl, sentTo, onDone }: { signUrl: string; sentTo?: 
 
   useEffect(() => {
     let cancelled = false;
-    QRCode.toDataURL(signUrl, { width: 220, margin: 1 }).then((url) => {
-      if (!cancelled) setQr(url);
-    }).catch(() => setQr(null));
-    return () => { cancelled = true; };
+    QRCode.toDataURL(signUrl, { width: 220, margin: 1 })
+      .then((url) => {
+        if (!cancelled) setQr(url);
+      })
+      .catch(() => setQr(null));
+    return () => {
+      cancelled = true;
+    };
   }, [signUrl]);
 
   const handleCopy = async () => {
@@ -366,7 +373,12 @@ function SignUrlResult({ signUrl, sentTo, onDone }: { signUrl: string; sentTo?: 
         </div>
       )}
       <div className="flex gap-2">
-        <input readOnly value={signUrl} className="input flex-1 text-xs font-mono" onFocus={(e) => e.currentTarget.select()} />
+        <input
+          readOnly
+          value={signUrl}
+          className="input flex-1 text-xs font-mono"
+          onFocus={(e) => e.currentTarget.select()}
+        />
         <button type="button" onClick={handleCopy} className="btn-secondary shrink-0">
           {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
           {copied ? t('linkDialog.copied') : t('linkDialog.copy')}
@@ -492,7 +504,12 @@ function ResendDialog({
             >
               {resend.isPending ? t('emailDialog.sending') : t('emailDialog.sendNow')}
             </button>
-            <button type="button" onClick={() => submit(false)} disabled={resend.isPending} className="btn-secondary flex-1">
+            <button
+              type="button"
+              onClick={() => submit(false)}
+              disabled={resend.isPending}
+              className="btn-secondary flex-1"
+            >
               <LinkIcon className="w-4 h-4" />
               {t('section.getShareableLink')}
             </button>

@@ -7,9 +7,7 @@ import { invalidateFlightDependentQueries } from './invalidation';
 type User = components['schemas']['User'];
 
 /** Everything PATCH /users/me accepts — identity fields and display preferences. */
-type UpdateProfileRequest = NonNullable<
-  operations['updateCurrentUser']['requestBody']
->['content']['application/json'];
+type UpdateProfileRequest = NonNullable<operations['updateCurrentUser']['requestBody']>['content']['application/json'];
 
 // Update user profile (name/email/display preferences)
 export const useUpdateProfile = () => {
@@ -92,5 +90,3 @@ export const useDeleteAllUserData = () => {
     },
   });
 };
-
-

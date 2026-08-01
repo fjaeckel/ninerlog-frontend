@@ -66,9 +66,7 @@ export function NotificationHistory() {
                 {entry.daysBeforeExpiry != null && (
                   <span>• {t('notifications.daysBeforeExpiry', { days: entry.daysBeforeExpiry })}</span>
                 )}
-                {entry.referenceType && (
-                  <span>• {entry.referenceType}</span>
-                )}
+                {entry.referenceType && <span>• {entry.referenceType}</span>}
               </div>
             </div>
           </div>

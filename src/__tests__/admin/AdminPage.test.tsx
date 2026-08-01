@@ -10,10 +10,12 @@ let queryClient: QueryClient;
 
 beforeEach(() => {
   vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
-    Promise.resolve(new Response(JSON.stringify({ data: [], pagination: { total: 0, page: 1, totalPages: 0 } }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    }))
+    Promise.resolve(
+      new Response(JSON.stringify({ data: [], pagination: { total: 0, page: 1, totalPages: 0 } }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    )
   );
 });
 
@@ -43,7 +45,14 @@ afterEach(() => {
 
 const setAdmin = () => {
   useAuthStore.setState({
-    user: { id: 'admin-1', email: 'admin@ninerlog.app', name: 'Admin User', isAdmin: true, createdAt: '', updatedAt: '' },
+    user: {
+      id: 'admin-1',
+      email: 'admin@ninerlog.app',
+      name: 'Admin User',
+      isAdmin: true,
+      createdAt: '',
+      updatedAt: '',
+    },
     isAuthenticated: true,
     accessToken: 'test-token',
     refreshToken: 'test-refresh',
@@ -53,7 +62,14 @@ const setAdmin = () => {
 
 const setRegularUser = () => {
   useAuthStore.setState({
-    user: { id: 'user-1', email: 'pilot@example.com', name: 'Regular Pilot', isAdmin: false, createdAt: '', updatedAt: '' },
+    user: {
+      id: 'user-1',
+      email: 'pilot@example.com',
+      name: 'Regular Pilot',
+      isAdmin: false,
+      createdAt: '',
+      updatedAt: '',
+    },
     isAuthenticated: true,
     accessToken: 'test-token',
     refreshToken: 'test-refresh',
@@ -102,7 +118,10 @@ describe('AdminPage — Access Control', () => {
   it('shows access denied when isAdmin is undefined', () => {
     useAuthStore.setState({
       user: { id: 'user-1', email: 'pilot@example.com', name: 'Pilot', createdAt: '', updatedAt: '' },
-      isAuthenticated: true, accessToken: 'token', refreshToken: 'refresh', expiresIn: 900,
+      isAuthenticated: true,
+      accessToken: 'token',
+      refreshToken: 'refresh',
+      expiresIn: 900,
     });
     renderWithProviders(<AdminPage />);
     expect(screen.getByText('Access Denied')).toBeInTheDocument();

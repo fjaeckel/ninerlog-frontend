@@ -85,7 +85,10 @@ describe('selectFlightColumns — automatic mode', () => {
   });
 
   it('keeps off-block, function and landings regardless of the data', () => {
-    const layout = selectFlightColumns([flight({ offBlockTime: undefined, onBlockTime: undefined, allLandings: 0 })], auto);
+    const layout = selectFlightColumns(
+      [flight({ offBlockTime: undefined, onBlockTime: undefined, allLandings: 0 })],
+      auto
+    );
 
     expect(layout.offOnBlock).toBe(true);
     expect(layout.function).toBe(true);

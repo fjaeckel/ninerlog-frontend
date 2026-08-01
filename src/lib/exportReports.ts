@@ -99,11 +99,33 @@ export function exportAnalyticsToCSV(a: FlightAnalytics) {
 
   block(
     'Monthly',
-    ['Month', 'Flights', 'Block time', 'PIC', 'SIC', 'Dual', 'Night', 'IFR', 'Ldg day', 'Ldg night', 'Distance (NM)', 'Career total'],
+    [
+      'Month',
+      'Flights',
+      'Block time',
+      'PIC',
+      'SIC',
+      'Dual',
+      'Night',
+      'IFR',
+      'Ldg day',
+      'Ldg night',
+      'Distance (NM)',
+      'Career total',
+    ],
     a.monthly.map((m) => [
-      m.month, m.flights, fmt(m.totalMinutes), fmt(m.picMinutes), fmt(m.sicMinutes),
-      fmt(m.dualMinutes), fmt(m.nightMinutes), fmt(m.ifrMinutes),
-      m.landingsDay, m.landingsNight, nm(m.distanceNm), fmt(m.cumulativeMinutes),
+      m.month,
+      m.flights,
+      fmt(m.totalMinutes),
+      fmt(m.picMinutes),
+      fmt(m.sicMinutes),
+      fmt(m.dualMinutes),
+      fmt(m.nightMinutes),
+      fmt(m.ifrMinutes),
+      m.landingsDay,
+      m.landingsNight,
+      nm(m.distanceNm),
+      fmt(m.cumulativeMinutes),
     ])
   );
 
@@ -111,20 +133,46 @@ export function exportAnalyticsToCSV(a: FlightAnalytics) {
     'Yearly',
     ['Year', 'Flights', 'Block time', 'PIC', 'Dual', 'Night', 'IFR', 'Landings', 'Distance (NM)'],
     a.yearly.map((y) => [
-      y.year, y.flights, fmt(y.totalMinutes), fmt(y.picMinutes), fmt(y.dualMinutes),
-      fmt(y.nightMinutes), fmt(y.ifrMinutes), y.landings, nm(y.distanceNm),
+      y.year,
+      y.flights,
+      fmt(y.totalMinutes),
+      fmt(y.picMinutes),
+      fmt(y.dualMinutes),
+      fmt(y.nightMinutes),
+      fmt(y.ifrMinutes),
+      y.landings,
+      nm(y.distanceNm),
     ])
   );
 
   const aircraftRows = (rows: FlightAnalytics['byAircraftType']) =>
     rows.map((r) => [
-      r.label, r.subLabel ?? '', r.flights, fmt(r.totalMinutes), fmt(r.picMinutes),
-      fmt(r.dualMinutes), fmt(r.nightMinutes), fmt(r.ifrMinutes), r.landings,
-      nm(r.distanceNm), r.firstFlightDate ?? '', r.lastFlightDate ?? '',
+      r.label,
+      r.subLabel ?? '',
+      r.flights,
+      fmt(r.totalMinutes),
+      fmt(r.picMinutes),
+      fmt(r.dualMinutes),
+      fmt(r.nightMinutes),
+      fmt(r.ifrMinutes),
+      r.landings,
+      nm(r.distanceNm),
+      r.firstFlightDate ?? '',
+      r.lastFlightDate ?? '',
     ]);
   const aircraftHeader = [
-    'Label', 'Detail', 'Flights', 'Block time', 'PIC', 'Dual', 'Night', 'IFR',
-    'Landings', 'Distance (NM)', 'First flight', 'Last flight',
+    'Label',
+    'Detail',
+    'Flights',
+    'Block time',
+    'PIC',
+    'Dual',
+    'Night',
+    'IFR',
+    'Landings',
+    'Distance (NM)',
+    'First flight',
+    'Last flight',
   ];
   block('By aircraft type', aircraftHeader, aircraftRows(a.byAircraftType));
   block('By registration', aircraftHeader, aircraftRows(a.byRegistration));
@@ -140,7 +188,11 @@ export function exportAnalyticsToCSV(a: FlightAnalytics) {
     ['ICAO', 'Name', 'Country', 'Departures', 'Arrivals', 'Flights'],
     a.byAirport.map((r) => [r.icao, r.name ?? '', r.country ?? '', r.departures, r.arrivals, r.flights])
   );
-  block('Countries', ['Country', 'Airports', 'Flights'], a.byCountry.map((r) => [r.country, r.airports, r.flights]));
+  block(
+    'Countries',
+    ['Country', 'Airports', 'Flights'],
+    a.byCountry.map((r) => [r.country, r.airports, r.flights])
+  );
   block(
     'Routes',
     ['From', 'To', 'Flights', 'Block time', 'Distance (NM)'],
@@ -158,11 +210,14 @@ export function exportAnalyticsToCSV(a: FlightAnalytics) {
     a.byCrew.map((r) => [r.name, r.role ?? '', r.flights, fmt(r.totalMinutes), r.lastFlightDate ?? ''])
   );
 
-  block('Approach types', ['Type', 'Count'], a.approachTypes.map((r) => [r.type, r.count]));
+  block(
+    'Approach types',
+    ['Type', 'Count'],
+    a.approachTypes.map((r) => [r.type, r.count])
+  );
 
   const bucketHeader = ['Bucket', 'Flights', 'Block time'];
-  const bucketRows = (rows: FlightAnalytics['dayOfWeek']) =>
-    rows.map((r) => [r.label, r.flights, fmt(r.totalMinutes)]);
+  const bucketRows = (rows: FlightAnalytics['dayOfWeek']) => rows.map((r) => [r.label, r.flights, fmt(r.totalMinutes)]);
   block('Day of week', bucketHeader, bucketRows(a.dayOfWeek));
   block('Hour of day (UTC)', bucketHeader, bucketRows(a.hourOfDay));
   block('Month of year', bucketHeader, bucketRows(a.monthOfYear));
@@ -183,11 +238,7 @@ export function exportAnalyticsToCSV(a: FlightAnalytics) {
       ['Busiest month', r.busiestMonthMinutes ? fmt(r.busiestMonthMinutes) : '', r.busiestMonth ?? ''],
       ['Busiest year', r.busiestYearMinutes ? fmt(r.busiestYearMinutes) : '', r.busiestYear ?? ''],
       ['Home base', r.homeBase ?? '', a.byAirport[0]?.name ?? ''],
-      [
-        'Farthest airport',
-        r.farthestAirport?.icao ?? '',
-        r.farthestAirportNm ? `${nm(r.farthestAirportNm)} NM` : '',
-      ],
+      ['Farthest airport', r.farthestAirport?.icao ?? '', r.farthestAirportNm ? `${nm(r.farthestAirportNm)} NM` : ''],
       ['Current streak (months)', r.currentStreakMonths, ''],
       ['Longest streak (months)', r.longestStreakMonths, ''],
       ['Active months', r.activeMonths, ''],
@@ -222,9 +273,7 @@ export function exportAnalyticsToPDF(a: FlightAnalytics, dateFormatPref: DateFor
 <h2>${esc(title)}</h2>
 <table>
   <thead><tr>${header.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead>
-  <tbody>${rows
-    .map((row) => `<tr>${row.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`)
-    .join('')}</tbody>
+  <tbody>${rows.map((row) => `<tr>${row.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody>
 </table>`;
   };
 
@@ -285,21 +334,42 @@ ${table(
   'By year',
   ['Year', 'Flights', 'Block time', 'PIC', 'Dual', 'Night', 'IFR', 'Landings', 'NM'],
   a.yearly.map((y) => [
-    y.year, y.flights, fmt(y.totalMinutes), fmt(y.picMinutes), fmt(y.dualMinutes),
-    fmt(y.nightMinutes), fmt(y.ifrMinutes), y.landings, nm(y.distanceNm),
+    y.year,
+    y.flights,
+    fmt(y.totalMinutes),
+    fmt(y.picMinutes),
+    fmt(y.dualMinutes),
+    fmt(y.nightMinutes),
+    fmt(y.ifrMinutes),
+    y.landings,
+    nm(y.distanceNm),
   ])
 )}
 
 ${table(
   'By aircraft type',
   ['Type', 'Flights', 'Block time', 'PIC', 'Dual', 'Landings'],
-  a.byAircraftType.map((x) => [x.label, x.flights, fmt(x.totalMinutes), fmt(x.picMinutes), fmt(x.dualMinutes), x.landings])
+  a.byAircraftType.map((x) => [
+    x.label,
+    x.flights,
+    fmt(x.totalMinutes),
+    fmt(x.picMinutes),
+    fmt(x.dualMinutes),
+    x.landings,
+  ])
 )}
 
 ${table(
   'By aircraft class',
   ['Class', 'Flights', 'Block time', 'PIC', 'Dual', 'Landings'],
-  a.byClass.map((x) => [x.label.replace(/_/g, ' '), x.flights, fmt(x.totalMinutes), fmt(x.picMinutes), fmt(x.dualMinutes), x.landings])
+  a.byClass.map((x) => [
+    x.label.replace(/_/g, ' '),
+    x.flights,
+    fmt(x.totalMinutes),
+    fmt(x.picMinutes),
+    fmt(x.dualMinutes),
+    x.landings,
+  ])
 )}
 
 ${table(
@@ -308,7 +378,11 @@ ${table(
   a.byAirport.slice(0, 15).map((x) => [x.icao, x.name ?? '', x.departures, x.arrivals, x.flights])
 )}
 
-${table('Approaches', ['Type', 'Count'], a.approachTypes.map((x) => [x.type, x.count]))}
+${table(
+  'Approaches',
+  ['Type', 'Count'],
+  a.approachTypes.map((x) => [x.type, x.count])
+)}
 
 ${table(
   'Records',
@@ -323,11 +397,7 @@ ${table(
     ['Busiest day', r.busiestDayFlights || '—', r.busiestDay ?? ''],
     ['Busiest month', r.busiestMonthMinutes ? fmt(r.busiestMonthMinutes) : '—', r.busiestMonth ?? ''],
     ['Home base', r.homeBase ?? '—', a.byAirport[0]?.name ?? ''],
-    [
-      'Farthest airport',
-      r.farthestAirport?.icao ?? '—',
-      r.farthestAirportNm ? `${nm(r.farthestAirportNm)} NM` : '',
-    ],
+    ['Farthest airport', r.farthestAirport?.icao ?? '—', r.farthestAirportNm ? `${nm(r.farthestAirportNm)} NM` : ''],
     ['Current streak', `${r.currentStreakMonths} months`, `longest ${r.longestStreakMonths}`],
   ]
 )}

@@ -221,12 +221,25 @@ describe('FlightForm', () => {
 
     // Mock fleet so aircraft type auto-fills when registration matches
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
-      data: [{
-        id: 'ac-1', userId: 'user-1', registration: 'D-EFGH', type: 'C172',
-        make: 'Cessna', model: '172 Skyhawk', isComplex: false, isHighPerformance: false,
-        isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
-      }],
-      isLoading: false, error: null,
+      data: [
+        {
+          id: 'ac-1',
+          userId: 'user-1',
+          registration: 'D-EFGH',
+          type: 'C172',
+          make: 'Cessna',
+          model: '172 Skyhawk',
+          isComplex: false,
+          isHighPerformance: false,
+          isTailwheel: false,
+          isActive: true,
+          notes: null,
+          createdAt: '',
+          updatedAt: '',
+        },
+      ],
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
@@ -268,12 +281,25 @@ describe('FlightForm', () => {
 
     // Mock fleet so aircraft type auto-fills (already uppercase from fleet data)
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
-      data: [{
-        id: 'ac-1', userId: 'user-1', registration: 'D-EFGH', type: 'C172',
-        make: 'Cessna', model: '172 Skyhawk', isComplex: false, isHighPerformance: false,
-        isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
-      }],
-      isLoading: false, error: null,
+      data: [
+        {
+          id: 'ac-1',
+          userId: 'user-1',
+          registration: 'D-EFGH',
+          type: 'C172',
+          make: 'Cessna',
+          model: '172 Skyhawk',
+          isComplex: false,
+          isHighPerformance: false,
+          isTailwheel: false,
+          isActive: true,
+          notes: null,
+          createdAt: '',
+          updatedAt: '',
+        },
+      ],
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
@@ -364,18 +390,40 @@ describe('FlightForm', () => {
     const user = userEvent.setup();
     const mockAircraft = [
       {
-        id: 'ac-1', userId: 'user-1', registration: 'D-EFGH', type: 'C172',
-        make: 'Cessna', model: '172 Skyhawk', isComplex: false, isHighPerformance: false,
-        isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
+        id: 'ac-1',
+        userId: 'user-1',
+        registration: 'D-EFGH',
+        type: 'C172',
+        make: 'Cessna',
+        model: '172 Skyhawk',
+        isComplex: false,
+        isHighPerformance: false,
+        isTailwheel: false,
+        isActive: true,
+        notes: null,
+        createdAt: '',
+        updatedAt: '',
       },
       {
-        id: 'ac-2', userId: 'user-1', registration: 'D-ABCD', type: 'PA28',
-        make: 'Piper', model: 'Cherokee', isComplex: false, isHighPerformance: false,
-        isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
+        id: 'ac-2',
+        userId: 'user-1',
+        registration: 'D-ABCD',
+        type: 'PA28',
+        make: 'Piper',
+        model: 'Cherokee',
+        isComplex: false,
+        isHighPerformance: false,
+        isTailwheel: false,
+        isActive: true,
+        notes: null,
+        createdAt: '',
+        updatedAt: '',
       },
     ];
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
-      data: mockAircraft, isLoading: false, error: null,
+      data: mockAircraft,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
@@ -392,13 +440,25 @@ describe('FlightForm', () => {
     const user = userEvent.setup();
     const mockAircraft = [
       {
-        id: 'ac-1', userId: 'user-1', registration: 'D-EFGH', type: 'C172',
-        make: 'Cessna', model: '172 Skyhawk', isComplex: false, isHighPerformance: false,
-        isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
+        id: 'ac-1',
+        userId: 'user-1',
+        registration: 'D-EFGH',
+        type: 'C172',
+        make: 'Cessna',
+        model: '172 Skyhawk',
+        isComplex: false,
+        isHighPerformance: false,
+        isTailwheel: false,
+        isActive: true,
+        notes: null,
+        createdAt: '',
+        updatedAt: '',
       },
     ];
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
-      data: mockAircraft, isLoading: false, error: null,
+      data: mockAircraft,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
@@ -422,7 +482,9 @@ describe('FlightForm', () => {
   it('shows quick-add prompt for unrecognized registration', async () => {
     const user = userEvent.setup();
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
-      data: [], isLoading: false, error: null,
+      data: [],
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
@@ -438,7 +500,9 @@ describe('FlightForm', () => {
     const user = userEvent.setup();
     const mockCreateAircraft = { mutateAsync: vi.fn().mockResolvedValueOnce({}), isPending: false };
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
-      data: [], isLoading: false, error: null,
+      data: [],
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useAircraftHook, 'useCreateAircraft').mockReturnValue(mockCreateAircraft as any);
 

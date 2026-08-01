@@ -117,9 +117,7 @@ describe('FlightColumnsSection', () => {
     renderWithClient(<FlightColumnsSection />);
     await userEvent.click(screen.getByTestId('flight-column-picTime'));
 
-    await waitFor(() =>
-      expect(useAuthStore.getState().user?.flightListColumns).toEqual(['picTime', 'ifrTime'])
-    );
+    await waitFor(() => expect(useAuthStore.getState().user?.flightListColumns).toEqual(['picTime', 'ifrTime']));
   });
 
   it('reports a failed save', async () => {

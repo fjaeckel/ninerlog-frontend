@@ -3,7 +3,27 @@ import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import Markdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { HelpCircle, Plane, Award, FileText, PlaneTakeoff, Upload, Shield, BarChart3, User, ShieldCheck, BookOpen, Search, X, Bug, ExternalLink, Compass, LayoutDashboard, Timer, PenLine } from 'lucide-react';
+import {
+  HelpCircle,
+  Plane,
+  Award,
+  FileText,
+  PlaneTakeoff,
+  Upload,
+  Shield,
+  BarChart3,
+  User,
+  ShieldCheck,
+  BookOpen,
+  Search,
+  X,
+  Bug,
+  ExternalLink,
+  Compass,
+  LayoutDashboard,
+  Timer,
+  PenLine,
+} from 'lucide-react';
 import { useHelpContent, helpSectionIds, type HelpSectionId } from './content';
 import { HelpFigure } from './figures';
 import { useOnboardingStore } from '../../stores/onboardingStore';
@@ -11,34 +31,34 @@ import { APP_NAME } from '../../lib/config';
 
 const sectionIcons: Record<HelpSectionId, React.ReactNode> = {
   'getting-started': <BookOpen className="w-4 h-4" />,
-  'dashboard': <LayoutDashboard className="w-4 h-4" />,
-  'flights': <Plane className="w-4 h-4" />,
-  'quicklog': <Timer className="w-4 h-4" />,
-  'aircraft': <PlaneTakeoff className="w-4 h-4" />,
-  'currency': <Shield className="w-4 h-4" />,
-  'licenses': <Award className="w-4 h-4" />,
-  'credentials': <FileText className="w-4 h-4" />,
-  'signatures': <PenLine className="w-4 h-4" />,
+  dashboard: <LayoutDashboard className="w-4 h-4" />,
+  flights: <Plane className="w-4 h-4" />,
+  quicklog: <Timer className="w-4 h-4" />,
+  aircraft: <PlaneTakeoff className="w-4 h-4" />,
+  currency: <Shield className="w-4 h-4" />,
+  licenses: <Award className="w-4 h-4" />,
+  credentials: <FileText className="w-4 h-4" />,
+  signatures: <PenLine className="w-4 h-4" />,
   'import-export': <Upload className="w-4 h-4" />,
-  'reports': <BarChart3 className="w-4 h-4" />,
-  'profile': <User className="w-4 h-4" />,
-  'admin': <ShieldCheck className="w-4 h-4" />,
+  reports: <BarChart3 className="w-4 h-4" />,
+  profile: <User className="w-4 h-4" />,
+  admin: <ShieldCheck className="w-4 h-4" />,
 };
 
 const sectionLabelKeys: Record<HelpSectionId, string> = {
   'getting-started': 'help.sections.gettingStarted',
-  'dashboard': 'help.sections.dashboard',
-  'flights': 'help.sections.flights',
-  'quicklog': 'help.sections.quicklog',
-  'aircraft': 'help.sections.aircraft',
-  'currency': 'help.sections.currency',
-  'licenses': 'help.sections.licenses',
-  'credentials': 'help.sections.credentials',
-  'signatures': 'help.sections.signatures',
+  dashboard: 'help.sections.dashboard',
+  flights: 'help.sections.flights',
+  quicklog: 'help.sections.quicklog',
+  aircraft: 'help.sections.aircraft',
+  currency: 'help.sections.currency',
+  licenses: 'help.sections.licenses',
+  credentials: 'help.sections.credentials',
+  signatures: 'help.sections.signatures',
   'import-export': 'help.sections.importExport',
-  'reports': 'help.sections.reports',
-  'profile': 'help.sections.profile',
-  'admin': 'help.sections.admin',
+  reports: 'help.sections.reports',
+  profile: 'help.sections.profile',
+  admin: 'help.sections.admin',
 };
 
 export default function HelpPage() {
@@ -50,12 +70,16 @@ export default function HelpPage() {
   const topicFromUrl = searchParams.get('topic');
 
   // Build sections array dynamically with translated labels and content
-  const sections = useMemo(() => helpSectionIds.map((id) => ({
-    id,
-    label: t(sectionLabelKeys[id]),
-    icon: sectionIcons[id],
-    content: getContent(id),
-  })), [t, getContent]);
+  const sections = useMemo(
+    () =>
+      helpSectionIds.map((id) => ({
+        id,
+        label: t(sectionLabelKeys[id]),
+        icon: sectionIcons[id],
+        content: getContent(id),
+      })),
+    [t, getContent]
+  );
 
   const [active, setActive] = useState(() => {
     return helpSectionIds.includes(topicFromUrl as HelpSectionId) ? topicFromUrl! : 'getting-started';
@@ -63,9 +87,7 @@ export default function HelpPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Sync topic from URL — derive directly instead of setState in effect
-  const resolvedActive = (topicFromUrl && helpSectionIds.includes(topicFromUrl as HelpSectionId))
-    ? topicFromUrl
-    : active;
+  const resolvedActive = topicFromUrl && helpSectionIds.includes(topicFromUrl as HelpSectionId) ? topicFromUrl : active;
 
   // Clear search when navigating via HelpLink
   const [prevTopic, setPrevTopic] = useState(topicFromUrl);
@@ -82,9 +104,7 @@ export default function HelpPage() {
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return null;
     const q = searchQuery.toLowerCase();
-    return sections.filter((s) =>
-      s.label.toLowerCase().includes(q) || s.content.toLowerCase().includes(q)
-    );
+    return sections.filter((s) => s.label.toLowerCase().includes(q) || s.content.toLowerCase().includes(q));
   }, [searchQuery, sections]);
 
   // Highlight matching text in search results (show snippet around match)
@@ -94,7 +114,10 @@ export default function HelpPage() {
     if (idx === -1) return '';
     const start = Math.max(0, idx - 60);
     const end = Math.min(content.length, idx + query.length + 60);
-    let snippet = content.slice(start, end).replace(/[#*|_>-]/g, '').trim();
+    let snippet = content
+      .slice(start, end)
+      .replace(/[#*|_>-]/g, '')
+      .trim();
     if (start > 0) snippet = '...' + snippet;
     if (end < content.length) snippet += '...';
     return snippet;
@@ -109,10 +132,7 @@ export default function HelpPage() {
             <HelpCircle className="w-6 h-6 text-blue-600" />
             <h1 className="page-title">{t('help.title')}</h1>
           </div>
-          <button
-            onClick={openTour}
-            className="btn-secondary btn-sm shrink-0"
-          >
+          <button onClick={openTour} className="btn-secondary btn-sm shrink-0">
             <Compass className="w-4 h-4" aria-hidden="true" />
             <span className="hidden sm:inline">{tOnboarding('tour.replay')}</span>
             <span className="sm:hidden">{tOnboarding('tour.start')}</span>
@@ -134,7 +154,11 @@ export default function HelpPage() {
             aria-label={t('help.searchAriaLabel')}
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label={t('help.clearSearch')}>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              aria-label={t('help.clearSearch')}
+            >
               <X className="w-4 h-4" />
             </button>
           )}
@@ -144,21 +168,28 @@ export default function HelpPage() {
       {/* Search results */}
       {searchResults !== null ? (
         <div className="space-y-3 print:hidden">
-          <p className="text-sm text-slate-500">{t('help.resultCount', { count: searchResults.length, query: searchQuery })}</p>
+          <p className="text-sm text-slate-500">
+            {t('help.resultCount', { count: searchResults.length, query: searchQuery })}
+          </p>
           {searchResults.length === 0 && (
             <div className="card text-center py-8 text-slate-400">{t('help.noResults')}</div>
           )}
           {searchResults.map((s) => (
             <button
               key={s.id}
-              onClick={() => { setActive(s.id); setSearchQuery(''); }}
+              onClick={() => {
+                setActive(s.id);
+                setSearchQuery('');
+              }}
               className="card w-full text-left hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
             >
               <div className="flex items-center gap-2 mb-1">
                 {s.icon}
                 <span className="font-medium text-slate-800 dark:text-slate-200">{s.label}</span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{getSnippet(s.content, searchQuery)}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                {getSnippet(s.content, searchQuery)}
+              </p>
             </button>
           ))}
         </div>
@@ -168,10 +199,15 @@ export default function HelpPage() {
           <nav className="hidden lg:block w-56 shrink-0 print:hidden" aria-label="Help topics">
             <div className="sticky top-20 space-y-1">
               {sections.map((s) => (
-                <button key={s.id} onClick={() => setActive(s.id)}
+                <button
+                  key={s.id}
+                  onClick={() => setActive(s.id)}
                   className={`flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm font-medium transition-colors text-left ${
-                    active === s.id ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                  }`}>
+                    active === s.id
+                      ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`}
+                >
                   {s.icon} {s.label}
                 </button>
               ))}
@@ -182,8 +218,17 @@ export default function HelpPage() {
           <div className="flex-1 min-w-0">
             {/* Mobile topic selector — hidden on print */}
             <div className="lg:hidden mb-4 print:hidden">
-              <select value={active} onChange={(e) => setActive(e.target.value)} className="input w-full" aria-label={t('help.selectTopic')}>
-                {sections.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+              <select
+                value={active}
+                onChange={(e) => setActive(e.target.value)}
+                className="input w-full"
+                aria-label={t('help.selectTopic')}
+              >
+                {sections.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -202,7 +247,9 @@ export default function HelpPage() {
                       return <img src={src} alt={alt} loading="lazy" />;
                     },
                   }}
-                >{activeSection.content}</Markdown>
+                >
+                  {activeSection.content}
+                </Markdown>
               </article>
             </div>
 
@@ -213,16 +260,26 @@ export default function HelpPage() {
               rel="noopener noreferrer"
               className="mt-6 print:hidden flex items-start gap-4 p-4 sm:p-5 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-900/10 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors group"
             >
-              <span className="shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center" aria-hidden="true">
+              <span
+                className="shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center"
+                aria-hidden="true"
+              >
                 <Bug className="w-5 h-5" />
               </span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">{t('help.reportBug.title')}</h2>
-                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" aria-hidden="true" />
+                  <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+                    {t('help.reportBug.title')}
+                  </h2>
+                  <ExternalLink
+                    className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors"
+                    aria-hidden="true"
+                  />
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{t('help.reportBug.body')}</p>
-                <span className="inline-block mt-2 text-sm font-medium text-amber-700 dark:text-amber-300 group-hover:underline">{t('help.reportBug.cta')} →</span>
+                <span className="inline-block mt-2 text-sm font-medium text-amber-700 dark:text-amber-300 group-hover:underline">
+                  {t('help.reportBug.cta')} →
+                </span>
               </div>
             </a>
           </div>

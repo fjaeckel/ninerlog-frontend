@@ -46,8 +46,7 @@ export function useTheme() {
     return () => mq.removeEventListener('change', handler);
   }, [theme]);
 
-  const resolvedTheme: 'light' | 'dark' =
-    theme === 'system' ? getSystemPreference() : theme;
+  const resolvedTheme: 'light' | 'dark' = theme === 'system' ? getSystemPreference() : theme;
 
   return { theme, setTheme, resolvedTheme };
 }

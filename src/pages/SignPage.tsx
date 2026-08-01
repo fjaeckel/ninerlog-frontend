@@ -22,7 +22,9 @@ export default function SignPage() {
   const [success, setSuccess] = useState(false);
 
   if (!token) {
-    return <StatusCard icon="⚠" title={t('publicPage.invalidTitle')} description={t('publicPage.invalidDescription')} />;
+    return (
+      <StatusCard icon="⚠" title={t('publicPage.invalidTitle')} description={t('publicPage.invalidDescription')} />
+    );
   }
 
   if (info.isLoading) {
@@ -32,13 +34,24 @@ export default function SignPage() {
   if (info.isError) {
     const status = extractApiStatus(info.error);
     if (status === 410) {
-      return <StatusCard icon="⏱" title={t('publicPage.expiredTitle')} description={t('publicPage.expiredDescription')} />;
+      return (
+        <StatusCard icon="⏱" title={t('publicPage.expiredTitle')} description={t('publicPage.expiredDescription')} />
+      );
     }
-    return <StatusCard icon="⚠" title={t('publicPage.invalidTitle')} description={t('publicPage.invalidDescription')} />;
+    return (
+      <StatusCard icon="⚠" title={t('publicPage.invalidTitle')} description={t('publicPage.invalidDescription')} />
+    );
   }
 
   if (success) {
-    return <StatusCard icon="✓" title={t('publicPage.successTitle')} description={t('publicPage.successDescription')} tone="success" />;
+    return (
+      <StatusCard
+        icon="✓"
+        title={t('publicPage.successTitle')}
+        description={t('publicPage.successDescription')}
+        tone="success"
+      />
+    );
   }
 
   const flight = info.data!;

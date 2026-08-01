@@ -37,8 +37,8 @@ export default function ResetPasswordPage() {
     } catch (err: unknown) {
       log.error('reset request failed', { err });
       const message =
-        (err && typeof err === 'object' && 'error' in err && typeof (err as Record<string, unknown>).error === 'string')
-          ? (err as Record<string, unknown>).error as string
+        err && typeof err === 'object' && 'error' in err && typeof (err as Record<string, unknown>).error === 'string'
+          ? ((err as Record<string, unknown>).error as string)
           : t('auth:resetPassword.sendFailed');
       setError(message);
     }
@@ -50,10 +50,10 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-[400px]">
           <div className="card p-6 text-center">
             <div className="text-green-600 text-5xl mb-4">✓</div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">{t('auth:resetPassword.checkEmail')}</h2>
-            <p className="text-slate-500 dark:text-slate-400 mb-6">
-              {t('auth:resetPassword.resetSent')}
-            </p>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+              {t('auth:resetPassword.checkEmail')}
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-6">{t('auth:resetPassword.resetSent')}</p>
             <Link to="/login" className="btn-primary inline-flex">
               {t('auth:resetPassword.backToLogin')}
             </Link>
@@ -69,9 +69,7 @@ export default function ResetPasswordPage() {
         <div className="text-center">
           <div className="text-4xl mb-2">✈</div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{t('auth:resetPassword.title')}</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {t('auth:resetPassword.description')}
-          </p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('auth:resetPassword.description')}</p>
         </div>
 
         <form className="card p-6 space-y-5" onSubmit={handleSubmit(onSubmit)}>
@@ -93,17 +91,13 @@ export default function ResetPasswordPage() {
               className={`input ${errors.email ? 'input-error' : ''}`}
               placeholder="pilot@example.com"
             />
-            {errors.email && (
-              <p className="form-error">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="form-error">{errors.email.message}</p>}
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting || requestReset.isPending}
-            className="btn-primary w-full btn-lg"
-          >
-            {isSubmitting || requestReset.isPending ? t('auth:resetPassword.sending') : t('auth:resetPassword.sendResetLink')}
+          <button type="submit" disabled={isSubmitting || requestReset.isPending} className="btn-primary w-full btn-lg">
+            {isSubmitting || requestReset.isPending
+              ? t('auth:resetPassword.sending')
+              : t('auth:resetPassword.sendResetLink')}
           </button>
 
           <p className="text-center text-sm text-slate-500 dark:text-slate-400">

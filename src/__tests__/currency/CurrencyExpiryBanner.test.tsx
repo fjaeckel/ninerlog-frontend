@@ -21,9 +21,7 @@ const rating = (overrides: Partial<ClassRatingCurrency>): ClassRatingCurrency =>
 
 describe('CurrencyExpiryBanner', () => {
   it('renders nothing when all ratings are current', () => {
-    const { container } = render(
-      <CurrencyExpiryBanner ratings={[rating({ status: 'current' })]} />
-    );
+    const { container } = render(<CurrencyExpiryBanner ratings={[rating({ status: 'current' })]} />);
     expect(container).toBeEmptyDOMElement();
   });
 
@@ -33,11 +31,7 @@ describe('CurrencyExpiryBanner', () => {
   });
 
   it('shows the expiring heading (amber) when nothing is expired yet', () => {
-    render(
-      <CurrencyExpiryBanner
-        ratings={[rating({ status: 'expiring', expiryDate: inDays(20) })]}
-      />
-    );
+    render(<CurrencyExpiryBanner ratings={[rating({ status: 'expiring', expiryDate: inDays(20) })]} />);
     expect(screen.getByText('Renewal coming up')).toBeInTheDocument();
     expect(screen.getByText(/Expires in (19|20) days/)).toBeInTheDocument();
   });
@@ -58,14 +52,10 @@ describe('CurrencyExpiryBanner', () => {
   it('maps ruleDescriptionKey to the right next-step guidance', () => {
     render(
       <CurrencyExpiryBanner
-        ratings={[
-          rating({ status: 'expired', ruleDescriptionKey: 'easa_ir', expiryDate: inDays(-1) }),
-        ]}
+        ratings={[rating({ status: 'expired', ruleDescriptionKey: 'easa_ir', expiryDate: inDays(-1) })]}
       />
     );
-    expect(
-      screen.getByText(/Book a proficiency check \(or IPC\) with an examiner or instructor/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Book a proficiency check \(or IPC\) with an examiner or instructor/)).toBeInTheDocument();
   });
 
   it('falls back to generic guidance for an unrecognized rule key', () => {
@@ -105,11 +95,7 @@ describe('CurrencyExpiryBanner', () => {
       />
     );
     const items = screen.getAllByText(/\(EASA\)/).map((el) => el.textContent);
-    expect(items).toEqual([
-      'MEP (Land) (EASA)',
-      'Instrument Rating (EASA)',
-      'TMG (EASA)',
-    ]);
+    expect(items).toEqual(['MEP (Land) (EASA)', 'Instrument Rating (EASA)', 'TMG (EASA)']);
   });
 
   it('collapses beyond 3 items with a show more / show less toggle', async () => {

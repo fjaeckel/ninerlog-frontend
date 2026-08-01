@@ -32,7 +32,7 @@ describe('HelpPage', () => {
     renderWithProviders(<HelpPage />);
     // Check that the nav sidebar contains all sections
     const buttons = screen.getAllByRole('button');
-    const labels = buttons.map(b => b.textContent?.trim());
+    const labels = buttons.map((b) => b.textContent?.trim());
     expect(labels).toContain('Getting Started');
     expect(labels).toContain('Aircraft');
     expect(labels).toContain('Logging Flights');
@@ -46,7 +46,7 @@ describe('HelpPage', () => {
     renderWithProviders(<HelpPage />);
 
     const buttons = screen.getAllByRole('button');
-    const aircraftBtn = buttons.find(b => b.textContent?.trim() === 'Aircraft');
+    const aircraftBtn = buttons.find((b) => b.textContent?.trim() === 'Aircraft');
     await user.click(aircraftBtn!);
 
     expect(screen.getByText('Aircraft Management')).toBeInTheDocument();
@@ -58,7 +58,7 @@ describe('HelpPage', () => {
     renderWithProviders(<HelpPage />);
 
     const buttons = screen.getAllByRole('button');
-    const btn = buttons.find(b => b.textContent?.includes('Licenses'));
+    const btn = buttons.find((b) => b.textContent?.includes('Licenses'));
     await user.click(btn!);
 
     expect(screen.getByText(/understanding the model/i)).toBeInTheDocument();
@@ -69,7 +69,7 @@ describe('HelpPage', () => {
     renderWithProviders(<HelpPage />);
 
     const buttons = screen.getAllByRole('button');
-    const btn = buttons.find(b => b.textContent?.includes('Logging Flights'));
+    const btn = buttons.find((b) => b.textContent?.includes('Logging Flights'));
     await user.click(btn!);
 
     expect(screen.getByText(/auto-calculated fields/i)).toBeInTheDocument();
@@ -80,7 +80,7 @@ describe('HelpPage', () => {
     renderWithProviders(<HelpPage />);
 
     const buttons = screen.getAllByRole('button');
-    const btn = buttons.find(b => b.textContent?.includes('Currency'));
+    const btn = buttons.find((b) => b.textContent?.includes('Currency'));
     await user.click(btn!);
 
     expect(screen.getByText(/EASA Rules/i)).toBeInTheDocument();
@@ -92,7 +92,7 @@ describe('HelpPage', () => {
     renderWithProviders(<HelpPage />);
 
     const buttons = screen.getAllByRole('button');
-    const btn = buttons.find(b => b.textContent?.includes('Import'));
+    const btn = buttons.find((b) => b.textContent?.includes('Import'));
     await user.click(btn!);
 
     expect(screen.getByText(/foreflight csv/i)).toBeInTheDocument();
@@ -103,7 +103,7 @@ describe('HelpPage', () => {
     renderWithProviders(<HelpPage />);
 
     const buttons = screen.getAllByRole('button');
-    const btn = buttons.find(b => b.textContent?.includes('Credentials'));
+    const btn = buttons.find((b) => b.textContent?.includes('Credentials'));
     await user.click(btn!);
 
     expect(screen.getByText(/expiry alerts/i)).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe('HelpPage', () => {
     renderWithProviders(<HelpPage />);
 
     const buttons = screen.getAllByRole('button');
-    const btn = buttons.find(b => b.textContent?.includes('Admin'));
+    const btn = buttons.find((b) => b.textContent?.includes('Admin'));
     await user.click(btn!);
 
     expect(screen.getByText(/ADMIN_EMAIL/)).toBeInTheDocument();

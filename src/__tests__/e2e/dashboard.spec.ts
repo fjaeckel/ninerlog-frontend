@@ -1,5 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { createTestUser, injectAuth, seedAircraft, seedFlight, seedLicense, seedClassRating, type AuthContext } from './helpers';
+import {
+  createTestUser,
+  injectAuth,
+  seedAircraft,
+  seedFlight,
+  seedLicense,
+  seedClassRating,
+  type AuthContext,
+} from './helpers';
 
 test.describe('Dashboard', () => {
   let auth: AuthContext;

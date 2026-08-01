@@ -68,7 +68,11 @@ describe('ProfilePage', () => {
   it('submits profile update', async () => {
     const user = userEvent.setup();
     mockUpdateProfile.mutateAsync.mockResolvedValueOnce({
-      id: 'user-1', email: 'new@example.com', name: 'Jane Doe', createdAt: '', updatedAt: '',
+      id: 'user-1',
+      email: 'new@example.com',
+      name: 'Jane Doe',
+      createdAt: '',
+      updatedAt: '',
     });
 
     renderWithProviders(<ProfilePage />);
@@ -79,9 +83,7 @@ describe('ProfilePage', () => {
     await user.click(screen.getByRole('button', { name: /save changes/i }));
 
     await waitFor(() => {
-      expect(mockUpdateProfile.mutateAsync).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'Jane Doe' })
-      );
+      expect(mockUpdateProfile.mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ name: 'Jane Doe' }));
     });
   });
 

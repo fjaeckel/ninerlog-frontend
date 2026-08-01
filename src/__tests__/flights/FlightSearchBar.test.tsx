@@ -46,7 +46,15 @@ describe('flightSearchTags catalog', () => {
 });
 
 // Stateful wrapper so typing behaves like in the real (controlled) usage.
-function Harness({ onChange, initial = '', error }: { onChange?: (v: string) => void; initial?: string; error?: string | null }) {
+function Harness({
+  onChange,
+  initial = '',
+  error,
+}: {
+  onChange?: (v: string) => void;
+  initial?: string;
+  error?: string | null;
+}) {
   const [value, setValue] = useState(initial);
   return (
     <FlightSearchBar

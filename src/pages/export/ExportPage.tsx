@@ -47,7 +47,9 @@ export default function ExportPage() {
         {/* CSV Export */}
         <div className="card">
           <div className="text-3xl mb-3">📊</div>
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.csvTitle', 'Flight Log CSV')}</h3>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">
+            {t('export.csvTitle', 'Flight Log CSV')}
+          </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
             {t('export.csvDescription', 'Export all flights as a CSV file. Choose a column format for your authority.')}
           </p>
@@ -60,11 +62,7 @@ export default function ExportPage() {
             <option value="easa">{t('export.easaLogbook', 'EASA (AMC1 FCL.050 columns)')}</option>
             <option value="faa">{t('export.faaLogbook', 'FAA (ASA/Jeppesen columns)')}</option>
           </select>
-          <button
-            onClick={() => handleExport('csv')}
-            disabled={exporting === 'csv'}
-            className="btn-primary w-full"
-          >
+          <button onClick={() => handleExport('csv')} disabled={exporting === 'csv'} className="btn-primary w-full">
             {exporting === 'csv' ? t('export.downloading') : t('export.download') + ' CSV'}
           </button>
         </div>
@@ -72,15 +70,16 @@ export default function ExportPage() {
         {/* JSON Backup */}
         <div className="card">
           <div className="text-3xl mb-3">💾</div>
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.jsonBackup', 'Full Data Backup')}</h3>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">
+            {t('export.jsonBackup', 'Full Data Backup')}
+          </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-            {t('export.jsonDescription', 'Export everything — flights, aircraft, licenses, class ratings, and credentials as a JSON backup file.')}
+            {t(
+              'export.jsonDescription',
+              'Export everything — flights, aircraft, licenses, class ratings, and credentials as a JSON backup file.'
+            )}
           </p>
-          <button
-            onClick={() => handleExport('json')}
-            disabled={exporting === 'json'}
-            className="btn-secondary w-full"
-          >
+          <button onClick={() => handleExport('json')} disabled={exporting === 'json'} className="btn-secondary w-full">
             {exporting === 'json' ? t('export.downloading') : t('export.download') + ' JSON Backup'}
           </button>
         </div>
@@ -88,9 +87,14 @@ export default function ExportPage() {
         {/* PDF Logbook */}
         <div className="card">
           <div className="text-3xl mb-3">📄</div>
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.pdfTitle', 'PDF Logbook')}</h3>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">
+            {t('export.pdfTitle', 'PDF Logbook')}
+          </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-            {t('export.pdfDescription', 'Generate a formatted logbook PDF. Print it, sign it, and use it as a paper logbook.')}
+            {t(
+              'export.pdfDescription',
+              'Generate a formatted logbook PDF. Print it, sign it, and use it as a paper logbook.'
+            )}
           </p>
           <select
             value={pdfFormat}
@@ -112,11 +116,7 @@ export default function ExportPage() {
             <option value="a5">{t('export.pageSizeA5', 'A5 (landscape)')}</option>
             <option value="letter">{t('export.pageSizeLetter', 'US Letter (landscape)')}</option>
           </select>
-          <button
-            onClick={() => handleExport('pdf')}
-            disabled={exporting === 'pdf'}
-            className="btn-secondary w-full"
-          >
+          <button onClick={() => handleExport('pdf')} disabled={exporting === 'pdf'} className="btn-secondary w-full">
             {exporting === 'pdf' ? t('export.downloading') : t('export.download') + ' PDF Logbook'}
           </button>
         </div>
@@ -124,9 +124,14 @@ export default function ExportPage() {
         {/* Import Link */}
         <div className="card">
           <div className="text-3xl mb-3">📥</div>
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.importTitle', 'Import Flights')}</h3>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">
+            {t('export.importTitle', 'Import Flights')}
+          </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-            {t('export.importDescription', 'Import flights from ForeFlight, CSV files, or other logbook exports. Auto-detects format and column mapping.')}
+            {t(
+              'export.importDescription',
+              'Import flights from ForeFlight, CSV files, or other logbook exports. Auto-detects format and column mapping.'
+            )}
           </p>
           <a href="/import" className="btn-ghost w-full inline-flex items-center justify-center">
             Go to Import →
@@ -135,14 +140,33 @@ export default function ExportPage() {
       </div>
 
       <div className="mt-8 card bg-slate-50 dark:bg-slate-800/50">
-        <h3 className="font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('export.aboutTitle', 'About Exports')}</h3>
+        <h3 className="font-semibold text-slate-700 dark:text-slate-300 mb-2">
+          {t('export.aboutTitle', 'About Exports')}
+        </h3>
         <ul className="text-sm text-slate-500 dark:text-slate-400 space-y-1.5">
-          <li>• <strong>CSV Standard</strong> — ForeFlight-compatible with all flight fields. Opens in Excel, Google Sheets, or any spreadsheet app.</li>
-          <li>• <strong>CSV EASA</strong> — AMC1 FCL.050 column layout (24 columns: SP-SE/ME, Multi-Pilot, PIC Name, Co-Pilot, Instructor, FSTD).</li>
-          <li>• <strong>CSV FAA</strong> — ASA/Jeppesen standard logbook columns with decimal hours.</li>
-          <li>• <strong>PDF EASA</strong> — Full AMC1 FCL.050 compliant logbook with SP-SE/ME split, FSTD sessions, and page totals.</li>
-          <li>• <strong>PDF FAA</strong> — Standard ASA/Jeppesen layout with approaches, holds, and IPC/Flight Review markers.</li>
-          <li>• <strong>JSON Backup</strong> — Complete data snapshot including aircraft fleet, licenses with class ratings, and credentials.</li>
+          <li>
+            • <strong>CSV Standard</strong> — ForeFlight-compatible with all flight fields. Opens in Excel, Google
+            Sheets, or any spreadsheet app.
+          </li>
+          <li>
+            • <strong>CSV EASA</strong> — AMC1 FCL.050 column layout (24 columns: SP-SE/ME, Multi-Pilot, PIC Name,
+            Co-Pilot, Instructor, FSTD).
+          </li>
+          <li>
+            • <strong>CSV FAA</strong> — ASA/Jeppesen standard logbook columns with decimal hours.
+          </li>
+          <li>
+            • <strong>PDF EASA</strong> — Full AMC1 FCL.050 compliant logbook with SP-SE/ME split, FSTD sessions, and
+            page totals.
+          </li>
+          <li>
+            • <strong>PDF FAA</strong> — Standard ASA/Jeppesen layout with approaches, holds, and IPC/Flight Review
+            markers.
+          </li>
+          <li>
+            • <strong>JSON Backup</strong> — Complete data snapshot including aircraft fleet, licenses with class
+            ratings, and credentials.
+          </li>
           <li>• Your data is yours — export anytime, no restrictions, no fees.</li>
         </ul>
       </div>

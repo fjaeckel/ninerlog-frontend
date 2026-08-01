@@ -12,11 +12,7 @@ vi.mock('../../hooks/useBaseline', () => {
   };
 });
 
-import {
-  useDeleteBaseline,
-  useMyBaseline,
-  useUpsertBaseline,
-} from '../../hooks/useBaseline';
+import { useDeleteBaseline, useMyBaseline, useUpsertBaseline } from '../../hooks/useBaseline';
 
 const renderWithClient = (ui: React.ReactElement) => {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });

@@ -91,7 +91,11 @@ export default function FlightDetailPage() {
 
   const timeFields = [
     { label: t('detail.totalBlockTime'), value: flight.totalTime },
-    { label: t('detail.pilotFunction'), value: -1, text: flight.isPic ? 'PIC' : flight.isDual ? 'Dual' : (flight.sicTime || 0) > 0 ? 'SIC' : '—' },
+    {
+      label: t('detail.pilotFunction'),
+      value: -1,
+      text: flight.isPic ? 'PIC' : flight.isDual ? 'Dual' : (flight.sicTime || 0) > 0 ? 'SIC' : '—',
+    },
     { label: t('fields.picTime'), value: flight.picTime },
     { label: t('detail.dualTime'), value: flight.dualTime },
     { label: t('fields.soloTime'), value: flight.soloTime },
@@ -113,15 +117,10 @@ export default function FlightDetailPage() {
             <ArrowLeft className="w-4 h-4" />
             {t('detail.backToFlights')}
           </button>
-          <h1
-            className="page-title truncate"
-            title={`${departureLabel} → ${arrivalLabel}`}
-          >
+          <h1 className="page-title truncate" title={`${departureLabel} → ${arrivalLabel}`}>
             {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
           </h1>
-          <p className="text-slate-600 dark:text-slate-400">
-            {fmtDateLong(flight.date)}
-          </p>
+          <p className="text-slate-600 dark:text-slate-400">{fmtDateLong(flight.date)}</p>
         </div>
         <div className="flex gap-2 shrink-0">
           <button
@@ -157,11 +156,18 @@ export default function FlightDetailPage() {
 
       {/* Edit Form Modal */}
       {showEditForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-[1020]" role="dialog" aria-modal="true" aria-labelledby="edit-flight-title">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-[1020]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-flight-title"
+        >
           <div className="bg-white dark:bg-slate-800 w-full sm:rounded-xl sm:max-w-2xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-4 sm:p-6">
               <div className="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-slate-800 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 -mt-4 sm:-mt-6 pt-4 sm:pt-6 border-b border-slate-100 dark:border-slate-700 sm:border-0">
-                <h2 id="edit-flight-title" className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">{t('editFlight')}</h2>
+                <h2 id="edit-flight-title" className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
+                  {t('editFlight')}
+                </h2>
                 <button
                   onClick={() => setShowEditForm(false)}
                   className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -194,9 +200,7 @@ export default function FlightDetailPage() {
                 muted={value <= 0 && !text}
               />
             ))}
-            {flight.picName && (
-              <DetailRow label={t('fields.picName')} value={flight.picName} />
-            )}
+            {flight.picName && <DetailRow label={t('fields.picName')} value={flight.picName} />}
           </dl>
         </div>
 
@@ -269,9 +273,7 @@ export default function FlightDetailPage() {
             <h2 className="section-title mb-4">{t('detail.trainingAndCurrency')}</h2>
             <dl className="space-y-3">
               <DurationRow label={t('fields.simulatedFlightTime')} minutes={flight.simulatedFlightTime ?? 0} />
-              {flight.fstdType && (
-                <DetailRow label={t('fields.fstdType')} value={flight.fstdType} />
-              )}
+              {flight.fstdType && <DetailRow label={t('fields.fstdType')} value={flight.fstdType} />}
               <DurationRow label={t('fields.groundTrainingTime')} minutes={flight.groundTrainingTime ?? 0} />
               <DurationRow label={t('fields.multiPilotTime')} minutes={flight.multiPilotTime ?? 0} />
               {flight.isFlightReview && (
@@ -343,8 +345,7 @@ export default function FlightDetailPage() {
       {/* Metadata */}
       <div className="mt-6 text-xs text-slate-400 dark:text-slate-500 text-center">
         {t('detail.created', { date: fmtDateTime(flight.createdAt) })}
-        {flight.updatedAt !== flight.createdAt &&
-          ` · ${t('detail.updated', { date: fmtDateTime(flight.updatedAt) })}`}
+        {flight.updatedAt !== flight.createdAt && ` · ${t('detail.updated', { date: fmtDateTime(flight.updatedAt) })}`}
       </div>
     </div>
   );
@@ -368,7 +369,9 @@ function DetailRow({ label, value, mono, muted, strong, className }: DetailRowPr
     // the label may take at most half the row so the value keeps room to wrap
     // into rather than being squeezed to one character per line.
     <div className={cn('flex justify-between items-baseline gap-4', className)}>
-      <dt className={cn('text-slate-500 dark:text-slate-400 max-w-[55%] shrink-0 break-words', strong && 'font-medium')}>
+      <dt
+        className={cn('text-slate-500 dark:text-slate-400 max-w-[55%] shrink-0 break-words', strong && 'font-medium')}
+      >
         {label}
       </dt>
       <dd

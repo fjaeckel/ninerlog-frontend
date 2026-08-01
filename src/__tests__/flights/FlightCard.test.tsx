@@ -48,109 +48,53 @@ describe('FlightCard', () => {
   const mockOnClick = vi.fn();
 
   it('renders route information', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={mockFlight} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     expect(screen.getByText(/EDDF → EDDH/)).toBeInTheDocument();
     expect(screen.getByText(/15\.01\.2026/)).toBeInTheDocument();
   });
 
   it('renders total time badge', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={mockFlight} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     const badges = screen.getAllByText('1h 30m');
     expect(badges.length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders aircraft information', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={mockFlight} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     expect(screen.getByText('D-EFGH')).toBeInTheDocument();
     expect(screen.getByText('C172')).toBeInTheDocument();
   });
 
   it('renders PIC time when greater than 0', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={mockFlight} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     expect(screen.getByText(/PIC Time:/)).toBeInTheDocument();
   });
 
   it('renders night time when greater than 0', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={mockFlight} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     expect(screen.getByText('0h 30m')).toBeInTheDocument();
   });
 
   it('renders landing counts', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={mockFlight} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     expect(screen.getByText('2D / 1N')).toBeInTheDocument();
   });
 
   it('renders remarks when present', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={mockFlight} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     expect(screen.getByText('Training flight')).toBeInTheDocument();
   });
 
   it('calls onClick when card is clicked', async () => {
     const user = userEvent.setup();
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={mockFlight} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     await user.click(screen.getByText(/EDDF → EDDH/));
     expect(mockOnClick).toHaveBeenCalledTimes(1);
@@ -158,14 +102,7 @@ describe('FlightCard', () => {
 
   it('calls onEdit when edit button is clicked', async () => {
     const user = userEvent.setup();
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={mockFlight} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     await user.click(screen.getByRole('button', { name: /edit/i }));
     expect(mockOnEdit).toHaveBeenCalledTimes(1);
@@ -173,14 +110,7 @@ describe('FlightCard', () => {
 
   it('calls onDelete when delete button is clicked', async () => {
     const user = userEvent.setup();
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={mockFlight} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     await user.click(screen.getByRole('button', { name: /delete/i }));
     expect(mockOnDelete).toHaveBeenCalledTimes(1);
@@ -193,14 +123,7 @@ describe('FlightCard', () => {
       arrivalIcao: null,
     };
 
-    render(
-      <FlightCard
-        flight={flightWithoutIcao}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={flightWithoutIcao} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     expect(screen.getByText(/— → —/)).toBeInTheDocument();
   });
@@ -213,14 +136,7 @@ describe('FlightCard', () => {
       ifrTime: 0,
     };
 
-    render(
-      <FlightCard
-        flight={flightNoExtras}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    render(<FlightCard flight={flightNoExtras} onEdit={mockOnEdit} onDelete={mockOnDelete} onClick={mockOnClick} />);
 
     expect(screen.queryByText(/Dual:/)).not.toBeInTheDocument();
     expect(screen.queryByText(/IFR:/)).not.toBeInTheDocument();

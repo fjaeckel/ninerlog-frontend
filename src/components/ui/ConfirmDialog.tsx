@@ -67,11 +67,7 @@ export function ConfirmDialog({
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-black/50 z-[1020]"
-        onClick={onCancel}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 bg-black/50 z-[1020]" onClick={onCancel} aria-hidden="true" />
       <div
         ref={dialogRef}
         role="alertdialog"
@@ -86,49 +82,33 @@ export function ConfirmDialog({
             <div
               className={cn(
                 'shrink-0 w-10 h-10 rounded-full flex items-center justify-center',
-                variant === 'danger'
-                  ? 'bg-red-100 dark:bg-red-900/30'
-                  : 'bg-amber-100 dark:bg-amber-900/30'
+                variant === 'danger' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
               )}
             >
               <AlertTriangle
                 className={cn(
                   'w-5 h-5',
-                  variant === 'danger'
-                    ? 'text-red-600 dark:text-red-400'
-                    : 'text-amber-600 dark:text-amber-400'
+                  variant === 'danger' ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
                 )}
               />
             </div>
             <div>
-              <h2
-                id="confirm-dialog-title"
-                className="text-lg font-semibold text-slate-800 dark:text-slate-100"
-              >
+              <h2 id="confirm-dialog-title" className="text-lg font-semibold text-slate-800 dark:text-slate-100">
                 {title}
               </h2>
-              <p
-                id="confirm-dialog-desc"
-                className="text-sm text-slate-500 dark:text-slate-400 mt-1"
-              >
+              <p id="confirm-dialog-desc" className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 {description}
               </p>
             </div>
           </div>
           <div className="flex gap-3 justify-end">
-            <button
-              onClick={onCancel}
-              className="btn-secondary"
-              disabled={isLoading}
-            >
+            <button onClick={onCancel} className="btn-secondary" disabled={isLoading}>
               {cancelLabel}
             </button>
             <button
               ref={confirmRef}
               onClick={onConfirm}
-              className={cn(
-                variant === 'danger' ? 'btn-danger' : 'btn-primary'
-              )}
+              className={cn(variant === 'danger' ? 'btn-danger' : 'btn-primary')}
               disabled={isLoading}
             >
               {isLoading ? t('common:deleting') : confirmLabel}

@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { formatDuration, formatColonHM, parseDuration, minutesToDecimalHours, decimalHoursToMinutes } from '../../lib/duration';
+import {
+  formatDuration,
+  formatColonHM,
+  parseDuration,
+  minutesToDecimalHours,
+  decimalHoursToMinutes,
+} from '../../lib/duration';
 
 describe('formatDuration', () => {
   describe('hm format', () => {

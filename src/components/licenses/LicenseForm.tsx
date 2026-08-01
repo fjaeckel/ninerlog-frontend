@@ -41,16 +41,18 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
     watch,
   } = useForm<LicenseFormData>({
     resolver: zodResolver(licenseSchema),
-    defaultValues: existingLicense ? {
-      regulatoryAuthority: existingLicense.regulatoryAuthority,
-      licenseType: existingLicense.licenseType,
-      licenseNumber: existingLicense.licenseNumber,
-      issueDate: existingLicense.issueDate,
-      issuingAuthority: existingLicense.issuingAuthority,
-      requiresSeparateLogbook: existingLicense.requiresSeparateLogbook,
-    } : {
-      requiresSeparateLogbook: false,
-    },
+    defaultValues: existingLicense
+      ? {
+          regulatoryAuthority: existingLicense.regulatoryAuthority,
+          licenseType: existingLicense.licenseType,
+          licenseNumber: existingLicense.licenseNumber,
+          issueDate: existingLicense.issueDate,
+          issuingAuthority: existingLicense.issuingAuthority,
+          requiresSeparateLogbook: existingLicense.requiresSeparateLogbook,
+        }
+      : {
+          requiresSeparateLogbook: false,
+        },
   });
 
   useEffect(() => {
@@ -130,9 +132,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
             <option value="CASA" />
             <option value="DGCA" />
           </datalist>
-          {errors.regulatoryAuthority && (
-            <p className="form-error">{errors.regulatoryAuthority.message}</p>
-          )}
+          {errors.regulatoryAuthority && <p className="form-error">{errors.regulatoryAuthority.message}</p>}
         </div>
 
         <div>
@@ -156,9 +156,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
             <option value="UL" />
             <option value="IR" />
           </datalist>
-          {errors.licenseType && (
-            <p className="form-error">{errors.licenseType.message}</p>
-          )}
+          {errors.licenseType && <p className="form-error">{errors.licenseType.message}</p>}
         </div>
       </div>
 
@@ -173,9 +171,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
           className={`input ${errors.licenseNumber ? 'input-error' : ''}`}
           placeholder="DE.FCL.12345"
         />
-        {errors.licenseNumber && (
-          <p className="form-error">{errors.licenseNumber.message}</p>
-        )}
+        {errors.licenseNumber && <p className="form-error">{errors.licenseNumber.message}</p>}
       </div>
 
       <div>
@@ -189,9 +185,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
           className={`input ${errors.issuingAuthority ? 'input-error' : ''}`}
           placeholder="LBA (Germany)"
         />
-        {errors.issuingAuthority && (
-          <p className="form-error">{errors.issuingAuthority.message}</p>
-        )}
+        {errors.issuingAuthority && <p className="form-error">{errors.issuingAuthority.message}</p>}
       </div>
 
       <div>
@@ -204,9 +198,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
           id="issueDate"
           className={`input ${errors.issueDate ? 'input-error' : ''}`}
         />
-        {errors.issueDate && (
-          <p className="form-error">{errors.issueDate.message}</p>
-        )}
+        {errors.issueDate && <p className="form-error">{errors.issueDate.message}</p>}
       </div>
 
       <div className="flex items-center gap-2">
@@ -222,18 +214,10 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
       </div>
 
       <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="btn-primary flex-1"
-        >
+        <button type="submit" disabled={isSubmitting} className="btn-primary flex-1">
           {isSubmitting ? t('common:saving') : isEditing ? t('updateLicense') : t('addLicense')}
         </button>
-        <button
-          type="button"
-          onClick={onClose}
-          className="btn-secondary flex-1"
-        >
+        <button type="button" onClick={onClose} className="btn-secondary flex-1">
           {t('common:cancel')}
         </button>
       </div>

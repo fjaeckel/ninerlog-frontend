@@ -3,11 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
 import { useUpdateProfile } from '../../hooks/useProfile';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
-import {
-  DEFAULT_CUSTOM_COLUMNS,
-  FLIGHT_COLUMNS,
-  type FlightColumnKey,
-} from '../flights/flightTableColumns';
+import { DEFAULT_CUSTOM_COLUMNS, FLIGHT_COLUMNS, type FlightColumnKey } from '../flights/flightTableColumns';
 
 const TIME_COLUMNS = FLIGHT_COLUMNS.filter((c) => c.kind === 'time');
 const OTHER_COLUMNS = FLIGHT_COLUMNS.filter((c) => c.kind === 'fixed');
@@ -52,9 +48,7 @@ export function FlightColumnsSection() {
   };
 
   const toggle = (key: FlightColumnKey) => {
-    const next = prefs.columns.includes(key)
-      ? prefs.columns.filter((c) => c !== key)
-      : [...prefs.columns, key];
+    const next = prefs.columns.includes(key) ? prefs.columns.filter((c) => c !== key) : [...prefs.columns, key];
     void save('custom', next);
   };
 
@@ -68,18 +62,14 @@ export function FlightColumnsSection() {
         className="rounded border-slate-300 dark:border-slate-600"
         data-testid={`flight-column-${column.key}`}
       />
-      <span className="text-sm text-slate-700 dark:text-slate-300">
-        {t(`flights:${column.titleKey}`)}
-      </span>
+      <span className="text-sm text-slate-700 dark:text-slate-300">{t(`flights:${column.titleKey}`)}</span>
     </label>
   );
 
   return (
     <div className="card">
       <h2 className="section-title mb-4">{t('settings:flightColumns.title')}</h2>
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-        {t('settings:flightColumns.description')}
-      </p>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">{t('settings:flightColumns.description')}</p>
 
       <div className="space-y-3">
         <label className="flex items-start gap-3 cursor-pointer">
@@ -119,20 +109,14 @@ export function FlightColumnsSection() {
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">
             {t('settings:flightColumns.timesHeading')}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-            {TIME_COLUMNS.map(renderCheckbox)}
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">{TIME_COLUMNS.map(renderCheckbox)}</div>
 
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mt-4 mb-2">
             {t('settings:flightColumns.otherHeading')}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-            {OTHER_COLUMNS.map(renderCheckbox)}
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">{OTHER_COLUMNS.map(renderCheckbox)}</div>
 
-          <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
-            {t('settings:flightColumns.widthHint')}
-          </p>
+          <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">{t('settings:flightColumns.widthHint')}</p>
         </div>
       )}
 

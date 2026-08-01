@@ -18,9 +18,7 @@ export function ShareRuleModal({ rule, onClose }: Props) {
   const setShare = useSetShareCustomCurrency();
   const [copied, setCopied] = useState(false);
 
-  const shareLink = rule.shareToken
-    ? `${window.location.origin}/currency/builder?share=${rule.shareToken}`
-    : null;
+  const shareLink = rule.shareToken ? `${window.location.origin}/currency/builder?share=${rule.shareToken}` : null;
 
   async function copyLink() {
     if (!shareLink) return;
@@ -48,7 +46,12 @@ export function ShareRuleModal({ rule, onClose }: Props) {
                 className="input text-xs flex-1"
                 data-testid="share-modal-link"
               />
-              <button type="button" onClick={copyLink} className="btn-secondary text-sm inline-flex items-center gap-1.5 shrink-0" data-testid="share-modal-copy">
+              <button
+                type="button"
+                onClick={copyLink}
+                className="btn-secondary text-sm inline-flex items-center gap-1.5 shrink-0"
+                data-testid="share-modal-copy"
+              >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 {copied ? 'Copied' : 'Copy'}
               </button>

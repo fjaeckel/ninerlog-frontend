@@ -27,7 +27,9 @@ describe('CredentialForm', () => {
     vi.spyOn(useCredentialsHook, 'useCreateCredential').mockReturnValue(mockCreate as any);
     vi.spyOn(useCredentialsHook, 'useUpdateCredential').mockReturnValue(mockUpdate as any);
     vi.spyOn(useCredentialsHook, 'useCredential').mockReturnValue({
-      data: undefined, isLoading: false, error: null,
+      data: undefined,
+      isLoading: false,
+      error: null,
     } as any);
   });
 
@@ -108,7 +110,9 @@ describe('CredentialForm', () => {
     };
 
     vi.spyOn(useCredentialsHook, 'useCredential').mockReturnValue({
-      data: existingCredential, isLoading: false, error: null,
+      data: existingCredential,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<CredentialForm credentialId="cred-1" onClose={mockOnClose} />);

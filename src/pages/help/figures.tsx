@@ -61,9 +61,7 @@ export function HelpFigure({ id, caption }: { id: string; caption?: string }) {
           className="w-full h-auto rounded-lg"
         />
       </span>
-      {caption && (
-        <span className="mt-2 block text-center text-xs text-slate-500 dark:text-slate-400">{caption}</span>
-      )}
+      {caption && <span className="mt-2 block text-center text-xs text-slate-500 dark:text-slate-400">{caption}</span>}
     </span>
   );
 }

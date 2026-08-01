@@ -1,9 +1,24 @@
-import { ShieldCheck, ShieldX, Shield, Share2, Pencil, Trash2, CalendarClock, Pause, Play, Bell, BellOff } from 'lucide-react';
+import {
+  ShieldCheck,
+  ShieldX,
+  Shield,
+  Share2,
+  Pencil,
+  Trash2,
+  CalendarClock,
+  Pause,
+  Play,
+  Bell,
+  BellOff,
+} from 'lucide-react';
 import type { CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import type { CustomRuleWithStatus } from '../../types/customCurrency';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
-const STATUS_CONFIG: Record<CurrencyStatus, { bg: string; border: string; iconWrap: string; badge: string; label: string; Icon: typeof Shield }> = {
+const STATUS_CONFIG: Record<
+  CurrencyStatus,
+  { bg: string; border: string; iconWrap: string; badge: string; label: string; Icon: typeof Shield }
+> = {
   current: {
     bg: 'bg-gradient-to-br from-green-50/70 via-white to-green-50/30 dark:from-green-900/15 dark:via-slate-800 dark:to-slate-800',
     border: 'border-l-4 border-l-green-500',
@@ -41,8 +56,13 @@ const STATUS_CONFIG: Record<CurrencyStatus, { bg: string; border: string; iconWr
 function RequirementBar({ req }: { req: CurrencyRequirement }) {
   const { fmtDuration } = useFormatPrefs();
   const pct = req.required > 0 ? Math.min((req.current / req.required) * 100, 100) : 0;
-  const barColor = req.met ? 'bg-green-500 dark:bg-green-400' : pct >= 50 ? 'bg-amber-500 dark:bg-amber-400' : 'bg-red-500 dark:bg-red-400';
-  const displayMessage = req.unit === 'minutes' ? `${fmtDuration(req.current)} / ${fmtDuration(req.required)}` : req.message;
+  const barColor = req.met
+    ? 'bg-green-500 dark:bg-green-400'
+    : pct >= 50
+      ? 'bg-amber-500 dark:bg-amber-400'
+      : 'bg-red-500 dark:bg-red-400';
+  const displayMessage =
+    req.unit === 'minutes' ? `${fmtDuration(req.current)} / ${fmtDuration(req.required)}` : req.message;
 
   return (
     <div className="space-y-1" data-testid={`custom-requirement-${req.name}`}>
@@ -56,7 +76,10 @@ function RequirementBar({ req }: { req: CurrencyRequirement }) {
         <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{displayMessage}</span>
       </div>
       <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all duration-500 ease-out ${barColor}`} style={{ width: `${pct}%` }} />
+        <div
+          className={`h-full rounded-full transition-all duration-500 ease-out ${barColor}`}
+          style={{ width: `${pct}%` }}
+        />
       </div>
     </div>
   );
@@ -86,7 +109,10 @@ export function CustomCurrencyCard({ item, onEdit, onShare, onDelete, onToggleEn
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-3 min-w-0">
-          <span className={`shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg ${config.iconWrap} text-lg ${paused ? 'grayscale' : ''}`} aria-hidden="true">
+          <span
+            className={`shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg ${config.iconWrap} text-lg ${paused ? 'grayscale' : ''}`}
+            aria-hidden="true"
+          >
             {rule.emoji ? <span>{rule.emoji}</span> : <StatusIcon className="w-5 h-5" />}
           </span>
           <div className="min-w-0">
@@ -94,7 +120,9 @@ export function CustomCurrencyCard({ item, onEdit, onShare, onDelete, onToggleEn
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 capitalize">{evaluation.windowLabel}</p>
           </div>
         </div>
-        <span className={`${paused ? 'badge-neutral' : config.badge} shrink-0`}>{paused ? 'PAUSED' : config.label}</span>
+        <span className={`${paused ? 'badge-neutral' : config.badge} shrink-0`}>
+          {paused ? 'PAUSED' : config.label}
+        </span>
       </div>
 
       {rule.description && <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">{rule.description}</p>}
@@ -108,7 +136,9 @@ export function CustomCurrencyCard({ item, onEdit, onShare, onDelete, onToggleEn
       )}
 
       {paused && (
-        <p className="text-xs text-slate-400 dark:text-slate-500">Paused — not currently tracked. Resume to evaluate again.</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          Paused — not currently tracked. Resume to evaluate again.
+        </p>
       )}
 
       {!paused && evaluation.expiresOn && evaluation.status !== 'expired' && (
@@ -138,7 +168,11 @@ export function CustomCurrencyCard({ item, onEdit, onShare, onDelete, onToggleEn
                 type="button"
                 onClick={() => onToggleNotify(rule.id, !rule.notify)}
                 className={`btn-ghost p-1.5 ${rule.notify ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-                title={rule.notify ? 'Notifications on — you’ll be emailed before this lapses' : 'Notify me before this lapses'}
+                title={
+                  rule.notify
+                    ? 'Notifications on — you’ll be emailed before this lapses'
+                    : 'Notify me before this lapses'
+                }
                 aria-label={rule.notify ? 'Notifications on' : 'Notifications off'}
                 aria-pressed={rule.notify}
                 data-testid={`toggle-notify-custom-${rule.id}`}

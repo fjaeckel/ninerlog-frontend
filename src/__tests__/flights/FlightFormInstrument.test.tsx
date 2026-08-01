@@ -32,13 +32,18 @@ describe('FlightForm Instrument Tracking', () => {
     vi.spyOn(useFlightsHook, 'useCreateFlight').mockReturnValue(mockCreate as any);
     vi.spyOn(useFlightsHook, 'useUpdateFlight').mockReturnValue(mockUpdate as any);
     vi.spyOn(useFlightsHook, 'useFlight').mockReturnValue({
-      data: undefined, isLoading: false, error: null,
+      data: undefined,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
-      data: [], isLoading: false, error: null,
+      data: [],
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useAircraftHook, 'useCreateAircraft').mockReturnValue({
-      mutateAsync: vi.fn(), isPending: false,
+      mutateAsync: vi.fn(),
+      isPending: false,
     } as any);
   });
 
@@ -75,7 +80,8 @@ describe('FlightForm Instrument Tracking', () => {
     // Provide a matching aircraft so aircraftType gets auto-filled
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
       data: [{ id: 'ac-1', registration: 'D-EFGH', type: 'C172', make: 'Cessna', model: 'Skyhawk', isActive: true }],
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
@@ -113,9 +119,7 @@ describe('FlightForm Instrument Tracking', () => {
         expect.objectContaining({
           actualInstrumentTime: 30,
           simulatedInstrumentTime: 18,
-          approaches: expect.arrayContaining([
-            expect.objectContaining({ type: 'ILS' }),
-          ]),
+          approaches: expect.arrayContaining([expect.objectContaining({ type: 'ILS' })]),
           holds: 1,
           isIpc: true,
           isFlightReview: true,
@@ -157,7 +161,10 @@ describe('FlightForm Instrument Tracking', () => {
       simulatedInstrumentTime: 18,
       holds: 1,
       approachesCount: 2,
-      approaches: [{type: 'ILS', airport: 'EDDS', runway: '25'}, {type: 'VOR', airport: 'EDDF'}],
+      approaches: [
+        { type: 'ILS', airport: 'EDDS', runway: '25' },
+        { type: 'VOR', airport: 'EDDF' },
+      ],
       isIpc: true,
       isFlightReview: false,
       remarks: null,
@@ -166,7 +173,9 @@ describe('FlightForm Instrument Tracking', () => {
     };
 
     vi.spyOn(useFlightsHook, 'useFlight').mockReturnValue({
-      data: existingFlight, isLoading: false, error: null,
+      data: existingFlight,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<FlightForm flightId="flight-1" onClose={mockOnClose} />);

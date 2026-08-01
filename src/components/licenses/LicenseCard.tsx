@@ -2,13 +2,25 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { License } from '../../stores/licenseStore';
 import { isPast, differenceInDays } from 'date-fns';
-import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateClassRating } from '../../hooks/useClassRatings';
+import {
+  useClassRatings,
+  useCreateClassRating,
+  useDeleteClassRating,
+  useUpdateClassRating,
+} from '../../hooks/useClassRatings';
 import { extractApiError } from '../../lib/errors';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
 const CLASS_TYPE_OPTIONS = [
-  'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
-  'SET_LAND', 'SET_SEA', 'TMG', 'IR', 'OTHER',
+  'SEP_LAND',
+  'SEP_SEA',
+  'MEP_LAND',
+  'MEP_SEA',
+  'SET_LAND',
+  'SET_SEA',
+  'TMG',
+  'IR',
+  'OTHER',
 ] as const;
 
 function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
@@ -126,15 +138,11 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
               {license.regulatoryAuthority} {license.licenseType}
             </h3>
           </div>
-          <p className="data-sm text-slate-500 dark:text-slate-400 mt-1 font-mono text-xs">
-            {license.licenseNumber}
-          </p>
+          <p className="data-sm text-slate-500 dark:text-slate-400 mt-1 font-mono text-xs">{license.licenseNumber}</p>
           {license.requiresSeparateLogbook && (
             <div className="mt-2">
               <span className="badge-info text-[10px]">YES</span>
-              <span className="ml-1.5 text-xs text-slate-500 dark:text-slate-400">
-                {t('card.separateLogbook')}
-              </span>
+              <span className="ml-1.5 text-xs text-slate-500 dark:text-slate-400">{t('card.separateLogbook')}</span>
             </div>
           )}
         </div>
@@ -146,9 +154,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
               <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 {t('card.regulatoryAuthority')}
               </dt>
-              <dd className="mt-0.5 font-medium text-slate-700 dark:text-slate-200">
-                {license.regulatoryAuthority}
-              </dd>
+              <dd className="mt-0.5 font-medium text-slate-700 dark:text-slate-200">{license.regulatoryAuthority}</dd>
             </div>
             <div>
               <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -162,9 +168,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
               <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 {t('card.issued')}
               </dt>
-              <dd className="mt-0.5 font-medium text-slate-700 dark:text-slate-200">
-                {fmtDate(license.issueDate)}
-              </dd>
+              <dd className="mt-0.5 font-medium text-slate-700 dark:text-slate-200">{fmtDate(license.issueDate)}</dd>
             </div>
           </dl>
 
@@ -209,19 +213,39 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
-                            <label className="text-xs text-slate-500 dark:text-slate-400">{t('fields.issueDate')}</label>
-                            <input type="date" value={newIssueDate} onChange={(e) => setNewIssueDate(e.target.value)} className="input input-sm mt-0.5" />
+                            <label className="text-xs text-slate-500 dark:text-slate-400">
+                              {t('fields.issueDate')}
+                            </label>
+                            <input
+                              type="date"
+                              value={newIssueDate}
+                              onChange={(e) => setNewIssueDate(e.target.value)}
+                              className="input input-sm mt-0.5"
+                            />
                           </div>
                           <div>
-                            <label className="text-xs text-slate-500 dark:text-slate-400">{t('classRatingFields.expiryDate')}</label>
-                            <input type="date" value={newExpiryDate} onChange={(e) => setNewExpiryDate(e.target.value)} className="input input-sm mt-0.5" />
+                            <label className="text-xs text-slate-500 dark:text-slate-400">
+                              {t('classRatingFields.expiryDate')}
+                            </label>
+                            <input
+                              type="date"
+                              value={newExpiryDate}
+                              onChange={(e) => setNewExpiryDate(e.target.value)}
+                              className="input input-sm mt-0.5"
+                            />
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <button onClick={handleUpdateRating} disabled={!newIssueDate || updateRating.isPending} className="btn-primary btn-sm text-xs">
+                          <button
+                            onClick={handleUpdateRating}
+                            disabled={!newIssueDate || updateRating.isPending}
+                            className="btn-primary btn-sm text-xs"
+                          >
                             {updateRating.isPending ? t('common:saving') : t('common:save')}
                           </button>
-                          <button onClick={() => setEditingRatingId(null)} className="btn-secondary btn-sm text-xs">{t('common:cancel')}</button>
+                          <button onClick={() => setEditingRatingId(null)} className="btn-secondary btn-sm text-xs">
+                            {t('common:cancel')}
+                          </button>
                         </div>
                       </div>
                     ) : (
@@ -234,7 +258,9 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                           {fmtDate(rating.issueDate)}
                         </span>
                         <span>
-                          <span className="sm:hidden text-xs text-slate-400 mr-1">{t('classRatingFields.expiryDate')}:</span>
+                          <span className="sm:hidden text-xs text-slate-400 mr-1">
+                            {t('classRatingFields.expiryDate')}:
+                          </span>
                           <ExpiryBadge expiryDate={rating.expiryDate} />
                         </span>
                         <div className="flex items-center gap-1 justify-end col-span-2 sm:col-span-1">
@@ -275,7 +301,9 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                     className="input input-sm mt-0.5"
                   >
                     {CLASS_TYPE_OPTIONS.map((ct) => (
-                      <option key={ct} value={ct}>{t(`classTypeLabels.${ct}`, { defaultValue: ct })}</option>
+                      <option key={ct} value={ct}>
+                        {t(`classTypeLabels.${ct}`, { defaultValue: ct })}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -305,10 +333,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                   >
                     {createRating.isPending ? t('common:saving') : t('common:save')}
                   </button>
-                  <button
-                    onClick={() => setShowAddForm(false)}
-                    className="btn-secondary btn-sm"
-                  >
+                  <button onClick={() => setShowAddForm(false)} className="btn-secondary btn-sm">
                     {t('common:cancel')}
                   </button>
                 </div>

@@ -208,11 +208,7 @@ export function RoleCompositionChart({
             {...tooltipStyles(theme)}
             formatter={(value: unknown, name: unknown) => [fmtDuration(Number(value)), String(name)]}
           />
-          <Legend
-            iconType="circle"
-            iconSize={8}
-            wrapperStyle={{ fontSize: 12, color: theme.tick, paddingTop: 8 }}
-          />
+          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: theme.tick, paddingTop: 8 }} />
           {series.map((s) => (
             <Bar
               key={s.key}

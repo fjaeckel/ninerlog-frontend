@@ -5,12 +5,7 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className }: SkeletonProps) {
-  return (
-    <div
-      className={cn('animate-pulse bg-slate-200 dark:bg-slate-700 rounded', className)}
-      aria-hidden="true"
-    />
-  );
+  return <div className={cn('animate-pulse bg-slate-200 dark:bg-slate-700 rounded', className)} aria-hidden="true" />;
 }
 
 export function SkeletonCard({ className }: SkeletonProps) {
@@ -29,10 +24,7 @@ export function SkeletonList({ rows = 5, className }: SkeletonProps & { rows?: n
       <Skeleton className="h-8 w-48" />
       <div className="card p-0">
         {Array.from({ length: rows }).map((_, i) => (
-          <div
-            key={i}
-            className="px-4 py-4 border-b border-slate-100 dark:border-slate-700 last:border-0"
-          >
+          <div key={i} className="px-4 py-4 border-b border-slate-100 dark:border-slate-700 last:border-0">
             <Skeleton className="h-4 w-3/4 mb-2" />
             <Skeleton className="h-3 w-1/2" />
           </div>

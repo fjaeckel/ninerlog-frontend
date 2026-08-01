@@ -56,7 +56,15 @@ const mockRouteData: useMapsHook.FlightRoutesResponse = {
 };
 
 const mockAirportStats: useMapsHook.AirportStats[] = [
-  { icao: 'EDDF', name: 'Frankfurt am Main', latitude: 50.0333, longitude: 8.5706, departures: 5, arrivals: 3, totalFlights: 8 },
+  {
+    icao: 'EDDF',
+    name: 'Frankfurt am Main',
+    latitude: 50.0333,
+    longitude: 8.5706,
+    departures: 5,
+    arrivals: 3,
+    totalFlights: 8,
+  },
   { icao: 'EDDH', name: 'Hamburg', latitude: 53.6304, longitude: 9.9882, departures: 3, arrivals: 5, totalFlights: 8 },
 ];
 
@@ -67,10 +75,14 @@ describe('MapPage', () => {
 
   it('renders loading state', () => {
     vi.spyOn(useMapsHook, 'useFlightRoutes').mockReturnValue({
-      data: undefined, isLoading: true, error: null,
+      data: undefined,
+      isLoading: true,
+      error: null,
     } as any);
     vi.spyOn(useMapsHook, 'useAirportStats').mockReturnValue({
-      data: undefined, isLoading: true, error: null,
+      data: undefined,
+      isLoading: true,
+      error: null,
     } as any);
 
     renderWithProviders(<MapPage />);
@@ -79,10 +91,14 @@ describe('MapPage', () => {
 
   it('renders page title', () => {
     vi.spyOn(useMapsHook, 'useFlightRoutes').mockReturnValue({
-      data: mockRouteData, isLoading: false, error: null,
+      data: mockRouteData,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useMapsHook, 'useAirportStats').mockReturnValue({
-      data: mockAirportStats, isLoading: false, error: null,
+      data: mockAirportStats,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<MapPage />);
@@ -91,10 +107,14 @@ describe('MapPage', () => {
 
   it('renders empty state when no data', () => {
     vi.spyOn(useMapsHook, 'useFlightRoutes').mockReturnValue({
-      data: { routes: [], airports: [] }, isLoading: false, error: null,
+      data: { routes: [], airports: [] },
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useMapsHook, 'useAirportStats').mockReturnValue({
-      data: [], isLoading: false, error: null,
+      data: [],
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<MapPage />);
@@ -103,10 +123,14 @@ describe('MapPage', () => {
 
   it('renders route count and airport count', () => {
     vi.spyOn(useMapsHook, 'useFlightRoutes').mockReturnValue({
-      data: mockRouteData, isLoading: false, error: null,
+      data: mockRouteData,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useMapsHook, 'useAirportStats').mockReturnValue({
-      data: mockAirportStats, isLoading: false, error: null,
+      data: mockAirportStats,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<MapPage />);
@@ -116,10 +140,14 @@ describe('MapPage', () => {
 
   it('renders map container', () => {
     vi.spyOn(useMapsHook, 'useFlightRoutes').mockReturnValue({
-      data: mockRouteData, isLoading: false, error: null,
+      data: mockRouteData,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useMapsHook, 'useAirportStats').mockReturnValue({
-      data: mockAirportStats, isLoading: false, error: null,
+      data: mockAirportStats,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<MapPage />);
@@ -128,10 +156,14 @@ describe('MapPage', () => {
 
   it('renders route lines and airport markers', () => {
     vi.spyOn(useMapsHook, 'useFlightRoutes').mockReturnValue({
-      data: mockRouteData, isLoading: false, error: null,
+      data: mockRouteData,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useMapsHook, 'useAirportStats').mockReturnValue({
-      data: mockAirportStats, isLoading: false, error: null,
+      data: mockAirportStats,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<MapPage />);
@@ -143,10 +175,14 @@ describe('MapPage', () => {
 
   it('renders view toggle buttons', () => {
     vi.spyOn(useMapsHook, 'useFlightRoutes').mockReturnValue({
-      data: mockRouteData, isLoading: false, error: null,
+      data: mockRouteData,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useMapsHook, 'useAirportStats').mockReturnValue({
-      data: mockAirportStats, isLoading: false, error: null,
+      data: mockAirportStats,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<MapPage />);
@@ -157,10 +193,14 @@ describe('MapPage', () => {
   it('switches to activity/heatmap view', async () => {
     const user = userEvent.setup();
     vi.spyOn(useMapsHook, 'useFlightRoutes').mockReturnValue({
-      data: mockRouteData, isLoading: false, error: null,
+      data: mockRouteData,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useMapsHook, 'useAirportStats').mockReturnValue({
-      data: mockAirportStats, isLoading: false, error: null,
+      data: mockAirportStats,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<MapPage />);
@@ -173,10 +213,14 @@ describe('MapPage', () => {
 
   it('renders airport statistics table', () => {
     vi.spyOn(useMapsHook, 'useFlightRoutes').mockReturnValue({
-      data: mockRouteData, isLoading: false, error: null,
+      data: mockRouteData,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useMapsHook, 'useAirportStats').mockReturnValue({
-      data: mockAirportStats, isLoading: false, error: null,
+      data: mockAirportStats,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<MapPage />);

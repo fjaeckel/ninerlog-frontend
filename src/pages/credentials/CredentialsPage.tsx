@@ -69,14 +69,25 @@ export default function CredentialsPage() {
             <HelpLink topic="credentials" />
           </p>
         </div>
-        <button onClick={() => { setEditingId(null); setShowForm(true); }} className="btn-primary self-start sm:self-auto">
+        <button
+          onClick={() => {
+            setEditingId(null);
+            setShowForm(true);
+          }}
+          className="btn-primary self-start sm:self-auto"
+        >
           {t('addCredential')}
         </button>
       </div>
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[1020]" role="dialog" aria-modal="true" aria-labelledby="credential-form-title">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[1020]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="credential-form-title"
+        >
           <div className="bg-white dark:bg-slate-800 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
@@ -137,9 +148,7 @@ export default function CredentialsPage() {
                           </p>
                         )}
                       </div>
-                      <span className={`badge text-xs ${status.class}`}>
-                        {status.label}
-                      </span>
+                      <span className={`badge text-xs ${status.class}`}>{status.label}</span>
                     </div>
                   </div>
 
@@ -174,9 +183,7 @@ export default function CredentialsPage() {
                         <dt className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                           {t('fields.notes')}
                         </dt>
-                        <dd className="mt-0.5 text-slate-600 dark:text-slate-300 italic break-words">
-                          {cred.notes}
-                        </dd>
+                        <dd className="mt-0.5 text-slate-600 dark:text-slate-300 italic break-words">{cred.notes}</dd>
                       </div>
                     )}
                   </dl>
@@ -184,7 +191,10 @@ export default function CredentialsPage() {
                   {/* Actions */}
                   <div className="flex lg:flex-col gap-2 lg:w-28 lg:shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-700">
                     <button
-                      onClick={() => { setEditingId(cred.id); setShowForm(true); }}
+                      onClick={() => {
+                        setEditingId(cred.id);
+                        setShowForm(true);
+                      }}
                       className="btn-ghost btn-sm flex-1"
                     >
                       {t('edit')}

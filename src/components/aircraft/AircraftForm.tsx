@@ -7,10 +7,7 @@ import { useCreateAircraft, useUpdateAircraft, useAircraftById, useAircraftStats
 import { extractApiError } from '../../lib/errors';
 import { normalizeLocation } from '../../lib/airport';
 
-const AIRCRAFT_CLASSES = [
-  'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
-  'SET_LAND', 'SET_SEA', 'TMG',
-] as const;
+const AIRCRAFT_CLASSES = ['SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA', 'SET_LAND', 'SET_SEA', 'TMG'] as const;
 
 const aircraftSchema = z.object({
   registration: z.string().min(1, 'Registration is required').max(20),
@@ -107,10 +104,9 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
   const watchedRegistration = watch('registration');
   const originalRegistration = isEditing ? existingAircraft?.registration : undefined;
   const registrationChanged =
-    !!originalRegistration &&
-    watchedRegistration.trim().toUpperCase() !== originalRegistration.toUpperCase();
+    !!originalRegistration && watchedRegistration.trim().toUpperCase() !== originalRegistration.toUpperCase();
   const flightsOnOldRegistration = originalRegistration
-    ? aircraftStats?.byReg.get(originalRegistration.toUpperCase())?.totalFlights ?? 0
+    ? (aircraftStats?.byReg.get(originalRegistration.toUpperCase())?.totalFlights ?? 0)
     : 0;
   const showRenameOption = registrationChanged && flightsOnOldRegistration > 0;
 
@@ -168,7 +164,9 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             aria-describedby={errors.registration ? 'err-registration' : undefined}
           />
           {errors.registration && (
-            <p id="err-registration" className="form-error">{errors.registration.message}</p>
+            <p id="err-registration" className="form-error">
+              {errors.registration.message}
+            </p>
           )}
           {showRenameOption && (
             <label className="mt-2 flex items-start gap-2 text-sm text-amber-700 dark:text-amber-400 cursor-pointer">
@@ -198,7 +196,9 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             aria-describedby={errors.type ? 'err-type' : undefined}
           />
           {errors.type && (
-            <p id="err-type" className="form-error">{errors.type.message}</p>
+            <p id="err-type" className="form-error">
+              {errors.type.message}
+            </p>
           )}
         </div>
       </div>
@@ -219,7 +219,9 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             aria-describedby={errors.make ? 'err-make' : undefined}
           />
           {errors.make && (
-            <p id="err-make" className="form-error">{errors.make.message}</p>
+            <p id="err-make" className="form-error">
+              {errors.make.message}
+            </p>
           )}
         </div>
         <div>
@@ -236,7 +238,9 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             aria-describedby={errors.model ? 'err-model' : undefined}
           />
           {errors.model && (
-            <p id="err-model" className="form-error">{errors.model.message}</p>
+            <p id="err-model" className="form-error">
+              {errors.model.message}
+            </p>
           )}
         </div>
       </div>
@@ -257,7 +261,10 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             />
             <button
               type="button"
-              onClick={() => { setIsCustomClass(false); setValue('aircraftClass', ''); }}
+              onClick={() => {
+                setIsCustomClass(false);
+                setValue('aircraftClass', '');
+              }}
               className="btn-ghost btn-sm text-xs whitespace-nowrap"
             >
               {t('form.pickFromList')}
@@ -275,12 +282,17 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             >
               <option value="">{t('form.selectClass')}</option>
               {AIRCRAFT_CLASSES.map((cr) => (
-                <option key={cr} value={cr}>{t(`classOptions.${cr}`)}</option>
+                <option key={cr} value={cr}>
+                  {t(`classOptions.${cr}`)}
+                </option>
               ))}
             </select>
             <button
               type="button"
-              onClick={() => { setIsCustomClass(true); setValue('aircraftClass', ''); }}
+              onClick={() => {
+                setIsCustomClass(true);
+                setValue('aircraftClass', '');
+              }}
               className="btn-ghost btn-sm text-xs whitespace-nowrap"
             >
               {t('form.customClass')}
@@ -295,15 +307,27 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         <label className="form-label">{t('form.characteristics')}</label>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isComplex')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
+            <input
+              {...register('isComplex')}
+              type="checkbox"
+              className="rounded border-slate-300 dark:border-slate-600"
+            />
             {t('fields.isComplex')}
           </label>
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isHighPerformance')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
+            <input
+              {...register('isHighPerformance')}
+              type="checkbox"
+              className="rounded border-slate-300 dark:border-slate-600"
+            />
             {t('fields.isHighPerformance')}
           </label>
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isTailwheel')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
+            <input
+              {...register('isTailwheel')}
+              type="checkbox"
+              className="rounded border-slate-300 dark:border-slate-600"
+            />
             {t('fields.isTailwheel')}
           </label>
         </div>
@@ -345,7 +369,9 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
 
       {/* Notes */}
       <div>
-        <label htmlFor="notes" className="form-label">{t('common:notes', { defaultValue: 'Notes' })}</label>
+        <label htmlFor="notes" className="form-label">
+          {t('common:notes', { defaultValue: 'Notes' })}
+        </label>
         <textarea
           {...register('notes')}
           id="notes"
@@ -359,7 +385,11 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       {isEditing && (
         <div>
           <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isActive')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
+            <input
+              {...register('isActive')}
+              type="checkbox"
+              className="rounded border-slate-300 dark:border-slate-600"
+            />
             {t('form.activeInFleet')}
           </label>
         </div>

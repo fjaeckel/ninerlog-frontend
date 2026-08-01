@@ -10,7 +10,15 @@ function linkify(text: string): React.ReactNode {
   if (parts.length === 1) return text;
   return parts.map((part, i) =>
     URL_REGEX.test(part) ? (
-      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline font-medium hover:opacity-80">{part}</a>
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline font-medium hover:opacity-80"
+      >
+        {part}
+      </a>
     ) : (
       <span key={i}>{part}</span>
     )

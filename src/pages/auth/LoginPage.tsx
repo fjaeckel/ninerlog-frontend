@@ -115,9 +115,7 @@ export default function LoginPage() {
       navigate('/dashboard');
     } catch (err) {
       // Surface a generic message — most failures are user cancellation.
-      const msg = (err as { error?: string; message?: string })?.error
-        ?? (err as { message?: string })?.message
-        ?? '';
+      const msg = (err as { error?: string; message?: string })?.error ?? (err as { message?: string })?.message ?? '';
       if (msg.toLowerCase().includes('not allowed') || msg.toLowerCase().includes('aborted')) {
         // user cancelled — stay silent
         return;
@@ -136,7 +134,9 @@ export default function LoginPage() {
         // it. Otherwise startAuthentication() will hang indefinitely waiting
         // for an autofill suggestion that can never be produced, leaving the
         // mutation in a permanent "pending" state.
-        const PKC = (window as unknown as { PublicKeyCredential?: { isConditionalMediationAvailable?: () => Promise<boolean> } }).PublicKeyCredential;
+        const PKC = (
+          window as unknown as { PublicKeyCredential?: { isConditionalMediationAvailable?: () => Promise<boolean> } }
+        ).PublicKeyCredential;
         if (!PKC?.isConditionalMediationAvailable) return;
         const supported = await PKC.isConditionalMediationAvailable();
         if (!supported || cancelled) return;
@@ -146,7 +146,9 @@ export default function LoginPage() {
         // Conditional UI may simply be unavailable — silently ignore.
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -168,9 +170,7 @@ export default function LoginPage() {
             <LogoMark size={64} className="drop-shadow-md" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-gradient-brand">{APP_NAME}</h1>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            {t('auth:login.tagline')}
-          </p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('auth:login.tagline')}</p>
         </div>
 
         {twoFactorToken ? (
@@ -178,10 +178,10 @@ export default function LoginPage() {
           <div className="card p-6 space-y-5">
             <div className="text-center">
               <span className="text-3xl">🔐</span>
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mt-2">{t('auth:twoFactor.title')}</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                {t('auth:twoFactor.enterCode')}
-              </p>
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mt-2">
+                {t('auth:twoFactor.title')}
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('auth:twoFactor.enterCode')}</p>
             </div>
 
             {error && (
@@ -191,7 +191,9 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label htmlFor="twoFACode" className="form-label">{t('auth:twoFactor.codeLabel')}</label>
+              <label htmlFor="twoFACode" className="form-label">
+                {t('auth:twoFactor.codeLabel')}
+              </label>
               <input
                 id="twoFACode"
                 type="text"
@@ -203,9 +205,7 @@ export default function LoginPage() {
                 inputMode="numeric"
                 autoFocus
               />
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                {t('auth:twoFactor.recoveryHint')}
-              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">{t('auth:twoFactor.recoveryHint')}</p>
             </div>
 
             <button
@@ -217,123 +217,116 @@ export default function LoginPage() {
             </button>
 
             <button
-              onClick={() => { setTwoFactorToken(null); setTwoFACode(''); setError(null); }}
+              onClick={() => {
+                setTwoFactorToken(null);
+                setTwoFACode('');
+                setError(null);
+              }}
               className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 w-full text-center"
             >
               ← {t('auth:twoFactor.backToLogin')}
             </button>
           </div>
         ) : (
-        <form
-          className="card p-6 space-y-5"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+          <form className="card p-6 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
 
-          {unverifiedEmail && (
-            <div
-              className="bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300 px-4 py-3 rounded-lg text-sm space-y-2"
-              data-testid="email-not-verified-banner"
-            >
-              <p>{t('auth:login.emailNotVerified.message')}</p>
-              {resentNotice ? (
-                <p className="font-medium">{t('auth:register.checkYourEmail.resent')}</p>
-              ) : (
+            {unverifiedEmail && (
+              <div
+                className="bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300 px-4 py-3 rounded-lg text-sm space-y-2"
+                data-testid="email-not-verified-banner"
+              >
+                <p>{t('auth:login.emailNotVerified.message')}</p>
+                {resentNotice ? (
+                  <p className="font-medium">{t('auth:register.checkYourEmail.resent')}</p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={resendVerification.isPending}
+                    className="font-medium underline hover:no-underline"
+                  >
+                    {t('auth:login.emailNotVerified.resend')}
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="email" className="form-label">
+                {t('auth:login.email')}
+              </label>
+              <input
+                {...register('email')}
+                type="email"
+                id="email"
+                autoComplete="email webauthn"
+                className={`input ${errors.email ? 'input-error' : ''}`}
+                placeholder="pilot@example.com"
+              />
+              {errors.email && <p className="form-error">{errors.email.message}</p>}
+            </div>
+
+            <div>
+              <label htmlFor="password" className="form-label">
+                {t('auth:login.password')}
+              </label>
+              <input
+                {...register('password')}
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                className={`input ${errors.password ? 'input-error' : ''}`}
+                placeholder="••••••••"
+              />
+              {errors.password && <p className="form-error">{errors.password.message}</p>}
+            </div>
+
+            <div className="text-right">
+              <Link
+                to="/reset-password"
+                className="text-sm text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
+              >
+                {t('auth:login.forgotPassword')}
+              </Link>
+            </div>
+
+            <button type="submit" disabled={isSubmitting || login.isPending} className="btn-primary w-full btn-lg">
+              {isSubmitting || login.isPending ? t('auth:login.signingIn') : t('auth:login.logIn')}
+            </button>
+
+            {passkeyAvailable && (
+              <>
+                <div className="flex items-center gap-3 text-xs text-slate-400">
+                  <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+                  <span>{t('auth:login.or')}</span>
+                  <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+                </div>
                 <button
                   type="button"
-                  onClick={handleResendVerification}
-                  disabled={resendVerification.isPending}
-                  className="font-medium underline hover:no-underline"
+                  onClick={handlePasskeyLogin}
+                  disabled={passkeyLogin.isPending}
+                  className="btn-secondary w-full btn-lg"
                 >
-                  {t('auth:login.emailNotVerified.resend')}
+                  {passkeyLogin.isPending ? t('auth:login.passkeySigningIn') : t('auth:login.signInWithPasskey')}
                 </button>
-              )}
-            </div>
-          )}
-
-          <div>
-            <label htmlFor="email" className="form-label">
-              {t('auth:login.email')}
-            </label>
-            <input
-              {...register('email')}
-              type="email"
-              id="email"
-              autoComplete="email webauthn"
-              className={`input ${errors.email ? 'input-error' : ''}`}
-              placeholder="pilot@example.com"
-            />
-            {errors.email && (
-              <p className="form-error">{errors.email.message}</p>
+              </>
             )}
-          </div>
 
-          <div>
-            <label htmlFor="password" className="form-label">
-              {t('auth:login.password')}
-            </label>
-            <input
-              {...register('password')}
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              className={`input ${errors.password ? 'input-error' : ''}`}
-              placeholder="••••••••"
-            />
-            {errors.password && (
-              <p className="form-error">{errors.password.message}</p>
-            )}
-          </div>
-
-          <div className="text-right">
-            <Link
-              to="/reset-password"
-              className="text-sm text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
-            >
-              {t('auth:login.forgotPassword')}
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting || login.isPending}
-            className="btn-primary w-full btn-lg"
-          >
-            {isSubmitting || login.isPending ? t('auth:login.signingIn') : t('auth:login.logIn')}
-          </button>
-
-          {passkeyAvailable && (
-            <>
-              <div className="flex items-center gap-3 text-xs text-slate-400">
-                <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-                <span>{t('auth:login.or')}</span>
-                <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-              </div>
-              <button
-                type="button"
-                onClick={handlePasskeyLogin}
-                disabled={passkeyLogin.isPending}
-                className="btn-secondary w-full btn-lg"
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+              {t('auth:login.noAccount')}{' '}
+              <Link
+                to="/register"
+                className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
               >
-                {passkeyLogin.isPending ? t('auth:login.passkeySigningIn') : t('auth:login.signInWithPasskey')}
-              </button>
-            </>
-          )}
-
-          <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-            {t('auth:login.noAccount')}{' '}
-            <Link
-              to="/register"
-              className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              {t('auth:login.createOne')}
-            </Link>
-          </p>
-        </form>
+                {t('auth:login.createOne')}
+              </Link>
+            </p>
+          </form>
         )}
       </div>
     </div>

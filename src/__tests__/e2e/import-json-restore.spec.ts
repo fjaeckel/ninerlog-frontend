@@ -19,69 +19,111 @@ test.describe('Import page — JSON restore', () => {
     // ----- 1. Seed source account via API -----
     const source: AuthContext = await createTestUser(request);
 
-    await apiCall(page, 'POST', '/aircraft', {
-      registration: 'D-EUIE',
-      type: 'C172',
-      make: 'Cessna',
-      model: '172S',
-      aircraftClass: 'SEP_LAND',
-    }, source.accessToken);
+    await apiCall(
+      page,
+      'POST',
+      '/aircraft',
+      {
+        registration: 'D-EUIE',
+        type: 'C172',
+        make: 'Cessna',
+        model: '172S',
+        aircraftClass: 'SEP_LAND',
+      },
+      source.accessToken
+    );
 
-    await apiCall(page, 'POST', '/aircraft', {
-      registration: 'N321UI',
-      type: 'B738',
-      make: 'Boeing',
-      model: '737-800',
-      aircraftClass: 'MEP_LAND',
-    }, source.accessToken);
+    await apiCall(
+      page,
+      'POST',
+      '/aircraft',
+      {
+        registration: 'N321UI',
+        type: 'B738',
+        make: 'Boeing',
+        model: '737-800',
+        aircraftClass: 'MEP_LAND',
+      },
+      source.accessToken
+    );
 
-    const lic = await apiCall(page, 'POST', '/licenses', {
-      regulatoryAuthority: 'EASA',
-      licenseType: 'PPL',
-      licenseNumber: `UI-PPL-${Date.now()}`,
-      issueDate: '2022-03-15',
-      issuingAuthority: 'LBA',
-    }, source.accessToken);
-    await apiCall(page, 'POST', `/licenses/${lic.id}/ratings`, {
-      classType: 'SEP_LAND',
-      issueDate: '2022-03-15',
-    }, source.accessToken);
+    const lic = await apiCall(
+      page,
+      'POST',
+      '/licenses',
+      {
+        regulatoryAuthority: 'EASA',
+        licenseType: 'PPL',
+        licenseNumber: `UI-PPL-${Date.now()}`,
+        issueDate: '2022-03-15',
+        issuingAuthority: 'LBA',
+      },
+      source.accessToken
+    );
+    await apiCall(
+      page,
+      'POST',
+      `/licenses/${lic.id}/ratings`,
+      {
+        classType: 'SEP_LAND',
+        issueDate: '2022-03-15',
+      },
+      source.accessToken
+    );
 
-    await apiCall(page, 'POST', '/credentials', {
-      credentialType: 'EASA_CLASS2_MEDICAL',
-      credentialNumber: 'UI-MED-001',
-      issueDate: '2024-01-01',
-      expiryDate: '2027-01-01',
-      issuingAuthority: 'AME UI',
-    }, source.accessToken);
+    await apiCall(
+      page,
+      'POST',
+      '/credentials',
+      {
+        credentialType: 'EASA_CLASS2_MEDICAL',
+        credentialNumber: 'UI-MED-001',
+        issueDate: '2024-01-01',
+        expiryDate: '2027-01-01',
+        issuingAuthority: 'AME UI',
+      },
+      source.accessToken
+    );
 
-    await apiCall(page, 'POST', '/flights', {
-      date: '2024-09-01',
-      aircraftReg: 'D-EUIE',
-      aircraftType: 'C172',
-      departureIcao: 'EDNY',
-      arrivalIcao: 'EDDS',
-      offBlockTime: '08:00',
-      onBlockTime: '09:00',
-      landings: 1,
-      remarks: 'UI restore source flight',
-    }, source.accessToken);
+    await apiCall(
+      page,
+      'POST',
+      '/flights',
+      {
+        date: '2024-09-01',
+        aircraftReg: 'D-EUIE',
+        aircraftType: 'C172',
+        departureIcao: 'EDNY',
+        arrivalIcao: 'EDDS',
+        offBlockTime: '08:00',
+        onBlockTime: '09:00',
+        landings: 1,
+        remarks: 'UI restore source flight',
+      },
+      source.accessToken
+    );
 
-    await apiCall(page, 'POST', '/flights', {
-      date: '2024-10-12',
-      aircraftReg: 'N321UI',
-      aircraftType: 'B738',
-      departureIcao: 'EDDF',
-      arrivalIcao: 'KJFK',
-      offBlockTime: '12:00',
-      onBlockTime: '20:30',
-      landings: 1,
-      remarks: 'Airline leg',
-      crewMembers: [
-        { name: 'Capt. UI Test', role: 'PIC' },
-        { name: 'FO UI Test', role: 'SIC' },
-      ],
-    }, source.accessToken);
+    await apiCall(
+      page,
+      'POST',
+      '/flights',
+      {
+        date: '2024-10-12',
+        aircraftReg: 'N321UI',
+        aircraftType: 'B738',
+        departureIcao: 'EDDF',
+        arrivalIcao: 'KJFK',
+        offBlockTime: '12:00',
+        onBlockTime: '20:30',
+        landings: 1,
+        remarks: 'Airline leg',
+        crewMembers: [
+          { name: 'Capt. UI Test', role: 'PIC' },
+          { name: 'FO UI Test', role: 'SIC' },
+        ],
+      },
+      source.accessToken
+    );
 
     // ----- 2. Download source backup via API -----
     const exportRes = await request.get('/api/v1/exports/json', {
@@ -119,9 +161,7 @@ test.describe('Import page — JSON restore', () => {
 
     // ----- 5. Verify the destination account really got the data -----
     const restoredAircraft = await apiCall(page, 'GET', '/aircraft', undefined, dest.accessToken);
-    const regs = new Set<string>(
-      (restoredAircraft.data || []).map((a: { registration: string }) => a.registration),
-    );
+    const regs = new Set<string>((restoredAircraft.data || []).map((a: { registration: string }) => a.registration));
     expect(regs.has('D-EUIE')).toBeTruthy();
     expect(regs.has('N321UI')).toBeTruthy();
 

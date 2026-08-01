@@ -18,9 +18,7 @@ export function SectionNav({ sections }: { sections: ReportSection[] }) {
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const targets = sections
-      .map((s) => document.getElementById(s.id))
-      .filter((el): el is HTMLElement => el !== null);
+    const targets = sections.map((s) => document.getElementById(s.id)).filter((el): el is HTMLElement => el !== null);
     if (targets.length === 0) return;
 
     const observer = new IntersectionObserver(

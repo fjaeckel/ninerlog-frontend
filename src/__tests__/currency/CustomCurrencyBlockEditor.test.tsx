@@ -86,6 +86,9 @@ describe('CustomCurrencyBlockEditor', () => {
     await user.click(screen.getByRole('button', { name: /add filter/i }));
     const last = onChange.mock.calls[onChange.mock.calls.length - 1][0] as CustomRuleInput;
     expect(last.definition.filters).toHaveLength(2);
-    expect(last.definition.filters![last.definition.filters!.length - 1]).toMatchObject({ field: 'aircraft_class', op: 'eq' });
+    expect(last.definition.filters![last.definition.filters!.length - 1]).toMatchObject({
+      field: 'aircraft_class',
+      op: 'eq',
+    });
   });
 });

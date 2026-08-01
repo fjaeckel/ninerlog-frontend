@@ -32,7 +32,11 @@ export const useFlightSignatures = (flightId: string) => {
 export const useSignFlightLive = (flightId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (body: { signerName: string; credentialNumber?: string | null; signatureImage: string }): Promise<FlightSignature> => {
+    mutationFn: async (body: {
+      signerName: string;
+      credentialNumber?: string | null;
+      signatureImage: string;
+    }): Promise<FlightSignature> => {
       const { data, error } = await apiClient.POST('/flights/{flightId}/signatures/live', {
         params: { path: { flightId } },
         body,
@@ -47,7 +51,10 @@ export const useSignFlightLive = (flightId: string) => {
 export const useCreateSignatureRequest = (flightId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (body: { instructorEmail?: string | null; expiresInHours?: number | null }): Promise<SignatureRequestCreated> => {
+    mutationFn: async (body: {
+      instructorEmail?: string | null;
+      expiresInHours?: number | null;
+    }): Promise<SignatureRequestCreated> => {
       const { data, error } = await apiClient.POST('/flights/{flightId}/signatures', {
         params: { path: { flightId } },
         body: { instructorEmail: body.instructorEmail ?? null, expiresInHours: body.expiresInHours ?? null },
@@ -62,7 +69,13 @@ export const useCreateSignatureRequest = (flightId: string) => {
 export const useResendSignatureRequest = (flightId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ signatureId, instructorEmail }: { signatureId: string; instructorEmail?: string | null }): Promise<SignatureRequestCreated> => {
+    mutationFn: async ({
+      signatureId,
+      instructorEmail,
+    }: {
+      signatureId: string;
+      instructorEmail?: string | null;
+    }): Promise<SignatureRequestCreated> => {
       const { data, error } = await apiClient.POST('/flights/{flightId}/signatures/{signatureId}/resend', {
         params: { path: { flightId, signatureId } },
         body: { instructorEmail: instructorEmail ?? null },
@@ -146,7 +159,11 @@ export const usePublicSignatureInfo = (token: string | null) => {
 
 export const useCompletePublicSignature = (token: string | null) => {
   return useMutation({
-    mutationFn: async (body: { signerName: string; credentialNumber?: string | null; signatureImage: string }): Promise<{ message: string }> => {
+    mutationFn: async (body: {
+      signerName: string;
+      credentialNumber?: string | null;
+      signatureImage: string;
+    }): Promise<{ message: string }> => {
       const { data, error } = await apiClient.POST('/sign/{token}', {
         params: { path: { token: token! } },
         body,

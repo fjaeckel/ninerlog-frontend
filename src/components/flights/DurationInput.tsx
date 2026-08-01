@@ -42,9 +42,7 @@ export function DurationInput({
   const [isFocused, setIsFocused] = useState(false);
 
   // Display formatted value when not focused; preserve user input when focused
-  const displayText = isFocused
-    ? inputText
-    : (value === 0 ? '' : formatDuration(value, displayFormat));
+  const displayText = isFocused ? inputText : value === 0 ? '' : formatDuration(value, displayFormat);
 
   const handleBlur = useCallback(() => {
     setIsFocused(false);

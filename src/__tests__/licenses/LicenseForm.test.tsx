@@ -47,7 +47,7 @@ describe('LicenseForm', () => {
 
   it('renders license form fields', () => {
     renderWithProviders(<LicenseForm onClose={mockOnClose} />);
-    
+
     expect(screen.getByLabelText(/regulatory authority/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/license type/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/license number/i)).toBeInTheDocument();
@@ -58,9 +58,9 @@ describe('LicenseForm', () => {
   it('validates required fields', async () => {
     const user = userEvent.setup();
     renderWithProviders(<LicenseForm onClose={mockOnClose} />);
-    
+
     await user.click(screen.getByRole('button', { name: /add license/i }));
-    
+
     await waitFor(() => {
       expect(screen.getByText(/regulatory authority is required/i)).toBeInTheDocument();
       expect(screen.getByText(/license number is required/i)).toBeInTheDocument();
@@ -70,17 +70,17 @@ describe('LicenseForm', () => {
   it('submits new license with valid data', async () => {
     const user = userEvent.setup();
     mockCreate.mutateAsync.mockResolvedValueOnce({});
-    
+
     renderWithProviders(<LicenseForm onClose={mockOnClose} />);
-    
+
     await user.type(screen.getByLabelText(/regulatory authority/i), 'EASA');
     await user.type(screen.getByLabelText(/license type/i), 'PPL');
     await user.type(screen.getByLabelText(/license number/i), 'PPL-12345');
     await user.type(screen.getByLabelText(/issuing authority/i), 'LBA');
     await user.type(screen.getByLabelText(/issue date/i), '2024-01-01');
-    
+
     await user.click(screen.getByRole('button', { name: /add license/i }));
-    
+
     await waitFor(() => {
       expect(mockCreate.mutateAsync).toHaveBeenCalledWith({
         regulatoryAuthority: 'EASA',
@@ -116,15 +116,15 @@ describe('LicenseForm', () => {
     } as any);
 
     mockUpdate.mutateAsync.mockResolvedValueOnce({});
-    
+
     renderWithProviders(<LicenseForm licenseId="123" onClose={mockOnClose} />);
-    
+
     // Update the issuing authority field
     const issuingAuthorityInput = screen.getByLabelText(/issuing authority/i);
     await user.clear(issuingAuthorityInput);
     await user.type(issuingAuthorityInput, 'EASA');
     await user.click(screen.getByRole('button', { name: /update license/i }));
-    
+
     await waitFor(() => {
       expect(mockUpdate.mutateAsync).toHaveBeenCalledWith({
         id: '123',

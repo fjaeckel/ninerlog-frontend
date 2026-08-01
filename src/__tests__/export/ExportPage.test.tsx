@@ -61,10 +61,7 @@ describe('ExportPage', () => {
     await user.click(screen.getByText('Download CSV'));
 
     // The fetch should have been called with the export URL
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/exports/csv'),
-      expect.any(Object)
-    );
+    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/exports/csv'), expect.any(Object));
   });
 
   it('JSON export button triggers download', async () => {
@@ -80,10 +77,7 @@ describe('ExportPage', () => {
     renderWithProviders(<ExportPage />);
     await user.click(screen.getByText('Download JSON Backup'));
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/exports/json'),
-      expect.any(Object)
-    );
+    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/exports/json'), expect.any(Object));
   });
 
   it('shows error message on export failure', async () => {

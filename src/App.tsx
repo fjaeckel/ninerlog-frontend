@@ -54,7 +54,9 @@ function App() {
     bootstrapPromise?.finally(() => {
       if (!cancelled) setBootReady(true);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [bootReady]);
 
   if (!bootReady) return <PageLoader />;
@@ -75,7 +77,10 @@ function App() {
           <Route path="/dashboard" element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />} />
           <Route path="/licenses" element={isAuthenticated ? <LicensesPage /> : <Navigate to="/login" />} />
           <Route path="/flights" element={isAuthenticated ? <FlightsPage /> : <Navigate to="/login" />} />
-          <Route path="/flights/:flightId" element={isAuthenticated ? <FlightDetailPage /> : <Navigate to="/login" />} />
+          <Route
+            path="/flights/:flightId"
+            element={isAuthenticated ? <FlightDetailPage /> : <Navigate to="/login" />}
+          />
           <Route path="/quicklog" element={isAuthenticated ? <QuickLogPage /> : <Navigate to="/login" />} />
           <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />} />
           <Route path="/credentials" element={isAuthenticated ? <CredentialsPage /> : <Navigate to="/login" />} />
@@ -86,13 +91,16 @@ function App() {
           <Route path="/export" element={isAuthenticated ? <ExportPage /> : <Navigate to="/login" />} />
           <Route path="/backups" element={<Navigate to="/profile" replace />} />
           <Route path="/currency" element={isAuthenticated ? <CurrencyPage /> : <Navigate to="/login" />} />
-          <Route path="/currency/builder" element={isAuthenticated ? <CustomCurrencyBuilderPage /> : <Navigate to="/login" />} />
+          <Route
+            path="/currency/builder"
+            element={isAuthenticated ? <CustomCurrencyBuilderPage /> : <Navigate to="/login" />}
+          />
           <Route path="/admin" element={isAuthenticated ? <AdminPage /> : <Navigate to="/login" />} />
           <Route path="/help" element={isAuthenticated ? <HelpPage /> : <Navigate to="/login" />} />
         </Route>
 
         {/* Redirect root to dashboard or login */}
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+        <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} />} />
       </Routes>
     </Suspense>
   );

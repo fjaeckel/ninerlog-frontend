@@ -1,6 +1,11 @@
 import { useAuthStore } from '../stores/authStore';
 import { formatDuration as rawFormatDuration, type TimeDisplayFormat, type DecimalSeparator } from '../lib/duration';
-import { formatDate as rawFormatDate, formatDateTime as rawFormatDateTime, formatDateLong as rawFormatDateLong, type DateFormatPref } from '../lib/dateFormat';
+import {
+  formatDate as rawFormatDate,
+  formatDateTime as rawFormatDateTime,
+  formatDateLong as rawFormatDateLong,
+  type DateFormatPref,
+} from '../lib/dateFormat';
 
 /**
  * Hook providing user-preference-aware date and duration formatting functions.

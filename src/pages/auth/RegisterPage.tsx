@@ -35,10 +35,7 @@ export default function RegisterPage() {
   const [loginReadyEmail, setLoginReadyEmail] = useState<string | null>(null);
   const [resentNotice, setResentNotice] = useState(false);
 
-  const detectedLanguage =
-    supportedLanguages.find(
-      (l) => i18n.language === l || i18n.language.startsWith(l),
-    ) ?? 'en';
+  const detectedLanguage = supportedLanguages.find((l) => i18n.language === l || i18n.language.startsWith(l)) ?? 'en';
 
   const {
     register,
@@ -109,9 +106,7 @@ export default function RegisterPage() {
             <LogoMark size={64} className="drop-shadow-md" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-gradient-brand">{APP_NAME}</h1>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            {t('auth:register.tagline')}
-          </p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('auth:register.tagline')}</p>
         </div>
 
         {registeredEmail ? (
@@ -161,121 +156,116 @@ export default function RegisterPage() {
             </button>
           </div>
         ) : (
-          <form
-          className="card p-6 space-y-5"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-              {error}
+          <form className="card p-6 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="name" className="form-label">
+                {t('auth:register.fullName')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register('name')}
+                type="text"
+                id="name"
+                autoComplete="name"
+                className={`input ${errors.name ? 'input-error' : ''}`}
+                placeholder="John Doe"
+              />
+              {errors.name && <p className="form-error">{errors.name.message}</p>}
             </div>
-          )}
 
-          <div>
-            <label htmlFor="name" className="form-label">
-              {t('auth:register.fullName')} <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register('name')}
-              type="text"
-              id="name"
-              autoComplete="name"
-              className={`input ${errors.name ? 'input-error' : ''}`}
-              placeholder="John Doe"
-            />
-            {errors.name && <p className="form-error">{errors.name.message}</p>}
-          </div>
+            <div>
+              <label htmlFor="email" className="form-label">
+                {t('auth:register.email')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register('email')}
+                type="email"
+                id="email"
+                autoComplete="email"
+                className={`input ${errors.email ? 'input-error' : ''}`}
+                placeholder="pilot@example.com"
+              />
+              {errors.email && <p className="form-error">{errors.email.message}</p>}
+            </div>
 
-          <div>
-            <label htmlFor="email" className="form-label">
-              {t('auth:register.email')} <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register('email')}
-              type="email"
-              id="email"
-              autoComplete="email"
-              className={`input ${errors.email ? 'input-error' : ''}`}
-              placeholder="pilot@example.com"
-            />
-            {errors.email && <p className="form-error">{errors.email.message}</p>}
-          </div>
+            <div>
+              <label htmlFor="password" className="form-label">
+                {t('auth:register.password')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register('password')}
+                type="password"
+                id="password"
+                autoComplete="new-password"
+                className={`input ${errors.password ? 'input-error' : ''}`}
+                placeholder="••••••••••••"
+              />
+              {errors.password && <p className="form-error">{errors.password.message}</p>}
+              <p className="form-helper">{t('auth:register.passwordHint')}</p>
+            </div>
 
-          <div>
-            <label htmlFor="password" className="form-label">
-              {t('auth:register.password')} <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register('password')}
-              type="password"
-              id="password"
-              autoComplete="new-password"
-              className={`input ${errors.password ? 'input-error' : ''}`}
-              placeholder="••••••••••••"
-            />
-            {errors.password && (
-              <p className="form-error">{errors.password.message}</p>
-            )}
-            <p className="form-helper">{t('auth:register.passwordHint')}</p>
-          </div>
+            <div>
+              <label htmlFor="confirmPassword" className="form-label">
+                {t('auth:register.confirmPassword')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register('confirmPassword')}
+                type="password"
+                id="confirmPassword"
+                autoComplete="new-password"
+                className={`input ${errors.confirmPassword ? 'input-error' : ''}`}
+                placeholder="••••••••••••"
+              />
+              {errors.confirmPassword && <p className="form-error">{errors.confirmPassword.message}</p>}
+            </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="form-label">
-              {t('auth:register.confirmPassword')} <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register('confirmPassword')}
-              type="password"
-              id="confirmPassword"
-              autoComplete="new-password"
-              className={`input ${errors.confirmPassword ? 'input-error' : ''}`}
-              placeholder="••••••••••••"
-            />
-            {errors.confirmPassword && (
-              <p className="form-error">{errors.confirmPassword.message}</p>
-            )}
-          </div>
+            <div>
+              <label htmlFor="language" className="form-label">
+                {t('auth:register.language')}
+              </label>
+              <select
+                {...languageField}
+                id="language"
+                className="input"
+                onChange={(e) => {
+                  languageField.onChange(e);
+                  void i18n.changeLanguage(e.target.value);
+                }}
+              >
+                {supportedLanguages.map((lang) => (
+                  <option key={lang} value={lang}>
+                    {languageNames[lang]}
+                  </option>
+                ))}
+              </select>
+              <p className="form-helper">{t('auth:register.languageHint')}</p>
+            </div>
 
-          <div>
-            <label htmlFor="language" className="form-label">
-              {t('auth:register.language')}
-            </label>
-            <select
-              {...languageField}
-              id="language"
-              className="input"
-              onChange={(e) => {
-                languageField.onChange(e);
-                void i18n.changeLanguage(e.target.value);
-              }}
+            <button
+              type="submit"
+              disabled={isSubmitting || registerMutation.isPending}
+              className="btn-primary w-full btn-lg"
             >
-              {supportedLanguages.map((lang) => (
-                <option key={lang} value={lang}>
-                  {languageNames[lang]}
-                </option>
-              ))}
-            </select>
-            <p className="form-helper">{t('auth:register.languageHint')}</p>
-          </div>
+              {isSubmitting || registerMutation.isPending
+                ? t('auth:register.creatingAccount')
+                : t('auth:register.createAccount')}
+            </button>
 
-          <button
-            type="submit"
-            disabled={isSubmitting || registerMutation.isPending}
-            className="btn-primary w-full btn-lg"
-          >
-            {isSubmitting || registerMutation.isPending ? t('auth:register.creatingAccount') : t('auth:register.createAccount')}
-          </button>
-
-          <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-            {t('auth:register.haveAccount')}{' '}
-            <Link
-              to="/login"
-              className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              {t('auth:register.logIn')}
-            </Link>
-          </p>
-        </form>
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+              {t('auth:register.haveAccount')}{' '}
+              <Link
+                to="/login"
+                className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                {t('auth:register.logIn')}
+              </Link>
+            </p>
+          </form>
         )}
       </div>
     </div>

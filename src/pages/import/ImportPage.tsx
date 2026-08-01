@@ -1,7 +1,13 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUploadImport, usePreviewImport, useConfirmImport, useRestoreJSON } from '../../hooks/useImport';
-import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportJSONResult } from '../../hooks/useImport';
+import type {
+  ImportUploadResponse,
+  ImportPreviewResponse,
+  ImportResult,
+  ImportColumnMapping,
+  ImportJSONResult,
+} from '../../hooks/useImport';
 import HelpLink from '../../components/ui/HelpLink';
 
 const IMPORT_FIELDS = [
@@ -80,9 +86,7 @@ export default function ImportPage() {
     setMappings((prev) => {
       const existing = prev.find((m) => m.sourceColumn === sourceColumn);
       if (existing) {
-        return prev.map((m) =>
-          m.sourceColumn === sourceColumn ? { ...m, targetField: targetField as any } : m
-        );
+        return prev.map((m) => (m.sourceColumn === sourceColumn ? { ...m, targetField: targetField as any } : m));
       }
       return [...prev, { sourceColumn, targetField: targetField as any }];
     });
@@ -199,22 +203,29 @@ export default function ImportPage() {
 
       {/* Step indicator (CSV flow only) */}
       {mode === 'csv' && (
-      <div className="flex items-center gap-2 mb-6 text-sm">
-        {(['upload', 'mapping', 'preview', 'result'] as Step[]).map((s, i) => (
-          <div key={s} className="flex items-center gap-2">
-            {i > 0 && <span className="text-slate-300 dark:text-slate-600">→</span>}
-            <span
-              className={`px-3 py-1 rounded-full ${
-                step === s
-                  ? 'bg-blue-100 text-blue-700 font-medium dark:bg-blue-900/30 dark:text-blue-400'
-                  : 'text-slate-400 dark:text-slate-500'
-              }`}
-            >
-              {i + 1}. {s === 'upload' ? t('uploadCsv', 'Upload') : s === 'mapping' ? t('mapColumns', 'Map Columns') : s === 'preview' ? t('preview') : t('done', 'Done')}
-            </span>
-          </div>
-        ))}
-      </div>
+        <div className="flex items-center gap-2 mb-6 text-sm">
+          {(['upload', 'mapping', 'preview', 'result'] as Step[]).map((s, i) => (
+            <div key={s} className="flex items-center gap-2">
+              {i > 0 && <span className="text-slate-300 dark:text-slate-600">→</span>}
+              <span
+                className={`px-3 py-1 rounded-full ${
+                  step === s
+                    ? 'bg-blue-100 text-blue-700 font-medium dark:bg-blue-900/30 dark:text-blue-400'
+                    : 'text-slate-400 dark:text-slate-500'
+                }`}
+              >
+                {i + 1}.{' '}
+                {s === 'upload'
+                  ? t('uploadCsv', 'Upload')
+                  : s === 'mapping'
+                    ? t('mapColumns', 'Map Columns')
+                    : s === 'preview'
+                      ? t('preview')
+                      : t('done', 'Done')}
+              </span>
+            </div>
+          ))}
+        </div>
       )}
 
       {error && (
@@ -233,13 +244,13 @@ export default function ImportPage() {
           <p className="text-slate-500 dark:text-slate-400 mb-2 max-w-md mx-auto">
             {t(
               'restoreJsonDescription',
-              'Upload a NinerLog JSON backup (from Export → Full Data Backup) to restore your flights, aircraft, licenses, class ratings, credentials and crew members.',
+              'Upload a NinerLog JSON backup (from Export → Full Data Backup) to restore your flights, aircraft, licenses, class ratings, credentials and crew members.'
             )}
           </p>
           <p className="text-xs text-slate-400 dark:text-slate-500 mb-6 max-w-md mx-auto">
             {t(
               'restoreJsonNote',
-              'The restore is additive — existing data is never modified or deleted. Aircraft whose registration already exists in your account are skipped.',
+              'The restore is additive — existing data is never modified or deleted. Aircraft whose registration already exists in your account are skipped.'
             )}
           </p>
           <input
@@ -249,14 +260,8 @@ export default function ImportPage() {
             onChange={handleJSONFileSelect}
             className="hidden"
           />
-          <button
-            onClick={() => jsonInputRef.current?.click()}
-            disabled={restore.isPending}
-            className="btn-primary"
-          >
-            {restore.isPending
-              ? t('restoringJson', 'Restoring…')
-              : t('selectJsonFile', 'Choose JSON backup')}
+          <button onClick={() => jsonInputRef.current?.click()} disabled={restore.isPending} className="btn-primary">
+            {restore.isPending ? t('restoringJson', 'Restoring…') : t('selectJsonFile', 'Choose JSON backup')}
           </button>
         </div>
       )}
@@ -319,22 +324,17 @@ export default function ImportPage() {
       {mode === 'csv' && step === 'upload' && (
         <div className="card text-center py-12">
           <div className="text-5xl mb-4">📂</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('uploadCsv', 'Upload Flight Log File')}</h2>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            {t('uploadCsv', 'Upload Flight Log File')}
+          </h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-            {t('supportedFormats', 'Supports CSV files including ForeFlight logbook exports. Maximum file size: 10 MB.')}
+            {t(
+              'supportedFormats',
+              'Supports CSV files including ForeFlight logbook exports. Maximum file size: 10 MB.'
+            )}
           </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv,.txt"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={upload.isPending}
-            className="btn-primary"
-          >
+          <input ref={fileInputRef} type="file" accept=".csv,.txt" onChange={handleFileSelect} className="hidden" />
+          <button onClick={() => fileInputRef.current?.click()} disabled={upload.isPending} className="btn-primary">
             {upload.isPending ? t('importing', 'Uploading...') : t('selectFile', 'Choose File')}
           </button>
         </div>
@@ -348,19 +348,30 @@ export default function ImportPage() {
               <div>
                 <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t('columnMapping')}</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                  {uploadData.format === 'FOREFLIGHT_CSV' ? '✈ ForeFlight format detected — mappings pre-filled' : t('mapColumns', 'Map each column to a flight log field')}
-                  {' · '}{t('rowsDetected', { count: uploadData.totalRows })}
+                  {uploadData.format === 'FOREFLIGHT_CSV'
+                    ? '✈ ForeFlight format detected — mappings pre-filled'
+                    : t('mapColumns', 'Map each column to a flight log field')}
+                  {' · '}
+                  {t('rowsDetected', { count: uploadData.totalRows })}
                 </p>
               </div>
-              <button onClick={handleReset} className="btn-ghost btn-sm text-xs min-h-[44px]">Start Over</button>
+              <button onClick={handleReset} className="btn-ghost btn-sm text-xs min-h-[44px]">
+                Start Over
+              </button>
             </div>
 
             <div className="space-y-2">
               {uploadData.columns.map((col) => {
                 const mapping = mappings.find((m) => m.sourceColumn === col);
                 return (
-                  <div key={col} className="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
-                    <span className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300 truncate" title={col}>
+                  <div
+                    key={col}
+                    className="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-slate-700 last:border-0"
+                  >
+                    <span
+                      className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300 truncate"
+                      title={col}
+                    >
                       {col}
                     </span>
                     <span className="text-slate-400 dark:text-slate-500">→</span>
@@ -370,7 +381,9 @@ export default function ImportPage() {
                       className="input text-sm w-48"
                     >
                       {IMPORT_FIELDS.map((f) => (
-                        <option key={f.value} value={f.value}>{f.label}</option>
+                        <option key={f.value} value={f.value}>
+                          {f.label}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -382,13 +395,20 @@ export default function ImportPage() {
           {/* Preview rows */}
           {uploadData.previewRows.length > 0 && (
             <div className="card">
-              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('previewRows', { count: uploadData.previewRows.length })}</h3>
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">
+                {t('previewRows', { count: uploadData.previewRows.length })}
+              </h3>
               <div className="overflow-x-auto">
                 <table className="text-xs w-full">
                   <thead>
                     <tr className="border-b border-slate-200 dark:border-slate-700">
                       {uploadData.columns.slice(0, 8).map((col) => (
-                        <th key={col} className="px-2 py-1 text-left text-slate-500 dark:text-slate-400 truncate max-w-[120px]">{col}</th>
+                        <th
+                          key={col}
+                          className="px-2 py-1 text-left text-slate-500 dark:text-slate-400 truncate max-w-[120px]"
+                        >
+                          {col}
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -396,7 +416,9 @@ export default function ImportPage() {
                     {uploadData.previewRows.map((row, i) => (
                       <tr key={i} className="border-b border-slate-100 dark:border-slate-800">
                         {uploadData.columns.slice(0, 8).map((col) => (
-                          <td key={col} className="px-2 py-1 text-slate-600 dark:text-slate-400 truncate max-w-[120px]">{row[col] || ''}</td>
+                          <td key={col} className="px-2 py-1 text-slate-600 dark:text-slate-400 truncate max-w-[120px]">
+                            {row[col] || ''}
+                          </td>
                         ))}
                       </tr>
                     ))}
@@ -410,7 +432,9 @@ export default function ImportPage() {
             <button onClick={handlePreview} disabled={preview.isPending} className="btn-primary flex-1">
               {preview.isPending ? 'Validating...' : 'Validate & Preview'}
             </button>
-            <button onClick={handleReset} className="btn-secondary">Cancel</button>
+            <button onClick={handleReset} className="btn-secondary">
+              Cancel
+            </button>
           </div>
         </div>
       )}
@@ -445,11 +469,15 @@ export default function ImportPage() {
                     <tr key={f.rowIndex} className="border-b border-slate-100 dark:border-slate-800">
                       <td className="px-3 py-2 text-slate-600 dark:text-slate-400">{f.rowIndex}</td>
                       <td className="px-3 py-2">
-                        <span className={`badge text-xs ${
-                          f.status === 'valid' ? 'badge-current' :
-                          f.status === 'duplicate' ? 'badge-expiring' :
-                          'badge-expired'
-                        }`}>
+                        <span
+                          className={`badge text-xs ${
+                            f.status === 'valid'
+                              ? 'badge-current'
+                              : f.status === 'duplicate'
+                                ? 'badge-expiring'
+                                : 'badge-expired'
+                          }`}
+                        >
                           {f.status}
                         </span>
                       </td>
@@ -472,11 +500,16 @@ export default function ImportPage() {
                         )}
                       </td>
                       <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
-                        {f.status === 'error' && f.errors?.map((e, i) => (
-                          <span key={i} className="text-red-600 dark:text-red-400">{e.field}: {e.message}; </span>
-                        ))}
+                        {f.status === 'error' &&
+                          f.errors?.map((e, i) => (
+                            <span key={i} className="text-red-600 dark:text-red-400">
+                              {e.field}: {e.message};{' '}
+                            </span>
+                          ))}
                         {f.status === 'duplicate' && <span>Already logged</span>}
-                        {f.status === 'valid' && f.flight.totalTime != null && `${Math.floor(f.flight.totalTime / 60)}h ${f.flight.totalTime % 60}m`}
+                        {f.status === 'valid' &&
+                          f.flight.totalTime != null &&
+                          `${Math.floor(f.flight.totalTime / 60)}h ${f.flight.totalTime % 60}m`}
                       </td>
                     </tr>
                   ))}
@@ -484,7 +517,9 @@ export default function ImportPage() {
               </table>
             </div>
             {previewData.flights.length > 50 && (
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">Showing first 50 of {previewData.flights.length} rows</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+                Showing first 50 of {previewData.flights.length} rows
+              </p>
             )}
           </div>
 
@@ -494,10 +529,16 @@ export default function ImportPage() {
               disabled={confirm.isPending || previewData.validCount === 0}
               className="btn-primary flex-1"
             >
-              {confirm.isPending ? 'Importing...' : `Import ${previewData.validCount} Flight${previewData.validCount !== 1 ? 's' : ''}`}
+              {confirm.isPending
+                ? 'Importing...'
+                : `Import ${previewData.validCount} Flight${previewData.validCount !== 1 ? 's' : ''}`}
             </button>
-            <button onClick={() => setStep('mapping')} className="btn-secondary">Back</button>
-            <button onClick={handleReset} className="btn-ghost">Cancel</button>
+            <button onClick={() => setStep('mapping')} className="btn-secondary">
+              Back
+            </button>
+            <button onClick={handleReset} className="btn-ghost">
+              Cancel
+            </button>
           </div>
         </div>
       )}
@@ -509,8 +550,11 @@ export default function ImportPage() {
             {result.status === 'completed' ? '✅' : result.status === 'partial' ? '⚠' : '❌'}
           </div>
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
-            {result.status === 'completed' ? t('importSuccess', { count: result.importedCount }) :
-             result.status === 'partial' ? t('partialImport', 'Partially Imported') : t('importFailed')}
+            {result.status === 'completed'
+              ? t('importSuccess', { count: result.importedCount })
+              : result.status === 'partial'
+                ? t('partialImport', 'Partially Imported')
+                : t('importFailed')}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 max-w-lg mx-auto mt-6 mb-8">
             <SummaryCard label="Imported" value={result.importedCount} color="green" />
@@ -531,7 +575,9 @@ export default function ImportPage() {
               </div>
             </div>
           )}
-          <button onClick={handleReset} className="btn-primary">{t('importAnother', 'Import Another File')}</button>
+          <button onClick={handleReset} className="btn-primary">
+            {t('importAnother', 'Import Another File')}
+          </button>
         </div>
       )}
     </div>
@@ -539,10 +585,14 @@ export default function ImportPage() {
 }
 
 function SummaryCard({ label, value, color }: { label: string; value: number; color?: string }) {
-  const colorClass = color === 'green' ? 'text-green-600 dark:text-green-400' :
-    color === 'amber' ? 'text-amber-600 dark:text-amber-400' :
-    color === 'red' ? 'text-red-600 dark:text-red-400' :
-    'text-slate-800 dark:text-slate-100';
+  const colorClass =
+    color === 'green'
+      ? 'text-green-600 dark:text-green-400'
+      : color === 'amber'
+        ? 'text-amber-600 dark:text-amber-400'
+        : color === 'red'
+          ? 'text-red-600 dark:text-red-400'
+          : 'text-slate-800 dark:text-slate-100';
   return (
     <div className="card text-center py-3">
       <div className={`text-2xl font-bold font-mono tabular-nums ${colorClass}`}>{value}</div>

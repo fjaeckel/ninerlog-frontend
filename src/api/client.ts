@@ -48,7 +48,11 @@ apiClient.use({
     // Wait for the in-flight bootstrap refresh (if any) so the very first wave
     // of requests after a cold launch carries a valid Authorization header.
     if (bootstrapPromise) {
-      try { await bootstrapPromise; } catch { /* ignore — onResponse will handle 401 */ }
+      try {
+        await bootstrapPromise;
+      } catch {
+        /* ignore — onResponse will handle 401 */
+      }
     }
     const token = useAuthStore.getState().accessToken;
     if (token) {
@@ -241,8 +245,12 @@ if (typeof window !== 'undefined') {
     const stale = !tokenExpiresAt || tokenExpiresAt - Date.now() < 60_000;
     if (!stale) return;
     if (refreshPromise) return; // already refreshing
-    refreshPromise = refreshAccessToken().finally(() => { refreshPromise = null; });
-    refreshPromise.then((ok) => { if (ok) scheduleTokenRefresh(); });
+    refreshPromise = refreshAccessToken().finally(() => {
+      refreshPromise = null;
+    });
+    refreshPromise.then((ok) => {
+      if (ok) scheduleTokenRefresh();
+    });
   };
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') refreshIfStale();

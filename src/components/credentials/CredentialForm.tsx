@@ -21,22 +21,24 @@ const CREDENTIAL_TYPES = [
   { value: 'OTHER', label: 'Other' },
 ];
 
-const credentialSchema = z.object({
-  credentialType: z.string().min(1, 'Credential type is required'),
-  credentialNumber: z.string().optional().or(z.literal('')),
-  issueDate: z.string().min(1, 'Issue date is required'),
-  expiryDate: z.string().optional().or(z.literal('')),
-  issuingAuthority: z.string().min(1, 'Issuing authority is required'),
-  notes: z.string().optional().or(z.literal('')),
-}).refine(
-  (data) => {
-    if (data.expiryDate && data.issueDate) {
-      return new Date(data.expiryDate) > new Date(data.issueDate);
-    }
-    return true;
-  },
-  { message: 'Expiry date must be after issue date', path: ['expiryDate'] }
-);
+const credentialSchema = z
+  .object({
+    credentialType: z.string().min(1, 'Credential type is required'),
+    credentialNumber: z.string().optional().or(z.literal('')),
+    issueDate: z.string().min(1, 'Issue date is required'),
+    expiryDate: z.string().optional().or(z.literal('')),
+    issuingAuthority: z.string().min(1, 'Issuing authority is required'),
+    notes: z.string().optional().or(z.literal('')),
+  })
+  .refine(
+    (data) => {
+      if (data.expiryDate && data.issueDate) {
+        return new Date(data.expiryDate) > new Date(data.issueDate);
+      }
+      return true;
+    },
+    { message: 'Expiry date must be after issue date', path: ['expiryDate'] }
+  );
 
 type CredentialFormData = z.infer<typeof credentialSchema>;
 
@@ -125,17 +127,24 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
         <label htmlFor="credentialType" className="form-label">
           {t('fields.credentialType')} <span className="text-red-500">*</span>
         </label>
-        <select {...register('credentialType')} id="credentialType" className={`input ${errors.credentialType ? 'input-error' : ''}`}
+        <select
+          {...register('credentialType')}
+          id="credentialType"
+          className={`input ${errors.credentialType ? 'input-error' : ''}`}
           aria-invalid={!!errors.credentialType}
           aria-describedby={errors.credentialType ? 'err-credentialType' : undefined}
         >
           <option value="">{t('form.selectType')}</option>
           {CREDENTIAL_TYPES.map((type) => (
-            <option key={type.value} value={type.value}>{t(`types.${type.value}`)}</option>
+            <option key={type.value} value={type.value}>
+              {t(`types.${type.value}`)}
+            </option>
           ))}
         </select>
         {errors.credentialType && (
-          <p id="err-credentialType" className="form-error">{errors.credentialType.message}</p>
+          <p id="err-credentialType" className="form-error">
+            {errors.credentialType.message}
+          </p>
         )}
       </div>
 
@@ -157,12 +166,18 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
           <label htmlFor="issueDate" className="form-label">
             {t('fields.issueDate')} <span className="text-red-500">*</span>
           </label>
-          <input {...register('issueDate')} type="date" id="issueDate" className={`input ${errors.issueDate ? 'input-error' : ''}`}
+          <input
+            {...register('issueDate')}
+            type="date"
+            id="issueDate"
+            className={`input ${errors.issueDate ? 'input-error' : ''}`}
             aria-invalid={!!errors.issueDate}
             aria-describedby={errors.issueDate ? 'err-issueDate' : undefined}
           />
           {errors.issueDate && (
-            <p id="err-issueDate" className="form-error">{errors.issueDate.message}</p>
+            <p id="err-issueDate" className="form-error">
+              {errors.issueDate.message}
+            </p>
           )}
         </div>
         <div>
@@ -187,19 +202,17 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
           aria-describedby={errors.issuingAuthority ? 'err-issuingAuthority' : undefined}
         />
         {errors.issuingAuthority && (
-          <p id="err-issuingAuthority" className="form-error">{errors.issuingAuthority.message}</p>
+          <p id="err-issuingAuthority" className="form-error">
+            {errors.issuingAuthority.message}
+          </p>
         )}
       </div>
 
       <div>
-        <label htmlFor="notes" className="form-label">{t('fields.notes')}</label>
-        <textarea
-          {...register('notes')}
-          id="notes"
-          rows={2}
-          className="input"
-          placeholder="Additional notes..."
-        />
+        <label htmlFor="notes" className="form-label">
+          {t('fields.notes')}
+        </label>
+        <textarea {...register('notes')} id="notes" rows={2} className="input" placeholder="Additional notes..." />
       </div>
 
       <div className="flex gap-3 pt-2">

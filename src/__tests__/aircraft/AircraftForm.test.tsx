@@ -27,7 +27,9 @@ describe('AircraftForm', () => {
     vi.spyOn(useAircraftHook, 'useCreateAircraft').mockReturnValue(mockCreate as any);
     vi.spyOn(useAircraftHook, 'useUpdateAircraft').mockReturnValue(mockUpdate as any);
     vi.spyOn(useAircraftHook, 'useAircraftById').mockReturnValue({
-      data: undefined, isLoading: false, error: null,
+      data: undefined,
+      isLoading: false,
+      error: null,
     } as any);
   });
 
@@ -148,7 +150,9 @@ describe('AircraftForm', () => {
     };
 
     vi.spyOn(useAircraftHook, 'useAircraftById').mockReturnValue({
-      data: existingAircraft, isLoading: false, error: null,
+      data: existingAircraft,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<AircraftForm aircraftId="ac-1" onClose={mockOnClose} />);
@@ -169,11 +173,21 @@ describe('AircraftForm', () => {
 
     vi.spyOn(useAircraftHook, 'useAircraftById').mockReturnValue({
       data: {
-        id: 'ac-1', userId: 'user-1', registration: 'D-EFGH', type: 'C172',
-        make: 'Cessna', model: '172', isComplex: false, isHighPerformance: false,
-        isTailwheel: false, isActive: true, createdAt: '', updatedAt: '',
+        id: 'ac-1',
+        userId: 'user-1',
+        registration: 'D-EFGH',
+        type: 'C172',
+        make: 'Cessna',
+        model: '172',
+        isComplex: false,
+        isHighPerformance: false,
+        isTailwheel: false,
+        isActive: true,
+        createdAt: '',
+        updatedAt: '',
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<AircraftForm aircraftId="ac-1" onClose={mockOnClose} />);
@@ -205,7 +219,9 @@ describe('AircraftForm', () => {
     };
 
     vi.spyOn(useAircraftHook, 'useAircraftById').mockReturnValue({
-      data: existingAircraft, isLoading: false, error: null,
+      data: existingAircraft,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<AircraftForm aircraftId="ac-1" onClose={mockOnClose} />);

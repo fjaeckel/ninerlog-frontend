@@ -159,9 +159,7 @@ export function BaselineSection() {
   return (
     <div className="card" data-testid="baseline-section">
       <h2 className="section-title mb-2">{t('baseline.title')}</h2>
-      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-        {t('baseline.description')}
-      </p>
+      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{t('baseline.description')}</p>
 
       {isLoading ? (
         <p className="text-sm text-slate-500">{t('baseline.loading')}</p>
@@ -188,19 +186,10 @@ export function BaselineSection() {
                 <div className="space-y-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-md border border-red-200 dark:border-red-800">
                   <p className="text-sm text-red-800 dark:text-red-300">{t('baseline.deleteConfirm')}</p>
                   <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={handleDelete}
-                      disabled={remove.isPending}
-                      className="btn-danger"
-                    >
+                    <button type="button" onClick={handleDelete} disabled={remove.isPending} className="btn-danger">
                       {remove.isPending ? t('common:deleting') : t('baseline.deleteButton')}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowDeleteConfirm(false)}
-                      className="btn-secondary text-sm"
-                    >
+                    <button type="button" onClick={() => setShowDeleteConfirm(false)} className="btn-secondary text-sm">
                       {t('common:cancel')}
                     </button>
                   </div>
@@ -228,29 +217,91 @@ export function BaselineSection() {
                   />
                 </Field>
                 <Field label={t('baseline.fields.totalFlights')}>
-                  <NumberInput value={form.totalFlights} onChange={(v) => setForm((s) => ({ ...s, totalFlights: v }))} integer />
+                  <NumberInput
+                    value={form.totalFlights}
+                    onChange={(v) => setForm((s) => ({ ...s, totalFlights: v }))}
+                    integer
+                  />
                 </Field>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <HoursField label={t('baseline.fields.totalHours')} value={form.totalMinutes} onChange={(v) => setForm((s) => ({ ...s, totalMinutes: v }))} displayFormat={timeFormat} />
-                <HoursField label={t('baseline.fields.picHours')} value={form.picMinutes} onChange={(v) => setForm((s) => ({ ...s, picMinutes: v }))} displayFormat={timeFormat} />
-                <HoursField label={t('baseline.fields.sicHours')} value={form.sicMinutes} onChange={(v) => setForm((s) => ({ ...s, sicMinutes: v }))} displayFormat={timeFormat} />
-                <HoursField label={t('baseline.fields.dualHours')} value={form.dualMinutes} onChange={(v) => setForm((s) => ({ ...s, dualMinutes: v }))} displayFormat={timeFormat} />
-                <HoursField label={t('baseline.fields.dualGivenHours')} value={form.dualGivenMinutes} onChange={(v) => setForm((s) => ({ ...s, dualGivenMinutes: v }))} displayFormat={timeFormat} />
-                <HoursField label={t('baseline.fields.multiPilotHours')} value={form.multiPilotMinutes} onChange={(v) => setForm((s) => ({ ...s, multiPilotMinutes: v }))} displayFormat={timeFormat} />
-                <HoursField label={t('baseline.fields.soloHours')} value={form.soloMinutes} onChange={(v) => setForm((s) => ({ ...s, soloMinutes: v }))} displayFormat={timeFormat} />
-                <HoursField label={t('baseline.fields.crossCountryHours')} value={form.crossCountryMinutes} onChange={(v) => setForm((s) => ({ ...s, crossCountryMinutes: v }))} displayFormat={timeFormat} />
-                <HoursField label={t('baseline.fields.nightHours')} value={form.nightMinutes} onChange={(v) => setForm((s) => ({ ...s, nightMinutes: v }))} displayFormat={timeFormat} />
-                <HoursField label={t('baseline.fields.ifrHours')} value={form.ifrMinutes} onChange={(v) => setForm((s) => ({ ...s, ifrMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField
+                  label={t('baseline.fields.totalHours')}
+                  value={form.totalMinutes}
+                  onChange={(v) => setForm((s) => ({ ...s, totalMinutes: v }))}
+                  displayFormat={timeFormat}
+                />
+                <HoursField
+                  label={t('baseline.fields.picHours')}
+                  value={form.picMinutes}
+                  onChange={(v) => setForm((s) => ({ ...s, picMinutes: v }))}
+                  displayFormat={timeFormat}
+                />
+                <HoursField
+                  label={t('baseline.fields.sicHours')}
+                  value={form.sicMinutes}
+                  onChange={(v) => setForm((s) => ({ ...s, sicMinutes: v }))}
+                  displayFormat={timeFormat}
+                />
+                <HoursField
+                  label={t('baseline.fields.dualHours')}
+                  value={form.dualMinutes}
+                  onChange={(v) => setForm((s) => ({ ...s, dualMinutes: v }))}
+                  displayFormat={timeFormat}
+                />
+                <HoursField
+                  label={t('baseline.fields.dualGivenHours')}
+                  value={form.dualGivenMinutes}
+                  onChange={(v) => setForm((s) => ({ ...s, dualGivenMinutes: v }))}
+                  displayFormat={timeFormat}
+                />
+                <HoursField
+                  label={t('baseline.fields.multiPilotHours')}
+                  value={form.multiPilotMinutes}
+                  onChange={(v) => setForm((s) => ({ ...s, multiPilotMinutes: v }))}
+                  displayFormat={timeFormat}
+                />
+                <HoursField
+                  label={t('baseline.fields.soloHours')}
+                  value={form.soloMinutes}
+                  onChange={(v) => setForm((s) => ({ ...s, soloMinutes: v }))}
+                  displayFormat={timeFormat}
+                />
+                <HoursField
+                  label={t('baseline.fields.crossCountryHours')}
+                  value={form.crossCountryMinutes}
+                  onChange={(v) => setForm((s) => ({ ...s, crossCountryMinutes: v }))}
+                  displayFormat={timeFormat}
+                />
+                <HoursField
+                  label={t('baseline.fields.nightHours')}
+                  value={form.nightMinutes}
+                  onChange={(v) => setForm((s) => ({ ...s, nightMinutes: v }))}
+                  displayFormat={timeFormat}
+                />
+                <HoursField
+                  label={t('baseline.fields.ifrHours')}
+                  value={form.ifrMinutes}
+                  onChange={(v) => setForm((s) => ({ ...s, ifrMinutes: v }))}
+                  displayFormat={timeFormat}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <Field label={t('baseline.fields.landingsDay')}>
-                  <NumberInput value={form.landingsDay} onChange={(v) => setForm((s) => ({ ...s, landingsDay: v }))} integer />
+                  <NumberInput
+                    value={form.landingsDay}
+                    onChange={(v) => setForm((s) => ({ ...s, landingsDay: v }))}
+                    integer
+                  />
                 </Field>
                 <Field label={t('baseline.fields.landingsNight')}>
-                  <NumberInput value={form.landingsNight} onChange={(v) => setForm((s) => ({ ...s, landingsNight: v }))} integer />
+                  <NumberInput
+                    value={form.landingsNight}
+                    onChange={(v) => setForm((s) => ({ ...s, landingsNight: v }))}
+                    integer
+                  />
                 </Field>
               </div>
 
@@ -326,12 +377,7 @@ function HoursField({
   const placeholder = displayFormat === 'decimal' ? '0.0' : '0:00';
   return (
     <Field label={label}>
-      <DurationInput
-        value={value}
-        onChange={onChange}
-        displayFormat={displayFormat}
-        placeholder={placeholder}
-      />
+      <DurationInput value={value} onChange={onChange} displayFormat={displayFormat} placeholder={placeholder} />
     </Field>
   );
 }
@@ -352,7 +398,7 @@ function NumberInput({
       type="number"
       inputMode={integer ? 'numeric' : 'decimal'}
       min={0}
-      step={integer ? 1 : step ?? '0.1'}
+      step={integer ? 1 : (step ?? '0.1')}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="input"

@@ -24,14 +24,22 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
     <div
       className="card hover-lift tap-none"
       onClick={onClick}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       role="button"
       tabIndex={0}
       aria-label={`Flight ${flight.departureIcao || '—'} to ${flight.arrivalIcao || '—'} on ${fmtDate(flight.date)}, ${fmtDuration(flight.totalTime)}`}
     >
       {/* Route hero */}
       <div className="flex items-center gap-3 mb-3">
-        <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 shrink-0" aria-hidden="true">
+        <span
+          className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300 shrink-0"
+          aria-hidden="true"
+        >
           <PlaneTakeoff className="w-[18px] h-[18px]" />
         </span>
         <div className="flex-1 min-w-0">
@@ -48,15 +56,15 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
             )}
           </p>
         </div>
-        <span className="badge-info font-semibold shrink-0">
-          {fmtDuration(flight.totalTime)}
-        </span>
+        <span className="badge-info font-semibold shrink-0">{fmtDuration(flight.totalTime)}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
         <div>
           <span className="text-slate-500 dark:text-slate-400">{t('fields.aircraftReg')}:</span>{' '}
-          <span className="font-medium font-mono tabular-nums text-slate-700 dark:text-slate-200">{flight.aircraftReg}</span>
+          <span className="font-medium font-mono tabular-nums text-slate-700 dark:text-slate-200">
+            {flight.aircraftReg}
+          </span>
         </div>
         <div>
           <span className="text-slate-500 dark:text-slate-400">{t('fields.aircraftType')}:</span>{' '}
@@ -64,12 +72,14 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
         </div>
         {flight.picTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">{t('fields.picTime')}:</span> <span className="font-mono tabular-nums">{fmtDuration(flight.picTime)}</span>
+            <span className="text-slate-500 dark:text-slate-400">{t('fields.picTime')}:</span>{' '}
+            <span className="font-mono tabular-nums">{fmtDuration(flight.picTime)}</span>
           </div>
         )}
         {flight.dualTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">{t('fields.dualTime')}:</span> <span className="font-mono tabular-nums">{fmtDuration(flight.dualTime)}</span>
+            <span className="text-slate-500 dark:text-slate-400">{t('fields.dualTime')}:</span>{' '}
+            <span className="font-mono tabular-nums">{fmtDuration(flight.dualTime)}</span>
           </div>
         )}
         {!flight.isPic && !flight.isDual && (
@@ -79,19 +89,23 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
         )}
         {flight.nightTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">{t('fields.nightTime')}:</span> <span className="font-mono tabular-nums">{fmtDuration(flight.nightTime)}</span>
+            <span className="text-slate-500 dark:text-slate-400">{t('fields.nightTime')}:</span>{' '}
+            <span className="font-mono tabular-nums">{fmtDuration(flight.nightTime)}</span>
           </div>
         )}
         {flight.ifrTime > 0 && (
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="text-slate-500 dark:text-slate-400">{t('fields.ifrTime')}:</span> <span className="font-mono tabular-nums">{fmtDuration(flight.ifrTime)}</span>
+            <span className="text-slate-500 dark:text-slate-400">{t('fields.ifrTime')}:</span>{' '}
+            <span className="font-mono tabular-nums">{fmtDuration(flight.ifrTime)}</span>
           </div>
         )}
         {totalLandings > 0 && (
           <div className="text-slate-600 dark:text-slate-300 inline-flex items-center gap-1">
             <PlaneLanding className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
             <span className="text-slate-500 dark:text-slate-400">{t('fields.landings')}:</span>
-            <span className="font-mono tabular-nums">{flight.landingsDay}D / {flight.landingsNight}N</span>
+            <span className="font-mono tabular-nums">
+              {flight.landingsDay}D / {flight.landingsNight}N
+            </span>
           </div>
         )}
       </div>
@@ -102,7 +116,10 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
 
       <div className="flex gap-2 mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
         <button
-          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
           className="btn-secondary btn-sm flex-1"
           aria-label={`Edit flight ${flight.departureIcao || ''} to ${flight.arrivalIcao || ''}`}
         >
@@ -110,7 +127,10 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
           Edit
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
           className="btn-secondary btn-sm flex-1 hover:bg-red-50 hover:text-red-700 hover:border-red-200 dark:hover:bg-red-900/20 dark:hover:text-red-400"
           aria-label={`Delete flight ${flight.departureIcao || ''} to ${flight.arrivalIcao || ''}`}
         >

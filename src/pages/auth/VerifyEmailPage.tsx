@@ -53,18 +53,14 @@ export default function VerifyEmailPage() {
 
         <div className="card p-6 space-y-4 text-center" data-testid="verify-email-card">
           {status === 'verifying' && (
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              {t('auth:verifyEmail.verifying')}
-            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t('auth:verifyEmail.verifying')}</p>
           )}
           {status === 'success' && (
             <>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {t('auth:verifyEmail.success')}
               </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                {t('auth:verifyEmail.redirecting')}
-              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">{t('auth:verifyEmail.redirecting')}</p>
             </>
           )}
           {status === 'invalid' && (

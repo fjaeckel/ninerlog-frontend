@@ -32,8 +32,12 @@ const wrap = (qc: QueryClient) =>
   };
 
 async function refocus() {
-  act(() => { focusManager.setFocused(false); });
-  await act(async () => { focusManager.setFocused(true); });
+  act(() => {
+    focusManager.setFocused(false);
+  });
+  await act(async () => {
+    focusManager.setFocused(true);
+  });
 }
 
 describe('useFlights refetch behaviour', () => {
@@ -76,7 +80,9 @@ describe('useFlights refetch behaviour', () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(calls).toBe(1);
 
-      await act(async () => { vi.advanceTimersByTime(FLIGHTS_STALE_TIME_MS + 1_000); });
+      await act(async () => {
+        vi.advanceTimersByTime(FLIGHTS_STALE_TIME_MS + 1_000);
+      });
       await refocus();
       await waitFor(() => expect(calls).toBe(2));
     } finally {
@@ -91,7 +97,9 @@ describe('useFlights refetch behaviour', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(calls).toBe(1);
 
-    await act(async () => { invalidateFlightDependentQueries(qc); });
+    await act(async () => {
+      invalidateFlightDependentQueries(qc);
+    });
     await waitFor(() => expect(calls).toBe(2));
   });
 

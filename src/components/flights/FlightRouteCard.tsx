@@ -44,10 +44,9 @@ export default function FlightRouteCard({ flight }: { flight: Flight }) {
   if (flight.launchMethod) {
     meta.push({
       label: t('fields.launchMethod'),
-      value: t(
-        `launchMethods.${flight.launchMethod === 'self-launch' ? 'selfLaunch' : flight.launchMethod}`,
-        { defaultValue: flight.launchMethod }
-      ),
+      value: t(`launchMethods.${flight.launchMethod === 'self-launch' ? 'selfLaunch' : flight.launchMethod}`, {
+        defaultValue: flight.launchMethod,
+      }),
     });
   }
 
@@ -71,9 +70,7 @@ export default function FlightRouteCard({ flight }: { flight: Flight }) {
             <span className="font-mono font-semibold text-slate-800 dark:text-slate-100 break-all">
               {flight.aircraftReg}
             </span>
-            <span className="text-sm text-slate-500 dark:text-slate-400 break-words">
-              {flight.aircraftType}
-            </span>
+            <span className="text-sm text-slate-500 dark:text-slate-400 break-words">{flight.aircraftType}</span>
           </p>
         </div>
       </div>
@@ -160,9 +157,7 @@ function RouteStop({
       </div>
 
       <div className={cn('min-w-0', !isLast && 'pb-5')}>
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
-          {eyebrow}
-        </p>
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">{eyebrow}</p>
         <div className="flex flex-wrap items-baseline gap-x-2">
           {code && (
             <span className="text-lg font-semibold font-mono tabular-nums tracking-tight text-slate-800 dark:text-slate-100">
@@ -187,9 +182,7 @@ function RouteStop({
             {times.map(({ label, value }) => (
               <span key={label} className="inline-flex items-baseline gap-1.5">
                 {label}
-                <span className="font-mono tabular-nums text-slate-700 dark:text-slate-200">
-                  {value}
-                </span>
+                <span className="font-mono tabular-nums text-slate-700 dark:text-slate-200">{value}</span>
               </span>
             ))}
             <span className="text-slate-400 dark:text-slate-500">{utcLabel}</span>

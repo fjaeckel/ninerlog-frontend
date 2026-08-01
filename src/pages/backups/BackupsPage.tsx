@@ -225,27 +225,19 @@ export default function BackupsPage() {
         <div className="grid gap-4">
           {sortedDestinations.map((dest) => {
             const statusClass =
-              dest.status === 'active'
-                ? 'badge-current'
-                : dest.status === 'error'
-                ? 'badge-expired'
-                : 'badge-expiring';
+              dest.status === 'active' ? 'badge-current' : dest.status === 'error' ? 'badge-expired' : 'badge-expiring';
             const isBusy = busyId === dest.id;
             return (
               <div key={dest.id} className="card" data-testid="backup-destination">
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate">
-                      {dest.displayName}
-                    </h3>
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate">{dest.displayName}</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       {dest.provider} · {t(`schedule.${dest.schedule}`)}
                       {!dest.enabled && <> · {t('paused')}</>}
                     </p>
                   </div>
-                  <span className={`badge text-xs shrink-0 ${statusClass}`}>
-                    {t(`status.${dest.status}`)}
-                  </span>
+                  <span className={`badge text-xs shrink-0 ${statusClass}`}>{t(`status.${dest.status}`)}</span>
                 </div>
 
                 <dl className="text-sm grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 mb-4">
@@ -263,7 +255,9 @@ export default function BackupsPage() {
                   )}
                   {dest.credentialHint && (
                     <div className="flex justify-between sm:block">
-                      <dt className="text-slate-500 dark:text-slate-400 sm:text-xs sm:uppercase">{t('credentialHint')}</dt>
+                      <dt className="text-slate-500 dark:text-slate-400 sm:text-xs sm:uppercase">
+                        {t('credentialHint')}
+                      </dt>
                       <dd className="text-slate-700 dark:text-slate-300">{dest.credentialHint}</dd>
                     </div>
                   )}

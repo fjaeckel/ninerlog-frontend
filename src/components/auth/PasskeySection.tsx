@@ -1,11 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  usePasskeys,
-  useRegisterPasskey,
-  useDeletePasskey,
-  passkeysSupported,
-} from '../../hooks/usePasskeys';
+import { usePasskeys, useRegisterPasskey, useDeletePasskey, passkeysSupported } from '../../hooks/usePasskeys';
 import { createLogger } from '../../lib/logger';
 
 const log = createLogger('PasskeySection');
@@ -54,14 +49,10 @@ export function PasskeySection() {
   return (
     <div className="card">
       <h2 className="section-title mb-2">{t('passkeys.title')}</h2>
-      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-        {t('passkeys.description')}
-      </p>
+      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{t('passkeys.description')}</p>
 
       {!supported ? (
-        <p className="text-sm text-amber-700 dark:text-amber-300">
-          {t('passkeys.unsupported')}
-        </p>
+        <p className="text-sm text-amber-700 dark:text-amber-300">{t('passkeys.unsupported')}</p>
       ) : (
         <div className="space-y-4">
           {isLoading ? (
@@ -79,7 +70,10 @@ export function PasskeySection() {
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {t('passkeys.created')}: {formatDate(p.createdAt, i18n.language)}
                       {p.lastUsedAt && (
-                        <> · {t('passkeys.lastUsed')}: {formatDate(p.lastUsedAt, i18n.language)}</>
+                        <>
+                          {' '}
+                          · {t('passkeys.lastUsed')}: {formatDate(p.lastUsedAt, i18n.language)}
+                        </>
                       )}
                     </p>
                   </div>
@@ -108,11 +102,7 @@ export function PasskeySection() {
               maxLength={100}
               className="input"
             />
-            <button
-              onClick={handleRegister}
-              disabled={registerPasskey.isPending}
-              className="btn-primary"
-            >
+            <button onClick={handleRegister} disabled={registerPasskey.isPending} className="btn-primary">
               {registerPasskey.isPending ? t('passkeys.registering') : t('passkeys.add')}
             </button>
             {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}

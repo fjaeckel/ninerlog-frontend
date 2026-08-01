@@ -38,9 +38,7 @@ export default function BackupRunsList({ destinationId }: BackupRunsListProps) {
   }
 
   if (error) {
-    return (
-      <div className="text-sm text-red-600 dark:text-red-400 py-4">{t('runs.loadError')}</div>
-    );
+    return <div className="text-sm text-red-600 dark:text-red-400 py-4">{t('runs.loadError')}</div>;
   }
 
   if (!data || data.data.length === 0) {
@@ -51,9 +49,7 @@ export default function BackupRunsList({ destinationId }: BackupRunsListProps) {
 
   return (
     <div className="overflow-x-auto">
-      {hasSkipped && (
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t('runs.skippedNote')}</p>
-      )}
+      {hasSkipped && <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t('runs.skippedNote')}</p>}
       <table className="w-full text-sm">
         <thead className="text-xs uppercase text-slate-500 dark:text-slate-400">
           <tr>
@@ -68,11 +64,7 @@ export default function BackupRunsList({ destinationId }: BackupRunsListProps) {
         <tbody>
           {data.data.map((run) => {
             const badge =
-              run.status === 'success'
-                ? 'badge-current'
-                : run.status === 'failed'
-                ? 'badge-expired'
-                : 'badge-expiring';
+              run.status === 'success' ? 'badge-current' : run.status === 'failed' ? 'badge-expired' : 'badge-expiring';
             return (
               <tr key={run.id} className="border-t border-slate-100 dark:border-slate-800 align-top">
                 <td className="py-2 pr-3">

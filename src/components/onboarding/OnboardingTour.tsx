@@ -213,10 +213,7 @@ export function OnboardingTour() {
     >
       {/* Click-blocking backdrop. When no target is highlighted it also provides
           the dimming; otherwise the spotlight's box-shadow does. */}
-      <div
-        className={spotlight ? 'absolute inset-0' : 'absolute inset-0 bg-slate-950/70'}
-        aria-hidden="true"
-      />
+      <div className={spotlight ? 'absolute inset-0' : 'absolute inset-0 bg-slate-950/70'} aria-hidden="true" />
 
       {/* Spotlight cut-out around the active menu item. */}
       {spotlight && (
@@ -224,8 +221,7 @@ export function OnboardingTour() {
           className="absolute rounded-xl pointer-events-none transition-all duration-300 ease-out"
           style={{
             ...spotlight,
-            boxShadow:
-              '0 0 0 3px #fff, 0 0 0 6px rgba(59,130,246,0.7), 0 0 0 9999px rgba(2,6,23,0.7)',
+            boxShadow: '0 0 0 3px #fff, 0 0 0 6px rgba(59,130,246,0.7), 0 0 0 9999px rgba(2,6,23,0.7)',
           }}
           aria-hidden="true"
         />
@@ -253,9 +249,7 @@ export function OnboardingTour() {
               <span
                 key={s.id}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === stepIndex
-                    ? 'w-5 bg-blue-600 dark:bg-blue-400'
-                    : 'w-1.5 bg-slate-200 dark:bg-slate-600'
+                  i === stepIndex ? 'w-5 bg-blue-600 dark:bg-blue-400' : 'w-1.5 bg-slate-200 dark:bg-slate-600'
                 }`}
               />
             ))}
@@ -272,9 +266,7 @@ export function OnboardingTour() {
               {step.icon}
             </span>
           )}
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 leading-snug pt-1">
-            {title}
-          </h2>
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 leading-snug pt-1">{title}</h2>
         </div>
 
         <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{body}</p>

@@ -26,19 +26,24 @@ describe('CurrencyPage', () => {
     useAuthStore.setState({ user: { id: 'u1', name: 'Pilot', email: 'p@t.com' }, accessToken: 'tok' } as any);
 
     vi.spyOn(useCustomCurrencyHook, 'useCustomCurrencies').mockReturnValue({
-      data: [], isLoading: false, error: null,
+      data: [],
+      isLoading: false,
+      error: null,
     } as any);
 
     vi.spyOn(useLicensesHook, 'useLicenses').mockReturnValue({
-      data: [
-        { id: 'lic-1', regulatoryAuthority: 'EASA', licenseType: 'PPL', licenseNumber: 'DE.FCL.12345' },
-      ],
-      isLoading: false, error: null,
+      data: [{ id: 'lic-1', regulatoryAuthority: 'EASA', licenseType: 'PPL', licenseNumber: 'DE.FCL.12345' }],
+      isLoading: false,
+      error: null,
     } as any);
   });
 
   it('renders page title', () => {
-    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({ data: { ratings: [], passengerCurrency: [] }, isLoading: false, error: null } as any);
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
+      data: { ratings: [], passengerCurrency: [] },
+      isLoading: false,
+      error: null,
+    } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
     renderWithProviders(<CurrencyPage />);
@@ -50,15 +55,21 @@ describe('CurrencyPage', () => {
       data: {
         ratings: [
           {
-            classRatingId: 'cr-1', classType: 'SEP_LAND', licenseId: 'lic-1',
-            regulatoryAuthority: 'EASA', licenseType: 'PPL', status: 'current',
-            message: 'EASA SEP_LAND current', ruleDescription: 'Requires 12h total + 6h PIC...',
+            classRatingId: 'cr-1',
+            classType: 'SEP_LAND',
+            licenseId: 'lic-1',
+            regulatoryAuthority: 'EASA',
+            licenseType: 'PPL',
+            status: 'current',
+            message: 'EASA SEP_LAND current',
+            ruleDescription: 'Requires 12h total + 6h PIC...',
             requirements: [],
           },
         ],
         passengerCurrency: [],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -73,12 +84,31 @@ describe('CurrencyPage', () => {
     vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
       data: {
         ratings: [
-          { classRatingId: 'cr-1', classType: 'SEP_LAND', licenseId: 'lic-1', regulatoryAuthority: 'EASA', licenseType: 'PPL', status: 'current', message: 'ok', requirements: [] },
-          { classRatingId: 'cr-2', classType: 'IR', licenseId: 'lic-1', regulatoryAuthority: 'EASA', licenseType: 'PPL', status: 'expiring', message: 'warn', requirements: [] },
+          {
+            classRatingId: 'cr-1',
+            classType: 'SEP_LAND',
+            licenseId: 'lic-1',
+            regulatoryAuthority: 'EASA',
+            licenseType: 'PPL',
+            status: 'current',
+            message: 'ok',
+            requirements: [],
+          },
+          {
+            classRatingId: 'cr-2',
+            classType: 'IR',
+            licenseId: 'lic-1',
+            regulatoryAuthority: 'EASA',
+            licenseType: 'PPL',
+            status: 'expiring',
+            message: 'warn',
+            requirements: [],
+          },
         ],
         passengerCurrency: [],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -92,11 +122,20 @@ describe('CurrencyPage', () => {
     vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
       data: {
         ratings: [
-          { classRatingId: 'cr-1', classType: 'SEP_LAND', licenseId: 'lic-1', regulatoryAuthority: 'EASA', status: 'expired', message: 'expired', requirements: [] },
+          {
+            classRatingId: 'cr-1',
+            classType: 'SEP_LAND',
+            licenseId: 'lic-1',
+            regulatoryAuthority: 'EASA',
+            status: 'expired',
+            message: 'expired',
+            requirements: [],
+          },
         ],
         passengerCurrency: [],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -108,11 +147,21 @@ describe('CurrencyPage', () => {
     vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
       data: {
         ratings: [
-          { classRatingId: 'cr-1', classType: 'SEP_LAND', licenseId: 'lic-1', regulatoryAuthority: 'EASA', licenseType: 'PPL', status: 'current', message: 'ok', requirements: [] },
+          {
+            classRatingId: 'cr-1',
+            classType: 'SEP_LAND',
+            licenseId: 'lic-1',
+            regulatoryAuthority: 'EASA',
+            licenseType: 'PPL',
+            status: 'current',
+            message: 'ok',
+            requirements: [],
+          },
         ],
         passengerCurrency: [],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -124,19 +173,28 @@ describe('CurrencyPage', () => {
   });
 
   it('shows credentials section with validity status', () => {
-    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({ data: { ratings: [], passengerCurrency: [] }, isLoading: false, error: null } as any);
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
+      data: { ratings: [], passengerCurrency: [] },
+      isLoading: false,
+      error: null,
+    } as any);
 
     const in30Days = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({
       data: [
         {
-          id: 'cred-1', credentialType: 'EASA_CLASS2_MEDICAL',
-          credentialNumber: 'MED-001', issuingAuthority: 'AME Dr. Schmidt',
-          issueDate: '2025-01-01', expiryDate: in30Days,
-          createdAt: '', updatedAt: '',
+          id: 'cred-1',
+          credentialType: 'EASA_CLASS2_MEDICAL',
+          credentialNumber: 'MED-001',
+          issuingAuthority: 'AME Dr. Schmidt',
+          issueDate: '2025-01-01',
+          expiryDate: in30Days,
+          createdAt: '',
+          updatedAt: '',
         },
       ],
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<CurrencyPage />);
@@ -147,19 +205,28 @@ describe('CurrencyPage', () => {
   });
 
   it('shows valid badge for non-expiring credential', () => {
-    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({ data: { ratings: [], passengerCurrency: [] }, isLoading: false, error: null } as any);
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
+      data: { ratings: [], passengerCurrency: [] },
+      isLoading: false,
+      error: null,
+    } as any);
 
     const inOneYear = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({
       data: [
         {
-          id: 'cred-2', credentialType: 'FAA_CLASS3_MEDICAL',
-          credentialNumber: 'FAA-001', issuingAuthority: 'FAA AME',
-          issueDate: '2025-06-01', expiryDate: inOneYear,
-          createdAt: '', updatedAt: '',
+          id: 'cred-2',
+          credentialType: 'FAA_CLASS3_MEDICAL',
+          credentialNumber: 'FAA-001',
+          issuingAuthority: 'FAA AME',
+          issueDate: '2025-06-01',
+          expiryDate: inOneYear,
+          createdAt: '',
+          updatedAt: '',
         },
       ],
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<CurrencyPage />);
@@ -167,7 +234,11 @@ describe('CurrencyPage', () => {
   });
 
   it('shows empty state when no class ratings', () => {
-    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({ data: { ratings: [], passengerCurrency: [] }, isLoading: false, error: null } as any);
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
+      data: { ratings: [], passengerCurrency: [] },
+      isLoading: false,
+      error: null,
+    } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
     renderWithProviders(<CurrencyPage />);
@@ -176,8 +247,16 @@ describe('CurrencyPage', () => {
   });
 
   it('shows loading state', () => {
-    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({ data: undefined, isLoading: true, error: null } as any);
-    vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: undefined, isLoading: true, error: null } as any);
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: null,
+    } as any);
+    vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: null,
+    } as any);
 
     renderWithProviders(<CurrencyPage />);
     expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -187,19 +266,36 @@ describe('CurrencyPage', () => {
     vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
       data: {
         ratings: [
-          { classRatingId: 'cr-1', classType: 'SEP_LAND', licenseId: 'lic-1', regulatoryAuthority: 'EASA', status: 'expiring', message: 'warn', requirements: [] },
+          {
+            classRatingId: 'cr-1',
+            classType: 'SEP_LAND',
+            licenseId: 'lic-1',
+            regulatoryAuthority: 'EASA',
+            status: 'expiring',
+            message: 'warn',
+            requirements: [],
+          },
         ],
         passengerCurrency: [],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     const in10Days = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({
       data: [
-        { id: 'c1', credentialType: 'EASA_CLASS2_MEDICAL', expiryDate: in10Days, issueDate: '2025-01-01', createdAt: '', updatedAt: '' },
+        {
+          id: 'c1',
+          credentialType: 'EASA_CLASS2_MEDICAL',
+          expiryDate: in10Days,
+          issueDate: '2025-01-01',
+          createdAt: '',
+          updatedAt: '',
+        },
       ],
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<CurrencyPage />);
@@ -212,15 +308,22 @@ describe('CurrencyPage', () => {
         ratings: [],
         passengerCurrency: [
           {
-            classType: 'SEP_LAND', regulatoryAuthority: 'EASA',
-            dayStatus: 'current', nightStatus: 'expired',
-            dayLandings: 5, nightLandings: 1, dayRequired: 3, nightRequired: 3,
+            classType: 'SEP_LAND',
+            regulatoryAuthority: 'EASA',
+            dayStatus: 'current',
+            nightStatus: 'expired',
+            dayLandings: 5,
+            nightLandings: 1,
+            dayRequired: 3,
+            nightRequired: 3,
             message: 'EASA SEP_LAND — day passenger current, night not current',
-            ruleDescription: '3 takeoffs & landings in same type/class within preceding 90 days to carry passengers (EASA FCL.060(b))',
+            ruleDescription:
+              '3 takeoffs & landings in same type/class within preceding 90 days to carry passengers (EASA FCL.060(b))',
           },
         ],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -237,15 +340,21 @@ describe('CurrencyPage', () => {
         ratings: [],
         passengerCurrency: [
           {
-            classType: 'SEP_LAND', regulatoryAuthority: 'FAA',
-            dayStatus: 'current', nightStatus: 'current',
-            dayLandings: 5, nightLandings: 4, dayRequired: 3, nightRequired: 3,
+            classType: 'SEP_LAND',
+            regulatoryAuthority: 'FAA',
+            dayStatus: 'current',
+            nightStatus: 'current',
+            dayLandings: 5,
+            nightLandings: 4,
+            dayRequired: 3,
+            nightRequired: 3,
             message: 'FAA SEP_LAND — current for day and night passengers',
             ruleDescription: '14 CFR 61.57(a)/(b)',
           },
         ],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -259,7 +368,8 @@ describe('CurrencyPage', () => {
   it('hides passenger currency section when empty', () => {
     vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
       data: { ratings: [], passengerCurrency: [] },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -272,22 +382,33 @@ describe('CurrencyPage', () => {
       data: {
         ratings: [
           {
-            classRatingId: 'cr-1', classType: 'SEP_LAND', licenseId: 'lic-1',
-            regulatoryAuthority: 'EASA', licenseType: 'PPL', status: 'current',
-            message: 'EASA SEP_LAND current', requirements: [],
+            classRatingId: 'cr-1',
+            classType: 'SEP_LAND',
+            licenseId: 'lic-1',
+            regulatoryAuthority: 'EASA',
+            licenseType: 'PPL',
+            status: 'current',
+            message: 'EASA SEP_LAND current',
+            requirements: [],
           },
         ],
         passengerCurrency: [
           {
-            classType: 'SEP_LAND', regulatoryAuthority: 'EASA',
-            dayStatus: 'current', nightStatus: 'expired',
-            dayLandings: 4, nightLandings: 0, dayRequired: 3, nightRequired: 3,
+            classType: 'SEP_LAND',
+            regulatoryAuthority: 'EASA',
+            dayStatus: 'current',
+            nightStatus: 'expired',
+            dayLandings: 4,
+            nightLandings: 0,
+            dayRequired: 3,
+            nightRequired: 3,
             message: 'day current, night not current',
             ruleDescription: 'FCL.060(b)',
           },
         ],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -309,7 +430,8 @@ describe('CurrencyPage', () => {
           message: 'Flight review current — completed 2025-06-15, valid until 2027-06-30 (14 CFR 61.56)',
         },
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -330,7 +452,8 @@ describe('CurrencyPage', () => {
           message: 'No flight review on record — required every 24 calendar months (14 CFR 61.56)',
         },
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -343,12 +466,22 @@ describe('CurrencyPage', () => {
     vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
       data: {
         ratings: [
-          { classRatingId: 'cr-1', classType: 'SEP_LAND', licenseId: 'lic-1', regulatoryAuthority: 'EASA', licenseType: 'PPL', status: 'current', message: 'ok', requirements: [] },
+          {
+            classRatingId: 'cr-1',
+            classType: 'SEP_LAND',
+            licenseId: 'lic-1',
+            regulatoryAuthority: 'EASA',
+            licenseType: 'PPL',
+            status: 'current',
+            message: 'ok',
+            requirements: [],
+          },
         ],
         passengerCurrency: [],
         // no flightReview — EASA doesn't use it
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -362,16 +495,22 @@ describe('CurrencyPage', () => {
         ratings: [],
         passengerCurrency: [
           {
-            classType: 'SEP_LAND', regulatoryAuthority: 'FAA',
-            dayStatus: 'current', nightStatus: 'unknown',
-            dayLandings: 5, nightLandings: 0, dayRequired: 3, nightRequired: 0,
+            classType: 'SEP_LAND',
+            regulatoryAuthority: 'FAA',
+            dayStatus: 'current',
+            nightStatus: 'unknown',
+            dayLandings: 5,
+            nightLandings: 0,
+            dayRequired: 3,
+            nightRequired: 0,
             nightPrivilege: false,
             message: 'FAA SEP_LAND — current for day passengers (night not applicable for Sport)',
             ruleDescription: '14 CFR 61.57(a)',
           },
         ],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -387,16 +526,22 @@ describe('CurrencyPage', () => {
         ratings: [],
         passengerCurrency: [
           {
-            classType: 'SEP_LAND', regulatoryAuthority: 'EASA',
-            dayStatus: 'current', nightStatus: 'expired',
-            dayLandings: 5, nightLandings: 1, dayRequired: 3, nightRequired: 3,
+            classType: 'SEP_LAND',
+            regulatoryAuthority: 'EASA',
+            dayStatus: 'current',
+            nightStatus: 'expired',
+            dayLandings: 5,
+            nightLandings: 1,
+            dayRequired: 3,
+            nightRequired: 3,
             nightPrivilege: true,
             message: 'EASA SEP_LAND — day current, night not current',
             ruleDescription: 'FCL.060(b)',
           },
         ],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -412,9 +557,14 @@ describe('CurrencyPage', () => {
         ratings: [],
         passengerCurrency: [
           {
-            classType: 'SEP_LAND', regulatoryAuthority: 'EASA',
-            dayStatus: 'current', nightStatus: 'unknown',
-            dayLandings: 5, nightLandings: 0, dayRequired: 3, nightRequired: 0,
+            classType: 'SEP_LAND',
+            regulatoryAuthority: 'EASA',
+            dayStatus: 'current',
+            nightStatus: 'unknown',
+            dayLandings: 5,
+            nightLandings: 0,
+            dayRequired: 3,
+            nightRequired: 0,
             nightPrivilege: false,
             message: 'LAPL SEP_LAND — current',
             ruleDescription: 'FCL.060(b)',
@@ -425,7 +575,8 @@ describe('CurrencyPage', () => {
           },
         ],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -440,9 +591,14 @@ describe('CurrencyPage', () => {
         ratings: [],
         passengerCurrency: [
           {
-            classType: 'SEP_LAND', regulatoryAuthority: 'EASA',
-            dayStatus: 'current', nightStatus: 'unknown',
-            dayLandings: 5, nightLandings: 0, dayRequired: 3, nightRequired: 0,
+            classType: 'SEP_LAND',
+            regulatoryAuthority: 'EASA',
+            dayStatus: 'current',
+            nightStatus: 'unknown',
+            dayLandings: 5,
+            nightLandings: 0,
+            dayRequired: 3,
+            nightRequired: 0,
             nightPrivilege: false,
             message: 'current',
             ruleDescription: 'FCL.060(b)',
@@ -453,7 +609,8 @@ describe('CurrencyPage', () => {
           },
         ],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 
@@ -468,9 +625,14 @@ describe('CurrencyPage', () => {
         ratings: [],
         passengerCurrency: [
           {
-            classType: 'SEP_LAND', regulatoryAuthority: 'FAA',
-            dayStatus: 'current', nightStatus: 'current',
-            dayLandings: 5, nightLandings: 4, dayRequired: 3, nightRequired: 3,
+            classType: 'SEP_LAND',
+            regulatoryAuthority: 'FAA',
+            dayStatus: 'current',
+            nightStatus: 'current',
+            dayLandings: 5,
+            nightLandings: 4,
+            dayRequired: 3,
+            nightRequired: 3,
             nightPrivilege: true,
             message: 'current',
             ruleDescription: '14 CFR 61.57',
@@ -478,7 +640,8 @@ describe('CurrencyPage', () => {
           },
         ],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
 

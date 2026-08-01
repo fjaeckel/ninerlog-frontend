@@ -34,24 +34,40 @@ describe('DashboardPage Currency Integration', () => {
     // Mock licenses
     vi.spyOn(useLicensesHook, 'useLicenses').mockReturnValue({
       data: [{ id: 'lic-1', regulatoryAuthority: 'EASA', licenseType: 'PPL' }],
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     // Mock flights
     vi.spyOn(useFlightsHook, 'useFlights').mockReturnValue({
       data: { data: [], pagination: { total: 0 } },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     // Mock statistics
     vi.spyOn(useStatisticsHook, 'useLicenseStatistics').mockReturnValue({
-      data: { totalFlights: 10, totalMinutes: 50, picMinutes: 40, dualMinutes: 10, nightMinutes: 5, ifrMinutes: 3, soloMinutes: 30, crossCountryMinutes: 25, landingsDay: 20, landingsNight: 5 },
-      isLoading: false, error: null,
+      data: {
+        totalFlights: 10,
+        totalMinutes: 50,
+        picMinutes: 40,
+        dualMinutes: 10,
+        nightMinutes: 5,
+        ifrMinutes: 3,
+        soloMinutes: 30,
+        crossCountryMinutes: 25,
+        landingsDay: 20,
+        landingsNight: 5,
+      },
+      isLoading: false,
+      error: null,
     } as any);
 
     // Mock credentials
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({
-      data: [], isLoading: false, error: null,
+      data: [],
+      isLoading: false,
+      error: null,
     } as any);
   });
 
@@ -69,13 +85,28 @@ describe('DashboardPage Currency Integration', () => {
             message: 'EASA SEP_LAND current — all revalidation requirements met',
             expiryDate: '2027-06-15',
             requirements: [
-              { name: 'Total Time', met: true, current: 15, required: 12, unit: 'minutes', message: '900 / 720 minutes in class' },
-              { name: 'PIC Time', met: true, current: 8, required: 6, unit: 'minutes', message: '480 / 360 PIC minutes' },
+              {
+                name: 'Total Time',
+                met: true,
+                current: 15,
+                required: 12,
+                unit: 'minutes',
+                message: '900 / 720 minutes in class',
+              },
+              {
+                name: 'PIC Time',
+                met: true,
+                current: 8,
+                required: 6,
+                unit: 'minutes',
+                message: '480 / 360 PIC minutes',
+              },
             ],
           },
         ],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<DashboardPage />);
@@ -93,20 +124,38 @@ describe('DashboardPage Currency Integration', () => {
       data: {
         ratings: [
           {
-            classRatingId: 'cr-1', classType: 'SEP_LAND', licenseId: 'lic-1',
-            regulatoryAuthority: 'EASA', licenseType: 'PPL', status: 'current',
-            message: 'EASA SEP_LAND current', requirements: [],
+            classRatingId: 'cr-1',
+            classType: 'SEP_LAND',
+            licenseId: 'lic-1',
+            regulatoryAuthority: 'EASA',
+            licenseType: 'PPL',
+            status: 'current',
+            message: 'EASA SEP_LAND current',
+            requirements: [],
           },
           {
-            classRatingId: 'cr-2', classType: 'IR', licenseId: 'lic-1',
-            regulatoryAuthority: 'EASA', licenseType: 'PPL', status: 'expiring',
-            message: 'EASA IR — IFR hour requirement not met', requirements: [
-              { name: 'IFR Time', met: false, current: 5, required: 10, unit: 'minutes', message: '5.0 / 10.0 IFR hours' },
+            classRatingId: 'cr-2',
+            classType: 'IR',
+            licenseId: 'lic-1',
+            regulatoryAuthority: 'EASA',
+            licenseType: 'PPL',
+            status: 'expiring',
+            message: 'EASA IR — IFR hour requirement not met',
+            requirements: [
+              {
+                name: 'IFR Time',
+                met: false,
+                current: 5,
+                required: 10,
+                unit: 'minutes',
+                message: '5.0 / 10.0 IFR hours',
+              },
             ],
           },
         ],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<DashboardPage />);
@@ -122,7 +171,8 @@ describe('DashboardPage Currency Integration', () => {
   it('does not render currency section when no ratings exist', async () => {
     vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
       data: { ratings: [] },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<DashboardPage />);
@@ -135,7 +185,8 @@ describe('DashboardPage Currency Integration', () => {
   it('does not render currency section when data is undefined', async () => {
     vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
       data: undefined,
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<DashboardPage />);
@@ -148,13 +199,19 @@ describe('DashboardPage Currency Integration', () => {
       data: {
         ratings: [
           {
-            classRatingId: 'cr-1', classType: 'SEP_LAND', licenseId: 'lic-1',
-            regulatoryAuthority: 'FAA', licenseType: 'PPL', status: 'expired',
-            message: 'FAA SEP_LAND — not current', requirements: [],
+            classRatingId: 'cr-1',
+            classType: 'SEP_LAND',
+            licenseId: 'lic-1',
+            regulatoryAuthority: 'FAA',
+            licenseType: 'PPL',
+            status: 'expired',
+            message: 'FAA SEP_LAND — not current',
+            requirements: [],
           },
         ],
       },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<DashboardPage />);
@@ -172,7 +229,8 @@ describe('DashboardPage Currency Integration', () => {
   it('renders credential expiry alerts', async () => {
     vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
       data: { ratings: [] },
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     const now = new Date();
@@ -181,13 +239,18 @@ describe('DashboardPage Currency Integration', () => {
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({
       data: [
         {
-          id: 'cred-1', credentialType: 'EASA_CLASS2_MEDICAL',
-          credentialNumber: 'MED-001', issuingAuthority: 'AME',
-          issueDate: '2025-01-01', expiryDate: in10Days,
-          createdAt: '', updatedAt: '',
+          id: 'cred-1',
+          credentialType: 'EASA_CLASS2_MEDICAL',
+          credentialNumber: 'MED-001',
+          issuingAuthority: 'AME',
+          issueDate: '2025-01-01',
+          expiryDate: in10Days,
+          createdAt: '',
+          updatedAt: '',
         },
       ],
-      isLoading: false, error: null,
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<DashboardPage />);

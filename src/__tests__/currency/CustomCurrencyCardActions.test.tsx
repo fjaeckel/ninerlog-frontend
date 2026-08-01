@@ -7,13 +7,23 @@ import type { CustomRuleWithStatus } from '../../types/customCurrency';
 function item(overrides = {}): CustomRuleWithStatus {
   return {
     rule: {
-      id: 'r1', userId: 'u1', name: 'Night landings', emoji: '🌙',
-      description: null, enabled: true, notify: false, isShared: false, createdAt: '', updatedAt: '',
+      id: 'r1',
+      userId: 'u1',
+      name: 'Night landings',
+      emoji: '🌙',
+      description: null,
+      enabled: true,
+      notify: false,
+      isShared: false,
+      createdAt: '',
+      updatedAt: '',
       definition: { window: { amount: 90, unit: 'days' }, requirements: [{ metric: 'night_landings', min: 3 }] },
       ...overrides,
     },
     evaluation: {
-      status: 'expired', windowLabel: 'last 90 days', evaluatedAt: '',
+      status: 'expired',
+      windowLabel: 'last 90 days',
+      evaluatedAt: '',
       requirements: [{ name: 'Night landings', met: false, current: 0, required: 3, unit: '', message: '0 / 3' }],
     },
   };
@@ -29,7 +39,9 @@ describe('CustomCurrencyCard actions', () => {
 
   it('fires edit / share / delete handlers with the rule id', async () => {
     const user = userEvent.setup();
-    const onEdit = vi.fn(), onShare = vi.fn(), onDelete = vi.fn();
+    const onEdit = vi.fn(),
+      onShare = vi.fn(),
+      onDelete = vi.fn();
     render(<CustomCurrencyCard item={item()} onEdit={onEdit} onShare={onShare} onDelete={onDelete} />);
 
     await user.click(screen.getByTestId('edit-custom-r1'));

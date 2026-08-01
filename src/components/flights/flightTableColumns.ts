@@ -185,9 +185,7 @@ export function selectFlightColumns(
   const selected = new Set(prefs.columns);
 
   const shows = (column: FlightColumnDef) =>
-    custom
-      ? selected.has(column.key)
-      : AUTO_ALWAYS_ON.includes(column.key) || flights.some((f) => column.hasValue(f));
+    custom ? selected.has(column.key) : AUTO_ALWAYS_ON.includes(column.key) || flights.some((f) => column.hasValue(f));
 
   const visible = FLIGHT_COLUMNS.filter(shows);
 
@@ -209,6 +207,6 @@ export function selectFlightColumns(
     time,
     // Remarks takes the tier after the last time column, and only exists while
     // there is a tier left to give it.
-    remarksRevealClass: has('remarks') ? REVEAL_TIERS[time.length] ?? null : null,
+    remarksRevealClass: has('remarks') ? (REVEAL_TIERS[time.length] ?? null) : null,
   };
 }

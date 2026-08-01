@@ -32,7 +32,10 @@ test.describe('Cloud Backups', () => {
     await page.getByRole('button', { name: /cloud backups/i }).click();
     await expect(page.getByText(/no backup destinations/i)).toBeVisible();
 
-    await page.getByRole('button', { name: /add your first destination|add destination/i }).first().click();
+    await page
+      .getByRole('button', { name: /add your first destination|add destination/i })
+      .first()
+      .click();
 
     // Provider should default to S3
     await expect(page.getByLabel(/provider/i)).toBeVisible();

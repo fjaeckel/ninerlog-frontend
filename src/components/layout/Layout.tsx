@@ -1,8 +1,25 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router';
 import {
-  LayoutDashboard, Plane, FileText, PlaneTakeoff, BarChart3, Map,
-  Award, User, Upload, Download, Shield, LogOut, Menu, Plus, ShieldCheck, HelpCircle, Bug, ExternalLink, Timer
+  LayoutDashboard,
+  Plane,
+  FileText,
+  PlaneTakeoff,
+  BarChart3,
+  Map,
+  Award,
+  User,
+  Upload,
+  Download,
+  Shield,
+  LogOut,
+  Menu,
+  Plus,
+  ShieldCheck,
+  HelpCircle,
+  Bug,
+  ExternalLink,
+  Timer,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLogout } from '../../hooks/useAuth';
@@ -52,7 +69,12 @@ export default function Layout() {
   };
 
   const initials = user?.name
-    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+    ? user.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
     : user?.email?.[0]?.toUpperCase() || '?';
 
   return (
@@ -72,7 +94,11 @@ export default function Layout() {
       >
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           <Link to="/dashboard" className="flex items-center gap-2.5 group" aria-label={APP_NAME}>
-            <LogoMark size={32} decorative className="drop-shadow-sm transition-transform group-hover:scale-[1.04] group-active:scale-95" />
+            <LogoMark
+              size={32}
+              decorative
+              className="drop-shadow-sm transition-transform group-hover:scale-[1.04] group-active:scale-95"
+            />
             <span className="text-lg font-bold tracking-tight text-gradient-brand">{APP_NAME}</span>
           </Link>
           {/* Quick Log — compact entry next to the logo; the mobile FAB now opens the full flight form */}
@@ -143,15 +169,40 @@ export default function Layout() {
           </Link>
         </div>
         <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5" aria-label="Main">
-          <SidebarItem to="/dashboard" tourId="dashboard" label={t('nav:dashboard')} icon={<LayoutDashboard className="w-5 h-5" />} />
+          <SidebarItem
+            to="/dashboard"
+            tourId="dashboard"
+            label={t('nav:dashboard')}
+            icon={<LayoutDashboard className="w-5 h-5" />}
+          />
           <SidebarItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
           <SidebarItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} />
-          <SidebarItem to="/aircraft" tourId="aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} />
-          <SidebarItem to="/currency" tourId="currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} />
+          <SidebarItem
+            to="/aircraft"
+            tourId="aircraft"
+            label={t('nav:aircraft')}
+            icon={<PlaneTakeoff className="w-5 h-5" />}
+          />
+          <SidebarItem
+            to="/currency"
+            tourId="currency"
+            label={t('nav:currency')}
+            icon={<Shield className="w-5 h-5" />}
+          />
 
           <SidebarGroup label={t('nav:licenses')} />
-          <SidebarItem to="/licenses" tourId="licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} />
-          <SidebarItem to="/credentials" tourId="credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} />
+          <SidebarItem
+            to="/licenses"
+            tourId="licenses"
+            label={t('nav:licenses')}
+            icon={<Award className="w-5 h-5" />}
+          />
+          <SidebarItem
+            to="/credentials"
+            tourId="credentials"
+            label={t('nav:credentials')}
+            icon={<FileText className="w-5 h-5" />}
+          />
 
           <SidebarGroup label={t('nav:reports')} />
           <SidebarItem to="/reports" label={t('nav:reports')} icon={<BarChart3 className="w-5 h-5" />} />
@@ -175,7 +226,10 @@ export default function Layout() {
       </aside>
 
       {/* ── Main Content ── */}
-      <main id="main-content" className="pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-[calc(4rem+env(safe-area-inset-top))] pb-24 lg:pb-4 lg:ml-64 px-4 lg:px-8 overflow-x-hidden max-w-full">
+      <main
+        id="main-content"
+        className="pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-[calc(4rem+env(safe-area-inset-top))] pb-24 lg:pb-4 lg:ml-64 px-4 lg:px-8 overflow-x-hidden max-w-full"
+      >
         <AnnouncementBanner />
         <Outlet />
       </main>
@@ -187,29 +241,34 @@ export default function Layout() {
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="h-14 flex items-center justify-around">
-        <BottomNavItem to="/dashboard" tourId="dashboard" label={t('nav:home')} icon={<LayoutDashboard className="w-5 h-5" />} />
-        <BottomNavItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
-        <Link
-          to="/flights"
-          state={{ openForm: true }}
-          data-tour="add-flight"
-          className="flex flex-col items-center justify-center -mt-6 active:scale-95 transition-transform tap-none"
-          aria-label={t('nav:addFlight')}
-        >
-          <span className="w-14 h-14 gradient-brand text-white rounded-full flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-900">
-            <Plus className="w-6 h-6" />
-          </span>
-        </Link>
-        <BottomNavItem to="/reports" label={t('nav:reports')} icon={<BarChart3 className="w-5 h-5" />} />
-        <button
-          onClick={() => setShowMoreMenu(true)}
-          data-tour="more"
-          className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors tap-none"
-          aria-label="More menu"
-        >
-          <Menu className="w-5 h-5 mb-0.5" />
-          <span>{t('nav:more')}</span>
-        </button>
+          <BottomNavItem
+            to="/dashboard"
+            tourId="dashboard"
+            label={t('nav:home')}
+            icon={<LayoutDashboard className="w-5 h-5" />}
+          />
+          <BottomNavItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
+          <Link
+            to="/flights"
+            state={{ openForm: true }}
+            data-tour="add-flight"
+            className="flex flex-col items-center justify-center -mt-6 active:scale-95 transition-transform tap-none"
+            aria-label={t('nav:addFlight')}
+          >
+            <span className="w-14 h-14 gradient-brand text-white rounded-full flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-900">
+              <Plus className="w-6 h-6" />
+            </span>
+          </Link>
+          <BottomNavItem to="/reports" label={t('nav:reports')} icon={<BarChart3 className="w-5 h-5" />} />
+          <button
+            onClick={() => setShowMoreMenu(true)}
+            data-tour="more"
+            className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors tap-none"
+            aria-label="More menu"
+          >
+            <Menu className="w-5 h-5 mb-0.5" />
+            <span>{t('nav:more')}</span>
+          </button>
         </div>
       </nav>
 
@@ -234,23 +293,78 @@ export default function Layout() {
               aria-label="More navigation"
             >
               <MoreMenuGroup label={t('nav:sectionAccount')} />
-              <MoreMenuItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem
+                to="/help"
+                label={t('nav:help')}
+                icon={<HelpCircle className="w-5 h-5" />}
+                onClick={() => setShowMoreMenu(false)}
+              />
               {user?.isAdmin && (
-                <MoreMenuItem to="/admin" label={t('nav:admin')} icon={<ShieldCheck className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+                <MoreMenuItem
+                  to="/admin"
+                  label={t('nav:admin')}
+                  icon={<ShieldCheck className="w-5 h-5" />}
+                  onClick={() => setShowMoreMenu(false)}
+                />
               )}
-              <MoreMenuItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem
+                to="/profile"
+                label={t('nav:profileSettings')}
+                icon={<User className="w-5 h-5" />}
+                onClick={() => setShowMoreMenu(false)}
+              />
 
               <MoreMenuGroup label={t('nav:sectionData')} />
-              <MoreMenuItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem
+                to="/import"
+                label={t('nav:import')}
+                icon={<Upload className="w-5 h-5" />}
+                onClick={() => setShowMoreMenu(false)}
+              />
+              <MoreMenuItem
+                to="/export"
+                label={t('nav:export')}
+                icon={<Download className="w-5 h-5" />}
+                onClick={() => setShowMoreMenu(false)}
+              />
+              <MoreMenuItem
+                to="/map"
+                label={t('nav:map')}
+                icon={<Map className="w-5 h-5" />}
+                onClick={() => setShowMoreMenu(false)}
+              />
 
               <MoreMenuGroup label={t('nav:sectionLogbook')} />
-              <MoreMenuItem to="/credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem
+                to="/credentials"
+                label={t('nav:credentials')}
+                icon={<FileText className="w-5 h-5" />}
+                onClick={() => setShowMoreMenu(false)}
+              />
+              <MoreMenuItem
+                to="/currency"
+                label={t('nav:currency')}
+                icon={<Shield className="w-5 h-5" />}
+                onClick={() => setShowMoreMenu(false)}
+              />
+              <MoreMenuItem
+                to="/licenses"
+                label={t('nav:licenses')}
+                icon={<Award className="w-5 h-5" />}
+                onClick={() => setShowMoreMenu(false)}
+              />
+              <MoreMenuItem
+                to="/aircraft"
+                label={t('nav:aircraft')}
+                icon={<PlaneTakeoff className="w-5 h-5" />}
+                onClick={() => setShowMoreMenu(false)}
+              />
+              <MoreMenuItem
+                to="/quicklog"
+                label={t('nav:quickLog')}
+                icon={<Timer className="w-5 h-5" />}
+                onClick={() => setShowMoreMenu(false)}
+              />
             </nav>
           </div>
         </>
@@ -262,7 +376,17 @@ export default function Layout() {
   );
 }
 
-function SidebarItem({ to, label, icon, tourId }: { to: string; label: string; icon: React.ReactNode; tourId?: string }) {
+function SidebarItem({
+  to,
+  label,
+  icon,
+  tourId,
+}: {
+  to: string;
+  label: string;
+  icon: React.ReactNode;
+  tourId?: string;
+}) {
   return (
     <NavLink
       to={to}
@@ -275,7 +399,9 @@ function SidebarItem({ to, label, icon, tourId }: { to: string; label: string; i
         }`
       }
     >
-      <span className="shrink-0" aria-hidden="true">{icon}</span>
+      <span className="shrink-0" aria-hidden="true">
+        {icon}
+      </span>
       {label}
     </NavLink>
   );
@@ -289,7 +415,17 @@ function SidebarGroup({ label }: { label: string }) {
   );
 }
 
-function BottomNavItem({ to, label, icon, tourId }: { to: string; label: string; icon: React.ReactNode; tourId?: string }) {
+function BottomNavItem({
+  to,
+  label,
+  icon,
+  tourId,
+}: {
+  to: string;
+  label: string;
+  icon: React.ReactNode;
+  tourId?: string;
+}) {
   return (
     <NavLink
       to={to}
@@ -310,7 +446,9 @@ function BottomNavItem({ to, label, icon, tourId }: { to: string; label: string;
             }`}
             aria-hidden="true"
           />
-          <span className="mt-1 mb-0.5" aria-hidden="true">{icon}</span>
+          <span className="mt-1 mb-0.5" aria-hidden="true">
+            {icon}
+          </span>
           <span>{label}</span>
         </>
       )}
@@ -318,7 +456,17 @@ function BottomNavItem({ to, label, icon, tourId }: { to: string; label: string;
   );
 }
 
-function MoreMenuItem({ to, label, icon, onClick }: { to: string; label: string; icon: React.ReactNode; onClick: () => void }) {
+function MoreMenuItem({
+  to,
+  label,
+  icon,
+  onClick,
+}: {
+  to: string;
+  label: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+}) {
   return (
     <NavLink
       to={to}
@@ -331,7 +479,9 @@ function MoreMenuItem({ to, label, icon, onClick }: { to: string; label: string;
         }`
       }
     >
-      <span className="shrink-0" aria-hidden="true">{icon}</span>
+      <span className="shrink-0" aria-hidden="true">
+        {icon}
+      </span>
       {label}
     </NavLink>
   );
@@ -345,7 +495,17 @@ function MoreMenuGroup({ label }: { label: string }) {
   );
 }
 
-function SidebarExternalItem({ href, label, title, icon }: { href: string; label: string; title?: string; icon: React.ReactNode }) {
+function SidebarExternalItem({
+  href,
+  label,
+  title,
+  icon,
+}: {
+  href: string;
+  label: string;
+  title?: string;
+  icon: React.ReactNode;
+}) {
   return (
     <a
       href={href}
@@ -354,7 +514,9 @@ function SidebarExternalItem({ href, label, title, icon }: { href: string; label
       title={title}
       className="relative flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors tap-none text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
     >
-      <span className="shrink-0" aria-hidden="true">{icon}</span>
+      <span className="shrink-0" aria-hidden="true">
+        {icon}
+      </span>
       <span className="flex-1">{label}</span>
       <ExternalLink className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
     </a>

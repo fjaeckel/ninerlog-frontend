@@ -9,13 +9,7 @@ type ImportResult = components['schemas']['ImportResult'];
 type ImportColumnMapping = components['schemas']['ImportColumnMapping'];
 type ImportJSONResult = components['schemas']['ImportJSONResult'];
 
-export type {
-  ImportUploadResponse,
-  ImportPreviewResponse,
-  ImportResult,
-  ImportColumnMapping,
-  ImportJSONResult,
-};
+export type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportJSONResult };
 
 import { API_BASE_URL } from '../lib/config';
 

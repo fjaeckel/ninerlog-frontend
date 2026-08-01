@@ -1,13 +1,5 @@
 import type { ReactNode } from 'react';
-import {
-  LayoutDashboard,
-  Plane,
-  PlaneTakeoff,
-  Award,
-  FileText,
-  Plus,
-  Shield,
-} from 'lucide-react';
+import { LayoutDashboard, Plane, PlaneTakeoff, Award, FileText, Plus, Shield } from 'lucide-react';
 
 export interface TourStep {
   /** Stable id, also used to look up i18n strings under `tour.steps.<id>`. */

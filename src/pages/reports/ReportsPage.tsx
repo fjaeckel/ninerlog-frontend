@@ -36,13 +36,7 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { useChartTheme } from '../../components/reports/chartTheme';
 import { SectionNav, ReportSectionBlock, type ReportSection } from '../../components/reports/SectionNav';
-import {
-  Meter,
-  RankedBars,
-  ReportCard,
-  StatTile,
-  type TableColumn,
-} from '../../components/reports/primitives';
+import { Meter, RankedBars, ReportCard, StatTile, type TableColumn } from '../../components/reports/primitives';
 import {
   CumulativeHoursChart,
   MonthlyHoursChart,
@@ -58,8 +52,9 @@ export default function ReportsPage() {
   const theme = useChartTheme();
 
   const num = useMemo(
-    () => (v: number, digits = 0) =>
-      v.toLocaleString(i18n.language, { maximumFractionDigits: digits, minimumFractionDigits: digits }),
+    () =>
+      (v: number, digits = 0) =>
+        v.toLocaleString(i18n.language, { maximumFractionDigits: digits, minimumFractionDigits: digits }),
     [i18n.language]
   );
   const nm = (v: number) => `${num(Math.round(v))} NM`;
@@ -85,10 +80,7 @@ export default function ReportsPage() {
   if (error || !data) {
     return (
       <div className="mx-auto max-w-[1280px] py-6">
-        <ErrorState
-          title={t('failedToLoad')}
-          message={t('failedToLoadMessage')}
-        />
+        <ErrorState title={t('failedToLoad')} message={t('failedToLoadMessage')} />
       </div>
     );
   }
@@ -137,11 +129,7 @@ export default function ReportsPage() {
               </button>
             ))}
           </div>
-          <button
-            onClick={() => exportAnalyticsToCSV(data)}
-            className="btn-secondary btn-sm text-xs"
-            disabled={empty}
-          >
+          <button onClick={() => exportAnalyticsToCSV(data)} className="btn-secondary btn-sm text-xs" disabled={empty}>
             {t('exportCsv')}
           </button>
           <button
@@ -221,9 +209,7 @@ export default function ReportsPage() {
                 <StatTile
                   label={t('kpi.lastFlight')}
                   value={
-                    records.daysSinceLastFlight != null
-                      ? t('kpi.daysAgo', { count: records.daysSinceLastFlight })
-                      : '—'
+                    records.daysSinceLastFlight != null ? t('kpi.daysAgo', { count: records.daysSinceLastFlight }) : '—'
                   }
                   detail={totals.lastFlightDate ? fmtDate(totals.lastFlightDate) : undefined}
                   icon={<CalendarClock className="w-4 h-4" />}
@@ -625,7 +611,10 @@ export default function ReportsPage() {
                 <ReportCard
                   title={t('chart.dayOfWeek')}
                   hint={t('chart.dayOfWeekHint')}
-                  table={{ rows: data.dayOfWeek, columns: bucketColumns(t, fmtDuration, (r) => dayName(r.key, i18n.language)) }}
+                  table={{
+                    rows: data.dayOfWeek,
+                    columns: bucketColumns(t, fmtDuration, (r) => dayName(r.key, i18n.language)),
+                  }}
                 >
                   <PatternChart
                     data={data.dayOfWeek}
@@ -697,9 +686,7 @@ export default function ReportsPage() {
                   label={t('records.longestDistance')}
                   value={records.longestDistanceFlight ? nm(records.longestDistanceFlight.distanceNm) : '—'}
                   detail={
-                    records.longestDistanceFlight
-                      ? flightRefLabel(records.longestDistanceFlight, fmtDate)
-                      : undefined
+                    records.longestDistanceFlight ? flightRefLabel(records.longestDistanceFlight, fmtDate) : undefined
                   }
                 />
                 <RecordCard

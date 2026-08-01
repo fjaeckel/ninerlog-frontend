@@ -81,7 +81,7 @@ test.describe('Time Display Preference', () => {
 
     const select = timeDisplaySelect(page);
     await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
+      page.waitForResponse((resp) => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
       select.selectOption('decimal'),
     ]);
 
@@ -93,7 +93,7 @@ test.describe('Time Display Preference', () => {
 
     // Switch back to hm so other tests don't break
     await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
+      page.waitForResponse((resp) => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
       select.selectOption('hm'),
     ]);
     await expect(select).toHaveValue('hm');
@@ -117,7 +117,7 @@ test.describe('Time Display Preference', () => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
     await expect(page.getByRole('heading', { name: 'Time Display' })).toBeVisible({ timeout: 10000 });
     await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
+      page.waitForResponse((resp) => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
       timeDisplaySelect(page).selectOption('decimal'),
     ]);
 
@@ -128,15 +128,13 @@ test.describe('Time Display Preference', () => {
     // Match "1.5h" in stat-card / flight-row content. Exclude <option> elements
     // (the profile page's "Dot (1.5h)" decimal-separator option matches /1\.5/
     // even when hidden inside a closed <select>).
-    await expect(
-      page.locator('main :text-matches("1\\.5h?"):not(option)').first(),
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('main :text-matches("1\\.5h?"):not(option)').first()).toBeVisible({ timeout: 5000 });
 
     // Clean up — switch back to hm
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
     await expect(page.getByRole('heading', { name: 'Time Display' })).toBeVisible({ timeout: 10000 });
     await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
+      page.waitForResponse((resp) => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
       timeDisplaySelect(page).selectOption('hm'),
     ]);
     await expect(timeDisplaySelect(page)).toHaveValue('hm');

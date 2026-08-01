@@ -2,11 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import type { components } from '../api/schema';
-import {
-  loadQuickLogQueue,
-  saveQuickLogQueue,
-  enqueueQuickLogEvent,
-} from '../lib/quickLogQueue';
+import { loadQuickLogQueue, saveQuickLogQueue, enqueueQuickLogEvent } from '../lib/quickLogQueue';
 
 type FlightSession = components['schemas']['FlightSession'];
 type FlightSessionEvent = components['schemas']['FlightSessionEvent'];
@@ -65,8 +61,7 @@ export const useRecordFlightSessionEvent = () => {
         return { session: null, queued: true };
       }
       if (result.error) {
-        const message =
-          (result.error as { error?: string })?.error ?? 'Failed to record event';
+        const message = (result.error as { error?: string })?.error ?? 'Failed to record event';
         throw new FlightSessionEventError(message);
       }
       return { session: result.data ?? null, queued: false };

@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import {
-  PlaneTakeoff, PlaneLanding, Timer, CheckCircle2, Trash2, WifiOff, ArrowRight,
-} from 'lucide-react';
+import { PlaneTakeoff, PlaneLanding, Timer, CheckCircle2, Trash2, WifiOff, ArrowRight } from 'lucide-react';
 import { PageWrapper, PageHeader } from '../../components/ui/PageWrapper';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
@@ -163,9 +161,7 @@ export default function QuickLogPage() {
         setCompletedFlightId(result.session.flightId);
       }
     } catch (err) {
-      setErrorMessage(
-        err instanceof FlightSessionEventError ? err.message : t('quicklog:genericError')
-      );
+      setErrorMessage(err instanceof FlightSessionEventError ? err.message : t('quicklog:genericError'));
     }
   };
 
@@ -213,12 +209,8 @@ export default function QuickLogPage() {
       <PageWrapper maxWidth="form">
         <div className="card p-8 text-center space-y-4">
           <CheckCircle2 className="w-16 h-16 mx-auto text-emerald-500" aria-hidden="true" />
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            {t('quicklog:flightLogged')}
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {t('quicklog:flightLoggedHint')}
-          </p>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('quicklog:flightLogged')}</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t('quicklog:flightLoggedHint')}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <Link to={`/flights/${completedFlightId}`} className="btn-primary justify-center">
               {t('quicklog:reviewFlight')}
@@ -245,14 +237,20 @@ export default function QuickLogPage() {
       )}
 
       {errorMessage && (
-        <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm" role="alert">
+        <div
+          className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm"
+          role="alert"
+        >
           {errorMessage}
         </div>
       )}
 
       {/* Aircraft selection — editable until the session knows its aircraft */}
       <div className="card p-4 mb-4">
-        <label htmlFor="quicklog-aircraft" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+        <label
+          htmlFor="quicklog-aircraft"
+          className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
+        >
           {t('quicklog:aircraft')}
         </label>
         {openSession?.aircraftReg ? (
@@ -311,23 +309,19 @@ export default function QuickLogPage() {
                     placeholder={t('quicklog:modelPlaceholder')}
                   />
                 </div>
-                {quickAddError && (
-                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">{quickAddError}</p>
-                )}
+                {quickAddError && <p className="text-sm text-red-600 dark:text-red-400 mt-1">{quickAddError}</p>}
                 <div className="flex gap-2 mt-2">
                   <button
                     type="button"
                     onClick={() => void handleQuickAdd()}
-                    disabled={!quickAddReg || !quickAddType || !quickAddMake || !quickAddModel || createAircraft.isPending}
+                    disabled={
+                      !quickAddReg || !quickAddType || !quickAddMake || !quickAddModel || createAircraft.isPending
+                    }
                     className="btn-primary btn-sm text-xs"
                   >
                     {createAircraft.isPending ? t('common:saving') : t('quicklog:quickAddSave')}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowQuickAdd(false)}
-                    className="btn-ghost btn-sm text-xs"
-                  >
+                  <button type="button" onClick={() => setShowQuickAdd(false)} className="btn-ghost btn-sm text-xs">
                     {t('quicklog:skip')}
                   </button>
                 </div>
@@ -369,9 +363,7 @@ export default function QuickLogPage() {
       {openSession?.offBlockAt && (
         <div className="card p-4 mt-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              {t('quicklog:blockTime')}
-            </span>
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{t('quicklog:blockTime')}</span>
             <span className="font-mono text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
               {formatElapsed(openSession.offBlockAt, now)}
             </span>
@@ -413,9 +405,7 @@ export default function QuickLogPage() {
         </div>
       )}
 
-      <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-6">
-        {t('quicklog:gpsHint')}
-      </p>
+      <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-6">{t('quicklog:gpsHint')}</p>
 
       <ConfirmDialog
         open={showDiscardConfirm}

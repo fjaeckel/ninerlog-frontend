@@ -25,19 +25,25 @@ describe('AircraftPage', () => {
     vi.spyOn(useAircraftHook, 'useDeleteAircraft').mockReturnValue(mockDelete as any);
     // Also mock the hooks used by AircraftForm (loaded inside modal)
     vi.spyOn(useAircraftHook, 'useCreateAircraft').mockReturnValue({
-      mutateAsync: vi.fn(), isPending: false,
+      mutateAsync: vi.fn(),
+      isPending: false,
     } as any);
     vi.spyOn(useAircraftHook, 'useUpdateAircraft').mockReturnValue({
-      mutateAsync: vi.fn(), isPending: false,
+      mutateAsync: vi.fn(),
+      isPending: false,
     } as any);
     vi.spyOn(useAircraftHook, 'useAircraftById').mockReturnValue({
-      data: undefined, isLoading: false, error: null,
+      data: undefined,
+      isLoading: false,
+      error: null,
     } as any);
   });
 
   it('renders empty state when no aircraft', () => {
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
-      data: [], isLoading: false, error: null,
+      data: [],
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<AircraftPage />);
@@ -48,7 +54,9 @@ describe('AircraftPage', () => {
 
   it('renders loading state', () => {
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
-      data: undefined, isLoading: true, error: null,
+      data: undefined,
+      isLoading: true,
+      error: null,
     } as any);
 
     renderWithProviders(<AircraftPage />);
@@ -185,7 +193,9 @@ describe('AircraftPage', () => {
   it('opens add aircraft form modal', async () => {
     const user = userEvent.setup();
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
-      data: [], isLoading: false, error: null,
+      data: [],
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<AircraftPage />);
@@ -350,7 +360,9 @@ describe('AircraftPage', () => {
 
   it('renders page title and subtitle', () => {
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
-      data: [], isLoading: false, error: null,
+      data: [],
+      isLoading: false,
+      error: null,
     } as any);
 
     renderWithProviders(<AircraftPage />);

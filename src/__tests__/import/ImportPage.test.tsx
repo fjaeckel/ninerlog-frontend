@@ -34,16 +34,21 @@ describe('ImportPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(useLicensesHook, 'useLicenses').mockReturnValue({
-      data: [mockLicense], isLoading: false, error: null,
+      data: [mockLicense],
+      isLoading: false,
+      error: null,
     } as any);
     vi.spyOn(useImportHook, 'useUploadImport').mockReturnValue({
-      mutateAsync: vi.fn(), isPending: false,
+      mutateAsync: vi.fn(),
+      isPending: false,
     } as any);
     vi.spyOn(useImportHook, 'usePreviewImport').mockReturnValue({
-      mutateAsync: vi.fn(), isPending: false,
+      mutateAsync: vi.fn(),
+      isPending: false,
     } as any);
     vi.spyOn(useImportHook, 'useConfirmImport').mockReturnValue({
-      mutateAsync: vi.fn(), isPending: false,
+      mutateAsync: vi.fn(),
+      isPending: false,
     } as any);
   });
 
@@ -87,7 +92,8 @@ describe('ImportPage', () => {
     });
 
     vi.spyOn(useImportHook, 'useUploadImport').mockReturnValue({
-      mutateAsync: mockUpload, isPending: false,
+      mutateAsync: mockUpload,
+      isPending: false,
     } as any);
 
     renderWithProviders(<ImportPage />);
@@ -119,9 +125,22 @@ describe('ImportPage', () => {
       duplicateCount: 1,
       errorCount: 1,
       flights: [
-        { rowIndex: 1, status: 'valid', flight: { date: '2026-01-15', aircraftReg: 'D-EFGH', departureIcao: 'EDDF', arrivalIcao: 'EDDH' } },
-        { rowIndex: 2, status: 'duplicate', flight: { date: '2026-01-16', aircraftReg: 'D-EFGH', departureIcao: 'EDDF', arrivalIcao: 'EDDH' } },
-        { rowIndex: 3, status: 'error', flight: { date: '', aircraftReg: '', departureIcao: '', arrivalIcao: '' }, errors: [{ field: 'date', message: 'Required' }] },
+        {
+          rowIndex: 1,
+          status: 'valid',
+          flight: { date: '2026-01-15', aircraftReg: 'D-EFGH', departureIcao: 'EDDF', arrivalIcao: 'EDDH' },
+        },
+        {
+          rowIndex: 2,
+          status: 'duplicate',
+          flight: { date: '2026-01-16', aircraftReg: 'D-EFGH', departureIcao: 'EDDF', arrivalIcao: 'EDDH' },
+        },
+        {
+          rowIndex: 3,
+          status: 'error',
+          flight: { date: '', aircraftReg: '', departureIcao: '', arrivalIcao: '' },
+          errors: [{ field: 'date', message: 'Required' }],
+        },
       ],
     });
 
@@ -155,7 +174,8 @@ describe('ImportPage', () => {
     });
 
     vi.spyOn(useImportHook, 'useUploadImport').mockReturnValue({
-      mutateAsync: mockUpload, isPending: false,
+      mutateAsync: mockUpload,
+      isPending: false,
     } as any);
 
     renderWithProviders(<ImportPage />);
@@ -176,7 +196,7 @@ describe('ImportPage', () => {
     // Check that person1, person2, instructorName options exist
     const firstSelect = selects[0];
     const options = firstSelect.querySelectorAll('option');
-    const optionValues = Array.from(options).map(o => o.getAttribute('value'));
+    const optionValues = Array.from(options).map((o) => o.getAttribute('value'));
     expect(optionValues).toContain('person1');
     expect(optionValues).toContain('person2');
     expect(optionValues).toContain('instructorName');
@@ -198,21 +218,23 @@ describe('ImportPage', () => {
       validCount: 1,
       duplicateCount: 0,
       errorCount: 0,
-      flights: [{
-        rowIndex: 1,
-        status: 'valid',
-        flight: {
-          date: '2026-01-15',
-          aircraftReg: 'D-EABC',
-          departureIcao: 'EDDF',
-          arrivalIcao: 'EDDH',
-          totalTime: 90,
-          crewMembers: [
-            { name: 'Max Instructor', role: 'Instructor' },
-            { name: 'Student Pilot', role: 'Student' },
-          ],
+      flights: [
+        {
+          rowIndex: 1,
+          status: 'valid',
+          flight: {
+            date: '2026-01-15',
+            aircraftReg: 'D-EABC',
+            departureIcao: 'EDDF',
+            arrivalIcao: 'EDDH',
+            totalTime: 90,
+            crewMembers: [
+              { name: 'Max Instructor', role: 'Instructor' },
+              { name: 'Student Pilot', role: 'Student' },
+            ],
+          },
         },
-      }],
+      ],
     });
 
     vi.spyOn(useImportHook, 'useUploadImport').mockReturnValue({ mutateAsync: mockUpload, isPending: false } as any);
@@ -263,7 +285,13 @@ describe('ImportPage', () => {
       validCount: 1,
       duplicateCount: 0,
       errorCount: 0,
-      flights: [{ rowIndex: 1, status: 'valid', flight: { date: '2026-01-15', aircraftReg: 'D-EABC', departureIcao: 'EDDF', arrivalIcao: 'EDDH' } }],
+      flights: [
+        {
+          rowIndex: 1,
+          status: 'valid',
+          flight: { date: '2026-01-15', aircraftReg: 'D-EABC', departureIcao: 'EDDF', arrivalIcao: 'EDDH' },
+        },
+      ],
     });
     const mockConfirm = vi.fn().mockResolvedValue({
       id: 'import-1',

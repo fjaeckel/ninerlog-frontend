@@ -160,7 +160,9 @@ export default function FlightSearchBar({ value, onChange, error }: FlightSearch
           <button
             onClick={() => setShowHelp((s) => !s)}
             className={`min-w-[40px] min-h-[44px] flex items-center justify-center transition-colors ${
-              showHelp ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+              showHelp
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
             }`}
             aria-label={t('flights:searchHelpToggle')}
             aria-expanded={showHelp}
@@ -180,7 +182,9 @@ export default function FlightSearchBar({ value, onChange, error }: FlightSearch
               <li key={tag.name} role="option" aria-selected={i === highlighted}>
                 <button
                   className={`w-full px-3 py-2 text-left flex items-baseline gap-2 ${
-                    i === highlighted ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                    i === highlighted
+                      ? 'bg-blue-50 dark:bg-blue-900/30'
+                      : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
                   }`}
                   onMouseDown={(e) => {
                     e.preventDefault();
@@ -192,7 +196,9 @@ export default function FlightSearchBar({ value, onChange, error }: FlightSearch
                   <span className="text-xs text-slate-500 dark:text-slate-400 truncate flex-1">
                     {t(`flights:searchTags.${tag.name}`)}
                   </span>
-                  <span className="font-mono text-xs text-slate-400 dark:text-slate-500 hidden sm:inline">{tag.example}</span>
+                  <span className="font-mono text-xs text-slate-400 dark:text-slate-500 hidden sm:inline">
+                    {tag.example}
+                  </span>
                 </button>
               </li>
             ))}
@@ -213,23 +219,31 @@ export default function FlightSearchBar({ value, onChange, error }: FlightSearch
           <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('flights:searchHelpTitle')}</h3>
           <ul className="space-y-1 text-slate-600 dark:text-slate-300 mb-4">
             <li>
-              <code className="font-mono text-xs bg-slate-100 dark:bg-slate-700 rounded px-1">EDDF checkride</code>{' '}
-              — {t('flights:searchHelpFreeText')}
+              <code className="font-mono text-xs bg-slate-100 dark:bg-slate-700 rounded px-1">EDDF checkride</code> —{' '}
+              {t('flights:searchHelpFreeText')}
             </li>
             <li>
-              <code className="font-mono text-xs bg-slate-100 dark:bg-slate-700 rounded px-1">night&gt;0 AND (from:EDDF OR to:EDDF)</code>{' '}
+              <code className="font-mono text-xs bg-slate-100 dark:bg-slate-700 rounded px-1">
+                night&gt;0 AND (from:EDDF OR to:EDDF)
+              </code>{' '}
               — {t('flights:searchHelpBoolean')}
             </li>
             <li>
-              <code className="font-mono text-xs bg-slate-100 dark:bg-slate-700 rounded px-1">NOT remarks:cancelled</code>{' '}
+              <code className="font-mono text-xs bg-slate-100 dark:bg-slate-700 rounded px-1">
+                NOT remarks:cancelled
+              </code>{' '}
               — {t('flights:searchHelpNegation')}
             </li>
             <li>
-              <code className="font-mono text-xs bg-slate-100 dark:bg-slate-700 rounded px-1">crew:&quot;John Doe&quot; reg:D-E*</code>{' '}
+              <code className="font-mono text-xs bg-slate-100 dark:bg-slate-700 rounded px-1">
+                crew:&quot;John Doe&quot; reg:D-E*
+              </code>{' '}
               — {t('flights:searchHelpQuotes')}
             </li>
             <li>
-              <code className="font-mono text-xs bg-slate-100 dark:bg-slate-700 rounded px-1">totalTime&gt;1:30 date:2026-05</code>{' '}
+              <code className="font-mono text-xs bg-slate-100 dark:bg-slate-700 rounded px-1">
+                totalTime&gt;1:30 date:2026-05
+              </code>{' '}
               — {t('flights:searchHelpValues')}
             </li>
           </ul>
@@ -241,7 +255,9 @@ export default function FlightSearchBar({ value, onChange, error }: FlightSearch
                   <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     {t(`flights:searchTagType.${type}`)}
                   </span>
-                  <span className="font-mono text-xs text-slate-400 dark:text-slate-500">{OPERATORS_BY_TYPE[type]}</span>
+                  <span className="font-mono text-xs text-slate-400 dark:text-slate-500">
+                    {OPERATORS_BY_TYPE[type]}
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {(tagsByType.get(type) ?? []).map((tag) => (

@@ -87,7 +87,7 @@ test.describe('Notification Settings — Warning Schedule', () => {
     // The 3d pill should initially be unselected (default is [30, 14, 7])
     const pill3d = page.getByRole('button', { name: '3d' });
     await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
+      page.waitForResponse((resp) => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
       pill3d.click(),
     ]);
 
@@ -97,7 +97,7 @@ test.describe('Notification Settings — Warning Schedule', () => {
 
     // Click again to remove
     await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
+      page.waitForResponse((resp) => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
       pill3d.click(),
     ]);
 
@@ -125,7 +125,7 @@ test.describe('Notification Settings — Check Hour', () => {
     // Change to 14:00
     const hourSelect = page.locator('label', { hasText: 'Daily Check Time' }).locator('select');
     await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
+      page.waitForResponse((resp) => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
       hourSelect.selectOption('14'),
     ]);
 
@@ -135,7 +135,7 @@ test.describe('Notification Settings — Check Hour', () => {
 
     // Reset back to 8
     await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
+      page.waitForResponse((resp) => resp.url().includes('/notifications') && resp.request().method() === 'PATCH'),
       hourSelect.selectOption('8'),
     ]);
   });
@@ -155,7 +155,9 @@ test.describe('Notification Settings — Master Switch', () => {
     }
 
     // All category checkboxes should be disabled
-    const categoryCheckboxes = page.locator('label', { hasText: /Medical Expiry|Language Proficiency|Passenger Currency/ }).locator('input[type="checkbox"]');
+    const categoryCheckboxes = page
+      .locator('label', { hasText: /Medical Expiry|Language Proficiency|Passenger Currency/ })
+      .locator('input[type="checkbox"]');
     const count = await categoryCheckboxes.count();
     for (let i = 0; i < count; i++) {
       await expect(categoryCheckboxes.nth(i)).toBeDisabled();
@@ -191,9 +193,15 @@ test.describe('Notification History', () => {
 test.describe('Notification Settings — API persistence', () => {
   test('should persist category changes across page reloads', async ({ page }) => {
     // Set specific categories via API
-    await apiCall(page, 'PATCH', '/users/me/notifications', {
-      enabledCategories: ['credential_medical', 'rating_expiry', 'currency_passenger'],
-    }, auth.accessToken);
+    await apiCall(
+      page,
+      'PATCH',
+      '/users/me/notifications',
+      {
+        enabledCategories: ['credential_medical', 'rating_expiry', 'currency_passenger'],
+      },
+      auth.accessToken
+    );
 
     // Reload profile page
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
@@ -209,7 +217,9 @@ test.describe('Notification Settings — API persistence', () => {
     await expect(langCheckbox).not.toBeChecked();
 
     // Passenger Currency should be checked
-    const passengerCheckbox = page.locator('label', { hasText: 'Passenger Currency' }).locator('input[type="checkbox"]');
+    const passengerCheckbox = page
+      .locator('label', { hasText: 'Passenger Currency' })
+      .locator('input[type="checkbox"]');
     await expect(passengerCheckbox).toBeChecked();
 
     // Night Currency should NOT be checked
@@ -217,12 +227,25 @@ test.describe('Notification Settings — API persistence', () => {
     await expect(nightCheckbox).not.toBeChecked();
 
     // Restore all categories
-    await apiCall(page, 'PATCH', '/users/me/notifications', {
-      enabledCategories: [
-        'credential_medical', 'credential_language', 'credential_security', 'credential_other',
-        'rating_expiry', 'currency_passenger', 'currency_night', 'currency_instrument',
-        'currency_flight_review', 'currency_revalidation',
-      ],
-    }, auth.accessToken);
+    await apiCall(
+      page,
+      'PATCH',
+      '/users/me/notifications',
+      {
+        enabledCategories: [
+          'credential_medical',
+          'credential_language',
+          'credential_security',
+          'credential_other',
+          'rating_expiry',
+          'currency_passenger',
+          'currency_night',
+          'currency_instrument',
+          'currency_flight_review',
+          'currency_revalidation',
+        ],
+      },
+      auth.accessToken
+    );
   });
 });

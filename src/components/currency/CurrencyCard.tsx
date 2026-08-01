@@ -3,9 +3,17 @@ import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar, Clock } from 'luci
 import type { ClassRatingCurrency, CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
-const STATUS_CONFIG: Record<CurrencyStatus, {
-  bg: string; border: string; iconWrap: string; badge: string; badgeKey: string; Icon: typeof Shield;
-}> = {
+const STATUS_CONFIG: Record<
+  CurrencyStatus,
+  {
+    bg: string;
+    border: string;
+    iconWrap: string;
+    badge: string;
+    badgeKey: string;
+    Icon: typeof Shield;
+  }
+> = {
   current: {
     bg: 'bg-gradient-to-br from-green-50/70 via-white to-green-50/30 dark:from-green-900/15 dark:via-slate-800 dark:to-slate-800',
     border: 'border-l-4 border-l-green-500',
@@ -49,9 +57,8 @@ function RequirementBar({ req }: { req: CurrencyRequirement }) {
       ? 'bg-amber-500 dark:bg-amber-400'
       : 'bg-red-500 dark:bg-red-400';
 
-  const displayMessage = req.unit === 'minutes'
-    ? `${fmtDuration(req.current)} / ${fmtDuration(req.required)}`
-    : req.message;
+  const displayMessage =
+    req.unit === 'minutes' ? `${fmtDuration(req.current)} / ${fmtDuration(req.required)}` : req.message;
 
   return (
     <div className="space-y-1" data-testid={`requirement-${req.name}`}>
@@ -62,9 +69,7 @@ function RequirementBar({ req }: { req: CurrencyRequirement }) {
           </span>
           {req.name}
         </span>
-        <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
-          {displayMessage}
-        </span>
+        <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{displayMessage}</span>
       </div>
       <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
         <div
@@ -103,23 +108,17 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
             <StatusIcon className="w-5 h-5" />
           </span>
           <div className="min-w-0">
-            <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate">
-              {label}
-            </h3>
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100 truncate">{label}</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {rating.regulatoryAuthority} {rating.licenseType || ''}
             </p>
           </div>
         </div>
-        <span className={`${config.badge} shrink-0`}>
-          {t(config.badgeKey).toUpperCase()}
-        </span>
+        <span className={`${config.badge} shrink-0`}>{t(config.badgeKey).toUpperCase()}</span>
       </div>
 
       {/* Message */}
-      <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
-        {rating.message}
-      </p>
+      <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">{rating.message}</p>
 
       {/* Window-not-yet-open banner — shown for EASA FCL.740.A / FCL.625.A
           ratings during the first ~12 months after revalidation, when flight
@@ -131,12 +130,8 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
         >
           <Clock className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
           <div className="space-y-0.5">
-            <p className="font-medium">
-              {t('windowOpensLabel', { date: fmtDate(rating.windowOpensAt) })}
-            </p>
-            <p className="text-sky-700/80 dark:text-sky-300/80">
-              {t('windowClosedHint')}
-            </p>
+            <p className="font-medium">{t('windowOpensLabel', { date: fmtDate(rating.windowOpensAt) })}</p>
+            <p className="text-sky-700/80 dark:text-sky-300/80">{t('windowClosedHint')}</p>
           </div>
         </div>
       )}
@@ -155,7 +150,11 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
         <div className="mt-3 space-y-1" data-testid="launch-method-currency">
           <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('launchMethod')}</p>
           {rating.launchMethodCurrency.map((lmc) => (
-            <div key={lmc.method} className="flex justify-between items-center text-xs" data-testid={`launch-method-${lmc.method}`}>
+            <div
+              key={lmc.method}
+              className="flex justify-between items-center text-xs"
+              data-testid={`launch-method-${lmc.method}`}
+            >
               <span className="text-slate-700 dark:text-slate-300 inline-flex items-center gap-1">
                 <span aria-hidden="true" className={lmc.met ? 'text-green-600 dark:text-green-400' : 'text-slate-400'}>
                   {lmc.met ? '✓' : '○'}

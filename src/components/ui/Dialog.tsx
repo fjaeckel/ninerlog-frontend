@@ -17,14 +17,7 @@ interface DialogProps {
  * Escape / aria-modal handling, but hosts arbitrary children instead of a
  * fixed confirm/cancel button pair.
  */
-export function Dialog({
-  open,
-  onClose,
-  title,
-  description,
-  children,
-  maxWidthClassName = 'max-w-md',
-}: DialogProps) {
+export function Dialog({ open, onClose, title, description, children, maxWidthClassName = 'max-w-md' }: DialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 

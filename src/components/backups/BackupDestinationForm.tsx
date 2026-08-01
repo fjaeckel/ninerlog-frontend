@@ -1,11 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { components } from '../../api/schema';
-import {
-  useBackupProviders,
-  useCreateBackupDestination,
-  useUpdateBackupDestination,
-} from '../../hooks/useBackups';
+import { useBackupProviders, useCreateBackupDestination, useUpdateBackupDestination } from '../../hooks/useBackups';
 import { extractApiError } from '../../lib/errors';
 
 type BackupDestination = components['schemas']['BackupDestination'];
@@ -27,9 +23,7 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
 
   const isEditing = !!destination;
 
-  const [providerNameOverride, setProviderName] = useState<string | null>(
-    destination?.provider ?? null,
-  );
+  const [providerNameOverride, setProviderName] = useState<string | null>(destination?.provider ?? null);
   const providerName = providerNameOverride ?? providers?.[0]?.name ?? '';
   const [displayName, setDisplayName] = useState(destination?.displayName ?? '');
   const [schedule, setSchedule] = useState<BackupSchedule>(destination?.schedule ?? 'manual');
@@ -53,7 +47,7 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
 
   const selectedProvider = useMemo(
     () => providers?.find((p) => p.name === providerName) ?? null,
-    [providers, providerName],
+    [providers, providerName]
   );
 
   const handleConfigChange = (name: string, value: string) => {
@@ -113,16 +107,14 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
     }
   };
 
-  const renderField = (
-    field: BackupField,
-    value: string,
-    onChange: (name: string, val: string) => void,
-  ) => {
-    const inputType =
-      field.type === 'password' ? 'password' : field.type === 'url' ? 'url' : 'text';
+  const renderField = (field: BackupField, value: string, onChange: (name: string, val: string) => void) => {
+    const inputType = field.type === 'password' ? 'password' : field.type === 'url' ? 'url' : 'text';
     return (
       <div key={field.name}>
-        <label htmlFor={`bf-${field.name}`} className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+        <label
+          htmlFor={`bf-${field.name}`}
+          className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+        >
           {field.label}
           {field.required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
@@ -136,9 +128,7 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
           autoComplete={field.type === 'password' ? 'new-password' : 'off'}
           className="input w-full"
         />
-        {field.description && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{field.description}</p>
-        )}
+        {field.description && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{field.description}</p>}
       </div>
     );
   };
@@ -148,15 +138,15 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
   }
 
   if (!providers || providers.length === 0) {
-    return (
-      <div className="text-sm text-slate-500 dark:text-slate-400">
-        {t('form.noProviders')}
-      </div>
-    );
+    return <div className="text-sm text-slate-500 dark:text-slate-400">{t('form.noProviders')}</div>;
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4" aria-label={isEditing ? t('form.editTitle') : t('form.createTitle')}>
+    <form
+      onSubmit={onSubmit}
+      className="space-y-4"
+      aria-label={isEditing ? t('form.editTitle') : t('form.createTitle')}
+    >
       {apiError && (
         <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
           {apiError}
@@ -214,16 +204,18 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t('form.configSection')}</h3>
               {selectedProvider.configSchema.fields.map((f) =>
-                renderField(f, config[f.name] ?? '', handleConfigChange),
+                renderField(f, config[f.name] ?? '', handleConfigChange)
               )}
             </div>
           )}
           {selectedProvider.credentialSchema.fields.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t('form.credentialsSection')}</h3>
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                {t('form.credentialsSection')}
+              </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">{t('form.credentialsHint')}</p>
               {selectedProvider.credentialSchema.fields.map((f) =>
-                renderField(f, credentials[f.name] ?? '', handleCredentialChange),
+                renderField(f, credentials[f.name] ?? '', handleCredentialChange)
               )}
             </div>
           )}
@@ -322,12 +314,7 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
       </div>
 
       <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(e) => setEnabled(e.target.checked)}
-          className="rounded"
-        />
+        <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="rounded" />
         <span className="text-sm text-slate-700 dark:text-slate-300">{t('form.enabled')}</span>
       </label>
 

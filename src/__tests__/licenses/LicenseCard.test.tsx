@@ -9,9 +9,7 @@ const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return render(
-    <QueryClientProvider client={queryClient}>{component}</QueryClientProvider>
-  );
+  return render(<QueryClientProvider client={queryClient}>{component}</QueryClientProvider>);
 };
 
 describe('LicenseCard', () => {
@@ -32,14 +30,8 @@ describe('LicenseCard', () => {
   const mockOnDelete = vi.fn();
 
   it('renders license information', () => {
-    renderWithProviders(
-      <LicenseCard
-        license={mockLicense}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
-    );
-    
+    renderWithProviders(<LicenseCard license={mockLicense} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+
     expect(screen.getByText('EASA PPL')).toBeInTheDocument();
     expect(screen.getByText('PPL-12345')).toBeInTheDocument();
     expect(screen.getAllByText('EASA').length).toBeGreaterThanOrEqual(1);
@@ -47,28 +39,16 @@ describe('LicenseCard', () => {
 
   it('calls onEdit when edit button is clicked', async () => {
     const user = userEvent.setup();
-    renderWithProviders(
-      <LicenseCard
-        license={mockLicense}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
-    );
-    
+    renderWithProviders(<LicenseCard license={mockLicense} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+
     await user.click(screen.getByRole('button', { name: /edit/i }));
     expect(mockOnEdit).toHaveBeenCalledTimes(1);
   });
 
   it('calls onDelete when delete button is clicked', async () => {
     const user = userEvent.setup();
-    renderWithProviders(
-      <LicenseCard
-        license={mockLicense}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
-    );
-    
+    renderWithProviders(<LicenseCard license={mockLicense} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+
     await user.click(screen.getByRole('button', { name: /delete/i }));
     expect(mockOnDelete).toHaveBeenCalledTimes(1);
   });
@@ -78,15 +58,9 @@ describe('LicenseCard', () => {
       ...mockLicense,
       requiresSeparateLogbook: true,
     };
-    
-    renderWithProviders(
-      <LicenseCard
-        license={logbookLicense}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
-    );
-    
+
+    renderWithProviders(<LicenseCard license={logbookLicense} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
+
     expect(screen.getByText('YES')).toBeInTheDocument();
   });
 });

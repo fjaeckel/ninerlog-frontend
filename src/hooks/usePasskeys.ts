@@ -1,9 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  startRegistration,
-  startAuthentication,
-  browserSupportsWebAuthn,
-} from '@simplewebauthn/browser';
+import { startRegistration, startAuthentication, browserSupportsWebAuthn } from '@simplewebauthn/browser';
 import { apiClient } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 import i18n from '../i18n';
@@ -71,10 +67,9 @@ export const useDeletePasskey = () => {
 
   return useMutation({
     mutationFn: async (credentialId: string) => {
-      const { error } = await apiClient.DELETE(
-        '/auth/webauthn/credentials/{credentialId}',
-        { params: { path: { credentialId } } }
-      );
+      const { error } = await apiClient.DELETE('/auth/webauthn/credentials/{credentialId}', {
+        params: { path: { credentialId } },
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -90,10 +85,9 @@ export const useLoginWithPasskey = () => {
     mutationFn: async (params: { email?: string; conditional?: boolean } = {}) => {
       const { email, conditional } = params;
 
-      const { data: options, error } = await apiClient.POST(
-        '/auth/webauthn/login/options',
-        { body: email ? { email } : {} }
-      );
+      const { data: options, error } = await apiClient.POST('/auth/webauthn/login/options', {
+        body: email ? { email } : {},
+      });
       if (error || !options) throw error ?? new Error('No options returned');
 
       const assertion = await startAuthentication({

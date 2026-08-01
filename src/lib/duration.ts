@@ -15,7 +15,7 @@ export type DecimalSeparator = 'comma' | 'dot';
 export function formatDuration(
   minutes: number,
   format: TimeDisplayFormat = 'hm',
-  decimalSeparator: DecimalSeparator = 'dot',
+  decimalSeparator: DecimalSeparator = 'dot'
 ): string {
   if (minutes === 0) return format === 'hm' ? '0h 0m' : '0.0h';
 

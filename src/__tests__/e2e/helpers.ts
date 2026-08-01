@@ -52,7 +52,7 @@ const MAILPIT_URL = process.env.PLAYWRIGHT_MAILPIT_URL || 'http://mailpit-test:8
  */
 async function fetchVerificationToken(
   request: import('@playwright/test').APIRequestContext,
-  email: string,
+  email: string
 ): Promise<string> {
   const deadline = Date.now() + 10_000;
   let lastErr = '';
@@ -62,9 +62,7 @@ async function fetchVerificationToken(
       // the API delivers the recipient via the SMTP envelope only and omits the
       // `To:` header, so MailPit records the recipient as Bcc. A bare-address
       // query matches the message regardless of which header it lands in.
-      const search = await request.get(
-        `${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(email)}`,
-      );
+      const search = await request.get(`${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(email)}`);
       if (search.ok()) {
         const data: { messages: Array<{ ID: string; Subject: string }> } = await search.json();
         const verifyMsg = data.messages.find((m) => /confirm your email/i.test(m.Subject));
@@ -213,11 +211,14 @@ export async function injectAuth(page: Page, auth: AuthContext): Promise<void> {
         version: 0,
       }),
       buildOnboardingStorage(auth.userId),
-    ],
+    ]
   );
   await page.goto('/dashboard');
   await dismissOnboardingTourIfPresent(page);
-  await page.getByRole('link', { name: /dashboard|credentials|aircraft|licenses|flights/i }).first().waitFor({ state: 'visible', timeout: 10000 });
+  await page
+    .getByRole('link', { name: /dashboard|credentials|aircraft|licenses|flights/i })
+    .first()
+    .waitFor({ state: 'visible', timeout: 10000 });
 }
 
 /**
@@ -240,7 +241,7 @@ export async function apiCall(
   method: string,
   path: string,
   body?: Record<string, unknown>,
-  token?: string,
+  token?: string
 ): Promise<any> {
   const opts: any = {
     headers: {
@@ -282,74 +283,109 @@ export async function apiCall(
  * Seed a license via API. Returns the created license.
  */
 export async function seedLicense(page: Page, token: string, overrides: Record<string, unknown> = {}) {
-  return apiCall(page, 'POST', '/licenses', {
-    regulatoryAuthority: 'EASA',
-    licenseType: 'PPL',
-    licenseNumber: `PPL-${Date.now()}`,
-    issuingAuthority: 'LBA',
-    issueDate: '2020-01-15',
-    requiresSeparateLogbook: false,
-    ...overrides,
-  }, token);
+  return apiCall(
+    page,
+    'POST',
+    '/licenses',
+    {
+      regulatoryAuthority: 'EASA',
+      licenseType: 'PPL',
+      licenseNumber: `PPL-${Date.now()}`,
+      issuingAuthority: 'LBA',
+      issueDate: '2020-01-15',
+      requiresSeparateLogbook: false,
+      ...overrides,
+    },
+    token
+  );
 }
 
 /**
  * Seed a class rating via API. Returns the created class rating.
  */
-export async function seedClassRating(page: Page, token: string, licenseId: string, overrides: Record<string, unknown> = {}) {
-  return apiCall(page, 'POST', `/licenses/${licenseId}/ratings`, {
-    classType: 'SEP_LAND',
-    issueDate: '2020-01-15',
-    expiryDate: '2027-01-15',
-    ...overrides,
-  }, token);
+export async function seedClassRating(
+  page: Page,
+  token: string,
+  licenseId: string,
+  overrides: Record<string, unknown> = {}
+) {
+  return apiCall(
+    page,
+    'POST',
+    `/licenses/${licenseId}/ratings`,
+    {
+      classType: 'SEP_LAND',
+      issueDate: '2020-01-15',
+      expiryDate: '2027-01-15',
+      ...overrides,
+    },
+    token
+  );
 }
 
 /**
  * Seed an aircraft via API. Returns the created aircraft.
  */
 export async function seedAircraft(page: Page, token: string, overrides: Record<string, unknown> = {}) {
-  return apiCall(page, 'POST', '/aircraft', {
-    registration: `D-E${String(Date.now()).slice(-3)}`,
-    type: 'C172',
-    make: 'Cessna',
-    model: '172 Skyhawk',
-    aircraftClass: 'SEP_LAND',
-    isComplex: false,
-    isHighPerformance: false,
-    isTailwheel: false,
-    isActive: true,
-    ...overrides,
-  }, token);
+  return apiCall(
+    page,
+    'POST',
+    '/aircraft',
+    {
+      registration: `D-E${String(Date.now()).slice(-3)}`,
+      type: 'C172',
+      make: 'Cessna',
+      model: '172 Skyhawk',
+      aircraftClass: 'SEP_LAND',
+      isComplex: false,
+      isHighPerformance: false,
+      isTailwheel: false,
+      isActive: true,
+      ...overrides,
+    },
+    token
+  );
 }
 
 /**
  * Seed a credential via API. Returns the created credential.
  */
 export async function seedCredential(page: Page, token: string, overrides: Record<string, unknown> = {}) {
-  return apiCall(page, 'POST', '/credentials', {
-    credentialType: 'EASA_CLASS2_MEDICAL',
-    credentialNumber: `MED-${Date.now()}`,
-    issueDate: '2025-01-15',
-    expiryDate: '2027-01-15',
-    issuingAuthority: 'EASA AME',
-    ...overrides,
-  }, token);
+  return apiCall(
+    page,
+    'POST',
+    '/credentials',
+    {
+      credentialType: 'EASA_CLASS2_MEDICAL',
+      credentialNumber: `MED-${Date.now()}`,
+      issueDate: '2025-01-15',
+      expiryDate: '2027-01-15',
+      issuingAuthority: 'EASA AME',
+      ...overrides,
+    },
+    token
+  );
 }
 
 /**
  * Seed a flight via API. Returns the created flight.
  */
 export async function seedFlight(page: Page, token: string, overrides: Record<string, unknown> = {}) {
-  return apiCall(page, 'POST', '/flights', {
-    date: '2025-06-10',
-    aircraftReg: 'D-EFGH',
-    aircraftType: 'C172',
-    departureIcao: 'EDOI',
-    arrivalIcao: 'EDAZ',
-    offBlockTime: '08:00:00',
-    onBlockTime: '10:00:00',
-    landings: 1,
-    ...overrides,
-  }, token);
+  return apiCall(
+    page,
+    'POST',
+    '/flights',
+    {
+      date: '2025-06-10',
+      aircraftReg: 'D-EFGH',
+      aircraftType: 'C172',
+      departureIcao: 'EDOI',
+      arrivalIcao: 'EDAZ',
+      offBlockTime: '08:00:00',
+      onBlockTime: '10:00:00',
+      landings: 1,
+      ...overrides,
+    },
+    token
+  );
 }

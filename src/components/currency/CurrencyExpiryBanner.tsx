@@ -11,11 +11,7 @@ import type { ClassRatingCurrency, FlightReviewStatus } from '../../types/api';
  * on the rating's own card below — this banner only needs to point at
  * the right kind of action.
  */
-type NextStepCategory =
-  | 'training_flight'
-  | 'proficiency_check'
-  | 'flight_review'
-  | 'generic';
+type NextStepCategory = 'training_flight' | 'proficiency_check' | 'flight_review' | 'generic';
 
 const RULE_KEY_CATEGORY: Record<string, NextStepCategory> = {
   easa_sep_tmg: 'training_flight',

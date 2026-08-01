@@ -18,7 +18,10 @@ async function downloadFile(url: string, filename: string) {
 
 export const exportFlightsCSV = (format?: 'standard' | 'easa' | 'faa') => {
   const params = format && format !== 'standard' ? `?format=${format}` : '';
-  return downloadFile(`${API_BASE}/exports/csv${params}`, `ninerlog_flights_${new Date().toISOString().slice(0, 10)}.csv`);
+  return downloadFile(
+    `${API_BASE}/exports/csv${params}`,
+    `ninerlog_flights_${new Date().toISOString().slice(0, 10)}.csv`
+  );
 };
 
 export const exportDataJSON = () =>
@@ -27,12 +30,15 @@ export const exportDataJSON = () =>
 export const exportFlightsPDF = (
   logbookLicenseId?: string,
   format?: 'easa' | 'faa' | 'summary',
-  pageSize?: 'a4' | 'a5' | 'letter',
+  pageSize?: 'a4' | 'a5' | 'letter'
 ) => {
   const params = new URLSearchParams();
   if (logbookLicenseId) params.set('logbookLicenseId', logbookLicenseId);
   if (format) params.set('format', format);
   if (pageSize) params.set('page_size', pageSize);
   const query = params.toString() ? `?${params.toString()}` : '';
-  return downloadFile(`${API_BASE}/exports/pdf${query}`, `ninerlog_logbook_${new Date().toISOString().slice(0, 10)}.pdf`);
+  return downloadFile(
+    `${API_BASE}/exports/pdf${query}`,
+    `ninerlog_logbook_${new Date().toISOString().slice(0, 10)}.pdf`
+  );
 };

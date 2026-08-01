@@ -29,7 +29,7 @@ export default function MapPage() {
   const [view, setView] = useState<MapView>('routes');
 
   const isLoading = routesLoading || statsLoading;
-  const isError = !isLoading && (!routeData && !airportStats);
+  const isError = !isLoading && !routeData && !airportStats;
 
   if (isLoading) {
     return (
@@ -44,7 +44,10 @@ export default function MapPage() {
       <div className="mx-auto max-w-[1280px] py-6">
         <ErrorState
           title={t('map.failedToLoad', 'Failed to load map data')}
-          message={t('map.failedToLoadMessage', 'An error occurred while loading your flight routes. Please try again.')}
+          message={t(
+            'map.failedToLoadMessage',
+            'An error occurred while loading your flight routes. Please try again.'
+          )}
         />
       </div>
     );
@@ -232,9 +235,15 @@ export default function MapPage() {
                     <tr key={s.icao} className="border-b border-slate-100 dark:border-slate-800">
                       <td className="py-2 px-3 font-mono font-medium text-slate-800 dark:text-slate-200">{s.icao}</td>
                       <td className="py-2 px-3 text-slate-600 dark:text-slate-400">{s.name}</td>
-                      <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300 font-mono tabular-nums">{s.departures}</td>
-                      <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300 font-mono tabular-nums">{s.arrivals}</td>
-                      <td className="py-2 px-3 text-right font-medium text-slate-800 dark:text-slate-200 font-mono tabular-nums">{s.totalFlights}</td>
+                      <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300 font-mono tabular-nums">
+                        {s.departures}
+                      </td>
+                      <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300 font-mono tabular-nums">
+                        {s.arrivals}
+                      </td>
+                      <td className="py-2 px-3 text-right font-medium text-slate-800 dark:text-slate-200 font-mono tabular-nums">
+                        {s.totalFlights}
+                      </td>
                     </tr>
                   ))}
               </tbody>

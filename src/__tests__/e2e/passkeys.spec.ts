@@ -50,7 +50,7 @@ test.describe('Passkeys (WebAuthn)', () => {
     test.skip(
       !hasWebAuthn,
       'window.PublicKeyCredential is not exposed in this browser context (insecure origin). ' +
-        'Run the suite against an HTTPS or localhost origin to exercise the WebAuthn flow.',
+        'Run the suite against an HTTPS or localhost origin to exercise the WebAuthn flow.'
     );
   });
 

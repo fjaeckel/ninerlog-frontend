@@ -55,7 +55,7 @@ describe('RegisterPage', () => {
 
   it('renders registration form', () => {
     renderWithProviders(<RegisterPage />);
-    
+
     expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^password/i)).toBeInTheDocument();
@@ -67,12 +67,12 @@ describe('RegisterPage', () => {
   it('validates password matching', async () => {
     const user = userEvent.setup();
     renderWithProviders(<RegisterPage />);
-    
+
     await user.type(screen.getByLabelText(/^email/i), 'test@example.com');
     await user.type(screen.getByLabelText(/^password/i), 'password1234');
     await user.type(screen.getByLabelText(/confirm password/i), 'password4567');
     await user.click(screen.getByRole('button', { name: /create account/i }));
-    
+
     await waitFor(() => {
       expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
     });
@@ -81,15 +81,15 @@ describe('RegisterPage', () => {
   it('submits form with valid data', async () => {
     const user = userEvent.setup();
     mockRegister.mutateAsync.mockResolvedValueOnce({});
-    
+
     renderWithProviders(<RegisterPage />);
-    
+
     await user.type(screen.getByLabelText(/name/i), 'John Doe');
     await user.type(screen.getByLabelText(/^email/i), 'john@example.com');
     await user.type(screen.getByLabelText(/^password/i), 'password1234');
     await user.type(screen.getByLabelText(/confirm password/i), 'password1234');
     await user.click(screen.getByRole('button', { name: /create account/i }));
-    
+
     await waitFor(() => {
       expect(mockRegister.mutateAsync).toHaveBeenCalledWith({
         email: 'john@example.com',
@@ -102,29 +102,29 @@ describe('RegisterPage', () => {
 
   it('displays error message on registration failure', async () => {
     const user = userEvent.setup();
-    
+
     // Set up the mock to reject with an error
     const error = new Error('Registration failed');
     (error as any).response = { data: { message: 'Email already exists' } };
     mockRegister.mutateAsync.mockRejectedValueOnce(error);
-    
+
     renderWithProviders(<RegisterPage />);
-    
+
     // Fill in all required fields (name is now required per OpenAPI spec)
     const nameInput = screen.getByLabelText(/full name/i);
     const emailInput = screen.getByLabelText(/^email/i);
     const passwordInput = screen.getByLabelText(/^password/i);
     const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
-    
+
     await user.type(nameInput, 'Test User');
     await user.type(emailInput, 'existing@example.com');
     await user.type(passwordInput, 'password1234');
     await user.type(confirmPasswordInput, 'password1234');
-    
+
     // Submit the form
     const submitButton = screen.getByRole('button', { name: /create account/i });
     await user.click(submitButton);
-    
+
     // The error should appear after async mutation rejection
     await screen.findByText(/email already exists/i);
   });
@@ -144,9 +144,7 @@ describe('RegisterPage', () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(mockRegister.mutateAsync).toHaveBeenCalledWith(
-        expect.objectContaining({ preferredLocale: 'de' }),
-      );
+      expect(mockRegister.mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ preferredLocale: 'de' }));
     });
   });
 

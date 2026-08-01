@@ -53,8 +53,7 @@ export const useCreateContact = () => {
 export const useDeleteContact = () => {
   const queryClient = useQueryClient();
   return useMutation<null, Error, string>({
-    mutationFn: (id) =>
-      fetchWithAuth(`${API_BASE}/contacts/${id}`, { method: 'DELETE' }),
+    mutationFn: (id) => fetchWithAuth(`${API_BASE}/contacts/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
     },

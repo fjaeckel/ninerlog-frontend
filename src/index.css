@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 
 /* Override Tailwind v4 default dark mode to use class-based strategy */
@@ -6,48 +6,48 @@
 
 @theme {
   /* Brand primary — Aviation Blue */
-  --color-brand-50: #EFF6FF;
-  --color-brand-100: #DBEAFE;
-  --color-brand-200: #BFDBFE;
-  --color-brand-300: #93C5FD;
-  --color-brand-400: #60A5FA;
-  --color-brand-500: #3B82F6;
-  --color-brand-600: #2563EB;
-  --color-brand-700: #1D4ED8;
-  --color-brand-800: #1E3A5F;
-  --color-brand-900: #1E3A8A;
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e3a5f;
+  --color-brand-900: #1e3a8a;
   --color-brand-950: #172554;
 
   /* Legacy aliases for primary */
-  --color-primary-50: #EFF6FF;
-  --color-primary-100: #DBEAFE;
-  --color-primary-200: #BFDBFE;
-  --color-primary-300: #93C5FD;
-  --color-primary-400: #60A5FA;
-  --color-primary-500: #3B82F6;
-  --color-primary-600: #2563EB;
-  --color-primary-700: #1D4ED8;
-  --color-primary-800: #1E3A5F;
-  --color-primary-900: #1E3A8A;
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e3a5f;
+  --color-primary-900: #1e3a8a;
 
   /* Semantic: Currency / Status — Aviation Signal Colors */
-  --color-current-50: #F0FDF4;
-  --color-current-100: #DCFCE7;
-  --color-current-500: #22C55E;
-  --color-current-600: #16A34A;
-  --color-current-700: #15803D;
+  --color-current-50: #f0fdf4;
+  --color-current-100: #dcfce7;
+  --color-current-500: #22c55e;
+  --color-current-600: #16a34a;
+  --color-current-700: #15803d;
 
-  --color-expiring-50: #FFFBEB;
-  --color-expiring-100: #FEF3C7;
-  --color-expiring-500: #F59E0B;
-  --color-expiring-600: #D97706;
-  --color-expiring-700: #B45309;
+  --color-expiring-50: #fffbeb;
+  --color-expiring-100: #fef3c7;
+  --color-expiring-500: #f59e0b;
+  --color-expiring-600: #d97706;
+  --color-expiring-700: #b45309;
 
-  --color-expired-50: #FEF2F2;
-  --color-expired-100: #FEE2E2;
-  --color-expired-500: #EF4444;
-  --color-expired-600: #DC2626;
-  --color-expired-700: #B91C1C;
+  --color-expired-50: #fef2f2;
+  --color-expired-100: #fee2e2;
+  --color-expired-500: #ef4444;
+  --color-expired-600: #dc2626;
+  --color-expired-700: #b91c1c;
 
   /* Font families */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -69,21 +69,41 @@
   --animate-slide-down: slideDown 300ms ease-out;
 
   @keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
   }
   @keyframes slideUp {
-    0% { transform: translateY(16px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
+    0% {
+      transform: translateY(16px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
   @keyframes slideDown {
-    0% { transform: translateY(-16px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
+    0% {
+      transform: translateY(-16px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
   --animate-sheet-up: sheetUp 250ms ease-out;
   @keyframes sheetUp {
-    0% { transform: translateY(100%); }
-    100% { transform: translateY(0); }
+    0% {
+      transform: translateY(100%);
+    }
+    100% {
+      transform: translateY(0);
+    }
   }
 }
 
@@ -113,14 +133,17 @@
     html {
       scroll-behavior: auto;
     }
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }
   }
 
   /* Tabular numbers for data display */
-  .font-mono, [data-numeric] {
+  .font-mono,
+  [data-numeric] {
     font-variant-numeric: tabular-nums;
   }
 
@@ -355,7 +378,7 @@
 
   /* ── Polish: brand gradient surfaces ── */
   .gradient-brand {
-    background-image: linear-gradient(135deg, #1E3A5F 0%, #1D4ED8 55%, #2563EB 100%);
+    background-image: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 55%, #2563eb 100%);
   }
   .gradient-brand-soft {
     @apply bg-gradient-to-br from-brand-50 via-white to-blue-50;
@@ -366,23 +389,24 @@
   .hero-greeting {
     @apply relative overflow-hidden rounded-xl p-5 sm:p-6 text-white shadow-md;
     background-image:
-      radial-gradient(ellipse at top right, rgba(96,165,250,0.45), transparent 55%),
-      linear-gradient(135deg, #1E3A5F 0%, #1D4ED8 60%, #2563EB 100%);
+      radial-gradient(ellipse at top right, rgba(96, 165, 250, 0.45), transparent 55%),
+      linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 60%, #2563eb 100%);
   }
   .hero-greeting::after {
     content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0));
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
     pointer-events: none;
   }
 
   /* ── Polish: text gradient (for wordmark / accents) ── */
   .text-gradient-brand {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #1E3A5F 0%, #1D4ED8 60%, #2563EB 100%);
+    background-image: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 60%, #2563eb 100%);
   }
   .dark .text-gradient-brand {
-    background-image: linear-gradient(135deg, #93C5FD 0%, #60A5FA 60%, #3B82F6 100%);
+    background-image: linear-gradient(135deg, #93c5fd 0%, #60a5fa 60%, #3b82f6 100%);
   }
 
   /* ── Polish: sidebar/nav active accent ── */
@@ -395,9 +419,15 @@
   }
 
   /* ── Polish: status ring for currency / health badges ── */
-  .ring-status-current  { @apply ring-2 ring-green-500/30 dark:ring-green-400/30; }
-  .ring-status-expiring { @apply ring-2 ring-amber-500/30 dark:ring-amber-400/30; }
-  .ring-status-expired  { @apply ring-2 ring-red-500/30 dark:ring-red-400/30; }
+  .ring-status-current {
+    @apply ring-2 ring-green-500/30 dark:ring-green-400/30;
+  }
+  .ring-status-expiring {
+    @apply ring-2 ring-amber-500/30 dark:ring-amber-400/30;
+  }
+  .ring-status-expired {
+    @apply ring-2 ring-red-500/30 dark:ring-red-400/30;
+  }
 }
 
 @layer utilities {

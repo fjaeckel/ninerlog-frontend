@@ -1,1 +1,3 @@
-export default function LicenseSwitcher() { return null; }
+export default function LicenseSwitcher() {
+  return null;
+}

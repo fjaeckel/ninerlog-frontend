@@ -28,7 +28,9 @@ describe('customCurrencyYaml', () => {
   });
 
   it('rejects a document without a name', () => {
-    expect(() => yamlToInput('window:\n  amount: 90\n  unit: days\nrequirements:\n  - metric: landings\n    min: 3')).toThrow(YamlRuleError);
+    expect(() =>
+      yamlToInput('window:\n  amount: 90\n  unit: days\nrequirements:\n  - metric: landings\n    min: 3')
+    ).toThrow(YamlRuleError);
   });
 
   it('rejects a document without requirements', () => {

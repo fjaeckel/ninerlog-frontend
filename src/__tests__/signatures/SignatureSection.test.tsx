@@ -50,7 +50,7 @@ const baseFlight: Flight = {
   updatedAt: '2026-01-15T00:00:00Z',
 };
 
-const mockMutation = () => ({ mutateAsync: vi.fn(), isPending: false } as any);
+const mockMutation = () => ({ mutateAsync: vi.fn(), isPending: false }) as any;
 
 function mockSignatureHooks(signatures: FlightSignature[]) {
   vi.spyOn(useSignaturesHook, 'useFlightSignatures').mockReturnValue({

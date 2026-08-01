@@ -142,7 +142,9 @@ export default function FlightsPage() {
     ...(logbookLicenseId ? { logbookLicenseId } : {}),
   };
 
-  const activeFilterCount = [startDate, endDate, aircraftReg, departureIcao, arrivalIcao, functionFilter].filter(Boolean).length;
+  const activeFilterCount = [startDate, endDate, aircraftReg, departureIcao, arrivalIcao, functionFilter].filter(
+    Boolean
+  ).length;
 
   const clearFilters = useCallback(() => {
     syncedQuery.current = '';
@@ -217,9 +219,7 @@ export default function FlightsPage() {
   // Errors while an advanced search query is active (typically a 400 for an
   // invalid query) are shown inline under the search bar instead of replacing
   // the whole page, so the user can correct the query.
-  const searchError = error && searchQuery
-    ? ((error as { error?: string }).error ?? t('flights:searchError'))
-    : null;
+  const searchError = error && searchQuery ? ((error as { error?: string }).error ?? t('flights:searchError')) : null;
 
   if (error && !searchError) {
     return (
@@ -255,7 +255,9 @@ export default function FlightsPage() {
       {/* Logbook Selector — only shown if separate-logbook licenses exist */}
       {separateLogbookLicenses.length > 0 && (
         <div className="mb-4 flex items-center gap-2">
-          <label className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">{t('flights:logbook')}</label>
+          <label className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+            {t('flights:logbook')}
+          </label>
           <select
             value={logbookLicenseId}
             onChange={(e) => updateParams({ logbook: e.target.value })}
@@ -284,10 +286,14 @@ export default function FlightsPage() {
               : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
           }`}
         >
-          {t('flights:filters')}{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+          {t('flights:filters')}
+          {activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
         </button>
         {activeFilterCount > 0 && (
-          <button onClick={clearFilters} className="text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center">
+          <button
+            onClick={clearFilters}
+            className="text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center"
+          >
             {t('flights:clearAll')}
           </button>
         )}
@@ -303,7 +309,11 @@ export default function FlightsPage() {
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
             }`}
           >
-            {field === 'date' ? t('flights:sortDate') : field === 'totalTime' ? t('flights:sortHours') : t('flights:sortAdded')}
+            {field === 'date'
+              ? t('flights:sortDate')
+              : field === 'totalTime'
+                ? t('flights:sortHours')
+                : t('flights:sortAdded')}
             {sortBy === field && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
           </button>
         ))}
@@ -314,7 +324,9 @@ export default function FlightsPage() {
         <div className="card mb-4 p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterDateFrom')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t('flights:filterDateFrom')}
+              </label>
               <input
                 type="date"
                 value={startDate}
@@ -323,7 +335,9 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterDateTo')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t('flights:filterDateTo')}
+              </label>
               <input
                 type="date"
                 value={endDate}
@@ -332,7 +346,9 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterAircraftReg')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t('flights:filterAircraftReg')}
+              </label>
               <input
                 type="text"
                 value={aircraftReg}
@@ -342,7 +358,9 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterDepartureIcao')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t('flights:filterDepartureIcao')}
+              </label>
               <input
                 type="text"
                 value={departureIcao}
@@ -353,7 +371,9 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterArrivalIcao')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t('flights:filterArrivalIcao')}
+              </label>
               <input
                 type="text"
                 value={arrivalIcao}
@@ -364,7 +384,9 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterFunction')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t('flights:filterFunction')}
+              </label>
               <select
                 value={functionFilter}
                 onChange={(e) => updateParams({ function: e.target.value })}
@@ -381,11 +403,19 @@ export default function FlightsPage() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-[1020]" role="dialog" aria-modal="true" aria-labelledby="flight-form-title">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-[1020]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="flight-form-title"
+        >
           <div className="bg-white dark:bg-slate-800 w-full sm:rounded-xl sm:max-w-2xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto shadow-2xl pt-safe-top">
             <div className="p-4 sm:p-6">
               <div className="flex justify-between items-center mb-4 sm:mb-6 sticky top-0 bg-white dark:bg-slate-800 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 -mt-4 sm:-mt-6 pt-4 sm:pt-6 border-b border-slate-100 dark:border-slate-700 sm:border-0">
-                <h2 id="flight-form-title" className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100">
+                <h2
+                  id="flight-form-title"
+                  className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100"
+                >
                   {editingFlight ? t('flights:editFlight') : t('flights:logNewFlight')}
                 </h2>
                 <button
@@ -407,9 +437,7 @@ export default function FlightsPage() {
         <div className="card text-center py-12">
           <div className="text-5xl mb-4">✈</div>
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('flights:noFlights')}</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-6">
-            {t('flights:startBuildingLogbook')}
-          </p>
+          <p className="text-slate-500 dark:text-slate-400 mb-6">{t('flights:startBuildingLogbook')}</p>
           <button onClick={() => setShowForm(true)} className="btn-primary">
             + {t('flights:logFirstFlight')}
           </button>
@@ -419,16 +447,29 @@ export default function FlightsPage() {
           {/* @container: the optional columns below react to the width this
               table actually gets, not to the viewport size. */}
           <div className="overflow-x-auto card p-0 @container">
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm" aria-label={t('flights:pageTitle')}>
+            <table
+              className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm"
+              aria-label={t('flights:pageTitle')}
+            >
               <thead className="bg-slate-50 dark:bg-slate-800/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableDate')}</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableRoute')}</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableAircraft')}</th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                    {t('flights:tableDate')}
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                    {t('flights:tableRoute')}
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                    {t('flights:tableAircraft')}
+                  </th>
                   {columns.offOnBlock && (
-                    <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableOffOnBlock')}</th>
+                    <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                      {t('flights:tableOffOnBlock')}
+                    </th>
                   )}
-                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableTotal')}</th>
+                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">
+                    {t('flights:tableTotal')}
+                  </th>
                   {columns.time.map((col) => (
                     <th
                       key={col.key}
@@ -439,13 +480,19 @@ export default function FlightsPage() {
                     </th>
                   ))}
                   {columns.function && (
-                    <th className="px-4 py-3 text-center font-medium text-slate-500 dark:text-slate-400">{t('flights:tableFunction')}</th>
+                    <th className="px-4 py-3 text-center font-medium text-slate-500 dark:text-slate-400">
+                      {t('flights:tableFunction')}
+                    </th>
                   )}
                   {columns.landings && (
-                    <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLdg')}</th>
+                    <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">
+                      {t('flights:tableLdg')}
+                    </th>
                   )}
                   {columns.remarksRevealClass && (
-                    <th className={`px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}>
+                    <th
+                      className={`px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}
+                    >
                       {t('flights:tableRemarks')}
                     </th>
                   )}
@@ -500,13 +547,11 @@ export default function FlightsPage() {
                     })}
                     {columns.function && (
                       <td className="px-4 py-3 whitespace-nowrap text-center">
-                        <span className={`badge ${
-                          flight.isPic
-                            ? 'badge-info'
-                            : flight.isDual
-                              ? 'badge-expiring'
-                              : 'badge-neutral'
-                        }`}>
+                        <span
+                          className={`badge ${
+                            flight.isPic ? 'badge-info' : flight.isDual ? 'badge-expiring' : 'badge-neutral'
+                          }`}
+                        >
                           {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : (flight.sicTime || 0) > 0 ? 'SIC' : '—'}
                         </span>
                       </td>
@@ -525,16 +570,28 @@ export default function FlightsPage() {
                     )}
                     <td className="px-4 py-3 whitespace-nowrap text-right">
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleEdit(flight.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(flight.id);
+                        }}
                         className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mr-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
-                        aria-label={t('flights:editFlightAriaLabel', { departure: flight.departureIcao || '', arrival: flight.arrivalIcao || '' })}
+                        aria-label={t('flights:editFlightAriaLabel', {
+                          departure: flight.departureIcao || '',
+                          arrival: flight.arrivalIcao || '',
+                        })}
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(flight.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(flight.id);
+                        }}
                         className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
-                        aria-label={t('flights:deleteFlightAriaLabel', { departure: flight.departureIcao || '', arrival: flight.arrivalIcao || '' })}
+                        aria-label={t('flights:deleteFlightAriaLabel', {
+                          departure: flight.departureIcao || '',
+                          arrival: flight.arrivalIcao || '',
+                        })}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

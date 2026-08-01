@@ -14,10 +14,31 @@ describe('CurrencyCard', () => {
     message: 'EASA SEP_LAND current — all revalidation requirements met',
     expiryDate: '2027-06-15',
     requirements: [
-      { name: 'Total Hours', met: true, current: 15, required: 12, unit: 'hours', message: '15.0 / 12.0 hours in class' },
+      {
+        name: 'Total Hours',
+        met: true,
+        current: 15,
+        required: 12,
+        unit: 'hours',
+        message: '15.0 / 12.0 hours in class',
+      },
       { name: 'PIC Hours', met: true, current: 8, required: 6, unit: 'hours', message: '8.0 / 6.0 PIC hours' },
-      { name: 'Takeoffs & Landings', met: true, current: 20, required: 12, unit: 'landings', message: '20 / 12 takeoffs & landings' },
-      { name: 'Refresher Training', met: true, current: 2, required: 1, unit: 'hours', message: '2.0 / 1.0 hours with instructor' },
+      {
+        name: 'Takeoffs & Landings',
+        met: true,
+        current: 20,
+        required: 12,
+        unit: 'landings',
+        message: '20 / 12 takeoffs & landings',
+      },
+      {
+        name: 'Refresher Training',
+        met: true,
+        current: 2,
+        required: 1,
+        unit: 'hours',
+        message: '2.0 / 1.0 hours with instructor',
+      },
     ],
   };
 
@@ -141,8 +162,22 @@ describe('CurrencyCard', () => {
       status: 'current',
       message: 'FAA SEP_LAND — current for day and night passengers',
       requirements: [
-        { name: 'Day Passenger Currency', met: true, current: 5, required: 3, unit: 'landings', message: '5 / 3 takeoffs & landings in 90 days' },
-        { name: 'Night Passenger Currency', met: true, current: 4, required: 3, unit: 'landings', message: '4 / 3 night full-stop landings in 90 days' },
+        {
+          name: 'Day Passenger Currency',
+          met: true,
+          current: 5,
+          required: 3,
+          unit: 'landings',
+          message: '5 / 3 takeoffs & landings in 90 days',
+        },
+        {
+          name: 'Night Passenger Currency',
+          met: true,
+          current: 4,
+          required: 3,
+          unit: 'landings',
+          message: '4 / 3 night full-stop landings in 90 days',
+        },
       ],
     };
     render(<CurrencyCard rating={faaRating} />);
@@ -163,7 +198,14 @@ describe('CurrencyCard', () => {
       message: 'FAA SEP_LAND — day current, night not current',
       requirements: [
         { name: 'Day Passenger Currency', met: true, current: 4, required: 3, unit: 'landings', message: '4 / 3 T&L' },
-        { name: 'Night Passenger Currency', met: false, current: 1, required: 3, unit: 'landings', message: '1 / 3 night T&L' },
+        {
+          name: 'Night Passenger Currency',
+          met: false,
+          current: 1,
+          required: 3,
+          unit: 'landings',
+          message: '1 / 3 night T&L',
+        },
       ],
     };
     render(<CurrencyCard rating={faaRating} />);

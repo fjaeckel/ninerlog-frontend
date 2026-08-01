@@ -77,10 +77,14 @@ export default function LicensesPage() {
           {t('addLicense')}
         </button>
       </div>
-
       {/* Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[1020]" role="dialog" aria-modal="true" aria-labelledby="license-form-title">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[1020]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="license-form-title"
+        >
           <div className="bg-white dark:bg-slate-800 rounded-xl max-w-[560px] w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
@@ -100,14 +104,11 @@ export default function LicensesPage() {
           </div>
         </div>
       )}
-
       {licenses && licenses.length === 0 ? (
         <div className="card text-center py-12">
           <div className="text-5xl mb-4">🏅</div>
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('addFirst')}</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-            {t('noLicenses')}
-          </p>
+          <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">{t('noLicenses')}</p>
           <button onClick={() => setShowForm(true)} className="btn-primary">
             {t('addLicense')}
           </button>
@@ -134,6 +135,7 @@ export default function LicensesPage() {
         confirmLabel={t('deleteLicense')}
         variant="danger"
         isLoading={deleteLicense.isPending}
-      />    </div>
+      />{' '}
+    </div>
   );
 }

@@ -41,10 +41,7 @@ function normalizeContext(context?: LogContext): LogContext {
   if (!context) return {};
   const out: LogContext = {};
   for (const [key, value] of Object.entries(context)) {
-    out[key] =
-      value instanceof Error
-        ? { name: value.name, message: value.message, stack: value.stack }
-        : value;
+    out[key] = value instanceof Error ? { name: value.name, message: value.message, stack: value.stack } : value;
   }
   return out;
 }

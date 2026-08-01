@@ -136,10 +136,7 @@ export const useRunBackupNow = () => {
   });
 };
 
-export const useBackupRuns = (
-  destinationId: string | null,
-  options: { page?: number; pageSize?: number } = {},
-) => {
+export const useBackupRuns = (destinationId: string | null, options: { page?: number; pageSize?: number } = {}) => {
   const { page = 1, pageSize = 20 } = options;
   return useQuery({
     queryKey: ['backup-runs', destinationId, page, pageSize],

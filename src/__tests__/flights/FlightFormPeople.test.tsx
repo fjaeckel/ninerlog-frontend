@@ -13,9 +13,7 @@ vi.mock('../../hooks/useFlights', () => ({
 
 vi.mock('../../hooks/useLicenses', () => ({
   useLicenses: () => ({
-    data: [
-      { id: 'lic-1', licenseType: 'EASA_PPL', licenseNumber: 'PPL-001', isActive: true },
-    ],
+    data: [{ id: 'lic-1', licenseType: 'EASA_PPL', licenseNumber: 'PPL-001', isActive: true }],
   }),
 }));
 

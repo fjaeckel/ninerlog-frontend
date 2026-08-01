@@ -98,9 +98,7 @@ describe('FlightRouteCard', () => {
   });
 
   it('renders off-airport sites as a name without a code', () => {
-    render(
-      <FlightRouteCard flight={{ ...baseFlight, departureIcao: 'Meadow strip near Kassel' }} />
-    );
+    render(<FlightRouteCard flight={{ ...baseFlight, departureIcao: 'Meadow strip near Kassel' }} />);
 
     expect(screen.getByText('Meadow strip near Kassel')).toBeInTheDocument();
     expect(screen.queryByText('EDQE')).not.toBeInTheDocument();
@@ -110,9 +108,7 @@ describe('FlightRouteCard', () => {
     const { rerender } = render(<FlightRouteCard flight={baseFlight} />);
     expect(screen.queryByText('Route')).not.toBeInTheDocument();
 
-    rerender(
-      <FlightRouteCard flight={{ ...baseFlight, route: 'EDQE DKB EDAZ', launchMethod: 'winch' }} />
-    );
+    rerender(<FlightRouteCard flight={{ ...baseFlight, route: 'EDQE DKB EDAZ', launchMethod: 'winch' }} />);
     expect(screen.getByText('Route')).toBeInTheDocument();
     expect(screen.getByText('EDQE DKB EDAZ')).toBeInTheDocument();
     expect(screen.getByText('Launch Method')).toBeInTheDocument();

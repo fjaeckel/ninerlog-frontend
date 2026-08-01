@@ -8,9 +8,7 @@ export function LanguageSwitcher() {
   const updateProfile = useUpdateProfile();
   const { updateUser, isAuthenticated } = useAuthStore();
 
-  const currentLang = supportedLanguages.find(
-    (l) => i18n.language === l || i18n.language.startsWith(l),
-  ) ?? 'en';
+  const currentLang = supportedLanguages.find((l) => i18n.language === l || i18n.language.startsWith(l)) ?? 'en';
 
   const handleChange = async (lang: string) => {
     await i18n.changeLanguage(lang);
@@ -27,14 +25,8 @@ export function LanguageSwitcher() {
   return (
     <div className="card mb-6">
       <h2 className="section-title mb-2">{t('language.title')}</h2>
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-        {t('language.description')}
-      </p>
-      <select
-        value={currentLang}
-        onChange={(e) => handleChange(e.target.value)}
-        className="input w-full"
-      >
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">{t('language.description')}</p>
+      <select value={currentLang} onChange={(e) => handleChange(e.target.value)} className="input w-full">
         {supportedLanguages.map((lang) => (
           <option key={lang} value={lang}>
             {languageNames[lang]}
