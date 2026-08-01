@@ -71,7 +71,7 @@ describe('FlightCard', () => {
     renderCard({ departureIcao: 'Meadow strip near Kassel' });
 
     // The row is one line: the name is shortened, the full one is in the title
-    expect(screen.getByText('Meadow strip…')).toHaveAttribute('title', 'Meadow strip near Kassel');
+    expect(screen.getByText('Meadow…')).toHaveAttribute('title', 'Meadow strip near Kassel');
     expect(screen.queryByText('EDDF')).not.toBeInTheDocument();
   });
 

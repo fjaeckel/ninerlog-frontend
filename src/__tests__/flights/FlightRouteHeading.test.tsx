@@ -15,9 +15,9 @@ describe('FlightRouteHeading', () => {
   });
 
   it('sets a free-text site in the UI face, not the tabular one', () => {
-    render(<FlightRouteHeading departure={parts('Meadow strip')} arrival={parts('EDVK')} />);
+    render(<FlightRouteHeading departure={parts('Home strip')} arrival={parts('EDVK')} />);
 
-    expect(screen.getByText('Meadow strip')).toHaveClass('font-sans');
+    expect(screen.getByText('Home strip')).toHaveClass('font-sans');
     expect(screen.getByText('EDVK')).toHaveClass('font-mono');
   });
 
@@ -26,12 +26,18 @@ describe('FlightRouteHeading', () => {
       <FlightRouteHeading departure={parts('Meadow strip near Kassel')} arrival={parts('EDVK')} />
     );
 
-    const departure = screen.getByText('Meadow strip…');
+    const departure = screen.getByText('Meadow…');
     expect(departure).toBeInTheDocument();
     expect(departure).toHaveAttribute('title', 'Meadow strip near Kassel');
   });
 
-  it('abbreviates harder when both ends are names sharing the line', () => {
+  it('leaves a site name alone when it already fits', () => {
+    render(<FlightRouteHeading departure={parts('Home strip')} arrival={parts('EDQE')} />);
+
+    expect(screen.getByText('Home strip')).toBeInTheDocument();
+  });
+
+  it('gives both ends the same budget, so a column of rows reads as one list', () => {
     render(
       <FlightRouteHeading
         departure={parts('Meadow strip near Kassel')}
@@ -39,8 +45,9 @@ describe('FlightRouteHeading', () => {
       />
     );
 
+    // Same treatment as a name sitting beside a code: whole words, and the
+    // town the site is near dropped at the comma.
     expect(screen.getByText('Meadow…')).toBeInTheDocument();
-    // "North field" fits at the two-name budget; the town it is near does not
     expect(screen.getByText('North field')).toBeInTheDocument();
   });
 

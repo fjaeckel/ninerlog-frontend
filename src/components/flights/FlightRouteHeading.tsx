@@ -2,6 +2,17 @@ import type { ReactNode } from 'react';
 import { abbreviateSiteName, type AirportParts } from '../../lib/airport';
 import { cn } from '../../lib/cn';
 
+/**
+ * How much of a site name a list row keeps.
+ *
+ * Chosen so the abbreviation and the CSS cap agree: at this length the result
+ * fits inside the 48% ceiling below, so the cut lands on a word boundary rather
+ * than mid-glyph. One number for every case — a name beside a code and two
+ * names sharing a line get the same treatment, which is what makes a column of
+ * rows look like one list.
+ */
+const CARD_NAME_CHARS = 11;
+
 interface FlightRouteHeadingProps {
   departure: AirportParts;
   arrival: AirportParts;
@@ -40,11 +51,6 @@ export default function FlightRouteHeading({
   // down and costs more than the tail of the name is worth. The detail page has
   // the width to spare, and shows both names in full in the route card anyway.
   const oneLine = size === 'card';
-  // Two names have to share the line, so each gets abbreviated harder than a
-  // lone name sitting next to a four-character code. Both figures are measured
-  // against the row as rendered — one more character and the names clip, which
-  // costs more than the character is worth.
-  const maxNameChars = departure.code || arrival.code ? 14 : 11;
 
   const arrow = (
     <span className="shrink-0 text-blue-500 dark:text-blue-400" aria-hidden="true">
@@ -63,9 +69,9 @@ export default function FlightRouteHeading({
           className
         )}
       >
-        <End part={departure} truncate maxChars={maxNameChars} />
+        <End part={departure} truncate />
         {arrow}
-        <End part={arrival} truncate maxChars={maxNameChars} />
+        <End part={arrival} truncate />
         {children}
       </Element>
     );
@@ -90,7 +96,7 @@ export default function FlightRouteHeading({
 }
 
 /** One end of the route: a code keeps the tabular face, a place name does not. */
-function End({ part, truncate, maxChars }: { part: AirportParts; truncate?: boolean; maxChars?: number }) {
+function End({ part, truncate }: { part: AirportParts; truncate?: boolean }) {
   const code = part.code;
   const name = part.name;
   return (
@@ -98,15 +104,19 @@ function End({ part, truncate, maxChars }: { part: AirportParts; truncate?: bool
       title={truncate && name ? name : undefined}
       className={cn(
         code ? 'font-mono tracking-tight tabular-nums' : 'font-sans font-semibold',
-        // Codes are four characters and never shrink. A name is abbreviated
-        // first and set a step smaller, which is enough for it to fit beside a
-        // code; `flex-auto` lets it keep its own width until the line genuinely
-        // overruns, and only then does it give up its tail.
+        // Codes are four characters and never shrink.
+        //
+        // A name is set a step smaller and, crucially, does not grow: one that
+        // filled the leftover width pushed the arrow to the far side of the
+        // line and the route stopped reading as one thing. It is also capped at
+        // just under half the line, so however long the site is written out, it
+        // can never take the route over — the cap is a share of the width
+        // rather than a pixel count, so it follows the screen.
         truncate && !code && 'text-sm',
-        truncate ? (code ? 'shrink-0' : 'min-w-0 flex-auto truncate') : 'break-words'
+        truncate ? (code ? 'shrink-0' : 'min-w-0 max-w-[48%] truncate') : 'break-words'
       )}
     >
-      {code ?? (name && truncate ? abbreviateSiteName(name, maxChars) : name) ?? '—'}
+      {code ?? (name && truncate ? abbreviateSiteName(name, CARD_NAME_CHARS) : name) ?? '—'}
     </span>
   );
 }
