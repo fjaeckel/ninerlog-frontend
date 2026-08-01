@@ -42,187 +42,127 @@ const mockFlight: Flight = {
   updatedAt: '2026-01-15T00:00:00Z',
 };
 
+function renderCard(overrides: Partial<Flight> = {}, handlers: Partial<Record<'onEdit' | 'onDelete' | 'onClick', () => void>> = {}) {
+  const props = {
+    onEdit: handlers.onEdit ?? vi.fn(),
+    onDelete: handlers.onDelete ?? vi.fn(),
+    onClick: handlers.onClick ?? vi.fn(),
+  };
+  render(<FlightCard flight={{ ...mockFlight, ...overrides }} {...props} />);
+  return props;
+}
+
 describe('FlightCard', () => {
-  const mockOnEdit = vi.fn();
-  const mockOnDelete = vi.fn();
-  const mockOnClick = vi.fn();
+  it('leads with the two ends of the route and the time recorded at each', () => {
+    renderCard();
 
-  it('renders route information', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
-
-    expect(screen.getByText(/EDDF → EDDH/)).toBeInTheDocument();
-    expect(screen.getByText(/15\.01\.2026/)).toBeInTheDocument();
+    expect(screen.getByText('EDDF')).toBeInTheDocument();
+    expect(screen.getByText('EDDH')).toBeInTheDocument();
+    expect(screen.getByText('14:15')).toBeInTheDocument();
+    expect(screen.getByText('16:10')).toBeInTheDocument();
   });
 
-  it('renders total time badge', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+  it('falls back to the airborne times when no block times were recorded', () => {
+    renderCard({ offBlockTime: null, onBlockTime: null });
 
-    const badges = screen.getAllByText('1h 30m');
-    expect(badges.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('14:30')).toBeInTheDocument();
+    expect(screen.getByText('16:00')).toBeInTheDocument();
+  });
+
+  it('renders an off-airport site as a name without a code', () => {
+    renderCard({ departureIcao: 'Meadow strip near Kassel' });
+
+    expect(screen.getByText('Meadow strip near Kassel')).toBeInTheDocument();
+    expect(screen.queryByText('EDDF')).not.toBeInTheDocument();
+  });
+
+  it('renders the date and the block time', () => {
+    renderCard();
+
+    expect(screen.getByText('15.01.2026')).toBeInTheDocument();
+    // Also the value of the solo and cross-country chips on this flight
+    expect(screen.getAllByText('1h 30m').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders aircraft information', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    renderCard();
 
     expect(screen.getByText('D-EFGH')).toBeInTheDocument();
-    expect(screen.getByText('C172')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Flight EDDF/ })).toHaveTextContent('C172');
   });
 
-  it('renders PIC time when greater than 0', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
-
-    expect(screen.getByText(/PIC Time:/)).toBeInTheDocument();
+  it('shows the pilot function', () => {
+    renderCard();
+    expect(screen.getByText('PIC')).toBeInTheDocument();
   });
 
-  it('renders night time when greater than 0', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+  it('shows a column only for the times the flight logged', () => {
+    renderCard();
 
+    expect(screen.getByText('Night')).toBeInTheDocument();
     expect(screen.getByText('0h 30m')).toBeInTheDocument();
+    expect(screen.queryByText('IFR')).not.toBeInTheDocument();
   });
 
-  it('renders landing counts', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+  it('hides time chips that are 0', () => {
+    renderCard({ nightTime: 0, ifrTime: 0, soloTime: 0, crossCountryTime: 0 });
 
-    expect(screen.getByText('2D / 1N')).toBeInTheDocument();
+    expect(screen.queryByText('Night')).not.toBeInTheDocument();
+    expect(screen.queryByText('Solo')).not.toBeInTheDocument();
+    expect(screen.queryByText('XC')).not.toBeInTheDocument();
+  });
+
+  it('splits the landings by day and night when there are night landings', () => {
+    renderCard();
+    expect(screen.getByText('Ldg D/N')).toBeInTheDocument();
+    expect(screen.getByText('2/1')).toBeInTheDocument();
+  });
+
+  it('shows a single landing count when none were at night', () => {
+    renderCard({ landingsNight: 0, allLandings: 2 });
+    expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('marks a signed flight', () => {
+    renderCard({ signatureId: 'sig-1' });
+    expect(screen.getByText('Signed')).toBeInTheDocument();
   });
 
   it('renders remarks when present', () => {
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
-
+    renderCard();
     expect(screen.getByText('Training flight')).toBeInTheDocument();
   });
 
-  it('calls onClick when card is clicked', async () => {
+  it('calls onClick when the card is clicked', async () => {
     const user = userEvent.setup();
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    const { onClick } = renderCard();
 
-    await user.click(screen.getByText(/EDDF → EDDH/));
-    expect(mockOnClick).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByText('EDDF'));
+    expect(onClick).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onEdit when edit button is clicked', async () => {
+  it('calls onEdit when the edit button is clicked', async () => {
     const user = userEvent.setup();
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    const { onEdit, onClick } = renderCard();
 
-    await user.click(screen.getByRole('button', { name: /edit/i }));
-    expect(mockOnEdit).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole('button', { name: /edit flight/i }));
+    expect(onEdit).toHaveBeenCalledTimes(1);
+    // The action must not also open the flight
+    expect(onClick).not.toHaveBeenCalled();
   });
 
-  it('calls onDelete when delete button is clicked', async () => {
+  it('calls onDelete when the delete button is clicked', async () => {
     const user = userEvent.setup();
-    render(
-      <FlightCard
-        flight={mockFlight}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
+    const { onDelete, onClick } = renderCard();
 
-    await user.click(screen.getByRole('button', { name: /delete/i }));
-    expect(mockOnDelete).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole('button', { name: /delete flight/i }));
+    expect(onDelete).toHaveBeenCalledTimes(1);
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it('shows dashes for missing ICAO codes', () => {
-    const flightWithoutIcao = {
-      ...mockFlight,
-      departureIcao: null,
-      arrivalIcao: null,
-    };
+    renderCard({ departureIcao: null, arrivalIcao: null });
 
-    render(
-      <FlightCard
-        flight={flightWithoutIcao}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
-
-    expect(screen.getByText(/— → —/)).toBeInTheDocument();
-  });
-
-  it('hides time fields that are 0', () => {
-    const flightNoExtras = {
-      ...mockFlight,
-      dualTime: 0,
-      nightTime: 0,
-      ifrTime: 0,
-    };
-
-    render(
-      <FlightCard
-        flight={flightNoExtras}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-        onClick={mockOnClick}
-      />
-    );
-
-    expect(screen.queryByText(/Dual:/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/IFR:/)).not.toBeInTheDocument();
+    expect(screen.getAllByText('—')).toHaveLength(2);
   });
 });

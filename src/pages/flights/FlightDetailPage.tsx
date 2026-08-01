@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, Plane, PlaneTakeoff, PlaneLanding, ShieldCheck } from 'lucide-react';
 import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
 import FlightForm from '../../components/flights/FlightForm';
 import FlightRouteCard from '../../components/flights/FlightRouteCard';
@@ -9,6 +9,7 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { SignatureSection } from '../../components/flights/SignatureSection';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
+import { DataTile, DataTileGrid } from '../../components/ui/DataTile';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { formatAirportLabel } from '../../lib/airport';
 import { cn } from '../../lib/cn';
@@ -67,6 +68,14 @@ export default function FlightDetailPage() {
   const departureLabel = formatAirportLabel(flight.departureIcao, flight.departureAirportName);
   const arrivalLabel = formatAirportLabel(flight.arrivalIcao, flight.arrivalAirportName);
 
+  const pilotFunction = flight.isPic
+    ? 'PIC'
+    : flight.isDual
+      ? 'Dual'
+      : (flight.sicTime || 0) > 0
+        ? 'SIC'
+        : '—';
+
   const hasInstrumentData =
     (flight.ifrTime ?? 0) > 0 ||
     (flight.actualInstrumentTime ?? 0) > 0 ||
@@ -84,63 +93,139 @@ export default function FlightDetailPage() {
     !!flight.isFlightReview ||
     !!flight.isProficiencyCheck;
 
+  const hasRemarksData =
+    !!flight.remarks || !!flight.instructorName || !!flight.instructorComments || !!flight.endorsements;
+
   const handleDelete = async () => {
     await deleteFlight.mutateAsync(flight.id);
     navigate(flightsListPath);
   };
 
-  const timeFields = [
-    { label: t('detail.totalBlockTime'), value: flight.totalTime },
-    { label: t('detail.pilotFunction'), value: -1, text: flight.isPic ? 'PIC' : flight.isDual ? 'Dual' : (flight.sicTime || 0) > 0 ? 'SIC' : '—' },
-    { label: t('fields.picTime'), value: flight.picTime },
-    { label: t('detail.dualTime'), value: flight.dualTime },
-    { label: t('fields.soloTime'), value: flight.soloTime },
-    { label: t('detail.crossCountry'), value: flight.crossCountryTime },
-    { label: t('fields.nightTime'), value: flight.nightTime },
-    { label: t('detail.sicTime'), value: flight.sicTime || 0 },
-    { label: t('detail.dualGiven'), value: flight.dualGivenTime || 0 },
-  ];
+  // Only the times this flight actually logged get a tile — a grid of zeros
+  // says nothing and buries the two or three figures that matter.
+  const timeTiles = [
+    { key: 'pic', label: t('fields.picTime'), minutes: flight.picTime },
+    { key: 'dual', label: t('detail.dualTime'), minutes: flight.dualTime },
+    { key: 'solo', label: t('fields.soloTime'), minutes: flight.soloTime },
+    { key: 'crossCountry', label: t('detail.crossCountry'), minutes: flight.crossCountryTime },
+    { key: 'night', label: t('fields.nightTime'), minutes: flight.nightTime },
+    { key: 'sic', label: t('detail.sicTime'), minutes: flight.sicTime ?? 0 },
+    { key: 'dualGiven', label: t('detail.dualGiven'), minutes: flight.dualGivenTime ?? 0 },
+  ].filter((tile) => tile.minutes > 0);
+
+  const instrumentTiles = [
+    { key: 'ifr', label: t('fields.ifrTime'), value: flight.ifrTime, format: fmtDuration },
+    {
+      key: 'actual',
+      label: t('fields.actualInstrumentTime'),
+      value: flight.actualInstrumentTime ?? 0,
+      format: fmtDuration,
+    },
+    {
+      key: 'simulated',
+      label: t('fields.simulatedInstrumentTime'),
+      value: flight.simulatedInstrumentTime ?? 0,
+      format: fmtDuration,
+    },
+    { key: 'holds', label: t('fields.holds'), value: flight.holds ?? 0, format: String },
+    { key: 'approaches', label: t('fields.approaches'), value: flight.approachesCount ?? 0, format: String },
+  ].filter((tile) => tile.value > 0);
+
+  const trainingTiles = [
+    { key: 'sim', label: t('fields.simulatedFlightTime'), minutes: flight.simulatedFlightTime ?? 0 },
+    { key: 'ground', label: t('fields.groundTrainingTime'), minutes: flight.groundTrainingTime ?? 0 },
+    { key: 'multiPilot', label: t('fields.multiPilotTime'), minutes: flight.multiPilotTime ?? 0 },
+  ].filter((tile) => tile.minutes > 0);
+
+  const trainingFlags = [
+    { key: 'flightReview', label: t('fields.isFlightReview'), on: !!flight.isFlightReview },
+    { key: 'proficiencyCheck', label: t('fields.isProficiencyCheck'), on: !!flight.isProficiencyCheck },
+  ].filter((flag) => flag.on);
 
   return (
-    <div className="max-w-[960px] mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div className="min-w-0">
-          <button
-            onClick={() => navigate(flightsListPath)}
-            className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 mb-2 inline-flex items-center gap-1"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t('detail.backToFlights')}
-          </button>
-          <h1
-            className="page-title truncate"
-            title={`${departureLabel} → ${arrivalLabel}`}
-          >
-            {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400">
-            {fmtDateLong(flight.date)}
-          </p>
+    <div className="max-w-[960px] mx-auto px-4 py-6 sm:py-8">
+      <button
+        onClick={() => navigate(flightsListPath)}
+        className="mb-3 inline-flex min-h-[44px] items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {t('detail.backToFlights')}
+      </button>
+
+      {/* Hero — the same header the list card uses, at page scale: route, when,
+          in what, as what, and the block time it all adds up to. */}
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="flex items-center gap-3 border-l-4 border-blue-600 bg-slate-50 px-4 py-3 dark:border-blue-500 dark:bg-slate-700/40">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+              {fmtDateLong(flight.date)}
+            </p>
+            <h1
+              className="mt-1 flex flex-wrap items-baseline gap-x-2 font-mono text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100 sm:text-3xl"
+              title={`${departureLabel} → ${arrivalLabel}`}
+            >
+              <span className="min-w-0 break-words">{flight.departureIcao || '—'}</span>
+              <span className="text-blue-500 dark:text-blue-400">→</span>
+              <span className="min-w-0 break-words">{flight.arrivalIcao || '—'}</span>
+            </h1>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="font-mono text-2xl font-bold leading-none tabular-nums text-slate-800 dark:text-slate-100">
+              {fmtDuration(flight.totalTime)}
+            </p>
+            <span
+              className={cn(
+                'mt-1.5 inline-flex text-[11px] font-semibold',
+                flight.isPic ? 'badge-info' : flight.isDual ? 'badge-expiring' : 'badge-neutral'
+              )}
+            >
+              {pilotFunction}
+            </span>
+          </div>
         </div>
-        <div className="flex gap-2 shrink-0">
-          <button
-            onClick={() => setShowEditForm(true)}
-            className="btn-secondary flex-1 sm:flex-none"
-            aria-label={t('editFlightAriaLabel', { departure: flight.departureIcao, arrival: flight.arrivalIcao })}
-          >
-            <Pencil className="w-4 h-4" />
-            {t('detail.edit')}
-          </button>
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="btn-secondary flex-1 sm:flex-none hover:bg-red-50 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-            aria-label={t('deleteFlightAriaLabel', { departure: flight.departureIcao, arrival: flight.arrivalIcao })}
-          >
-            <Trash2 className="w-4 h-4" />
-            {t('detail.delete')}
-          </button>
+
+        <div className="flex flex-wrap items-center gap-1.5 px-4 py-3">
+          <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs dark:bg-slate-700/60">
+            <Plane className="h-3 w-3 shrink-0 text-slate-400 dark:text-slate-500" aria-hidden="true" />
+            <span className="font-mono font-semibold text-slate-700 dark:text-slate-200">{flight.aircraftReg}</span>
+            <span className="truncate text-slate-500 dark:text-slate-400">{flight.aircraftType}</span>
+          </span>
+          {totalLandings > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs dark:bg-slate-700/60">
+              <PlaneLanding className="h-3 w-3 shrink-0 text-slate-400 dark:text-slate-500" aria-hidden="true" />
+              <span className="text-slate-500 dark:text-slate-400">{t('tableLdg')}</span>
+              <span className="font-mono font-semibold tabular-nums text-slate-700 dark:text-slate-200">
+                {totalLandings}
+              </span>
+            </span>
+          )}
+          {flight.signatureId && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+              <ShieldCheck className="h-3 w-3" aria-hidden="true" />
+              {t('signed')}
+            </span>
+          )}
         </div>
+      </div>
+
+      {/* Actions — full-width and thumb-reachable on a phone */}
+      <div className="mt-3 mb-5 flex gap-2 sm:justify-end">
+        <button
+          onClick={() => setShowEditForm(true)}
+          className="btn-secondary min-h-[44px] flex-1 sm:flex-none"
+          aria-label={t('editFlightAriaLabel', { departure: flight.departureIcao, arrival: flight.arrivalIcao })}
+        >
+          <Pencil className="w-4 h-4" />
+          {t('detail.edit')}
+        </button>
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          className="btn-secondary min-h-[44px] flex-1 sm:flex-none hover:bg-red-50 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+          aria-label={t('deleteFlightAriaLabel', { departure: flight.departureIcao, arrival: flight.arrivalIcao })}
+        >
+          <Trash2 className="w-4 h-4" />
+          {t('detail.delete')}
+        </button>
       </div>
 
       {/* Delete Confirm Dialog */}
@@ -177,149 +262,127 @@ export default function FlightDetailPage() {
       )}
 
       {/* Flight Details */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
         {/* Aircraft & Route */}
         <FlightRouteCard flight={flight} />
 
         {/* Flight Times */}
         <div className="card">
-          <h2 className="section-title mb-4">{t('detail.blockTimes')}</h2>
-          <dl className="space-y-3">
-            {timeFields.map(({ label, value, text }) => (
-              <DetailRow
-                key={label}
-                label={label}
-                value={text ?? fmtDuration(value)}
-                mono={!text}
-                muted={value <= 0 && !text}
-              />
+          <h2 className="section-title mb-3">{t('detail.blockTimes')}</h2>
+          <DataTileGrid>
+            <DataTile
+              label={t('detail.totalBlockTime')}
+              value={fmtDuration(flight.totalTime)}
+              mono
+              emphasis
+            />
+            <DataTile label={t('detail.pilotFunction')} value={pilotFunction} />
+            {timeTiles.map(({ key, label, minutes }) => (
+              <DataTile key={key} label={label} value={fmtDuration(minutes)} mono />
             ))}
             {flight.picName && (
-              <DetailRow label={t('fields.picName')} value={flight.picName} />
+              <DataTile className="col-span-2" label={t('fields.picName')} value={flight.picName} />
             )}
-          </dl>
+          </DataTileGrid>
         </div>
 
         {/* Takeoffs & Landings */}
         <div className="card">
-          <h2 className="section-title mb-4">{t('detail.takeoffsAndLandings')}</h2>
-          <dl className="space-y-3">
-            <DetailRow label={t('fields.dayTakeoffs')} value={String(flight.takeoffsDay)} mono />
-            <DetailRow label={t('fields.nightTakeoffs')} value={String(flight.takeoffsNight)} mono />
-            <DetailRow
+          <h2 className="section-title mb-3">{t('detail.takeoffsAndLandings')}</h2>
+          <DataTileGrid>
+            <DataTile
+              icon={<PlaneTakeoff className="h-3 w-3" />}
               label={t('detail.totalTakeoffs')}
               value={String(totalTakeoffs)}
+              hint={t('detail.dayNightSplit', { day: flight.takeoffsDay, night: flight.takeoffsNight })}
               mono
-              strong
-              className="border-t border-slate-200 dark:border-slate-700 pt-2"
             />
-            <DetailRow label={t('fields.dayLandings')} value={String(flight.landingsDay)} mono />
-            <DetailRow label={t('fields.nightLandings')} value={String(flight.landingsNight)} mono />
-            <DetailRow
+            <DataTile
+              icon={<PlaneLanding className="h-3 w-3" />}
               label={t('detail.totalLandings')}
               value={String(totalLandings)}
+              hint={t('detail.dayNightSplit', { day: flight.landingsDay, night: flight.landingsNight })}
               mono
-              strong
-              className="border-t border-slate-200 dark:border-slate-700 pt-2"
             />
-          </dl>
+          </DataTileGrid>
         </div>
 
         {/* Instrument & Approaches */}
         {hasInstrumentData && (
           <div className="card">
-            <h2 className="section-title mb-4">{t('detail.instrumentAndApproaches')}</h2>
-            <dl className="space-y-3">
-              <DurationRow label={t('fields.ifrTime')} minutes={flight.ifrTime} />
-              <DurationRow label={t('fields.actualInstrumentTime')} minutes={flight.actualInstrumentTime ?? 0} />
-              <DurationRow label={t('fields.simulatedInstrumentTime')} minutes={flight.simulatedInstrumentTime ?? 0} />
-              <DetailRow label={t('fields.holds')} value={String(flight.holds ?? 0)} mono />
-              <DetailRow label={t('fields.approaches')} value={String(flight.approachesCount ?? 0)} mono />
-              {flight.isIpc && (
-                <DetailRow
-                  label={t('fields.isIpc')}
-                  value={<span className="badge-info text-xs">{t('detail.yes')}</span>}
-                />
-              )}
-              {flight.approaches && flight.approaches.length > 0 && (
-                <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
-                  <dt className="text-slate-500 dark:text-slate-400 text-sm mb-2">{t('fields.approaches')}</dt>
-                  <ul className="space-y-1.5">
-                    {flight.approaches.map((a, idx) => (
-                      <li key={idx} className="flex items-center gap-2 text-sm">
-                        <span className="badge-info text-xs">
-                          {t(`approachTypes.${a.type}`, { defaultValue: a.type })}
-                        </span>
-                        <span className="font-mono tabular-nums text-slate-700 dark:text-slate-200">
-                          {a.airport || '—'}
-                          {a.runway ? ` · RWY ${a.runway}` : ''}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </dl>
+            <h2 className="section-title mb-3">{t('detail.instrumentAndApproaches')}</h2>
+            {instrumentTiles.length > 0 && (
+              <DataTileGrid>
+                {instrumentTiles.map(({ key, label, value, format }) => (
+                  <DataTile key={key} label={label} value={format(value)} mono />
+                ))}
+              </DataTileGrid>
+            )}
+            {flight.isIpc && (
+              <p className="mt-3">
+                <span className="badge-info">{t('fields.isIpc')}</span>
+              </p>
+            )}
+            {flight.approaches && flight.approaches.length > 0 && (
+              <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-700">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                  {t('fields.approaches')}
+                </p>
+                <ul className="space-y-1.5">
+                  {flight.approaches.map((a, idx) => (
+                    <li
+                      key={idx}
+                      className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-700/30"
+                    >
+                      <span className="badge-info text-xs">
+                        {t(`approachTypes.${a.type}`, { defaultValue: a.type })}
+                      </span>
+                      <span className="font-mono tabular-nums text-slate-700 dark:text-slate-200">
+                        {a.airport || '—'}
+                        {a.runway ? ` · RWY ${a.runway}` : ''}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 
         {/* Training & Currency */}
         {hasTrainingData && (
           <div className="card">
-            <h2 className="section-title mb-4">{t('detail.trainingAndCurrency')}</h2>
-            <dl className="space-y-3">
-              <DurationRow label={t('fields.simulatedFlightTime')} minutes={flight.simulatedFlightTime ?? 0} />
-              {flight.fstdType && (
-                <DetailRow label={t('fields.fstdType')} value={flight.fstdType} />
-              )}
-              <DurationRow label={t('fields.groundTrainingTime')} minutes={flight.groundTrainingTime ?? 0} />
-              <DurationRow label={t('fields.multiPilotTime')} minutes={flight.multiPilotTime ?? 0} />
-              {flight.isFlightReview && (
-                <DetailRow
-                  label={t('fields.isFlightReview')}
-                  value={<span className="badge-info text-xs">{t('detail.yes')}</span>}
-                />
-              )}
-              {flight.isProficiencyCheck && (
-                <DetailRow
-                  label={t('fields.isProficiencyCheck')}
-                  value={<span className="badge-info text-xs">{t('detail.yes')}</span>}
-                />
-              )}
-            </dl>
+            <h2 className="section-title mb-3">{t('detail.trainingAndCurrency')}</h2>
+            <DataTileGrid>
+              {trainingTiles.map(({ key, label, minutes }) => (
+                <DataTile key={key} label={label} value={fmtDuration(minutes)} mono />
+              ))}
+              {flight.fstdType && <DataTile label={t('fields.fstdType')} value={flight.fstdType} />}
+            </DataTileGrid>
+            {trainingFlags.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {trainingFlags.map(({ key, label }) => (
+                  <span key={key} className="badge-info">
+                    {label}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         {/* Remarks & Comments */}
-        <div className="card">
-          <h2 className="section-title mb-4">{t('detail.remarksAndComments')}</h2>
-          <dl className="space-y-3">
-            <div>
-              <dt className="text-slate-500 dark:text-slate-400 text-sm mb-1">{t('fields.remarks')}</dt>
-              <dd className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                {flight.remarks || <span className="text-slate-400 italic">—</span>}
-              </dd>
+        {hasRemarksData && (
+          <div className="card">
+            <h2 className="section-title mb-3">{t('detail.remarksAndComments')}</h2>
+            <div className="space-y-2.5">
+              <TextBlock label={t('fields.remarks')} value={flight.remarks} />
+              <TextBlock label={t('detail.instructor')} value={flight.instructorName} />
+              <TextBlock label={t('detail.instructorComments')} value={flight.instructorComments} />
+              <TextBlock label={t('fields.endorsements')} value={flight.endorsements} />
             </div>
-            {flight.instructorName && (
-              <div>
-                <dt className="text-slate-500 dark:text-slate-400 text-sm mb-1">{t('detail.instructor')}</dt>
-                <dd className="text-slate-700 dark:text-slate-300">{flight.instructorName}</dd>
-              </div>
-            )}
-            {flight.instructorComments && (
-              <div>
-                <dt className="text-slate-500 dark:text-slate-400 text-sm mb-1">{t('detail.instructorComments')}</dt>
-                <dd className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{flight.instructorComments}</dd>
-              </div>
-            )}
-            {flight.endorsements && (
-              <div>
-                <dt className="text-slate-500 dark:text-slate-400 text-sm mb-1">{t('fields.endorsements')}</dt>
-                <dd className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{flight.endorsements}</dd>
-              </div>
-            )}
-          </dl>
-        </div>
+          </div>
+        )}
 
         {/* Instructor Signature */}
         <SignatureSection flight={flight} />
@@ -327,15 +390,18 @@ export default function FlightDetailPage() {
         {/* Crew Members */}
         {flight.crewMembers && flight.crewMembers.length > 0 && (
           <div className="card">
-            <h2 className="section-title mb-4">{t('sections.crew')}</h2>
-            <div className="space-y-2">
+            <h2 className="section-title mb-3">{t('sections.crew')}</h2>
+            <ul className="space-y-2">
               {flight.crewMembers.map((member) => (
-                <div key={member.id} className="flex items-center gap-2 text-sm">
+                <li
+                  key={member.id}
+                  className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-700/30"
+                >
                   <span className="badge-info text-xs">{member.role}</span>
                   <span className="font-medium text-slate-700 dark:text-slate-200">{member.name}</span>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         )}
       </div>
@@ -350,43 +416,20 @@ export default function FlightDetailPage() {
   );
 }
 
-interface DetailRowProps {
-  label: string;
-  value: ReactNode;
-  /** Tabular values (times, counts, distances). */
-  mono?: boolean;
-  /** Dim a zero/empty value without dropping the row. */
-  muted?: boolean;
-  /** Totals and other rows that summarise the ones above them. */
-  strong?: boolean;
-  className?: string;
-}
-
-function DetailRow({ label, value, mono, muted, strong, className }: DetailRowProps) {
+/**
+ * A free-text field, boxed like the tiles beside it.
+ *
+ * Renders nothing when the flight has no such text, so the card only ever
+ * shows what was written.
+ */
+function TextBlock({ label, value }: { label: string; value?: string | null }): ReactNode {
+  if (!value) return null;
   return (
-    // gap-4 keeps a gutter between label and value once either of them wraps;
-    // the label may take at most half the row so the value keeps room to wrap
-    // into rather than being squeezed to one character per line.
-    <div className={cn('flex justify-between items-baseline gap-4', className)}>
-      <dt className={cn('text-slate-500 dark:text-slate-400 max-w-[55%] shrink-0 break-words', strong && 'font-medium')}>
+    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-700/30">
+      <p className="text-[11px] font-medium uppercase leading-tight tracking-wide text-slate-400 dark:text-slate-500">
         {label}
-      </dt>
-      <dd
-        className={cn(
-          'min-w-0 text-right break-words font-medium',
-          muted ? 'text-slate-300 dark:text-slate-600' : 'text-slate-800 dark:text-slate-100',
-          mono && 'font-mono tabular-nums',
-          strong && 'font-bold'
-        )}
-      >
-        {value}
-      </dd>
+      </p>
+      <p className="mt-1 whitespace-pre-wrap break-words text-sm text-slate-700 dark:text-slate-200">{value}</p>
     </div>
   );
-}
-
-/** A duration in minutes, dimmed when the flight logged none of it. */
-function DurationRow({ label, minutes }: { label: string; minutes: number }) {
-  const { fmtDuration } = useFormatPrefs();
-  return <DetailRow label={label} value={fmtDuration(minutes)} mono muted={minutes <= 0} />;
 }

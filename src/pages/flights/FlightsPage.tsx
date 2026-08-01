@@ -6,21 +6,62 @@ import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
 import FlightForm from '../../components/flights/FlightForm';
+import FlightCard from '../../components/flights/FlightCard';
 import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
 import { selectFlightColumns } from '../../components/flights/flightTableColumns';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
-import type { operations } from '../../api/schema';
+import type { components, operations } from '../../api/schema';
 
+type Flight = components['schemas']['Flight'];
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
 type SortField = 'date' | 'totalTime' | 'createdAt';
 
 const SORT_FIELDS: SortField[] = ['date', 'totalTime', 'createdAt'];
 
+/** A run of consecutive cards sharing a heading in the mobile list. */
+interface FlightGroup {
+  key: string;
+  /** Null when the list is not in date order and a month heading would lie. */
+  label: string | null;
+  flights: Flight[];
+  totalMinutes: number;
+}
+
+/**
+ * Splits the page's flights into the months they were flown in.
+ *
+ * Only meaningful while the list is sorted by date — under any other sort the
+ * months interleave, so the whole page becomes one unlabelled group instead.
+ */
+function groupFlightsByMonth(flights: Flight[], locale: string, byMonth: boolean): FlightGroup[] {
+  const groups: FlightGroup[] = [];
+  for (const flight of flights) {
+    const key = byMonth ? flight.date.slice(0, 7) : 'all';
+    let group = groups[groups.length - 1];
+    if (!group || group.key !== key) {
+      group = { key, label: byMonth ? monthLabel(key, locale) : null, flights: [], totalMinutes: 0 };
+      groups.push(group);
+    }
+    group.flights.push(flight);
+    group.totalMinutes += flight.totalTime;
+  }
+  return groups;
+}
+
+/** Renders a `YYYY-MM` key as the reader's month and year. */
+function monthLabel(month: string, locale: string): string {
+  const [year, m] = month.split('-');
+  return new Date(Date.UTC(Number(year), Number(m) - 1, 1)).toLocaleDateString(locale, {
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
 export default function FlightsPage() {
-  const { t } = useTranslation(['flights', 'common']);
+  const { t, i18n } = useTranslation(['flights', 'common']);
   const { fmtDate, fmtDuration } = useFormatPrefs();
   const columnPrefs = useFlightColumnPrefs();
   const navigate = useNavigate();
@@ -165,6 +206,12 @@ export default function FlightsPage() {
   // which ones the flights on this page justify), and how many of them the
   // table's own width can take.
   const columns = useMemo(() => selectFlightColumns(flights, columnPrefs), [flights, columnPrefs]);
+  // Month headings for the mobile card list — a logbook reads by month, and the
+  // running total per month is the number pilots actually look for.
+  const monthGroups = useMemo(
+    () => groupFlightsByMonth(flights, i18n.language, sortBy === 'date'),
+    [flights, i18n.language, sortBy]
+  );
 
   const handleDelete = async (id: string) => {
     setDeleteTarget(id);
@@ -416,9 +463,44 @@ export default function FlightsPage() {
         </div>
       ) : (
         <>
+          {/* Phones and tablets get a card per flight: the table below needs a
+              horizontal scroll to reach even the total time on a narrow screen. */}
+          <div className="lg:hidden space-y-4">
+            {monthGroups.map((group) => (
+              <section key={group.key} aria-label={group.label ?? undefined}>
+                {group.label && (
+                  // Full-bleed and stuck under the app header, so the month a
+                  // flight belongs to stays on screen while its cards scroll.
+                  <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-10 -mx-4 mb-3 flex items-baseline justify-between gap-3 border-b px-4 py-2 surface-glass">
+                    <h2 className="truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      {group.label}
+                    </h2>
+                    <span className="shrink-0 text-xs tabular-nums text-slate-500 dark:text-slate-400">
+                      {t('flights:monthTotal', {
+                        count: group.flights.length,
+                        duration: fmtDuration(group.totalMinutes),
+                      })}
+                    </span>
+                  </div>
+                )}
+                <div className="space-y-3">
+                  {group.flights.map((flight) => (
+                    <FlightCard
+                      key={flight.id}
+                      flight={flight}
+                      onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
+                      onEdit={() => handleEdit(flight.id)}
+                      onDelete={() => handleDelete(flight.id)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+
           {/* @container: the optional columns below react to the width this
               table actually gets, not to the viewport size. */}
-          <div className="overflow-x-auto card p-0 @container">
+          <div className="hidden lg:block overflow-x-auto card p-0 @container">
             <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm" aria-label={t('flights:pageTitle')}>
               <thead className="bg-slate-50 dark:bg-slate-800/50">
                 <tr>
