@@ -1,18 +1,23 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
-import type { components } from '../api/schema';
+import type { components, operations } from '../api/schema';
 import { invalidateFlightDependentQueries } from './invalidation';
 
 type User = components['schemas']['User'];
 
-// Update user profile (name/email)
+/** Everything PATCH /users/me accepts — identity fields and display preferences. */
+type UpdateProfileRequest = NonNullable<
+  operations['updateCurrentUser']['requestBody']
+>['content']['application/json'];
+
+// Update user profile (name/email/display preferences)
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   const { updateUser } = useAuthStore();
 
   return useMutation({
-    mutationFn: async (data: { name?: string; email?: string; timeDisplayFormat?: string }): Promise<User> => {
+    mutationFn: async (data: UpdateProfileRequest): Promise<User> => {
       const { data: result, error } = await apiClient.PATCH('/users/me', {
         body: data as any,
       });

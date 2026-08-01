@@ -23,6 +23,18 @@
     "perRegistration": "Per registration",
     "perRegistrationDesc": "Additionally track recency per individual tail number. Purely a familiarity aid — the rule itself is defined per type/class."
   },
+  "flightColumns": {
+    "title": "Flights List Columns",
+    "description": "The flights list always shows date, route, aircraft and total time. Everything else is optional — pick what you actually log.",
+    "auto": "Automatic",
+    "autoDesc": "Show a column when the flights on the page use it, so an unused column never takes up width.",
+    "custom": "Choose columns",
+    "customDesc": "Always show exactly what you pick, even on a page where a column happens to be empty.",
+    "timesHeading": "Times",
+    "otherHeading": "Other columns",
+    "widthHint": "Times appear from left to right in the order listed above as the window gets wider — on a narrow screen only the first ones fit.",
+    "saveFailed": "Could not save your column selection. Please try again."
+  },
   "profileInfo": {
     "title": "Profile Information",
     "name": "Name",

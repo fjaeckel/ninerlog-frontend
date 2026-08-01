@@ -2089,7 +2089,30 @@ export interface components {
              * @example false
              */
             recencyPerRegistration: boolean;
+            /**
+             * @description How the optional columns of the flights list are chosen. "auto" lets the client pick them from the flights on the page, so an unused column (IFR time for a VFR-only pilot) never takes up width. "custom" means flightListColumns is the user's own choice.
+             * @default auto
+             * @example auto
+             * @enum {string}
+             */
+            flightListColumnMode: "auto" | "custom";
+            /**
+             * @description The optional flights-list columns the user picked. Only meaningful when flightListColumnMode is "custom", where an empty array means "none of the optional columns". Stored deduplicated and in the canonical display order; unknown values are dropped.
+             * @default []
+             * @example [
+             *       "picTime",
+             *       "nightTime",
+             *       "landings"
+             *     ]
+             */
+            flightListColumns: components["schemas"]["FlightListColumn"][];
         };
+        /**
+         * @description An optional column of the flights list. Date, route, aircraft and total time are the identity of a logbook row and are always shown, so they are not part of this enum. The order below is the display order, and for the time columns also the priority order in which they survive as the list gets narrower.
+         * @example picTime
+         * @enum {string}
+         */
+        FlightListColumn: "offOnBlock" | "picTime" | "nightTime" | "dualTime" | "ifrTime" | "crossCountryTime" | "sicTime" | "dualGivenTime" | "multiPilotTime" | "soloTime" | "simulatedFlightTime" | "function" | "landings" | "remarks";
         TwoFactorSetup: {
             /**
              * @description Base32-encoded TOTP secret for manual entry
@@ -3688,7 +3711,7 @@ export interface components {
             lastCompleted?: string | null;
             /**
              * Format: date
-             * @description Date the flight review expires (24 calendar months after last completed)
+             * @description Last date the flight review remains valid — the final day of the 24th calendar month after it was completed (inclusive)
              */
             expiresOn?: string | null;
             /**
@@ -5777,6 +5800,13 @@ export interface operations {
                     recencyPerModel?: boolean;
                     /** @description Show informational 90-day landing recency per individual aircraft registration */
                     recencyPerRegistration?: boolean;
+                    /**
+                     * @description Whether the flights list picks its optional columns from the data ("auto") or uses flightListColumns ("custom")
+                     * @enum {string}
+                     */
+                    flightListColumnMode?: "auto" | "custom";
+                    /** @description The optional flights-list columns to show in "custom" mode. Replaces the stored list; an empty array is valid and means no optional columns. Unknown values are ignored. */
+                    flightListColumns?: components["schemas"]["FlightListColumn"][];
                 };
             };
         };

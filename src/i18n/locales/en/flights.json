@@ -30,6 +30,7 @@
     "route": "Route",
     "offBlockTime": "Off-Block Time",
     "onBlockTime": "On-Block Time",
+    "offOnBlockTime": "Off-Block / On-Block",
     "takeoffTime": "Takeoff Time",
     "landingTime": "Landing Time",
     "totalTime": "Total Time",
@@ -69,7 +70,8 @@
     "isSolo": "Solo",
     "isFlightReview": "Flight Review",
     "isIpc": "IPC",
-    "isProficiencyCheck": "Proficiency Check"
+    "isProficiencyCheck": "Proficiency Check",
+    "function": "Function (PIC / Dual / SIC)"
   },
   "launchMethods": {
     "winch": "Winch",
