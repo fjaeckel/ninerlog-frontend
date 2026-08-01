@@ -10,6 +10,7 @@ import { useFlights } from '../../hooks/useFlights';
 import { useAuthStore } from '../../stores/authStore';
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import AnnouncementBanner from '../ui/AnnouncementBanner';
+import { ScrollToTop } from './ScrollToTop';
 import { LogoMark } from '../ui/Logo';
 import { ThemeSwitcher } from '../ui/ThemeSwitcher';
 import { OnboardingTour } from '../onboarding/OnboardingTour';
@@ -175,6 +176,8 @@ export default function Layout() {
       </aside>
 
       {/* ── Main Content ── */}
+      <ScrollToTop />
+
       <main id="main-content" className="pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-[calc(4rem+env(safe-area-inset-top))] pb-24 lg:pb-4 lg:ml-64 px-4 lg:px-8 overflow-x-hidden max-w-full">
         <AnnouncementBanner />
         <Outlet />

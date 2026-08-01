@@ -17,6 +17,7 @@ import FlightDetailPage from './pages/flights/FlightDetailPage';
 import { ThemeSwitcher } from './components/ui/ThemeSwitcher';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { useTheme } from './hooks/useTheme';
+import { ScrollToTop } from './components/layout/ScrollToTop';
 import { previewFlights as flights } from './preview-flight-fixtures';
 import './index.css';
 import './i18n';
@@ -64,6 +65,7 @@ function Preview() {
         <LanguageSwitcher />
         <ThemeSwitcher variant="full" />
       </div>
+      <ScrollToTop />
       <main className="px-4 pt-14 pb-24">
         <Routes>
           <Route path="/flights" element={<FlightsPage />} />
