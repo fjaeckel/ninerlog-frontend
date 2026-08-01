@@ -15,19 +15,45 @@ export type FlightColumnKey = components['schemas']['FlightListColumn'];
  *
  * There is one tier per time column plus one for remarks, so even a user who
  * asks for every time column has a width at which each of them appears.
+ *
+ * The thresholds are measured against the table the columns actually build: a
+ * tier that fires before its column fits puts the table into a horizontal
+ * scroll, which is the thing the tiers exist to avoid.
  */
 const REVEAL_TIERS = [
-  'hidden @min-[940px]:table-cell',
-  'hidden @min-[1030px]:table-cell',
-  'hidden @min-[1120px]:table-cell',
-  'hidden @min-[1210px]:table-cell',
-  'hidden @min-[1320px]:table-cell',
-  'hidden @min-[1410px]:table-cell',
-  'hidden @min-[1500px]:table-cell',
-  'hidden @min-[1590px]:table-cell',
-  'hidden @min-[1680px]:table-cell',
-  'hidden @min-[1770px]:table-cell',
-  'hidden @min-[1860px]:table-cell',
+  'hidden @min-[1020px]:table-cell',
+  'hidden @min-[1110px]:table-cell',
+  'hidden @min-[1200px]:table-cell',
+  'hidden @min-[1290px]:table-cell',
+  'hidden @min-[1400px]:table-cell',
+  'hidden @min-[1490px]:table-cell',
+  'hidden @min-[1580px]:table-cell',
+  'hidden @min-[1670px]:table-cell',
+  'hidden @min-[1760px]:table-cell',
+  'hidden @min-[1850px]:table-cell',
+  'hidden @min-[1940px]:table-cell',
+] as const;
+
+/**
+ * Reveal tiers for the remarks column, indexed by how many time columns are
+ * already showing.
+ *
+ * Remarks needs its own ladder because it is roughly three times the width of a
+ * time column: borrowing the next time tier let it appear at a width where it
+ * did not fit, which is exactly the horizontal scroll these tiers prevent.
+ */
+const REMARKS_TIERS = [
+  'hidden @min-[1180px]:table-cell',
+  'hidden @min-[1270px]:table-cell',
+  'hidden @min-[1360px]:table-cell',
+  'hidden @min-[1450px]:table-cell',
+  'hidden @min-[1560px]:table-cell',
+  'hidden @min-[1650px]:table-cell',
+  'hidden @min-[1740px]:table-cell',
+  'hidden @min-[1830px]:table-cell',
+  'hidden @min-[1920px]:table-cell',
+  'hidden @min-[2010px]:table-cell',
+  'hidden @min-[2100px]:table-cell',
 ] as const;
 
 /**
@@ -165,6 +191,92 @@ export const DEFAULT_CUSTOM_COLUMNS: FlightColumnKey[] = [
 ];
 
 /**
+ * Time columns a phone card can show, in the order they earn one of its slots.
+ *
+ * Not the table's order: a card has three slots, and PIC and dual time would
+ * take two of them on nearly every page while only restating the function badge
+ * already in the card's header. Night and IFR lead because they are what a
+ * pilot scans a logbook for.
+ */
+const CARD_TIME_PRIORITY: FlightColumnKey[] = [
+  'nightTime',
+  'ifrTime',
+  'crossCountryTime',
+  'simulatedFlightTime',
+  'dualGivenTime',
+  'sicTime',
+  'multiPilotTime',
+  'soloTime',
+];
+
+/** How many time columns fit beside the fixed ones on a phone card. */
+export const MAX_CARD_TIME_COLUMNS = 3;
+
+export interface FlightCardColumn {
+  key: FlightColumnKey;
+  labelKey: string;
+  minutes: (flight: Flight) => number;
+}
+
+export interface FlightCardColumns {
+  /** The off-block / on-block pair, as two cells. */
+  offOnBlock: boolean;
+  /** The PIC/DUAL/SIC badge in the row header. */
+  function: boolean;
+  landings: boolean;
+  /**
+   * Whether the landings column splits day from night. Decided for the page,
+   * not the flight: one card heading itself differently from the rest is the
+   * same wobble the time columns would have.
+   */
+  landingsSplit: boolean;
+  time: FlightCardColumn[];
+}
+
+/**
+ * Decides which time columns the cards on a page of flights get.
+ *
+ * Chosen once for the page rather than per card: a card that picked its own
+ * columns would give every entry a different set of headings at a different
+ * width, and a list of those does not read as a list. So the page asks the same
+ * question the table does — does any flight here use this column — and every
+ * card answers it in the same columns, showing a dash where a flight logged
+ * none of it.
+ *
+ * Custom mode hands over to the user's own column list, in their order, for the
+ * same reason it does in the table: a column they asked for is worth a slot
+ * even on a page where it stays empty. The fixed columns answer to the setting
+ * too — switching one off in Settings has to switch it off on a phone, or the
+ * setting is only telling half the truth.
+ */
+export function selectFlightCardColumns(
+  flights: Flight[],
+  prefs: FlightColumnPrefs = DEFAULT_FLIGHT_COLUMN_PREFS
+): FlightCardColumns {
+  const byKey = new Map(FLIGHT_COLUMNS.map((column) => [column.key, column]));
+  const isTime = (key: FlightColumnKey) => byKey.get(key)?.kind === 'time';
+  const custom = prefs.mode === 'custom';
+  const selected = new Set(prefs.columns);
+  // Same question the table asks of its fixed columns.
+  const shows = (key: FlightColumnKey) => (custom ? selected.has(key) : AUTO_ALWAYS_ON.includes(key));
+
+  const order = custom
+    ? prefs.columns.filter(isTime)
+    : CARD_TIME_PRIORITY.filter((key) => flights.some((f) => byKey.get(key)!.hasValue(f)));
+
+  return {
+    offOnBlock: shows('offOnBlock'),
+    function: shows('function'),
+    landings: shows('landings'),
+    landingsSplit: flights.some((f) => f.landingsNight > 0),
+    time: order
+      .slice(0, MAX_CARD_TIME_COLUMNS)
+      .map((key) => byKey.get(key)!)
+      .map((column) => ({ key: column.key, labelKey: column.labelKey, minutes: column.minutes! })),
+  };
+}
+
+/**
  * Decides which optional columns a page of flights gets.
  *
  * In automatic mode a column is only worth the width if at least one flight on
@@ -207,8 +319,8 @@ export function selectFlightColumns(
     function: has('function'),
     landings: has('landings'),
     time,
-    // Remarks takes the tier after the last time column, and only exists while
-    // there is a tier left to give it.
-    remarksRevealClass: has('remarks') ? REVEAL_TIERS[time.length] ?? null : null,
+    // Remarks takes the tier its own ladder gives for this many time columns,
+    // and only exists while there is a tier left to give it.
+    remarksRevealClass: has('remarks') ? REMARKS_TIERS[time.length] ?? null : null,
   };
 }

@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeLocation, formatAirportLabel, splitAirportLabel } from '../../lib/airport';
+import {
+  normalizeLocation,
+  formatAirportLabel,
+  splitAirportLabel,
+  abbreviateSiteName,
+} from '../../lib/airport';
 
 describe('normalizeLocation', () => {
   it('upper-cases values that look like an ICAO code', () => {
@@ -89,5 +94,29 @@ describe('splitAirportLabel', () => {
     expect(splitAirportLabel(null, null)).toEqual({ code: '—', name: null });
     expect(splitAirportLabel('  ', null)).toEqual({ code: '—', name: null });
     expect(splitAirportLabel(undefined, null, '?')).toEqual({ code: '?', name: null });
+  });
+});
+
+describe('abbreviateSiteName', () => {
+  it('leaves a name that already fits alone', () => {
+    expect(abbreviateSiteName('North field')).toBe('North field');
+  });
+
+  it('keeps the site and drops the town it is near', () => {
+    expect(abbreviateSiteName('North field, Bad Hersfeld-Johannesberg')).toBe('North field');
+  });
+
+  it('gives up whole words rather than half of one', () => {
+    expect(abbreviateSiteName('Meadow strip near Kassel')).toBe('Meadow strip\u2026');
+    expect(abbreviateSiteName('Meadow strip near Kassel', 9)).toBe('Meadow\u2026');
+  });
+
+  it('cuts inside a word only when the first word alone overruns', () => {
+    expect(abbreviateSiteName('Schoenhagen-Sudwestflugplatz', 10)).toBe('Schoenhage\u2026');
+  });
+
+  it('keeps a comma-led fragment only when it says something', () => {
+    // A leading comma would otherwise abbreviate the name away to nothing
+    expect(abbreviateSiteName(', North field')).toBe('North field');
   });
 });

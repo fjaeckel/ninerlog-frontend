@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2, ShieldCheck } from 'lucide-react';
@@ -6,21 +6,92 @@ import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
 import FlightForm from '../../components/flights/FlightForm';
+import FlightCard from '../../components/flights/FlightCard';
 import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
-import { selectFlightColumns } from '../../components/flights/flightTableColumns';
+import { selectFlightColumns, selectFlightCardColumns } from '../../components/flights/flightTableColumns';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
-import type { operations } from '../../api/schema';
+import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
+import type { components, operations } from '../../api/schema';
 
+type Flight = components['schemas']['Flight'];
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
 type SortField = 'date' | 'totalTime' | 'createdAt';
 
 const SORT_FIELDS: SortField[] = ['date', 'totalTime', 'createdAt'];
 
+/** A run of consecutive cards sharing a heading in the mobile list. */
+interface FlightGroup {
+  key: string;
+  /** Null when the list is not in date order and a month heading would lie. */
+  label: string | null;
+  flights: Flight[];
+  totalMinutes: number;
+}
+
+/**
+ * Splits the page's flights into the months they were flown in.
+ *
+ * Only meaningful while the list is sorted by date — under any other sort the
+ * months interleave, so the whole page becomes one unlabelled group instead.
+ */
+function groupFlightsByMonth(flights: Flight[], locale: string, byMonth: boolean): FlightGroup[] {
+  const groups: FlightGroup[] = [];
+  for (const flight of flights) {
+    const key = byMonth ? flight.date.slice(0, 7) : 'all';
+    let group = groups[groups.length - 1];
+    if (!group || group.key !== key) {
+      group = { key, label: byMonth ? monthLabel(key, locale) : null, flights: [], totalMinutes: 0 };
+      groups.push(group);
+    }
+    group.flights.push(flight);
+    group.totalMinutes += flight.totalTime;
+  }
+  return groups;
+}
+
+/**
+ * Whether neither end of a route resolved to a code — two free-text sites have
+ * to share the column, so each is abbreviated harder.
+ */
+function routeIsFreeText(flight: Flight): boolean {
+  return (
+    !splitAirportLabel(flight.departureIcao, flight.departureAirportName).code &&
+    !splitAirportLabel(flight.arrivalIcao, flight.arrivalAirportName).code
+  );
+}
+
+/**
+ * One end of a route in the table.
+ *
+ * The table has one column for the whole route, and an off-airport site written
+ * out in full ("North field, Bad Hersfeld-Johannesberg") stretches it until the
+ * time columns fall off the right-hand edge. A code is shown as it is; a name is
+ * abbreviated, with the full value in a title.
+ */
+function RouteEnd({ part, both }: { part: AirportParts; both: boolean }) {
+  if (part.code) return <span className="font-mono tabular-nums">{part.code}</span>;
+  if (!part.name) return <span>—</span>;
+  return (
+    <span title={part.name} className="font-sans">
+      {abbreviateSiteName(part.name, both ? 14 : 18)}
+    </span>
+  );
+}
+
+/** Renders a `YYYY-MM` key as the reader's month and year. */
+function monthLabel(month: string, locale: string): string {
+  const [year, m] = month.split('-');
+  return new Date(Date.UTC(Number(year), Number(m) - 1, 1)).toLocaleDateString(locale, {
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
 export default function FlightsPage() {
-  const { t } = useTranslation(['flights', 'common']);
+  const { t, i18n } = useTranslation(['flights', 'common']);
   const { fmtDate, fmtDuration } = useFormatPrefs();
   const columnPrefs = useFlightColumnPrefs();
   const navigate = useNavigate();
@@ -165,6 +236,18 @@ export default function FlightsPage() {
   // which ones the flights on this page justify), and how many of them the
   // table's own width can take.
   const columns = useMemo(() => selectFlightColumns(flights, columnPrefs), [flights, columnPrefs]);
+  // One set of time columns for every card on the page — see
+  // `selectFlightCardColumns`.
+  const cardColumns = useMemo(
+    () => selectFlightCardColumns(flights, columnPrefs),
+    [flights, columnPrefs]
+  );
+  // Month headings for the mobile card list — a logbook reads by month, and the
+  // running total per month is the number pilots actually look for.
+  const monthGroups = useMemo(
+    () => groupFlightsByMonth(flights, i18n.language, sortBy === 'date'),
+    [flights, i18n.language, sortBy]
+  );
 
   const handleDelete = async (id: string) => {
     setDeleteTarget(id);
@@ -234,6 +317,14 @@ export default function FlightsPage() {
   }
 
   const pagination = data?.pagination;
+  // Enough for a month heading to span whatever the table is currently showing.
+  const tableColumnCount =
+    5 +
+    columns.time.length +
+    (columns.offOnBlock ? 1 : 0) +
+    (columns.function ? 1 : 0) +
+    (columns.landings ? 1 : 0) +
+    (columns.remarksRevealClass ? 1 : 0);
 
   return (
     <div className="mx-auto max-w-[960px] xl:max-w-[1600px] py-6">
@@ -416,73 +507,144 @@ export default function FlightsPage() {
         </div>
       ) : (
         <>
+          {/* Phones and tablets get a card per flight: the table below needs a
+              horizontal scroll to reach even the total time on a narrow screen. */}
+          <div className="lg:hidden space-y-4">
+            {monthGroups.map((group) => (
+              <section key={group.key} aria-label={group.label ?? undefined}>
+                {group.label && (
+                  // Full-bleed and stuck under the app header, so the month a
+                  // flight belongs to stays on screen while its cards scroll.
+                  <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-10 -mx-4 mb-3 flex items-baseline justify-between gap-3 border-b px-4 py-2 surface-glass">
+                    <h2 className="truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      {group.label}
+                    </h2>
+                    <span className="shrink-0 text-xs tabular-nums text-slate-500 dark:text-slate-400">
+                      {t('flights:monthTotal', {
+                        count: group.flights.length,
+                        duration: fmtDuration(group.totalMinutes),
+                      })}
+                    </span>
+                  </div>
+                )}
+                {/* The month's flights as one list: rows sit flush and are told
+                    apart by a hairline, not by a gap. */}
+                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm divide-y divide-slate-200 dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800">
+                  {group.flights.map((flight) => (
+                    <FlightCard
+                      key={flight.id}
+                      flight={flight}
+                      columns={cardColumns}
+                      onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+
           {/* @container: the optional columns below react to the width this
               table actually gets, not to the viewport size. */}
-          <div className="overflow-x-auto card p-0 @container">
+          <div className="hidden lg:block overflow-x-auto card p-0 @container">
             <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm" aria-label={t('flights:pageTitle')}>
               <thead className="bg-slate-50 dark:bg-slate-800/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableDate')}</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableRoute')}</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableAircraft')}</th>
+                  <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableDate')}</th>
+                  <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableRoute')}</th>
+                  <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableAircraft')}</th>
                   {columns.offOnBlock && (
-                    <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableOffOnBlock')}</th>
+                    <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableOffOnBlock')}</th>
                   )}
-                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableTotal')}</th>
+                  <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableTotal')}</th>
                   {columns.time.map((col) => (
                     <th
                       key={col.key}
                       title={t(`flights:${col.titleKey}`)}
-                      className={`px-3 py-3 text-right font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap ${col.revealClass}`}
+                      className={`px-2 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap ${col.revealClass}`}
                     >
                       {t(`flights:${col.labelKey}`)}
                     </th>
                   ))}
                   {columns.function && (
-                    <th className="px-4 py-3 text-center font-medium text-slate-500 dark:text-slate-400">{t('flights:tableFunction')}</th>
+                    <th className="px-3 py-2.5 text-center font-medium text-slate-500 dark:text-slate-400">{t('flights:tableFunction')}</th>
                   )}
                   {columns.landings && (
-                    <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLdg')}</th>
+                    <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLdg')}</th>
                   )}
                   {columns.remarksRevealClass && (
-                    <th className={`px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}>
+                    <th className={`px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}>
                       {t('flights:tableRemarks')}
                     </th>
                   )}
-                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400" />
+                  <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                {flights.map((flight) => (
+                {monthGroups.map((group) => (
+                  <Fragment key={group.key}>
+                    {group.label && (
+                      // The same month heading the card list uses, so both views
+                      // break a logbook up the same way.
+                      <tr className="bg-slate-50/80 dark:bg-slate-800/60">
+                        <th
+                          scope="colgroup"
+                          colSpan={tableColumnCount}
+                          className="px-3 py-1.5 text-left text-xs font-semibold text-slate-600 dark:text-slate-300"
+                        >
+                          {group.label}
+                          <span className="ml-2 font-normal text-slate-400 dark:text-slate-500">
+                            {t('flights:monthTotal', {
+                              count: group.flights.length,
+                              duration: fmtDuration(group.totalMinutes),
+                            })}
+                          </span>
+                        </th>
+                      </tr>
+                    )}
+                    {group.flights.map((flight) => (
                   <tr
                     key={flight.id}
                     className="hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition-colors"
                     onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
                   >
-                    <td className="px-4 py-3 whitespace-nowrap text-slate-800 dark:text-slate-200">
-                      {fmtDate(flight.date)}
+                    <td className="px-3 py-2 whitespace-nowrap text-slate-800 dark:text-slate-200">
+                      <span className="text-xs text-slate-400 dark:text-slate-500">
+                        {new Date(`${flight.date}T00:00:00`).toLocaleDateString(i18n.language, { weekday: 'short' })}
+                      </span>{' '}
+                      <span className="font-mono tabular-nums">{fmtDate(flight.date)}</span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-800 dark:text-slate-100">
+                    <td className="px-3 py-2 whitespace-nowrap font-medium text-slate-800 dark:text-slate-100">
                       <span className="inline-flex items-center gap-1.5">
-                        {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
+                        <RouteEnd
+                          part={splitAirportLabel(flight.departureIcao, flight.departureAirportName)}
+                          both={routeIsFreeText(flight)}
+                        />
+                        <span className="text-blue-500 dark:text-blue-400" aria-hidden="true">→</span>
+                        <RouteEnd
+                          part={splitAirportLabel(flight.arrivalIcao, flight.arrivalAirportName)}
+                          both={routeIsFreeText(flight)}
+                        />
                         {flight.signatureId && (
-                          <ShieldCheck
-                            className="w-3.5 h-3.5 text-green-600 dark:text-green-400 shrink-0"
-                            aria-label={t('signatures:section.signedBadge')}
-                          />
+                          <>
+                            <ShieldCheck
+                              className="w-3.5 h-3.5 text-green-600 dark:text-green-400 shrink-0"
+                              aria-hidden="true"
+                            />
+                            <span className="sr-only">{t('flights:signed')}</span>
+                          </>
                         )}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">
+                    <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300">
                       <span className="font-medium">{flight.aircraftReg}</span>
                       <span className="text-slate-400 dark:text-slate-500 ml-1">({flight.aircraftType})</span>
                     </td>
                     {columns.offOnBlock && (
-                      <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono tabular-nums text-xs">
+                      <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono tabular-nums text-xs">
                         {flight.offBlockTime?.slice(0, 5) || '—'} / {flight.onBlockTime?.slice(0, 5) || '—'}
                       </td>
                     )}
-                    <td className="px-4 py-3 whitespace-nowrap text-right font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">
+                    <td className="px-3 py-2 whitespace-nowrap text-right font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">
                       {fmtDuration(flight.totalTime)}
                     </td>
                     {columns.time.map((col) => {
@@ -490,7 +652,7 @@ export default function FlightsPage() {
                       return (
                         <td
                           key={col.key}
-                          className={`px-3 py-3 whitespace-nowrap text-right font-mono tabular-nums ${
+                          className={`px-2 py-2 whitespace-nowrap text-right font-mono tabular-nums ${
                             minutes > 0 ? 'text-slate-600 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'
                           } ${col.revealClass}`}
                         >
@@ -499,7 +661,7 @@ export default function FlightsPage() {
                       );
                     })}
                     {columns.function && (
-                      <td className="px-4 py-3 whitespace-nowrap text-center">
+                      <td className="px-3 py-2 whitespace-nowrap text-center">
                         <span className={`badge ${
                           flight.isPic
                             ? 'badge-info'
@@ -512,18 +674,18 @@ export default function FlightsPage() {
                       </td>
                     )}
                     {columns.landings && (
-                      <td className="px-4 py-3 whitespace-nowrap text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
+                      <td className="px-3 py-2 whitespace-nowrap text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
                         {flight.allLandings}
                       </td>
                     )}
                     {columns.remarksRevealClass && (
-                      <td className={`px-4 py-3 text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}>
+                      <td className={`px-3 py-2 text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}>
                         <span className="block max-w-[28ch] truncate" title={flight.remarks || undefined}>
                           {flight.remarks || '—'}
                         </span>
                       </td>
                     )}
-                    <td className="px-4 py-3 whitespace-nowrap text-right">
+                    <td className="px-3 py-2 whitespace-nowrap text-right">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleEdit(flight.id); }}
                         className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mr-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
@@ -540,6 +702,8 @@ export default function FlightsPage() {
                       </button>
                     </td>
                   </tr>
+                    ))}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
