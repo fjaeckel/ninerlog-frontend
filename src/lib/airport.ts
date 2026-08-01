@@ -43,6 +43,37 @@ export interface AirportParts {
 }
 
 /**
+ * Shortens a free-text site name to something that still names the place.
+ *
+ * Off-airport locations are written the way a pilot would say them — "Meadow
+ * strip near Kassel", "North field, Bad Hersfeld-Johannesberg" — and a list row
+ * has nowhere near that much width. Clipping the string mid-word leaves
+ * "Mead…", which identifies nothing, so this cuts where the meaning is: the
+ * part before the comma is the site itself and the rest is the town it is near,
+ * and anything still too long gives up whole words rather than half of one.
+ *
+ * The full value stays available in a `title` and on the detail page.
+ */
+export function abbreviateSiteName(name: string, maxChars = 14): string {
+  // A leading separator would otherwise make the first fragment empty and
+  // abbreviate the name down to punctuation.
+  const trimmed = name.trim().replace(/^[\s,;·–-]+/, '');
+  const head = trimmed.split(',')[0].trim();
+  const base = head.length >= 3 ? head : trimmed;
+  if (base.length <= maxChars) return base;
+
+  // As many whole words as fit — "Meadow strip", not "Meadow stri".
+  let kept = '';
+  for (const word of base.split(/\s+/)) {
+    const next = kept ? `${kept} ${word}` : word;
+    if (next.length > maxChars) break;
+    kept = next;
+  }
+  // Only cut inside a word when the first word alone already overruns.
+  return `${kept || base.slice(0, maxChars)}…`;
+}
+
+/**
  * Splits a stored location into a code and a name so a layout can give each its
  * own typography instead of squeezing "Name (CODE)" into a single string.
  *

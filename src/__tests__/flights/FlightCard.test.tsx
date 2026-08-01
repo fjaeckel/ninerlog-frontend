@@ -75,10 +75,11 @@ describe('FlightCard', () => {
     expect(screen.getByText('16:00')).toBeInTheDocument();
   });
 
-  it('renders an off-airport site as a name without a code', () => {
+  it('renders an off-airport site as an abbreviated name without a code', () => {
     renderCard({ departureIcao: 'Meadow strip near Kassel' });
 
-    expect(screen.getByText('Meadow strip near Kassel')).toBeInTheDocument();
+    // The row is one line: the name is shortened, the full one is in the title
+    expect(screen.getByText('Meadow strip…')).toHaveAttribute('title', 'Meadow strip near Kassel');
     expect(screen.queryByText('EDDF')).not.toBeInTheDocument();
   });
 

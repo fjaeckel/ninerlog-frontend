@@ -1,4 +1,4 @@
-import { Pencil, Trash2, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Pencil, Trash2, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { components } from '../../api/schema';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
@@ -37,7 +37,10 @@ interface Cell {
  * Below `lg` the flights table needs a horizontal scroll to reach even the
  * total time, so this takes its place: a header carrying what identifies the
  * entry — route, date, aircraft, block time, function — over a row of numeric
- * columns that reads like the table it replaces. Which time columns those are
+ * columns that reads like the table it replaces. Both stay on their own single
+ * line: a logbook is read by scrolling, and a card that grows a line for a long
+ * airfield name pushes every flight below it further away. Which time columns
+ * those are
  * is decided once for the whole page (see `selectFlightCardColumns`), so the
  * headings and their widths hold still while the list scrolls and a flight that
  * logged none of a column shows a dash. Everything else lives one tap away on
@@ -103,58 +106,93 @@ export default function FlightCard({ flight, columns, onEdit, onDelete, onClick 
         duration: fmtDuration(flight.totalTime),
       })}
     >
-      {/* Header — the entry's identity, on a rail that anchors the card */}
-      <div className="flex items-start gap-3 border-l-4 border-blue-600 bg-slate-50 px-3 py-2.5 dark:border-blue-500 dark:bg-slate-700/40">
-        <div className="min-w-0 flex-1">
-          <FlightRouteHeading departure={departure} arrival={arrival}>
-            {flight.signatureId && (
-              <>
-                <ShieldCheck
-                  className="ml-1.5 inline-block h-3.5 w-3.5 shrink-0 align-middle text-green-600 dark:text-green-400"
-                  aria-hidden="true"
-                />
-                <span className="sr-only">{t('signed')}</span>
-              </>
-            )}
-          </FlightRouteHeading>
-          <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
-            {weekday} <span className="font-mono tabular-nums">{fmtDate(flight.date)}</span>
-            {' · '}
-            <span className="font-mono font-medium text-slate-600 dark:text-slate-300">{flight.aircraftReg}</span>{' '}
-            {flight.aircraftType}
-          </p>
-        </div>
-
-        <div className="shrink-0 text-right">
-          <p className="font-mono text-lg font-bold leading-none tabular-nums text-slate-800 dark:text-slate-100">
+      {/* Header — the entry's identity, on a rail that anchors the card.
+          The actions sit on the first line rather than in a row of their own:
+          a 44px target already fits inside the height that line needs, so
+          keeping them costs the list nothing. */}
+      <div className="border-l-4 border-blue-600 bg-slate-50 px-3 py-1.5 dark:border-blue-500 dark:bg-slate-700/40">
+        <div className="flex items-center gap-2">
+          <FlightRouteHeading className="min-w-0 flex-1" departure={departure} arrival={arrival} />
+          <p className="shrink-0 font-mono text-base font-bold tabular-nums text-slate-800 dark:text-slate-100">
             {fmtDuration(flight.totalTime)}
           </p>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+            className="tap-none -mr-1 inline-flex h-11 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-200/70 hover:text-blue-600 dark:hover:bg-slate-600/50 dark:hover:text-blue-400"
+            aria-label={t('editFlightAriaLabel', {
+              departure: flight.departureIcao || '',
+              arrival: flight.arrivalIcao || '',
+            })}
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="tap-none -mr-2 inline-flex h-11 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+            aria-label={t('deleteFlightAriaLabel', {
+              departure: flight.departureIcao || '',
+              arrival: flight.arrivalIcao || '',
+            })}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Everything that qualifies the entry, on one line that gives up its
+            tail before it gives up a second line */}
+        <p className="-mt-0.5 flex items-baseline gap-1.5 text-xs text-slate-500 dark:text-slate-400">
           <span
             className={cn(
-              'mt-1 inline-flex text-[10px] font-semibold',
-              flight.isPic ? 'badge-info' : flight.isDual ? 'badge-expiring' : 'badge-neutral'
+              'shrink-0 rounded px-1 text-[10px] font-bold uppercase',
+              flight.isPic
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                : flight.isDual
+                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                  : 'bg-slate-200 text-slate-600 dark:bg-slate-600 dark:text-slate-300'
             )}
           >
             {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : (flight.sicTime || 0) > 0 ? 'SIC' : '—'}
           </span>
-        </div>
-
-        <ChevronRight
-          className="h-4 w-4 shrink-0 self-center text-slate-300 dark:text-slate-600"
-          aria-hidden="true"
-        />
+          {flight.signatureId && (
+            <>
+              <ShieldCheck
+                className="h-3 w-3 shrink-0 self-center text-green-600 dark:text-green-400"
+                aria-hidden="true"
+              />
+              <span className="sr-only">{t('signed')}</span>
+            </>
+          )}
+          <span className="min-w-0 truncate">
+            {weekday} <span className="font-mono tabular-nums">{fmtDate(flight.date)}</span>
+            {' · '}
+            <span className="font-mono font-medium text-slate-600 dark:text-slate-300">{flight.aircraftReg}</span>{' '}
+            {flight.aircraftType}
+            {flight.remarks && (
+              <>
+                {' · '}
+                <span className="italic">{flight.remarks}</span>
+              </>
+            )}
+          </span>
+        </p>
       </div>
 
       {/* Readout — the table's columns, picked once for the page */}
       <dl className="flex divide-x divide-slate-100 dark:divide-slate-700/60">
         {cells.map((cell) => (
-          <div key={cell.key} className="min-w-0 flex-1 px-1 py-2 text-center">
-            <dt className="truncate text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          <div key={cell.key} className="min-w-0 flex-1 px-1 py-1.5 text-center">
+            <dt className="truncate text-[10px] font-medium uppercase leading-tight tracking-wider text-slate-400 dark:text-slate-500">
               {cell.label}
             </dt>
             <dd
               className={cn(
-                'truncate font-mono text-xs font-semibold tabular-nums',
+                'truncate font-mono text-xs font-semibold leading-tight tabular-nums',
                 cell.empty ? 'text-slate-300 dark:text-slate-600' : 'text-slate-700 dark:text-slate-200'
               )}
             >
@@ -163,39 +201,6 @@ export default function FlightCard({ flight, columns, onEdit, onDelete, onClick 
           </div>
         ))}
       </dl>
-
-      {/* Remarks share the line with the actions, so they cost no extra height */}
-      <div className="flex items-center gap-2 border-t border-slate-100 pl-3 dark:border-slate-700/60">
-        <p className="min-w-0 flex-1 truncate text-xs italic text-slate-500 dark:text-slate-400">
-          {flight.remarks}
-        </p>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit();
-          }}
-          className="tap-none inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-blue-600 dark:hover:bg-slate-700 dark:hover:text-blue-400"
-          aria-label={t('editFlightAriaLabel', {
-            departure: flight.departureIcao || '',
-            arrival: flight.arrivalIcao || '',
-          })}
-        >
-          <Pencil className="h-4 w-4" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          className="tap-none inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-          aria-label={t('deleteFlightAriaLabel', {
-            departure: flight.departureIcao || '',
-            arrival: flight.arrivalIcao || '',
-          })}
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
-      </div>
     </article>
   );
 }

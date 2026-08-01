@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { AirportParts } from '../../lib/airport';
+import { abbreviateSiteName, type AirportParts } from '../../lib/airport';
 import { cn } from '../../lib/cn';
 
 interface FlightRouteHeadingProps {
@@ -36,27 +36,34 @@ export default function FlightRouteHeading({
   className,
 }: FlightRouteHeadingProps) {
   const isCodes = !!departure.code && !!arrival.code;
+  // A list row is worth one line: a name that wraps pushes every card below it
+  // down and costs more than the tail of the name is worth. The detail page has
+  // the width to spare, and shows both names in full in the route card anyway.
+  const oneLine = size === 'card';
+  // Two names have to share the line, so each gets abbreviated harder than a
+  // lone name sitting next to a four-character code.
+  const maxNameChars = departure.code || arrival.code ? 14 : 9;
 
   const arrow = (
-    <span className="text-blue-500 dark:text-blue-400" aria-hidden="true">
+    <span className="shrink-0 text-blue-500 dark:text-blue-400" aria-hidden="true">
       →
     </span>
   );
 
-  if (isCodes) {
+  if (isCodes || oneLine) {
     return (
       <Element
         title={title}
         className={cn(
-          'flex items-baseline gap-x-1.5 font-mono font-bold leading-tight tracking-tight tabular-nums',
+          'flex items-baseline gap-x-1.5 font-bold leading-tight tracking-tight',
           'text-slate-800 dark:text-slate-100',
-          size === 'page' ? 'text-2xl sm:text-3xl' : 'text-lg',
+          size === 'page' ? 'text-2xl sm:text-3xl' : 'text-base',
           className
         )}
       >
-        <span className="truncate">{departure.code}</span>
+        <End part={departure} truncate maxChars={maxNameChars} />
         {arrow}
-        <span className="truncate">{arrival.code}</span>
+        <End part={arrival} truncate maxChars={maxNameChars} />
         {children}
       </Element>
     );
@@ -67,7 +74,7 @@ export default function FlightRouteHeading({
       title={title}
       className={cn(
         'font-bold leading-snug text-slate-800 dark:text-slate-100',
-        size === 'page' ? 'text-xl sm:text-2xl' : 'text-base',
+        'text-xl sm:text-2xl',
         className
       )}
     >
@@ -81,17 +88,23 @@ export default function FlightRouteHeading({
 }
 
 /** One end of the route: a code keeps the tabular face, a place name does not. */
-function End({ part }: { part: AirportParts }) {
+function End({ part, truncate, maxChars }: { part: AirportParts; truncate?: boolean; maxChars?: number }) {
   const code = part.code;
+  const name = part.name;
   return (
     <span
+      title={truncate && name ? name : undefined}
       className={cn(
-        'break-words',
-        code ? 'font-mono tracking-tight tabular-nums' : 'font-sans',
-        !code && 'font-semibold'
+        code ? 'font-mono tracking-tight tabular-nums' : 'font-sans font-semibold',
+        // Codes are four characters and never shrink. A name is abbreviated
+        // first and set a step smaller, which is enough for it to fit beside a
+        // code; `flex-auto` lets it keep its own width until the line genuinely
+        // overruns, and only then does it give up its tail.
+        truncate && !code && 'text-sm',
+        truncate ? (code ? 'shrink-0' : 'min-w-0 flex-auto truncate') : 'break-words'
       )}
     >
-      {code ?? part.name ?? '—'}
+      {code ?? (name && truncate ? abbreviateSiteName(name, maxChars) : name) ?? '—'}
     </span>
   );
 }

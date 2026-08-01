@@ -7,16 +7,31 @@ const parts = (location: string | null, name: string | null = null) =>
   splitAirportLabel(location, name);
 
 describe('FlightRouteHeading', () => {
-  it('sets two ICAO codes on one line in the tabular face', () => {
+  it('sets ICAO codes in the tabular face', () => {
     render(<FlightRouteHeading departure={parts('EDDF')} arrival={parts('EDDH')} />);
 
-    const departure = screen.getByText('EDDF');
-    expect(departure).toBeInTheDocument();
-    expect(screen.getByText('EDDH')).toBeInTheDocument();
-    expect(departure.closest('p')).toHaveClass('font-mono');
+    expect(screen.getByText('EDDF')).toHaveClass('font-mono');
+    expect(screen.getByText('EDDH')).toHaveClass('font-mono');
   });
 
-  it('keeps the arrow with the arrival so it cannot be stranded on its own line', () => {
+  it('sets a free-text site in the UI face, not the tabular one', () => {
+    render(<FlightRouteHeading departure={parts('Meadow strip')} arrival={parts('EDVK')} />);
+
+    expect(screen.getByText('Meadow strip')).toHaveClass('font-sans');
+    expect(screen.getByText('EDVK')).toHaveClass('font-mono');
+  });
+
+  it('abbreviates a long site name in a list row and keeps the full one in a title', () => {
+    render(
+      <FlightRouteHeading departure={parts('Meadow strip near Kassel')} arrival={parts('EDVK')} />
+    );
+
+    const departure = screen.getByText('Meadow strip…');
+    expect(departure).toBeInTheDocument();
+    expect(departure).toHaveAttribute('title', 'Meadow strip near Kassel');
+  });
+
+  it('abbreviates harder when both ends are names sharing the line', () => {
     render(
       <FlightRouteHeading
         departure={parts('Meadow strip near Kassel')}
@@ -24,17 +39,25 @@ describe('FlightRouteHeading', () => {
       />
     );
 
-    const arrival = screen.getByText('North field, Bad Hersfeld-Johannesberg');
-    expect(arrival.parentElement).toHaveTextContent('→ North field, Bad Hersfeld-Johannesberg');
-    expect(arrival.parentElement).not.toHaveTextContent('Meadow strip near Kassel');
+    expect(screen.getByText('Meadow…')).toBeInTheDocument();
+    expect(screen.getByText('North…')).toBeInTheDocument();
   });
 
-  it('sets a free-text site in the UI face, not the tabular one', () => {
-    render(<FlightRouteHeading departure={parts('Meadow strip near Kassel')} arrival={parts('EDVK')} />);
+  it('gives the detail page the names in full', () => {
+    render(
+      <FlightRouteHeading
+        as="h1"
+        size="page"
+        departure={parts('Meadow strip near Kassel')}
+        arrival={parts('North field, Bad Hersfeld-Johannesberg')}
+      />
+    );
 
-    expect(screen.getByText('Meadow strip near Kassel')).toHaveClass('font-sans');
-    // A real code beside it keeps the tabular face
-    expect(screen.getByText('EDVK')).toHaveClass('font-mono');
+    expect(screen.getByText('Meadow strip near Kassel')).toBeInTheDocument();
+    const arrival = screen.getByText('North field, Bad Hersfeld-Johannesberg');
+    // The arrow stays with the arrival so it cannot be stranded on its own line
+    expect(arrival.parentElement).toHaveTextContent('→ North field, Bad Hersfeld-Johannesberg');
+    expect(arrival.parentElement).not.toHaveTextContent('Meadow strip near Kassel');
   });
 
   it('renders as a heading when the page needs one', () => {
