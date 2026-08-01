@@ -5,13 +5,14 @@ import { ArrowLeft, Pencil, Trash2, Plane, PlaneTakeoff, PlaneLanding, ShieldChe
 import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
 import FlightForm from '../../components/flights/FlightForm';
 import FlightRouteCard from '../../components/flights/FlightRouteCard';
+import FlightRouteHeading from '../../components/flights/FlightRouteHeading';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { SignatureSection } from '../../components/flights/SignatureSection';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { DataTile, DataTileGrid } from '../../components/ui/DataTile';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
-import { formatAirportLabel } from '../../lib/airport';
+import { formatAirportLabel, splitAirportLabel } from '../../lib/airport';
 import { cn } from '../../lib/cn';
 
 export default function FlightDetailPage() {
@@ -67,6 +68,8 @@ export default function FlightDetailPage() {
   // in which case the raw stored location is shown.
   const departureLabel = formatAirportLabel(flight.departureIcao, flight.departureAirportName);
   const arrivalLabel = formatAirportLabel(flight.arrivalIcao, flight.arrivalAirportName);
+  const departure = splitAirportLabel(flight.departureIcao, flight.departureAirportName);
+  const arrival = splitAirportLabel(flight.arrivalIcao, flight.arrivalAirportName);
 
   const pilotFunction = flight.isPic
     ? 'PIC'
@@ -155,19 +158,19 @@ export default function FlightDetailPage() {
       {/* Hero — the same header the list card uses, at page scale: route, when,
           in what, as what, and the block time it all adds up to. */}
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
-        <div className="flex items-center gap-3 border-l-4 border-blue-600 bg-slate-50 px-4 py-3 dark:border-blue-500 dark:bg-slate-700/40">
+        <div className="flex items-start gap-3 border-l-4 border-blue-600 bg-slate-50 px-4 py-3 dark:border-blue-500 dark:bg-slate-700/40">
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
               {fmtDateLong(flight.date)}
             </p>
-            <h1
-              className="mt-1 flex flex-wrap items-baseline gap-x-2 font-mono text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100 sm:text-3xl"
+            <FlightRouteHeading
+              as="h1"
+              size="page"
+              className="mt-1"
+              departure={departure}
+              arrival={arrival}
               title={`${departureLabel} → ${arrivalLabel}`}
-            >
-              <span className="min-w-0 break-words">{flight.departureIcao || '—'}</span>
-              <span className="text-blue-500 dark:text-blue-400">→</span>
-              <span className="min-w-0 break-words">{flight.arrivalIcao || '—'}</span>
-            </h1>
+            />
           </div>
           <div className="shrink-0 text-right">
             <p className="font-mono text-2xl font-bold leading-none tabular-nums text-slate-800 dark:text-slate-100">

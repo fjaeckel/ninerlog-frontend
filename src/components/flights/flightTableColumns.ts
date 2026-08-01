@@ -165,6 +165,79 @@ export const DEFAULT_CUSTOM_COLUMNS: FlightColumnKey[] = [
 ];
 
 /**
+ * Time columns a phone card can show, in the order they earn one of its slots.
+ *
+ * Not the table's order: a card has three slots, and PIC and dual time would
+ * take two of them on nearly every page while only restating the function badge
+ * already in the card's header. Night and IFR lead because they are what a
+ * pilot scans a logbook for.
+ */
+const CARD_TIME_PRIORITY: FlightColumnKey[] = [
+  'nightTime',
+  'ifrTime',
+  'crossCountryTime',
+  'simulatedFlightTime',
+  'dualGivenTime',
+  'sicTime',
+  'multiPilotTime',
+  'soloTime',
+];
+
+/** How many time columns fit beside the fixed ones on a phone card. */
+export const MAX_CARD_TIME_COLUMNS = 3;
+
+export interface FlightCardColumn {
+  key: FlightColumnKey;
+  labelKey: string;
+  minutes: (flight: Flight) => number;
+}
+
+export interface FlightCardColumns {
+  /**
+   * Whether the landings column splits day from night. Decided for the page,
+   * not the flight: one card heading itself differently from the rest is the
+   * same wobble the time columns would have.
+   */
+  landingsSplit: boolean;
+  time: FlightCardColumn[];
+}
+
+/**
+ * Decides which time columns the cards on a page of flights get.
+ *
+ * Chosen once for the page rather than per card: a card that picked its own
+ * columns would give every entry a different set of headings at a different
+ * width, and a list of those does not read as a list. So the page asks the same
+ * question the table does — does any flight here use this column — and every
+ * card answers it in the same columns, showing a dash where a flight logged
+ * none of it.
+ *
+ * Custom mode hands over to the user's own column list, in their order, for the
+ * same reason it does in the table: a column they asked for is worth a slot
+ * even on a page where it stays empty.
+ */
+export function selectFlightCardColumns(
+  flights: Flight[],
+  prefs: FlightColumnPrefs = DEFAULT_FLIGHT_COLUMN_PREFS
+): FlightCardColumns {
+  const byKey = new Map(FLIGHT_COLUMNS.map((column) => [column.key, column]));
+  const isTime = (key: FlightColumnKey) => byKey.get(key)?.kind === 'time';
+
+  const order =
+    prefs.mode === 'custom'
+      ? prefs.columns.filter(isTime)
+      : CARD_TIME_PRIORITY.filter((key) => flights.some((f) => byKey.get(key)!.hasValue(f)));
+
+  return {
+    landingsSplit: flights.some((f) => f.landingsNight > 0),
+    time: order
+      .slice(0, MAX_CARD_TIME_COLUMNS)
+      .map((key) => byKey.get(key)!)
+      .map((column) => ({ key: column.key, labelKey: column.labelKey, minutes: column.minutes! })),
+  };
+}
+
+/**
  * Decides which optional columns a page of flights gets.
  *
  * In automatic mode a column is only worth the width if at least one flight on

@@ -11,7 +11,7 @@ import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
-import { selectFlightColumns } from '../../components/flights/flightTableColumns';
+import { selectFlightColumns, selectFlightCardColumns } from '../../components/flights/flightTableColumns';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import type { components, operations } from '../../api/schema';
 
@@ -206,6 +206,12 @@ export default function FlightsPage() {
   // which ones the flights on this page justify), and how many of them the
   // table's own width can take.
   const columns = useMemo(() => selectFlightColumns(flights, columnPrefs), [flights, columnPrefs]);
+  // One set of time columns for every card on the page — see
+  // `selectFlightCardColumns`.
+  const cardColumns = useMemo(
+    () => selectFlightCardColumns(flights, columnPrefs),
+    [flights, columnPrefs]
+  );
   // Month headings for the mobile card list — a logbook reads by month, and the
   // running total per month is the number pilots actually look for.
   const monthGroups = useMemo(
@@ -488,6 +494,7 @@ export default function FlightsPage() {
                     <FlightCard
                       key={flight.id}
                       flight={flight}
+                      columns={cardColumns}
                       onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
                       onEdit={() => handleEdit(flight.id)}
                       onDelete={() => handleDelete(flight.id)}

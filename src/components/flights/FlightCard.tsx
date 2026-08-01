@@ -4,11 +4,19 @@ import type { components } from '../../api/schema';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { splitAirportLabel } from '../../lib/airport';
 import { cn } from '../../lib/cn';
+import FlightRouteHeading from './FlightRouteHeading';
+import type { FlightCardColumns } from './flightTableColumns';
 
 type Flight = components['schemas']['Flight'];
 
 interface FlightCardProps {
   flight: Flight;
+  /**
+   * The readout columns every card on this page shows, from
+   * `selectFlightCardColumns`. Passed in rather than derived per flight so the
+   * whole list keeps one set of headings at one width.
+   */
+  columns: FlightCardColumns;
   onEdit: () => void;
   onDelete: () => void;
   onClick: () => void;
@@ -19,31 +27,9 @@ interface Cell {
   key: string;
   label: string;
   value: string;
+  /** A column this flight logged nothing in — shown, but dimmed. */
+  empty?: boolean;
 }
-
-/**
- * The optional time columns a card may show, in the order they earn their spot.
- *
- * Night and IFR come first because they are the ones a pilot scans a logbook
- * for; the training times come last because a flight that has them usually has
- * little else. PIC and dual time are deliberately absent — the API computes
- * them from the function flag and the block time, so they would only repeat the
- * badge in the header.
- */
-const OPTIONAL_TIMES: { key: string; labelKey: string; minutes: (f: Flight) => number }[] = [
-  { key: 'night', labelKey: 'tableNight', minutes: (f) => f.nightTime },
-  { key: 'ifr', labelKey: 'tableIfr', minutes: (f) => f.ifrTime },
-  { key: 'xc', labelKey: 'tableXc', minutes: (f) => f.crossCountryTime },
-  { key: 'sim', labelKey: 'tableSim', minutes: (f) => f.simulatedFlightTime ?? 0 },
-  { key: 'ground', labelKey: 'tableGround', minutes: (f) => f.groundTrainingTime ?? 0 },
-  { key: 'dualGiven', labelKey: 'tableDualGiven', minutes: (f) => f.dualGivenTime ?? 0 },
-  { key: 'sic', labelKey: 'tableSic', minutes: (f) => f.sicTime ?? 0 },
-  { key: 'multiPilot', labelKey: 'tableMultiPilot', minutes: (f) => f.multiPilotTime ?? 0 },
-  { key: 'solo', labelKey: 'tableSolo', minutes: (f) => f.soloTime },
-];
-
-/** How many optional time columns fit next to the fixed ones on a phone. */
-const MAX_OPTIONAL_CELLS = 3;
 
 /**
  * One logbook entry as a phone-sized card.
@@ -51,20 +37,18 @@ const MAX_OPTIONAL_CELLS = 3;
  * Below `lg` the flights table needs a horizontal scroll to reach even the
  * total time, so this takes its place: a header carrying what identifies the
  * entry — route, date, aircraft, block time, function — over a row of numeric
- * columns that reads like the table it replaces. The columns are chosen per
- * flight, so a night IFR leg and a circuit session each show their own figures
- * instead of a shared row of zeros. Everything else lives one tap away on the
- * detail page.
+ * columns that reads like the table it replaces. Which time columns those are
+ * is decided once for the whole page (see `selectFlightCardColumns`), so the
+ * headings and their widths hold still while the list scrolls and a flight that
+ * logged none of a column shows a dash. Everything else lives one tap away on
+ * the detail page.
  */
-export default function FlightCard({ flight, onEdit, onDelete, onClick }: FlightCardProps) {
+export default function FlightCard({ flight, columns, onEdit, onDelete, onClick }: FlightCardProps) {
   const { t, i18n } = useTranslation('flights');
   const { fmtDuration, fmtDate } = useFormatPrefs();
 
   const departure = splitAirportLabel(flight.departureIcao, flight.departureAirportName);
   const arrival = splitAirportLabel(flight.arrivalIcao, flight.arrivalAirportName);
-  // A free-text site ("Meadow strip near Kassel") has no code and needs the
-  // room to wrap; two ICAO codes always fit on one line.
-  const routeIsCodes = !!departure.code && !!arrival.code;
   const routeLabel = `${departure.code ?? departure.name ?? '—'} → ${arrival.code ?? arrival.name ?? '—'}`;
 
   // The weekday is what makes a date read as a day rather than a record key —
@@ -78,15 +62,20 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
       key: 'ldg',
       // Six columns leave ~55px each, so the day/night split drops its letters
       // and moves them into the heading rather than truncating.
-      label: flight.landingsNight > 0 ? t('tableLdgSplit') : t('tableLdg'),
-      value:
-        flight.landingsNight > 0
-          ? `${flight.landingsDay}/${flight.landingsNight}`
-          : String(flight.allLandings),
+      label: columns.landingsSplit ? t('tableLdgSplit') : t('tableLdg'),
+      value: columns.landingsSplit
+        ? `${flight.landingsDay}/${flight.landingsNight}`
+        : String(flight.allLandings),
     },
-    ...OPTIONAL_TIMES.filter((col) => col.minutes(flight) > 0)
-      .slice(0, MAX_OPTIONAL_CELLS)
-      .map((col) => ({ key: col.key, label: t(col.labelKey), value: fmtDuration(col.minutes(flight)) })),
+    ...columns.time.map((column) => {
+      const minutes = column.minutes(flight);
+      return {
+        key: column.key,
+        label: t(column.labelKey),
+        value: minutes > 0 ? fmtDuration(minutes) : '—',
+        empty: minutes <= 0,
+      };
+    }),
   ];
 
   return (
@@ -115,33 +104,19 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
       })}
     >
       {/* Header — the entry's identity, on a rail that anchors the card */}
-      <div className="flex items-center gap-3 border-l-4 border-blue-600 bg-slate-50 px-3 py-2.5 dark:border-blue-500 dark:bg-slate-700/40">
+      <div className="flex items-start gap-3 border-l-4 border-blue-600 bg-slate-50 px-3 py-2.5 dark:border-blue-500 dark:bg-slate-700/40">
         <div className="min-w-0 flex-1">
-          <p
-            className={cn(
-              'flex items-baseline gap-1.5 font-mono font-bold leading-tight tracking-tight text-slate-800 dark:text-slate-100',
-              routeIsCodes ? 'text-lg' : 'flex-wrap text-base'
-            )}
-          >
-            <span className={cn(routeIsCodes ? 'truncate' : 'min-w-0 break-words')}>
-              {departure.code ?? departure.name ?? '—'}
-            </span>
-            <span className="text-blue-500 dark:text-blue-400" aria-hidden="true">
-              →
-            </span>
-            <span className={cn(routeIsCodes ? 'truncate' : 'min-w-0 break-words')}>
-              {arrival.code ?? arrival.name ?? '—'}
-            </span>
+          <FlightRouteHeading departure={departure} arrival={arrival}>
             {flight.signatureId && (
               <>
                 <ShieldCheck
-                  className="h-3.5 w-3.5 shrink-0 self-center text-green-600 dark:text-green-400"
+                  className="ml-1.5 inline-block h-3.5 w-3.5 shrink-0 align-middle text-green-600 dark:text-green-400"
                   aria-hidden="true"
                 />
                 <span className="sr-only">{t('signed')}</span>
               </>
             )}
-          </p>
+          </FlightRouteHeading>
           <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
             {weekday} <span className="font-mono tabular-nums">{fmtDate(flight.date)}</span>
             {' · '}
@@ -164,17 +139,25 @@ export default function FlightCard({ flight, onEdit, onDelete, onClick }: Flight
           </span>
         </div>
 
-        <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600" aria-hidden="true" />
+        <ChevronRight
+          className="h-4 w-4 shrink-0 self-center text-slate-300 dark:text-slate-600"
+          aria-hidden="true"
+        />
       </div>
 
-      {/* Readout — the table's columns, picked for this flight */}
+      {/* Readout — the table's columns, picked once for the page */}
       <dl className="flex divide-x divide-slate-100 dark:divide-slate-700/60">
         {cells.map((cell) => (
           <div key={cell.key} className="min-w-0 flex-1 px-1 py-2 text-center">
             <dt className="truncate text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-500">
               {cell.label}
             </dt>
-            <dd className="truncate font-mono text-xs font-semibold tabular-nums text-slate-700 dark:text-slate-200">
+            <dd
+              className={cn(
+                'truncate font-mono text-xs font-semibold tabular-nums',
+                cell.empty ? 'text-slate-300 dark:text-slate-600' : 'text-slate-700 dark:text-slate-200'
+              )}
+            >
               {cell.value}
             </dd>
           </div>

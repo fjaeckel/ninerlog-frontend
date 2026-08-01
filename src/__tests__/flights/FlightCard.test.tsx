@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import FlightCard from '../../components/flights/FlightCard';
+import { selectFlightCardColumns } from '../../components/flights/flightTableColumns';
 import type { components } from '../../api/schema';
 
 type Flight = components['schemas']['Flight'];
@@ -42,13 +43,18 @@ const mockFlight: Flight = {
   updatedAt: '2026-01-15T00:00:00Z',
 };
 
-function renderCard(overrides: Partial<Flight> = {}, handlers: Partial<Record<'onEdit' | 'onDelete' | 'onClick', () => void>> = {}) {
+function renderCard(
+  overrides: Partial<Flight> = {},
+  handlers: Partial<Record<'onEdit' | 'onDelete' | 'onClick', () => void>> = {}
+) {
   const props = {
     onEdit: handlers.onEdit ?? vi.fn(),
     onDelete: handlers.onDelete ?? vi.fn(),
     onClick: handlers.onClick ?? vi.fn(),
   };
-  render(<FlightCard flight={{ ...mockFlight, ...overrides }} {...props} />);
+  const flight = { ...mockFlight, ...overrides };
+  // The page picks the columns; a one-flight page picks them from this flight.
+  render(<FlightCard flight={flight} columns={selectFlightCardColumns([flight])} {...props} />);
   return props;
 }
 
@@ -96,7 +102,7 @@ describe('FlightCard', () => {
     expect(screen.getByText('PIC')).toBeInTheDocument();
   });
 
-  it('shows a column only for the times the flight logged', () => {
+  it('renders the time columns the page gave it', () => {
     renderCard();
 
     expect(screen.getByText('Night')).toBeInTheDocument();
@@ -104,7 +110,7 @@ describe('FlightCard', () => {
     expect(screen.queryByText('IFR')).not.toBeInTheDocument();
   });
 
-  it('hides time chips that are 0', () => {
+  it('drops a time column no flight on the page uses', () => {
     renderCard({ nightTime: 0, ifrTime: 0, soloTime: 0, crossCountryTime: 0 });
 
     expect(screen.queryByText('Night')).not.toBeInTheDocument();
@@ -112,14 +118,33 @@ describe('FlightCard', () => {
     expect(screen.queryByText('XC')).not.toBeInTheDocument();
   });
 
-  it('splits the landings by day and night when there are night landings', () => {
+  it('keeps a page column and dashes it when this flight logged none of it', () => {
+    // A page where another flight flew at night: the column stays, this card
+    // shows a dash rather than dropping a column and shifting the others.
+    const columns = selectFlightCardColumns([mockFlight]);
+    render(
+      <FlightCard
+        flight={{ ...mockFlight, nightTime: 0 }}
+        columns={columns}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onClick={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Night')).toBeInTheDocument();
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('splits the landings by day and night once a flight on the page has some', () => {
     renderCard();
     expect(screen.getByText('Ldg D/N')).toBeInTheDocument();
     expect(screen.getByText('2/1')).toBeInTheDocument();
   });
 
-  it('shows a single landing count when none were at night', () => {
+  it('shows a single landing count when no flight on the page landed at night', () => {
     renderCard({ landingsNight: 0, allLandings: 2 });
+    expect(screen.getByText('Ldg')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
   });
 
