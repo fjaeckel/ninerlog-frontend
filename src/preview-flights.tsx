@@ -17,6 +17,7 @@ import FlightDetailPage from './pages/flights/FlightDetailPage';
 import { ThemeSwitcher } from './components/ui/ThemeSwitcher';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { useTheme } from './hooks/useTheme';
+import { ScrollToTop } from './components/layout/ScrollToTop';
 import { previewFlights as flights } from './preview-flight-fixtures';
 import './index.css';
 import './i18n';
@@ -32,6 +33,18 @@ const queryClient = new QueryClient({
 queryClient.setQueryData(['flights', { page: 1, pageSize: 20, sortBy: 'date', sortOrder: 'desc' }], {
   data: flights,
   pagination: { page: 1, pageSize: 20, total: flights.length, totalPages: 1 },
+});
+// The phone list scrolls instead of paging, so it reads a different key.
+// Two pages already loaded, as if the reader had scrolled through the first —
+// there is no backend here to serve a third, and asking for one would only
+// exercise the failure path.
+const half = Math.ceil(flights.length / 2);
+queryClient.setQueryData(['flights', 'infinite', { pageSize: 20, sortBy: 'date', sortOrder: 'desc' }], {
+  pages: [
+    { data: flights.slice(0, half), pagination: { page: 1, pageSize: half, total: flights.length, totalPages: 2 } },
+    { data: flights.slice(half), pagination: { page: 2, pageSize: half, total: flights.length, totalPages: 2 } },
+  ],
+  pageParams: [1, 2],
 });
 queryClient.setQueryData(['licenses'], []);
 for (const flight of flights) {
@@ -52,6 +65,7 @@ function Preview() {
         <LanguageSwitcher />
         <ThemeSwitcher variant="full" />
       </div>
+      <ScrollToTop />
       <main className="px-4 pt-14 pb-24">
         <Routes>
           <Route path="/flights" element={<FlightsPage />} />

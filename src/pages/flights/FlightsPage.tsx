@@ -2,7 +2,7 @@ import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from 'rea
 import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2, ShieldCheck } from 'lucide-react';
-import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
+import { useFlights, useInfiniteFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
 import FlightForm from '../../components/flights/FlightForm';
@@ -11,6 +11,7 @@ import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { selectFlightColumns, selectFlightCardColumns } from '../../components/flights/flightTableColumns';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
@@ -81,6 +82,18 @@ function RouteEnd({ part, both }: { part: AirportParts; both: boolean }) {
   );
 }
 
+/**
+ * The list params without the page.
+ *
+ * The scrolling query owns its own pages; passing one in would cache the same
+ * list once per page the reader happens to have arrived on.
+ */
+function infiniteParamsOf(params: ListFlightsParams): Omit<ListFlightsParams, 'page'> {
+  const rest = { ...params };
+  delete rest.page;
+  return rest;
+}
+
 /** Renders a `YYYY-MM` key as the reader's month and year. */
 function monthLabel(month: string, locale: string): string {
   const [year, m] = month.split('-');
@@ -92,6 +105,10 @@ function monthLabel(month: string, locale: string): string {
 
 export default function FlightsPage() {
   const { t, i18n } = useTranslation(['flights', 'common']);
+  // `lg` is where the table takes over from the card list. Deciding it here
+  // rather than in CSS means only one of the two queries runs: rendering both
+  // views and hiding one would fetch the same flights twice.
+  const isWide = useMediaQuery('(min-width: 1024px)');
   const { fmtDate, fmtDuration } = useFormatPrefs();
   const columnPrefs = useFlightColumnPrefs();
   const navigate = useNavigate();
@@ -229,9 +246,22 @@ export default function FlightsPage() {
     });
   }, [updateParams, setSearch]);
 
-  const { data, isLoading, error } = useFlights(params);
+  // The table reads a page at a time; the card list scrolls and never goes
+  // back to page one. Exactly one of these is enabled.
+  const paged = useFlights(params, { enabled: isWide });
+  const infinite = useInfiniteFlights(infiniteParamsOf(params), { enabled: !isWide });
 
-  const flights = useMemo(() => data?.data || [], [data]);
+  const isLoading = isWide ? paged.isLoading : infinite.isLoading;
+  // A page that fails halfway down the list must not throw away the flights
+  // already read — only a first load with nothing to show is a page error.
+  // A later failure is reported at the foot, where it happened.
+  const error = isWide ? paged.error : infinite.data ? null : infinite.error;
+  const data = paged.data;
+
+  const flights = useMemo(
+    () => (isWide ? data?.data || [] : infinite.data?.pages.flatMap((p) => p.data) || []),
+    [isWide, data, infinite.data]
+  );
   // Optional table columns — which ones the user wants (or, in automatic mode,
   // which ones the flights on this page justify), and how many of them the
   // table's own width can take.
@@ -248,6 +278,26 @@ export default function FlightsPage() {
     () => groupFlightsByMonth(flights, i18n.language, sortBy === 'date'),
     [flights, i18n.language, sortBy]
   );
+
+  // Endless scroll: the next page is pulled when the foot of the list comes
+  // into view, a screen early so the seam is rarely visible. The button under
+  // it is not a fallback for show — it is how this works without a pointer
+  // that scrolls, and how it works when the observer never fires.
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = infinite;
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (isWide || !node || !hasNextPage || infinite.isError) return;
+    if (typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isFetchingNextPage) void fetchNextPage();
+      },
+      { rootMargin: '600px' }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isWide, hasNextPage, isFetchingNextPage, fetchNextPage, infinite.isError, flights.length]);
 
   const handleDelete = async (id: string) => {
     setDeleteTarget(id);
@@ -316,7 +366,12 @@ export default function FlightsPage() {
     );
   }
 
-  const pagination = data?.pagination;
+  // Whichever query ran carries the totals — the infinite one reports them on
+  // every page, so the newest page is the one to trust.
+  const infinitePages = infinite.data?.pages;
+  const pagination = isWide
+    ? data?.pagination
+    : infinitePages && infinitePages[infinitePages.length - 1]?.pagination;
   // Enough for a month heading to span whatever the table is currently showing.
   const tableColumnCount =
     5 +
@@ -541,6 +596,35 @@ export default function FlightsPage() {
                 </div>
               </section>
             ))}
+
+            {/* The foot of the list: the sentinel, and what it is doing */}
+            <div ref={loadMoreRef} className="pt-2">
+              {infinite.isError && infinite.data ? (
+                // The list survives; only the next page failed.
+                <div className="text-center">
+                  <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
+                    {t('flights:loadMoreFailed')}
+                  </p>
+                  <button onClick={() => void fetchNextPage()} className="btn-secondary min-h-[44px] w-full">
+                    {t('flights:loadMore')}
+                  </button>
+                </div>
+              ) : hasNextPage ? (
+                <button
+                  onClick={() => void fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                  className="btn-secondary min-h-[44px] w-full"
+                >
+                  {isFetchingNextPage ? t('flights:loadingMore') : t('flights:loadMore')}
+                </button>
+              ) : (
+                pagination && (
+                  <p className="py-2 text-center text-xs text-slate-400 dark:text-slate-500">
+                    {t('flights:endOfList', { count: pagination.total })}
+                  </p>
+                )
+              )}
+            </div>
           </div>
 
           {/* @container: the optional columns below react to the width this
@@ -709,8 +793,8 @@ export default function FlightsPage() {
             </table>
           </div>
 
-          {/* Pagination */}
-          {pagination && pagination.totalPages > 1 && (
+          {/* Pagination — the table only; the card list scrolls instead */}
+          {isWide && pagination && pagination.totalPages > 1 && (
             <div className="flex justify-center items-center gap-4 mt-8">
               <button
                 onClick={() => goToPage(Math.max(1, page - 1))}
