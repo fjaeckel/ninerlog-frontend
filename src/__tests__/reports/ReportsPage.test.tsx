@@ -32,6 +32,7 @@ vi.mock('recharts', () => {
 class MockIntersectionObserver implements IntersectionObserver {
   readonly root = null;
   readonly rootMargin = '';
+  readonly scrollMargin = '';
   readonly thresholds = [];
   observe() {}
   unobserve() {}
