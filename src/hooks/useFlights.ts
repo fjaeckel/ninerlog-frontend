@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import type { components, operations } from '../api/schema';
 import { invalidateFlightDependentQueries } from './invalidation';
@@ -27,7 +27,7 @@ type ListFlightsParams = operations['listFlights']['parameters']['query'];
 export const FLIGHTS_STALE_TIME_MS = 30_000;
 
 // Get paginated list of flights
-export const useFlights = (params?: ListFlightsParams) => {
+export const useFlights = (params?: ListFlightsParams, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['flights', params],
     queryFn: async (): Promise<PaginatedFlights> => {
@@ -39,6 +39,41 @@ export const useFlights = (params?: ListFlightsParams) => {
     },
     placeholderData: keepPreviousData,
     staleTime: FLIGHTS_STALE_TIME_MS,
+    enabled: options?.enabled ?? true,
+  });
+};
+
+/**
+ * The same list, page after page, for the phone's endless scroll.
+ *
+ * A separate query from `useFlights` rather than a replacement: a table is
+ * read a page at a time and a scrolling list is not, and the two want their
+ * pages cached differently. Only one of them runs at a time — the flights page
+ * enables whichever the viewport calls for — so this costs no extra requests.
+ *
+ * `page` is left out of the caller's params on purpose: the pages are this
+ * query's business, and passing one in would make the same list cache twice.
+ */
+export const useInfiniteFlights = (
+  params?: Omit<ListFlightsParams, 'page'>,
+  options?: { enabled?: boolean }
+) => {
+  return useInfiniteQuery({
+    queryKey: ['flights', 'infinite', params],
+    queryFn: async ({ pageParam }): Promise<PaginatedFlights> => {
+      const { data, error } = await apiClient.GET('/flights', {
+        params: { query: { ...(params || {}), page: pageParam } },
+      });
+      if (error) throw error;
+      return data as PaginatedFlights;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (last) =>
+      last.pagination && last.pagination.page < last.pagination.totalPages
+        ? last.pagination.page + 1
+        : undefined,
+    staleTime: FLIGHTS_STALE_TIME_MS,
+    enabled: options?.enabled ?? true,
   });
 };
 

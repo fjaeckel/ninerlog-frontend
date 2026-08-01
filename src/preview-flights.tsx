@@ -33,6 +33,18 @@ queryClient.setQueryData(['flights', { page: 1, pageSize: 20, sortBy: 'date', so
   data: flights,
   pagination: { page: 1, pageSize: 20, total: flights.length, totalPages: 1 },
 });
+// The phone list scrolls instead of paging, so it reads a different key.
+// Two pages already loaded, as if the reader had scrolled through the first —
+// there is no backend here to serve a third, and asking for one would only
+// exercise the failure path.
+const half = Math.ceil(flights.length / 2);
+queryClient.setQueryData(['flights', 'infinite', { pageSize: 20, sortBy: 'date', sortOrder: 'desc' }], {
+  pages: [
+    { data: flights.slice(0, half), pagination: { page: 1, pageSize: half, total: flights.length, totalPages: 2 } },
+    { data: flights.slice(half), pagination: { page: 2, pageSize: half, total: flights.length, totalPages: 2 } },
+  ],
+  pageParams: [1, 2],
+});
 queryClient.setQueryData(['licenses'], []);
 for (const flight of flights) {
   queryClient.setQueryData(['flights', flight.id], flight);
