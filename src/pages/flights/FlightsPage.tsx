@@ -9,7 +9,8 @@ import FlightForm from '../../components/flights/FlightForm';
 import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
-import { selectExtraFlightColumns } from '../../components/flights/flightTableColumns';
+import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
+import { selectFlightColumns } from '../../components/flights/flightTableColumns';
 import type { operations } from '../../api/schema';
 
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
@@ -20,6 +21,7 @@ const SORT_FIELDS: SortField[] = ['date', 'totalTime', 'createdAt'];
 export default function FlightsPage() {
   const { t } = useTranslation(['flights', 'common']);
   const { fmtDate, fmtDuration } = useFormatPrefs();
+  const columnPrefs = useFlightColumnPrefs();
   const navigate = useNavigate();
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
@@ -154,9 +156,10 @@ export default function FlightsPage() {
   const { data, isLoading, error } = useFlights(params);
 
   const flights = useMemo(() => data?.data || [], [data]);
-  // Optional table columns — which ones are worth showing depends on the
-  // flights on this page, how many fit depends on the table's own width.
-  const extraColumns = useMemo(() => selectExtraFlightColumns(flights), [flights]);
+  // Optional table columns — which ones the user wants (or, in automatic mode,
+  // which ones the flights on this page justify), and how many of them the
+  // table's own width can take.
+  const columns = useMemo(() => selectFlightColumns(flights, columnPrefs), [flights, columnPrefs]);
 
   const handleDelete = async (id: string) => {
     setDeleteTarget(id);
@@ -417,21 +420,27 @@ export default function FlightsPage() {
                   <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableDate')}</th>
                   <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableRoute')}</th>
                   <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableAircraft')}</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableOffOnBlock')}</th>
+                  {columns.offOnBlock && (
+                    <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableOffOnBlock')}</th>
+                  )}
                   <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableTotal')}</th>
-                  {extraColumns.time.map((col) => (
+                  {columns.time.map((col) => (
                     <th
-                      key={col.labelKey}
+                      key={col.key}
                       title={t(`flights:${col.titleKey}`)}
                       className={`px-3 py-3 text-right font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap ${col.revealClass}`}
                     >
                       {t(`flights:${col.labelKey}`)}
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-center font-medium text-slate-500 dark:text-slate-400">{t('flights:tableFunction')}</th>
-                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLdg')}</th>
-                  {extraColumns.remarksRevealClass && (
-                    <th className={`px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400 ${extraColumns.remarksRevealClass}`}>
+                  {columns.function && (
+                    <th className="px-4 py-3 text-center font-medium text-slate-500 dark:text-slate-400">{t('flights:tableFunction')}</th>
+                  )}
+                  {columns.landings && (
+                    <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLdg')}</th>
+                  )}
+                  {columns.remarksRevealClass && (
+                    <th className={`px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}>
                       {t('flights:tableRemarks')}
                     </th>
                   )}
@@ -463,17 +472,19 @@ export default function FlightsPage() {
                       <span className="font-medium">{flight.aircraftReg}</span>
                       <span className="text-slate-400 dark:text-slate-500 ml-1">({flight.aircraftType})</span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono tabular-nums text-xs">
-                      {flight.offBlockTime?.slice(0, 5) || '—'} / {flight.onBlockTime?.slice(0, 5) || '—'}
-                    </td>
+                    {columns.offOnBlock && (
+                      <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono tabular-nums text-xs">
+                        {flight.offBlockTime?.slice(0, 5) || '—'} / {flight.onBlockTime?.slice(0, 5) || '—'}
+                      </td>
+                    )}
                     <td className="px-4 py-3 whitespace-nowrap text-right font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">
                       {fmtDuration(flight.totalTime)}
                     </td>
-                    {extraColumns.time.map((col) => {
+                    {columns.time.map((col) => {
                       const minutes = col.minutes(flight);
                       return (
                         <td
-                          key={col.labelKey}
+                          key={col.key}
                           className={`px-3 py-3 whitespace-nowrap text-right font-mono tabular-nums ${
                             minutes > 0 ? 'text-slate-600 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'
                           } ${col.revealClass}`}
@@ -482,22 +493,26 @@ export default function FlightsPage() {
                         </td>
                       );
                     })}
-                    <td className="px-4 py-3 whitespace-nowrap text-center">
-                      <span className={`badge ${
-                        flight.isPic
-                          ? 'badge-info'
-                          : flight.isDual
-                            ? 'badge-expiring'
-                            : 'badge-neutral'
-                      }`}>
-                        {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : (flight.sicTime || 0) > 0 ? 'SIC' : '—'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
-                      {flight.allLandings}
-                    </td>
-                    {extraColumns.remarksRevealClass && (
-                      <td className={`px-4 py-3 text-slate-500 dark:text-slate-400 ${extraColumns.remarksRevealClass}`}>
+                    {columns.function && (
+                      <td className="px-4 py-3 whitespace-nowrap text-center">
+                        <span className={`badge ${
+                          flight.isPic
+                            ? 'badge-info'
+                            : flight.isDual
+                              ? 'badge-expiring'
+                              : 'badge-neutral'
+                        }`}>
+                          {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : (flight.sicTime || 0) > 0 ? 'SIC' : '—'}
+                        </span>
+                      </td>
+                    )}
+                    {columns.landings && (
+                      <td className="px-4 py-3 whitespace-nowrap text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
+                        {flight.allLandings}
+                      </td>
+                    )}
+                    {columns.remarksRevealClass && (
+                      <td className={`px-4 py-3 text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}>
                         <span className="block max-w-[28ch] truncate" title={flight.remarks || undefined}>
                           {flight.remarks || '—'}
                         </span>

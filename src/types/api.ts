@@ -27,6 +27,10 @@ export interface User {
   recencyPerModel?: boolean;
   /** Show informational 90-day recency per registration (default false) */
   recencyPerRegistration?: boolean;
+  /** Whether the flights list picks its optional columns from the data (default 'auto') */
+  flightListColumnMode?: 'auto' | 'custom';
+  /** The optional flights-list columns to show in 'custom' mode */
+  flightListColumns?: string[];
   createdAt: string;
   updatedAt: string;
 }

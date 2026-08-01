@@ -17,6 +17,7 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { PasskeySection } from '../components/auth/PasskeySection';
 import BackupsPage from './backups/BackupsPage';
 import { BaselineSection } from '../components/profile/BaselineSection';
+import { FlightColumnsSection } from '../components/profile/FlightColumnsSection';
 
 export default function ProfilePage() {
   const { t } = useTranslation(['settings', 'common']);
@@ -304,6 +305,8 @@ export default function ProfilePage() {
               </label>
             </div>
           </div>
+
+          <FlightColumnsSection />
         </div>
       )}
 

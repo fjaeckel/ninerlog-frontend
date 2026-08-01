@@ -30,6 +30,7 @@
     "route": "Strecke",
     "offBlockTime": "Off-Block-Zeit",
     "onBlockTime": "On-Block-Zeit",
+    "offOnBlockTime": "Off-Block / On-Block",
     "takeoffTime": "Startzeit",
     "landingTime": "Landezeit",
     "totalTime": "Gesamtflugzeit",
@@ -69,7 +70,8 @@
     "isSolo": "Solo",
     "isFlightReview": "Flugüberprüfung",
     "isIpc": "IPC",
-    "isProficiencyCheck": "Befähigungsüberprüfung"
+    "isProficiencyCheck": "Befähigungsüberprüfung",
+    "function": "Funktion (PIC / Dual / SIC)"
   },
   "launchMethods": {
     "winch": "Winde",

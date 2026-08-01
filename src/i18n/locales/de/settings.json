@@ -23,6 +23,18 @@
     "perRegistration": "Je Kennzeichen",
     "perRegistrationDesc": "Zusätzlich Übung je einzelnem Kennzeichen verfolgen. Reiner Vertrautheitsindikator — die Regel selbst gilt je Klasse/Muster."
   },
+  "flightColumns": {
+    "title": "Spalten der Flugliste",
+    "description": "Die Flugliste zeigt immer Datum, Strecke, Luftfahrzeug und Gesamtzeit. Alles Weitere ist optional — wähle, was du tatsächlich protokollierst.",
+    "auto": "Automatisch",
+    "autoDesc": "Eine Spalte erscheint, wenn die Flüge auf der Seite sie nutzen — so belegt keine ungenutzte Spalte Platz.",
+    "custom": "Spalten auswählen",
+    "customDesc": "Immer genau die ausgewählten Spalten zeigen, auch wenn eine davon auf einer Seite leer bleibt.",
+    "timesHeading": "Zeiten",
+    "otherHeading": "Weitere Spalten",
+    "widthHint": "Die Zeiten erscheinen mit zunehmender Fensterbreite von links nach rechts in der oben gezeigten Reihenfolge — auf schmalen Bildschirmen passen nur die ersten.",
+    "saveFailed": "Die Spaltenauswahl konnte nicht gespeichert werden. Bitte erneut versuchen."
+  },
   "profileInfo": {
     "title": "Profilinformationen",
     "name": "Name",
