@@ -40,7 +40,8 @@ describe('FlightRouteHeading', () => {
     );
 
     expect(screen.getByText('Meadow…')).toBeInTheDocument();
-    expect(screen.getByText('North…')).toBeInTheDocument();
+    // "North field" fits at the two-name budget; the town it is near does not
+    expect(screen.getByText('North field')).toBeInTheDocument();
   });
 
   it('gives the detail page the names in full', () => {

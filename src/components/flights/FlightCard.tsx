@@ -1,4 +1,4 @@
-import { Pencil, Trash2, ShieldCheck } from 'lucide-react';
+import { ChevronRight, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { components } from '../../api/schema';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
@@ -17,8 +17,6 @@ interface FlightCardProps {
    * whole list keeps one set of headings at one width.
    */
   columns: FlightCardColumns;
-  onEdit: () => void;
-  onDelete: () => void;
   onClick: () => void;
 }
 
@@ -46,7 +44,7 @@ interface Cell {
  * logged none of a column shows a dash. Everything else lives one tap away on
  * the detail page.
  */
-export default function FlightCard({ flight, columns, onEdit, onDelete, onClick }: FlightCardProps) {
+export default function FlightCard({ flight, columns, onClick }: FlightCardProps) {
   const { t, i18n } = useTranslation('flights');
   const { fmtDuration, fmtDate } = useFormatPrefs();
 
@@ -116,42 +114,20 @@ export default function FlightCard({ flight, columns, onEdit, onDelete, onClick 
         aria-hidden="true"
       />
 
-      {/* Header — the entry's identity.
-          The actions sit on the first line rather than in a row of their own:
-          a 44px target already fits inside the height that line needs, so
-          keeping them costs the list nothing. */}
-      <div className="bg-slate-50 pl-4 pr-3 py-1.5 dark:bg-slate-700/40">
+      {/* Header — the entry's identity. The row only navigates: editing and
+          deleting a flight belong with the flight, where what is about to
+          change is on screen. That gives the route back the width two 44px
+          targets were taking. */}
+      <div className="bg-slate-50 pl-4 pr-3 py-2.5 dark:bg-slate-700/40">
         <div className="flex items-center gap-2">
           <FlightRouteHeading className="min-w-0 flex-1" departure={departure} arrival={arrival} />
           <p className="shrink-0 font-mono text-base font-bold tabular-nums text-slate-800 dark:text-slate-100">
             {fmtDuration(flight.totalTime)}
           </p>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit();
-            }}
-            className="tap-none -mr-1 inline-flex h-11 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-200/70 hover:text-blue-600 dark:hover:bg-slate-600/50 dark:hover:text-blue-400"
-            aria-label={t('editFlightAriaLabel', {
-              departure: flight.departureIcao || '',
-              arrival: flight.arrivalIcao || '',
-            })}
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            className="tap-none -mr-2 inline-flex h-11 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-            aria-label={t('deleteFlightAriaLabel', {
-              departure: flight.departureIcao || '',
-              arrival: flight.arrivalIcao || '',
-            })}
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          <ChevronRight
+            className="-mr-1 h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600"
+            aria-hidden="true"
+          />
         </div>
 
         {/* Everything that qualifies the entry, on one line that gives up its

@@ -662,8 +662,6 @@ export default function FlightsPage() {
                           state: { listSearch: location.search },
                         })
                       }
-                      onEdit={() => handleEdit(flight.id)}
-                      onDelete={() => handleDelete(flight.id)}
                     />
                   ))}
                 </div>

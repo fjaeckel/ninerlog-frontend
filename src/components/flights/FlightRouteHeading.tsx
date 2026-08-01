@@ -41,8 +41,10 @@ export default function FlightRouteHeading({
   // the width to spare, and shows both names in full in the route card anyway.
   const oneLine = size === 'card';
   // Two names have to share the line, so each gets abbreviated harder than a
-  // lone name sitting next to a four-character code.
-  const maxNameChars = departure.code || arrival.code ? 14 : 9;
+  // lone name sitting next to a four-character code. Both figures are measured
+  // against the row as rendered — one more character and the names clip, which
+  // costs more than the character is worth.
+  const maxNameChars = departure.code || arrival.code ? 14 : 11;
 
   const arrow = (
     <span className="shrink-0 text-blue-500 dark:text-blue-400" aria-hidden="true">

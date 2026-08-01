@@ -43,19 +43,11 @@ const mockFlight: Flight = {
   updatedAt: '2026-01-15T00:00:00Z',
 };
 
-function renderCard(
-  overrides: Partial<Flight> = {},
-  handlers: Partial<Record<'onEdit' | 'onDelete' | 'onClick', () => void>> = {}
-) {
-  const props = {
-    onEdit: handlers.onEdit ?? vi.fn(),
-    onDelete: handlers.onDelete ?? vi.fn(),
-    onClick: handlers.onClick ?? vi.fn(),
-  };
+function renderCard(overrides: Partial<Flight> = {}, onClick: () => void = vi.fn()) {
   const flight = { ...mockFlight, ...overrides };
   // The page picks the columns; a one-flight page picks them from this flight.
-  render(<FlightCard flight={flight} columns={selectFlightCardColumns([flight])} {...props} />);
-  return props;
+  render(<FlightCard flight={flight} columns={selectFlightCardColumns([flight])} onClick={onClick} />);
+  return { onClick };
 }
 
 describe('FlightCard', () => {
@@ -124,13 +116,7 @@ describe('FlightCard', () => {
     // shows a dash rather than dropping a column and shifting the others.
     const columns = selectFlightCardColumns([mockFlight]);
     render(
-      <FlightCard
-        flight={{ ...mockFlight, nightTime: 0 }}
-        columns={columns}
-        onEdit={vi.fn()}
-        onDelete={vi.fn()}
-        onClick={vi.fn()}
-      />
+      <FlightCard flight={{ ...mockFlight, nightTime: 0 }} columns={columns} onClick={vi.fn()} />
     );
 
     expect(screen.getByText('Night')).toBeInTheDocument();
@@ -167,23 +153,14 @@ describe('FlightCard', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onEdit when the edit button is clicked', async () => {
-    const user = userEvent.setup();
-    const { onEdit, onClick } = renderCard();
+  it('leaves editing and deleting to the detail page', () => {
+    renderCard();
 
-    await user.click(screen.getByRole('button', { name: /edit flight/i }));
-    expect(onEdit).toHaveBeenCalledTimes(1);
-    // The action must not also open the flight
-    expect(onClick).not.toHaveBeenCalled();
-  });
-
-  it('calls onDelete when the delete button is clicked', async () => {
-    const user = userEvent.setup();
-    const { onDelete, onClick } = renderCard();
-
-    await user.click(screen.getByRole('button', { name: /delete flight/i }));
-    expect(onDelete).toHaveBeenCalledTimes(1);
-    expect(onClick).not.toHaveBeenCalled();
+    // The row is a single tap target; nothing on it competes with opening the
+    // flight, and nothing destructive sits under a thumb scrolling a list.
+    expect(screen.queryByRole('button', { name: /edit flight/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /delete flight/i })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button')).toHaveLength(1);
   });
 
   it('shows dashes for missing ICAO codes', () => {
