@@ -102,6 +102,59 @@ apiClient.use({
   },
 });
 
+/** Key under which the HTTP status is attached to error response bodies. */
+export const HTTP_STATUS_KEY = 'httpStatus';
+
+/** An API error body carrying the HTTP status that produced it. */
+export type ApiErrorBody = Record<string, unknown> & { httpStatus?: number };
+
+/**
+ * Reads the HTTP status off a thrown API error, when it has one.
+ *
+ * Hooks throw openapi-fetch's parsed error *body*, which on its own says
+ * nothing about the status that produced it — a 429 and a 500 are
+ * indistinguishable to any caller. The middleware below stamps the status onto
+ * that body so retry policy can tell "the server is struggling, try again"
+ * apart from "the server said no, asking again will not help".
+ */
+export function httpStatusOf(error: unknown): number | undefined {
+  if (typeof error !== 'object' || error === null) return undefined;
+  const status = (error as ApiErrorBody)[HTTP_STATUS_KEY];
+  return typeof status === 'number' ? status : undefined;
+}
+
+// Stamp the HTTP status onto error bodies. Registered as its own middleware so
+// it applies to whatever response the auth middleware above settles on,
+// regardless of the order openapi-fetch runs them in.
+apiClient.use({
+  async onResponse({ response }) {
+    if (response.ok) return response;
+
+    let body: unknown;
+    try {
+      body = await response.clone().json();
+    } catch {
+      // Not JSON — an nginx error page, a gateway timeout, an empty body.
+      body = undefined;
+    }
+
+    // Only augment plain JSON objects. Rewriting an array or a bare string
+    // would change the shape hooks already destructure.
+    const augmented =
+      typeof body === 'object' && body !== null && !Array.isArray(body)
+        ? { ...(body as Record<string, unknown>), [HTTP_STATUS_KEY]: response.status }
+        : { [HTTP_STATUS_KEY]: response.status };
+
+    const headers = new Headers(response.headers);
+    headers.set('Content-Type', 'application/json');
+    return new Response(JSON.stringify(augmented), {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  },
+});
+
 // ── Proactive token refresh timer ──
 // Refreshes the access token 60 seconds before it expires.
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
