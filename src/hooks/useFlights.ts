@@ -9,6 +9,23 @@ type FlightUpdate = components['schemas']['FlightUpdate'];
 type PaginatedFlights = components['schemas']['PaginatedFlights'];
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
 
+/**
+ * How long a flights page stays fresh.
+ *
+ * The global default is `staleTime: 0`, which combined with `refetchOnMount`
+ * and `refetchOnWindowFocus` meant this query re-ran on every tab refocus and
+ * every back-navigation from a flight's detail page. For a free-text search
+ * that is the most expensive read in the app, charged against its own rate
+ * limit — three refocuses measurably cost three extra searches. The same
+ * applied to the `pageSize: 1` probe Layout issues on every page of the app.
+ *
+ * A window of freshness is safe here because it does not delay the user's own
+ * edits: every flight mutation calls `invalidateFlightDependentQueries`, and
+ * invalidation overrides `staleTime`. What it defers is picking up a change
+ * made in *another* tab or by another device, which is worth up to this long.
+ */
+export const FLIGHTS_STALE_TIME_MS = 30_000;
+
 // Get paginated list of flights
 export const useFlights = (params?: ListFlightsParams) => {
   return useQuery({
@@ -21,6 +38,7 @@ export const useFlights = (params?: ListFlightsParams) => {
       return data as PaginatedFlights;
     },
     placeholderData: keepPreviousData,
+    staleTime: FLIGHTS_STALE_TIME_MS,
   });
 };
 

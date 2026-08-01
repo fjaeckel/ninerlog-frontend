@@ -10,6 +10,7 @@ import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { selectExtraFlightColumns } from '../../components/flights/flightTableColumns';
+import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import type { operations } from '../../api/schema';
 
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
@@ -92,13 +93,17 @@ export default function FlightsPage() {
     }
   }, [searchQuery]);
 
-  // Debounce search input into the URL
+  // Debounce search input into the URL. Half-finished queries never leave the
+  // browser: the search language is structured, so "from:" or a trailing "AND"
+  // cannot match anything, and spending a request (and rate-limit budget) on
+  // one only makes the finished query more likely to be refused.
   useEffect(() => {
     if (search === syncedQuery.current) return;
+    if (!isSearchWorthSending(search)) return;
     const timer = setTimeout(() => {
       syncedQuery.current = search;
       updateParams({ q: search });
-    }, 300);
+    }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [search, updateParams]);
 
