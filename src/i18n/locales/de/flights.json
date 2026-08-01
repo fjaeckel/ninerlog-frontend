@@ -63,6 +63,9 @@
     "endorsements": "Vermerke",
     "fstdType": "FSTD-Typ",
     "launchMethod": "Startart",
+    "launches": "Starts",
+    "releaseAltitude": "Ausklinkhöhe (m)",
+    "releaseAltitudeRef": "Höhenbezug",
     "distance": "Entfernung (NM)",
     "isCrossCountry": "Überlandflug",
     "isPic": "PIC",
@@ -76,7 +79,9 @@
   "launchMethods": {
     "winch": "Winde",
     "aerotow": "Flugzeugschlepp",
-    "selfLaunch": "Eigenstart"
+    "selfLaunch": "Eigenstart",
+    "bungee": "Gummiseilstart",
+    "autoTow": "Autoschlepp"
   },
   "approachTypes": {
     "ILS": "ILS",
@@ -299,6 +304,8 @@
     "winchLaunch": "Windenstart",
     "aerotow": "Flugzeugschlepp",
     "selfLaunch": "Eigenstart",
+    "launchesHelper": "Standard: 1",
+    "metres": "Meter",
     "minutes": "Minuten",
     "allLandings": "Alle Landungen",
     "function": "Funktion",

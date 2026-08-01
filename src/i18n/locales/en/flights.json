@@ -63,6 +63,9 @@
     "endorsements": "Endorsements",
     "fstdType": "FSTD Type",
     "launchMethod": "Launch Method",
+    "launches": "Launches",
+    "releaseAltitude": "Release Altitude (m)",
+    "releaseAltitudeRef": "Altitude Ref",
     "distance": "Distance (NM)",
     "isCrossCountry": "Cross-Country",
     "isPic": "PIC",
@@ -76,7 +79,9 @@
   "launchMethods": {
     "winch": "Winch",
     "aerotow": "Aerotow",
-    "selfLaunch": "Self-Launch"
+    "selfLaunch": "Self-Launch",
+    "bungee": "Bungee",
+    "autoTow": "Auto-tow"
   },
   "approachTypes": {
     "ILS": "ILS",
@@ -299,6 +304,8 @@
     "winchLaunch": "Winch Launch",
     "aerotow": "Aerotow",
     "selfLaunch": "Self-Launch",
+    "launchesHelper": "Defaults to 1",
+    "metres": "Metres",
     "minutes": "Minutes",
     "allLandings": "All Landings",
     "function": "Function",

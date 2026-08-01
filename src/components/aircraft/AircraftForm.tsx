@@ -9,7 +9,7 @@ import { normalizeLocation } from '../../lib/airport';
 
 const AIRCRAFT_CLASSES = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
-  'SET_LAND', 'SET_SEA', 'TMG',
+  'SET_LAND', 'SET_SEA', 'TMG', 'GLIDER', 'OTHER',
 ] as const;
 
 const aircraftSchema = z.object({

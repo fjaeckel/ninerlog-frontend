@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { exportFlightsCSV, exportDataJSON, exportFlightsPDF } from '../../hooks/useExport';
+import { useLicenses } from '../../hooks/useLicenses';
 
 export default function ExportPage() {
   const { t } = useTranslation('reports');
   const [exporting, setExporting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [pdfFormat, setPdfFormat] = useState<'easa' | 'faa' | 'summary'>('easa');
+  const [pdfFormat, setPdfFormat] = useState<'easa' | 'faa' | 'glider' | 'summary'>('easa');
   const [pdfPageSize, setPdfPageSize] = useState<'a4' | 'a5' | 'letter'>('a4');
   const [csvFormat, setCsvFormat] = useState<'standard' | 'easa' | 'faa'>('standard');
+  const [selectedLogbookLicenseId, setSelectedLogbookLicenseId] = useState<string>('all');
+  const { data: licenses = [], isLoading: licensesLoading } = useLicenses();
 
   const handleExport = async (format: 'csv' | 'json' | 'pdf') => {
     setExporting(format);
@@ -17,7 +20,11 @@ export default function ExportPage() {
       if (format === 'csv') {
         await exportFlightsCSV(csvFormat);
       } else if (format === 'pdf') {
-        await exportFlightsPDF(undefined, pdfFormat, pdfPageSize);
+        await exportFlightsPDF(
+          selectedLogbookLicenseId === 'all' ? undefined : selectedLogbookLicenseId,
+          pdfFormat,
+          pdfPageSize,
+        );
       } else {
         await exportDataJSON();
       }
@@ -93,13 +100,28 @@ export default function ExportPage() {
             {t('export.pdfDescription', 'Generate a formatted logbook PDF. Print it, sign it, and use it as a paper logbook.')}
           </p>
           <select
+            value={selectedLogbookLicenseId}
+            onChange={(e) => setSelectedLogbookLicenseId(e.target.value)}
+            className="input mb-3 text-sm"
+            aria-label={t('export.logbookScope', 'Logbook scope')}
+            disabled={licensesLoading}
+          >
+            <option value="all">{t('export.allLogbooks', 'All logbooks')}</option>
+            {licenses.map((lic) => (
+              <option key={lic.id} value={lic.id}>
+                {lic.regulatoryAuthority} {lic.licenseType} {lic.requiresSeparateLogbook ? `(${t('export.separateLogbook', 'separate')})` : ''}
+              </option>
+            ))}
+          </select>
+          <select
             value={pdfFormat}
-            onChange={(e) => setPdfFormat(e.target.value as 'easa' | 'faa' | 'summary')}
+            onChange={(e) => setPdfFormat(e.target.value as 'easa' | 'faa' | 'glider' | 'summary')}
             className="input mb-3 text-sm"
             aria-label={t('export.pdfFormat', 'PDF format')}
           >
             <option value="easa">{t('export.easaLogbook')}</option>
             <option value="faa">{t('export.faaLogbook')}</option>
+            <option value="glider">{t('export.gliderLogbook', 'EASA Sailplane (SPL)')}</option>
             <option value="summary">{t('export.summaryReport')}</option>
           </select>
           <select
@@ -119,6 +141,9 @@ export default function ExportPage() {
           >
             {exporting === 'pdf' ? t('export.downloading') : t('export.download') + ' PDF Logbook'}
           </button>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+            {t('export.logbookScopeHint', 'Choose a specific license/logbook to avoid mixed exports across categories.')}
+          </p>
         </div>
 
         {/* Import Link */}
