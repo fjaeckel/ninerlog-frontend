@@ -16,9 +16,16 @@ export type AnalyticsBucketRow = components['schemas']['AnalyticsBucketRow'];
 export type AnalyticsRecords = components['schemas']['AnalyticsRecords'];
 export type AnalyticsFlightRef = components['schemas']['AnalyticsFlightRef'];
 
-/** Timeframes offered by the Reports page. 0 means the whole logbook. */
-export const ANALYTICS_RANGES = [6, 12, 24, 60, 0] as const;
+/**
+ * Timeframes offered by the Reports page, in the order they are presented.
+ * 0 means the whole logbook and leads because it is the default — the page
+ * opens on career totals, matching what the dashboard shows.
+ */
+export const ANALYTICS_RANGES = [0, 6, 12, 24, 60] as const;
 export type AnalyticsRangeMonths = (typeof ANALYTICS_RANGES)[number];
+
+/** Timeframe the Reports page opens on. 0 = the whole logbook. */
+export const DEFAULT_ANALYTICS_MONTHS = 0;
 
 /**
  * Loads the whole Reports page in one request.
@@ -26,7 +33,7 @@ export type AnalyticsRangeMonths = (typeof ANALYTICS_RANGES)[number];
  * `keepPreviousData` holds the last payload while a new timeframe loads, so
  * switching ranges dims the page rather than collapsing it into skeletons.
  */
-export const useAnalytics = (months: number = 12, limit = 25) => {
+export const useAnalytics = (months: number = DEFAULT_ANALYTICS_MONTHS, limit = 25) => {
   return useQuery({
     queryKey: ['analytics', months, limit],
     queryFn: async (): Promise<FlightAnalytics> => {

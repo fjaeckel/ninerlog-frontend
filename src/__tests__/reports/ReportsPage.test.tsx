@@ -302,11 +302,19 @@ describe('ReportsPage', () => {
 
   it('renders the empty state for a logbook with no flights', () => {
     mockUseAnalytics({
-      data: { ...mockAnalytics, totals: { ...mockAnalytics.totals, totalFlights: 0 } },
+      data: { ...mockAnalytics, totals: { ...mockAnalytics.totals, totalFlights: 0, totalMinutes: 0 } },
     } as any);
     renderWithProviders(<ReportsPage />);
     expect(screen.getByText(/no flights to report on yet/i)).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Overview' })).not.toBeInTheDocument();
+  });
+
+  it('opens on all time so the totals match the dashboard', () => {
+    const spy = mockUseAnalytics();
+    renderWithProviders(<ReportsPage />);
+
+    expect(spy.mock.calls[0][0]).toBe(0);
+    expect(screen.getByRole('button', { name: 'All time' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('refetches when the timeframe changes', async () => {
@@ -314,16 +322,46 @@ describe('ReportsPage', () => {
     const spy = mockUseAnalytics();
     renderWithProviders(<ReportsPage />);
 
-    await user.click(screen.getByRole('button', { name: 'All time' }));
+    await user.click(screen.getByRole('button', { name: '12mo' }));
 
     await waitFor(() => {
-      expect(spy.mock.calls[spy.mock.calls.length - 1][0]).toBe(0);
+      expect(spy.mock.calls[spy.mock.calls.length - 1][0]).toBe(12);
     });
+  });
+
+  it('notes the initial-hours snapshot folded into the totals', () => {
+    mockUseAnalytics({
+      data: {
+        ...mockAnalytics,
+        baseline: {
+          baselineDate: '2020-06-30',
+          totalFlights: 400,
+          totalMinutes: 30000,
+          picMinutes: 24000,
+          dualMinutes: 0,
+          nightMinutes: 0,
+          ifrMinutes: 0,
+          landingsDay: 600,
+          landingsNight: 0,
+        },
+      },
+    } as any);
+    renderWithProviders(<ReportsPage />);
+
+    expect(screen.getByText(/500h 0m carried forward from before your logbook/i)).toBeInTheDocument();
+    expect(screen.getByText(/count toward the totals only/i)).toBeInTheDocument();
+  });
+
+  it('omits the snapshot note when the timeframe carries no baseline', () => {
+    mockUseAnalytics();
+    renderWithProviders(<ReportsPage />);
+    expect(screen.queryByText(/^Includes .* carried forward/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/count toward the totals only/i)).not.toBeInTheDocument();
   });
 
   it('disables the exports when there is nothing to export', () => {
     mockUseAnalytics({
-      data: { ...mockAnalytics, totals: { ...mockAnalytics.totals, totalFlights: 0 } },
+      data: { ...mockAnalytics, totals: { ...mockAnalytics.totals, totalFlights: 0, totalMinutes: 0 } },
     } as any);
     renderWithProviders(<ReportsPage />);
     expect(screen.getByRole('button', { name: /export csv/i })).toBeDisabled();

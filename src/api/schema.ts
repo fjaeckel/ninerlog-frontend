@@ -473,8 +473,9 @@ export interface paths {
          * Get the user's initial hours snapshot (baseline)
          * @description Returns the user's optional initial-hours snapshot. The snapshot represents
          *     flying experience accumulated up to a chosen cutoff date and is added to
-         *     aggregated user-level statistics (`/users/me/statistics`) when the
-         *     requested date range covers the cutoff. Returns 404 when no snapshot exists.
+         *     aggregated user-level statistics (`/users/me/statistics`) and to the
+         *     Reports totals (`/reports/analytics`) when the requested date range covers
+         *     the cutoff. Returns 404 when no snapshot exists.
          */
         get: operations["getMyBaseline"];
         /**
@@ -1349,6 +1350,7 @@ export interface paths {
          * Get full logbook analytics
          * @description Returns the complete analytics payload backing the Reports page in a single round trip: experience totals, monthly and yearly series, breakdowns by aircraft type/registration/class/category, airports, countries and routes, instructor and crew time, instrument approach types, flying-pattern distributions (day of week, hour of day, month of year, flight duration), and personal records.
          *     All time values are in minutes and all distances in nautical miles. Every section is scoped to the requested timeframe except `records.allTime`, which is deliberately computed over the whole logbook so records stay stable as the timeframe changes.
+         *     `totals` also includes the user's initial-hours snapshot whenever the timeframe reaches back to its cutoff date, so it matches `GET /users/me/statistics`; the contribution is reported separately in `baseline`.
          */
         get: operations["getFlightAnalytics"];
         put?: never;
@@ -4663,6 +4665,14 @@ export interface components {
             /** @description Flight-length histogram. Buckets are fixed - under 30m, 30–60m, 1–2h, 2–3h, 3–5h, over 5h. */
             durationBuckets: components["schemas"]["AnalyticsBucketRow"][];
             records: components["schemas"]["AnalyticsRecords"];
+            /**
+             * @description Present when the user's initial-hours snapshot was added to `totals`.
+             *     The snapshot is applied whenever the timeframe reaches back to the
+             *     baseline date (always for all time), so the Reports totals match the
+             *     dashboard statistics. It contributes to `totals` only — per-month,
+             *     per-aircraft and per-airport breakdowns cannot attribute it.
+             */
+            baseline?: components["schemas"]["StatisticsBaselineContribution"];
         };
         AnalyticsRange: {
             /**
@@ -4683,6 +4693,11 @@ export interface components {
              */
             to?: string | null;
         };
+        /**
+         * @description Aggregated totals for the timeframe. When the user has an initial-hours
+         *     snapshot that the timeframe reaches back to, its carried-forward totals
+         *     are included here and reported separately in `FlightAnalytics.baseline`.
+         */
         AnalyticsTotals: {
             /** @example 214 */
             totalFlights: number;

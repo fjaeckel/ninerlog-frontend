@@ -50,7 +50,8 @@
     "distance": "Distanz",
     "acrossFlights_one": "Auf {{count}} Flug",
     "acrossFlights_other": "Auf {{count}} Flügen",
-    "since": "seit {{date}}"
+    "since": "seit {{date}}",
+    "includesBaseline": "Inklusive {{time}} Vorerfahrung von vor deinem Flugbuch (Stand {{date}})."
   },
   "kpi": {
     "flights": "Flüge",
@@ -100,6 +101,7 @@
     "timeBreakdown": "Zeitaufteilung",
     "timeBreakdownHint": "Jede Kategorie als Anteil an deiner gesamten Blockzeit.",
     "overlapNote": "Die Kategorien überschneiden sich — Solozeit ist auch PIC-Zeit, Nacht- und IFR-Zeit können in jeder Funktion anfallen.",
+    "baselineNote": "Der Anfangsbestand zählt nur zu den Gesamtsummen — die Auswertungen nach Jahr, Muster und Flugplatz zeigen nur erfasste Flüge.",
     "roleByYear": "Funktion nach Jahr",
     "roleByYearHint": "PIC, Doppelsteuer und SIC ergeben zusammen die Blockzeit des Jahres.",
     "instructors": "Fluglehrer",
