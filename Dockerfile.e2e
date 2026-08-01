@@ -12,9 +12,18 @@ RUN npm ci
 # Copy source code and test files
 COPY . .
 
-# Playwright browsers are already installed in the base image
+# Chromium, Firefox and WebKit are already installed in the base image
 # Set environment variable to skip browser installation
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+# The *branded* Chrome and Edge builds are NOT in the base image. They are only
+# needed for the on-demand cross-browser run, and they add ~500 MB, so they are
+# opt-in at build time:
+#   docker compose -f docker-compose.test.yml --profile e2e-cross build
+ARG INSTALL_BRANDED_BROWSERS=0
+RUN if [ "$INSTALL_BRANDED_BROWSERS" = "1" ]; then \
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0 npx playwright install --with-deps chrome msedge; \
+    fi
 
 # Command will be overridden by docker-compose
 CMD ["npm", "run", "test:e2e"]

@@ -1,6 +1,120 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices, type Project } from '@playwright/test';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173';
+
+// Chromium-family switch: treat the in-docker frontend origin as secure so
+// that window.PublicKeyCredential is exposed for WebAuthn tests. There is no
+// equivalent in WebKit or Firefox — see docs/CROSS_BROWSER_TESTING.md.
+const insecureOriginArgs = [
+  '--unsafely-treat-insecure-origin-as-secure=http://app.ninerlog.test:5173,http://frontend-dev:5173',
+];
+
+/**
+ * Cross-browser projects.
+ *
+ * Only `chromium` runs by default — the full matrix is expensive and is meant
+ * to be run on demand (CLI or workflow_dispatch), never per PR/commit/merge.
+ *
+ * Opt in with either:
+ *   E2E_BROWSERS=webkit,msedge npx playwright test
+ *   npx playwright test --project=webkit          (see selectionFromArgv below)
+ *   npm run test:e2e:cross                        (the whole matrix)
+ *
+ * `chrome` and `msedge` drive the *branded* browsers and need them installed
+ * on the host (`npx playwright install chrome msedge`); `webkit` and `firefox`
+ * use Playwright's bundled builds.
+ */
+const ALL_PROJECTS: Record<string, Project> = {
+  chromium: {
+    name: 'chromium',
+    use: { ...devices['Desktop Chrome'], launchOptions: { args: insecureOriginArgs } },
+  },
+  chrome: {
+    name: 'chrome',
+    use: {
+      ...devices['Desktop Chrome'],
+      channel: 'chrome',
+      launchOptions: { args: insecureOriginArgs },
+    },
+  },
+  msedge: {
+    name: 'msedge',
+    use: {
+      ...devices['Desktop Edge'],
+      channel: 'msedge',
+      launchOptions: { args: insecureOriginArgs },
+    },
+  },
+  // Playwright cannot drive Safari.app — this is its WebKit build, the same
+  // engine, which is what catches Safari rendering/JS-engine differences.
+  webkit: {
+    name: 'webkit',
+    use: { ...devices['Desktop Safari'] },
+  },
+  firefox: {
+    name: 'firefox',
+    use: { ...devices['Desktop Firefox'] },
+  },
+  'mobile-chrome': {
+    name: 'mobile-chrome',
+    use: { ...devices['Pixel 5'], launchOptions: { args: insecureOriginArgs } },
+  },
+  'mobile-safari': {
+    name: 'mobile-safari',
+    use: { ...devices['iPhone 15'] },
+  },
+};
+
+const DEFAULT_PROJECT = 'chromium';
+
+/**
+ * Playwright rejects `--project=<name>` for a project the config did not
+ * define, so honour the flag as a selection source alongside E2E_BROWSERS.
+ * Without this, `npx playwright test --project=webkit` would fail unless the
+ * env var was also set.
+ */
+function selectionFromArgv(): string[] {
+  const argv = process.argv;
+  const names: string[] = [];
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--project' || argv[i] === '-p') names.push(argv[i + 1] ?? '');
+    else if (argv[i].startsWith('--project=')) names.push(argv[i].slice('--project='.length));
+  }
+  return names;
+}
+
+function selectedProjects(): Project[] {
+  const explicit = [...(process.env.E2E_BROWSERS ?? '').split(','), ...selectionFromArgv()]
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  // Only fall back to chromium when nothing was asked for — an explicit
+  // selection is honoured exactly, so `E2E_BROWSERS=webkit` runs webkit alone.
+  const requested = new Set<string>([
+    ...(explicit.length ? explicit : [DEFAULT_PROJECT]),
+    // Back-compat: E2E_MOBILE has always *added* a mobile project.
+    ...(process.env.E2E_MOBILE ? ['mobile-chrome'] : []),
+  ]);
+
+  const unknown = [...requested].filter((name) => !ALL_PROJECTS[name]);
+  if (unknown.length) {
+    throw new Error(
+      `Unknown E2E browser project(s): ${unknown.join(', ')}. ` +
+        `Available: ${Object.keys(ALL_PROJECTS).join(', ')}`,
+    );
+  }
+
+  // Worker processes re-evaluate this config with a *different* argv, so the
+  // --project flags above would be invisible to them and the project list
+  // would not match the parent's ("Project X not found in the worker
+  // process"). Workers inherit the parent env, so pin the resolved selection
+  // there to keep both sides in sync.
+  process.env.E2E_BROWSERS = [...requested].join(',');
+
+  return Object.entries(ALL_PROJECTS)
+    .filter(([name]) => requested.has(name))
+    .map(([, project]) => project);
+}
 
 export default defineConfig({
   testDir: './src/__tests__/e2e',
@@ -15,29 +129,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  projects: [
-    {
-      name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        launchOptions: {
-          // Treat the in-docker frontend origin as secure so that
-          // window.PublicKeyCredential is exposed for WebAuthn tests.
-          args: [
-            '--unsafely-treat-insecure-origin-as-secure=http://app.ninerlog.test:5173,http://frontend-dev:5173',
-          ],
-        },
-      },
-    },
-    ...(process.env.E2E_MOBILE
-      ? [
-          {
-            name: 'Mobile Chrome',
-            use: { ...devices['Pixel 5'] },
-          },
-        ]
-      : []),
-  ],
+  projects: selectedProjects(),
 
   // Skip webServer when running in Docker (CI) — the frontend-dev container serves it
   ...(!process.env.CI && {
