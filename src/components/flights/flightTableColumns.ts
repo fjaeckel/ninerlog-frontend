@@ -15,19 +15,45 @@ export type FlightColumnKey = components['schemas']['FlightListColumn'];
  *
  * There is one tier per time column plus one for remarks, so even a user who
  * asks for every time column has a width at which each of them appears.
+ *
+ * The thresholds are measured against the table the columns actually build: a
+ * tier that fires before its column fits puts the table into a horizontal
+ * scroll, which is the thing the tiers exist to avoid.
  */
 const REVEAL_TIERS = [
-  'hidden @min-[940px]:table-cell',
-  'hidden @min-[1030px]:table-cell',
-  'hidden @min-[1120px]:table-cell',
-  'hidden @min-[1210px]:table-cell',
-  'hidden @min-[1320px]:table-cell',
-  'hidden @min-[1410px]:table-cell',
-  'hidden @min-[1500px]:table-cell',
-  'hidden @min-[1590px]:table-cell',
-  'hidden @min-[1680px]:table-cell',
-  'hidden @min-[1770px]:table-cell',
-  'hidden @min-[1860px]:table-cell',
+  'hidden @min-[1020px]:table-cell',
+  'hidden @min-[1110px]:table-cell',
+  'hidden @min-[1200px]:table-cell',
+  'hidden @min-[1290px]:table-cell',
+  'hidden @min-[1400px]:table-cell',
+  'hidden @min-[1490px]:table-cell',
+  'hidden @min-[1580px]:table-cell',
+  'hidden @min-[1670px]:table-cell',
+  'hidden @min-[1760px]:table-cell',
+  'hidden @min-[1850px]:table-cell',
+  'hidden @min-[1940px]:table-cell',
+] as const;
+
+/**
+ * Reveal tiers for the remarks column, indexed by how many time columns are
+ * already showing.
+ *
+ * Remarks needs its own ladder because it is roughly three times the width of a
+ * time column: borrowing the next time tier let it appear at a width where it
+ * did not fit, which is exactly the horizontal scroll these tiers prevent.
+ */
+const REMARKS_TIERS = [
+  'hidden @min-[1180px]:table-cell',
+  'hidden @min-[1270px]:table-cell',
+  'hidden @min-[1360px]:table-cell',
+  'hidden @min-[1450px]:table-cell',
+  'hidden @min-[1560px]:table-cell',
+  'hidden @min-[1650px]:table-cell',
+  'hidden @min-[1740px]:table-cell',
+  'hidden @min-[1830px]:table-cell',
+  'hidden @min-[1920px]:table-cell',
+  'hidden @min-[2010px]:table-cell',
+  'hidden @min-[2100px]:table-cell',
 ] as const;
 
 /**
@@ -280,8 +306,8 @@ export function selectFlightColumns(
     function: has('function'),
     landings: has('landings'),
     time,
-    // Remarks takes the tier after the last time column, and only exists while
-    // there is a tier left to give it.
-    remarksRevealClass: has('remarks') ? REVEAL_TIERS[time.length] ?? null : null,
+    // Remarks takes the tier its own ladder gives for this many time columns,
+    // and only exists while there is a tier left to give it.
+    remarksRevealClass: has('remarks') ? REMARKS_TIERS[time.length] ?? null : null,
   };
 }

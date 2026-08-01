@@ -1,25 +1,43 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
-import { Pencil, Trash2, ShieldCheck } from 'lucide-react';
-import { useFlights, useDeleteFlight } from '../../hooks/useFlights';
-import HelpLink from '../../components/ui/HelpLink';
-import { useLicenses } from '../../hooks/useLicenses';
-import FlightForm from '../../components/flights/FlightForm';
-import FlightCard from '../../components/flights/FlightCard';
-import FlightSearchBar from '../../components/flights/FlightSearchBar';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { useFormatPrefs } from '../../hooks/useFormatPrefs';
-import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
-import { selectFlightColumns, selectFlightCardColumns } from '../../components/flights/flightTableColumns';
-import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
-import type { components, operations } from '../../api/schema';
+import {
+  Fragment,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
+import { useNavigate, useLocation, useSearchParams } from "react-router";
+import { useTranslation } from "react-i18next";
+import { Pencil, Trash2, ShieldCheck } from "lucide-react";
+import { useFlights, useDeleteFlight } from "../../hooks/useFlights";
+import HelpLink from "../../components/ui/HelpLink";
+import { useLicenses } from "../../hooks/useLicenses";
+import FlightForm from "../../components/flights/FlightForm";
+import FlightCard from "../../components/flights/FlightCard";
+import FlightSearchBar from "../../components/flights/FlightSearchBar";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { useFormatPrefs } from "../../hooks/useFormatPrefs";
+import { useFlightColumnPrefs } from "../../hooks/useFlightColumnPrefs";
+import {
+  selectFlightColumns,
+  selectFlightCardColumns,
+} from "../../components/flights/flightTableColumns";
+import {
+  isSearchWorthSending,
+  SEARCH_DEBOUNCE_MS,
+} from "../../lib/flightSearchQuery";
+import {
+  abbreviateSiteName,
+  splitAirportLabel,
+  type AirportParts,
+} from "../../lib/airport";
+import type { components, operations } from "../../api/schema";
 
-type Flight = components['schemas']['Flight'];
-type ListFlightsParams = operations['listFlights']['parameters']['query'];
-type SortField = 'date' | 'totalTime' | 'createdAt';
+type Flight = components["schemas"]["Flight"];
+type ListFlightsParams = operations["listFlights"]["parameters"]["query"];
+type SortField = "date" | "totalTime" | "createdAt";
 
-const SORT_FIELDS: SortField[] = ['date', 'totalTime', 'createdAt'];
+const SORT_FIELDS: SortField[] = ["date", "totalTime", "createdAt"];
 
 /** A run of consecutive cards sharing a heading in the mobile list. */
 interface FlightGroup {
@@ -36,13 +54,22 @@ interface FlightGroup {
  * Only meaningful while the list is sorted by date — under any other sort the
  * months interleave, so the whole page becomes one unlabelled group instead.
  */
-function groupFlightsByMonth(flights: Flight[], locale: string, byMonth: boolean): FlightGroup[] {
+function groupFlightsByMonth(
+  flights: Flight[],
+  locale: string,
+  byMonth: boolean,
+): FlightGroup[] {
   const groups: FlightGroup[] = [];
   for (const flight of flights) {
-    const key = byMonth ? flight.date.slice(0, 7) : 'all';
+    const key = byMonth ? flight.date.slice(0, 7) : "all";
     let group = groups[groups.length - 1];
     if (!group || group.key !== key) {
-      group = { key, label: byMonth ? monthLabel(key, locale) : null, flights: [], totalMinutes: 0 };
+      group = {
+        key,
+        label: byMonth ? monthLabel(key, locale) : null,
+        flights: [],
+        totalMinutes: 0,
+      };
       groups.push(group);
     }
     group.flights.push(flight);
@@ -51,17 +78,51 @@ function groupFlightsByMonth(flights: Flight[], locale: string, byMonth: boolean
   return groups;
 }
 
+/**
+ * Whether neither end of a route resolved to a code — two free-text sites have
+ * to share the column, so each is abbreviated harder.
+ */
+function routeIsFreeText(flight: Flight): boolean {
+  return (
+    !splitAirportLabel(flight.departureIcao, flight.departureAirportName)
+      .code &&
+    !splitAirportLabel(flight.arrivalIcao, flight.arrivalAirportName).code
+  );
+}
+
+/**
+ * One end of a route in the table.
+ *
+ * The table has one column for the whole route, and an off-airport site written
+ * out in full ("North field, Bad Hersfeld-Johannesberg") stretches it until the
+ * time columns fall off the right-hand edge. A code is shown as it is; a name is
+ * abbreviated, with the full value in a title.
+ */
+function RouteEnd({ part, both }: { part: AirportParts; both: boolean }) {
+  if (part.code)
+    return <span className="font-mono tabular-nums">{part.code}</span>;
+  if (!part.name) return <span>—</span>;
+  return (
+    <span title={part.name} className="font-sans">
+      {abbreviateSiteName(part.name, both ? 14 : 18)}
+    </span>
+  );
+}
+
 /** Renders a `YYYY-MM` key as the reader's month and year. */
 function monthLabel(month: string, locale: string): string {
-  const [year, m] = month.split('-');
-  return new Date(Date.UTC(Number(year), Number(m) - 1, 1)).toLocaleDateString(locale, {
-    month: 'long',
-    year: 'numeric',
-  });
+  const [year, m] = month.split("-");
+  return new Date(Date.UTC(Number(year), Number(m) - 1, 1)).toLocaleDateString(
+    locale,
+    {
+      month: "long",
+      year: "numeric",
+    },
+  );
 }
 
 export default function FlightsPage() {
-  const { t, i18n } = useTranslation(['flights', 'common']);
+  const { t, i18n } = useTranslation(["flights", "common"]);
   const { fmtDate, fmtDuration } = useFormatPrefs();
   const columnPrefs = useFlightColumnPrefs();
   const navigate = useNavigate();
@@ -71,28 +132,38 @@ export default function FlightsPage() {
   // Search, filters, sort and page live in the URL query string so they
   // survive a trip to a flight's detail page and back (and stay shareable).
   const [searchParams, setSearchParams] = useSearchParams();
-  const param = useCallback((key: string) => searchParams.get(key) ?? '', [searchParams]);
+  const param = useCallback(
+    (key: string) => searchParams.get(key) ?? "",
+    [searchParams],
+  );
 
-  const pageParam = Number(searchParams.get('page'));
+  const pageParam = Number(searchParams.get("page"));
   const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
-  const sortByParam = param('sortBy') as SortField;
-  const sortBy: SortField = SORT_FIELDS.includes(sortByParam) ? sortByParam : 'date';
-  const sortOrder: 'asc' | 'desc' = param('sortOrder') === 'asc' ? 'asc' : 'desc';
-  const searchQuery = param('q');
-  const startDate = param('startDate');
-  const endDate = param('endDate');
-  const aircraftReg = param('aircraftReg');
-  const departureIcao = param('departureIcao');
-  const arrivalIcao = param('arrivalIcao');
-  const functionParam = param('function');
-  const functionFilter: '' | 'pic' | 'dual' = functionParam === 'pic' || functionParam === 'dual' ? functionParam : '';
-  const logbookLicenseId = param('logbook');
+  const sortByParam = param("sortBy") as SortField;
+  const sortBy: SortField = SORT_FIELDS.includes(sortByParam)
+    ? sortByParam
+    : "date";
+  const sortOrder: "asc" | "desc" =
+    param("sortOrder") === "asc" ? "asc" : "desc";
+  const searchQuery = param("q");
+  const startDate = param("startDate");
+  const endDate = param("endDate");
+  const aircraftReg = param("aircraftReg");
+  const departureIcao = param("departureIcao");
+  const arrivalIcao = param("arrivalIcao");
+  const functionParam = param("function");
+  const functionFilter: "" | "pic" | "dual" =
+    functionParam === "pic" || functionParam === "dual" ? functionParam : "";
+  const logbookLicenseId = param("logbook");
 
   // Replace rather than push: filtering is not a navigation step the user
   // wants to walk back through, but the current filters must be part of the
   // history entry so the browser (and the detail page's back link) restore them.
   const updateParams = useCallback(
-    (updates: Record<string, string>, { keepPage = false }: { keepPage?: boolean } = {}) => {
+    (
+      updates: Record<string, string>,
+      { keepPage = false }: { keepPage?: boolean } = {},
+    ) => {
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
@@ -100,13 +171,13 @@ export default function FlightsPage() {
             if (value) next.set(key, value);
             else next.delete(key);
           }
-          if (!keepPage) next.delete('page');
+          if (!keepPage) next.delete("page");
           return next;
         },
-        { replace: true }
+        { replace: true },
       );
     },
-    [setSearchParams]
+    [setSearchParams],
   );
 
   const [showForm, setShowForm] = useState(() => {
@@ -116,7 +187,15 @@ export default function FlightsPage() {
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
   // Filters restored from the URL start expanded, so they are not applied invisibly.
   const [showFilters, setShowFilters] = useState(
-    () => !!(startDate || endDate || aircraftReg || departureIcao || arrivalIcao || functionFilter)
+    () =>
+      !!(
+        startDate ||
+        endDate ||
+        aircraftReg ||
+        departureIcao ||
+        arrivalIcao ||
+        functionFilter
+      ),
   );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
@@ -126,7 +205,8 @@ export default function FlightsPage() {
   const syncedQuery = useRef(searchQuery);
 
   const { data: licenses } = useLicenses();
-  const separateLogbookLicenses = licenses?.filter((l) => l.requiresSeparateLogbook) || [];
+  const separateLogbookLicenses =
+    licenses?.filter((l) => l.requiresSeparateLogbook) || [];
 
   // Query changed outside the input (back/forward, clear all) — adopt it.
   useEffect(() => {
@@ -163,7 +243,10 @@ export default function FlightsPage() {
   useEffect(() => {
     if (shouldOpenForm) {
       // Clear the state so refreshing doesn't re-open (keeping the active filters)
-      navigate(`${location.pathname}${location.search}`, { replace: true, state: {} });
+      navigate(`${location.pathname}${location.search}`, {
+        replace: true,
+        state: {},
+      });
     }
   }, [shouldOpenForm, location.pathname, location.search, navigate]);
 
@@ -178,24 +261,31 @@ export default function FlightsPage() {
     ...(aircraftReg ? { aircraftReg } : {}),
     ...(departureIcao ? { departureIcao: departureIcao.toUpperCase() } : {}),
     ...(arrivalIcao ? { arrivalIcao: arrivalIcao.toUpperCase() } : {}),
-    ...(functionFilter === 'pic' ? { isPic: true } : {}),
-    ...(functionFilter === 'dual' ? { isDual: true } : {}),
+    ...(functionFilter === "pic" ? { isPic: true } : {}),
+    ...(functionFilter === "dual" ? { isDual: true } : {}),
     ...(logbookLicenseId ? { logbookLicenseId } : {}),
   };
 
-  const activeFilterCount = [startDate, endDate, aircraftReg, departureIcao, arrivalIcao, functionFilter].filter(Boolean).length;
+  const activeFilterCount = [
+    startDate,
+    endDate,
+    aircraftReg,
+    departureIcao,
+    arrivalIcao,
+    functionFilter,
+  ].filter(Boolean).length;
 
   const clearFilters = useCallback(() => {
-    syncedQuery.current = '';
-    setSearch('');
+    syncedQuery.current = "";
+    setSearch("");
     updateParams({
-      q: '',
-      startDate: '',
-      endDate: '',
-      aircraftReg: '',
-      departureIcao: '',
-      arrivalIcao: '',
-      function: '',
+      q: "",
+      startDate: "",
+      endDate: "",
+      aircraftReg: "",
+      departureIcao: "",
+      arrivalIcao: "",
+      function: "",
     });
   }, [updateParams, setSearch]);
 
@@ -205,18 +295,21 @@ export default function FlightsPage() {
   // Optional table columns — which ones the user wants (or, in automatic mode,
   // which ones the flights on this page justify), and how many of them the
   // table's own width can take.
-  const columns = useMemo(() => selectFlightColumns(flights, columnPrefs), [flights, columnPrefs]);
+  const columns = useMemo(
+    () => selectFlightColumns(flights, columnPrefs),
+    [flights, columnPrefs],
+  );
   // One set of time columns for every card on the page — see
   // `selectFlightCardColumns`.
   const cardColumns = useMemo(
     () => selectFlightCardColumns(flights, columnPrefs),
-    [flights, columnPrefs]
+    [flights, columnPrefs],
   );
   // Month headings for the mobile card list — a logbook reads by month, and the
   // running total per month is the number pilots actually look for.
   const monthGroups = useMemo(
-    () => groupFlightsByMonth(flights, i18n.language, sortBy === 'date'),
-    [flights, i18n.language, sortBy]
+    () => groupFlightsByMonth(flights, i18n.language, sortBy === "date"),
+    [flights, i18n.language, sortBy],
   );
 
   const handleDelete = async (id: string) => {
@@ -241,12 +334,18 @@ export default function FlightsPage() {
   };
 
   const toggleSort = (field: SortField) => {
-    const order = sortBy === field && sortOrder === 'desc' ? 'asc' : 'desc';
-    updateParams({ sortBy: field === 'date' ? '' : field, sortOrder: order === 'desc' ? '' : order });
+    const order = sortBy === field && sortOrder === "desc" ? "asc" : "desc";
+    updateParams({
+      sortBy: field === "date" ? "" : field,
+      sortOrder: order === "desc" ? "" : order,
+    });
   };
 
   const goToPage = (target: number) => {
-    updateParams({ page: target > 1 ? String(target) : '' }, { keepPage: true });
+    updateParams(
+      { page: target > 1 ? String(target) : "" },
+      { keepPage: true },
+    );
   };
 
   if (isLoading) {
@@ -256,7 +355,10 @@ export default function FlightsPage() {
           <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48"></div>
           <div className="card p-0">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="px-4 py-4 border-b border-slate-100 dark:border-slate-700 last:border-0">
+              <div
+                key={i}
+                className="px-4 py-4 border-b border-slate-100 dark:border-slate-700 last:border-0"
+              >
                 <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
                 <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
               </div>
@@ -270,54 +372,70 @@ export default function FlightsPage() {
   // Errors while an advanced search query is active (typically a 400 for an
   // invalid query) are shown inline under the search bar instead of replacing
   // the whole page, so the user can correct the query.
-  const searchError = error && searchQuery
-    ? ((error as { error?: string }).error ?? t('flights:searchError'))
-    : null;
+  const searchError =
+    error && searchQuery
+      ? ((error as { error?: string }).error ?? t("flights:searchError"))
+      : null;
 
   if (error && !searchError) {
     return (
       <div className="mx-auto max-w-[960px] py-6">
         <div className="card text-center py-12">
           <div className="text-4xl mb-3">⚠</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('flights:errorTitle')}</h2>
-          <p className="text-slate-500 dark:text-slate-400">{t('flights:errorDescription')}</p>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            {t("flights:errorTitle")}
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400">
+            {t("flights:errorDescription")}
+          </p>
         </div>
       </div>
     );
   }
 
   const pagination = data?.pagination;
+  // Enough for a month heading to span whatever the table is currently showing.
+  const tableColumnCount =
+    5 +
+    columns.time.length +
+    (columns.offOnBlock ? 1 : 0) +
+    (columns.function ? 1 : 0) +
+    (columns.landings ? 1 : 0) +
+    (columns.remarksRevealClass ? 1 : 0);
 
   return (
     <div className="mx-auto max-w-[960px] xl:max-w-[1600px] py-6">
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h1 className="page-title">{t('flights:pageTitle')}</h1>
+          <h1 className="page-title">{t("flights:pageTitle")}</h1>
           {pagination && (
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-              {t('flights:flightsTotal', { count: pagination.total })}
+              {t("flights:flightsTotal", { count: pagination.total })}
               <HelpLink topic="flights" />
             </p>
           )}
         </div>
         <button onClick={() => setShowForm(true)} className="btn-primary">
-          + {t('flights:logFlight')}
+          + {t("flights:logFlight")}
         </button>
       </div>
 
       {/* Logbook Selector — only shown if separate-logbook licenses exist */}
       {separateLogbookLicenses.length > 0 && (
         <div className="mb-4 flex items-center gap-2">
-          <label className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">{t('flights:logbook')}</label>
+          <label className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+            {t("flights:logbook")}
+          </label>
           <select
             value={logbookLicenseId}
             onChange={(e) => updateParams({ logbook: e.target.value })}
             className="input text-sm py-1.5 w-auto"
           >
-            <option value="">{t('flights:allFlights')}</option>
+            <option value="">{t("flights:allFlights")}</option>
             {separateLogbookLicenses.map((lic) => (
               <option key={lic.id} value={lic.id}>
-                {lic.regulatoryAuthority} {lic.licenseType} — {lic.licenseNumber}
+                {lic.regulatoryAuthority} {lic.licenseType} —{" "}
+                {lic.licenseNumber}
               </option>
             ))}
           </select>
@@ -325,7 +443,11 @@ export default function FlightsPage() {
       )}
 
       {/* Search Bar — advanced query with tag autocomplete */}
-      <FlightSearchBar value={search} onChange={setSearch} error={searchError} />
+      <FlightSearchBar
+        value={search}
+        onChange={setSearch}
+        error={searchError}
+      />
 
       {/* Filter toggle + sort controls */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -333,31 +455,41 @@ export default function FlightsPage() {
           onClick={() => setShowFilters(!showFilters)}
           className={`px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-colors border ${
             showFilters || activeFilterCount > 0
-              ? 'border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
-              : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+              ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
           }`}
         >
-          {t('flights:filters')}{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+          {t("flights:filters")}
+          {activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
         </button>
         {activeFilterCount > 0 && (
-          <button onClick={clearFilters} className="text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center">
-            {t('flights:clearAll')}
+          <button
+            onClick={clearFilters}
+            className="text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center"
+          >
+            {t("flights:clearAll")}
           </button>
         )}
         <div className="flex-1" />
-        <span className="text-xs text-slate-500 dark:text-slate-400">{t('flights:sort')}</span>
-        {(['date', 'totalTime', 'createdAt'] as const).map((field) => (
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          {t("flights:sort")}
+        </span>
+        {(["date", "totalTime", "createdAt"] as const).map((field) => (
           <button
             key={field}
             onClick={() => toggleSort(field)}
             className={`px-3 py-2 min-h-[44px] rounded-full text-xs transition-colors ${
               sortBy === field
-                ? 'bg-blue-100 text-blue-700 font-medium dark:bg-blue-900/30 dark:text-blue-400'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
+                ? "bg-blue-100 text-blue-700 font-medium dark:bg-blue-900/30 dark:text-blue-400"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
             }`}
           >
-            {field === 'date' ? t('flights:sortDate') : field === 'totalTime' ? t('flights:sortHours') : t('flights:sortAdded')}
-            {sortBy === field && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+            {field === "date"
+              ? t("flights:sortDate")
+              : field === "totalTime"
+                ? t("flights:sortHours")
+                : t("flights:sortAdded")}
+            {sortBy === field && (sortOrder === "asc" ? " ↑" : " ↓")}
           </button>
         ))}
       </div>
@@ -367,7 +499,9 @@ export default function FlightsPage() {
         <div className="card mb-4 p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterDateFrom')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t("flights:filterDateFrom")}
+              </label>
               <input
                 type="date"
                 value={startDate}
@@ -376,7 +510,9 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterDateTo')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t("flights:filterDateTo")}
+              </label>
               <input
                 type="date"
                 value={endDate}
@@ -385,7 +521,9 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterAircraftReg')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t("flights:filterAircraftReg")}
+              </label>
               <input
                 type="text"
                 value={aircraftReg}
@@ -395,37 +533,47 @@ export default function FlightsPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterDepartureIcao')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t("flights:filterDepartureIcao")}
+              </label>
               <input
                 type="text"
                 value={departureIcao}
-                onChange={(e) => updateParams({ departureIcao: e.target.value.toUpperCase() })}
+                onChange={(e) =>
+                  updateParams({ departureIcao: e.target.value.toUpperCase() })
+                }
                 placeholder="EDDF"
                 maxLength={4}
                 className="input text-sm uppercase"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterArrivalIcao')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t("flights:filterArrivalIcao")}
+              </label>
               <input
                 type="text"
                 value={arrivalIcao}
-                onChange={(e) => updateParams({ arrivalIcao: e.target.value.toUpperCase() })}
+                onChange={(e) =>
+                  updateParams({ arrivalIcao: e.target.value.toUpperCase() })
+                }
                 placeholder="EDDH"
                 maxLength={4}
                 className="input text-sm uppercase"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">{t('flights:filterFunction')}</label>
+              <label className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 block">
+                {t("flights:filterFunction")}
+              </label>
               <select
                 value={functionFilter}
                 onChange={(e) => updateParams({ function: e.target.value })}
                 className="input text-sm"
               >
-                <option value="">{t('flights:filterAll')}</option>
-                <option value="pic">{t('flights:filterPicOnly')}</option>
-                <option value="dual">{t('flights:filterDualOnly')}</option>
+                <option value="">{t("flights:filterAll")}</option>
+                <option value="pic">{t("flights:filterPicOnly")}</option>
+                <option value="dual">{t("flights:filterDualOnly")}</option>
               </select>
             </div>
           </div>
@@ -434,17 +582,27 @@ export default function FlightsPage() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-[1020]" role="dialog" aria-modal="true" aria-labelledby="flight-form-title">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-[1020]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="flight-form-title"
+        >
           <div className="bg-white dark:bg-slate-800 w-full sm:rounded-xl sm:max-w-2xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto shadow-2xl pt-safe-top">
             <div className="p-4 sm:p-6">
               <div className="flex justify-between items-center mb-4 sm:mb-6 sticky top-0 bg-white dark:bg-slate-800 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 -mt-4 sm:-mt-6 pt-4 sm:pt-6 border-b border-slate-100 dark:border-slate-700 sm:border-0">
-                <h2 id="flight-form-title" className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100">
-                  {editingFlight ? t('flights:editFlight') : t('flights:logNewFlight')}
+                <h2
+                  id="flight-form-title"
+                  className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100"
+                >
+                  {editingFlight
+                    ? t("flights:editFlight")
+                    : t("flights:logNewFlight")}
                 </h2>
                 <button
                   onClick={handleCloseForm}
                   className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  aria-label={t('common:close')}
+                  aria-label={t("common:close")}
                 >
                   ✕
                 </button>
@@ -459,12 +617,14 @@ export default function FlightsPage() {
       {flights.length === 0 ? (
         <div className="card text-center py-12">
           <div className="text-5xl mb-4">✈</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('flights:noFlights')}</h2>
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            {t("flights:noFlights")}
+          </h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6">
-            {t('flights:startBuildingLogbook')}
+            {t("flights:startBuildingLogbook")}
           </p>
           <button onClick={() => setShowForm(true)} className="btn-primary">
-            + {t('flights:logFirstFlight')}
+            + {t("flights:logFirstFlight")}
           </button>
         </div>
       ) : (
@@ -482,7 +642,7 @@ export default function FlightsPage() {
                       {group.label}
                     </h2>
                     <span className="shrink-0 text-xs tabular-nums text-slate-500 dark:text-slate-400">
-                      {t('flights:monthTotal', {
+                      {t("flights:monthTotal", {
                         count: group.flights.length,
                         duration: fmtDuration(group.totalMinutes),
                       })}
@@ -497,7 +657,11 @@ export default function FlightsPage() {
                       key={flight.id}
                       flight={flight}
                       columns={cardColumns}
-                      onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
+                      onClick={() =>
+                        navigate(`/flights/${flight.id}`, {
+                          state: { listSearch: location.search },
+                        })
+                      }
                       onEdit={() => handleEdit(flight.id)}
                       onDelete={() => handleDelete(flight.id)}
                     />
@@ -510,127 +674,238 @@ export default function FlightsPage() {
           {/* @container: the optional columns below react to the width this
               table actually gets, not to the viewport size. */}
           <div className="hidden lg:block overflow-x-auto card p-0 @container">
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm" aria-label={t('flights:pageTitle')}>
+            <table
+              className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm"
+              aria-label={t("flights:pageTitle")}
+            >
               <thead className="bg-slate-50 dark:bg-slate-800/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableDate')}</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableRoute')}</th>
-                  <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableAircraft')}</th>
+                  <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">
+                    {t("flights:tableDate")}
+                  </th>
+                  <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">
+                    {t("flights:tableRoute")}
+                  </th>
+                  <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">
+                    {t("flights:tableAircraft")}
+                  </th>
                   {columns.offOnBlock && (
-                    <th className="px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableOffOnBlock')}</th>
+                    <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">
+                      {t("flights:tableOffOnBlock")}
+                    </th>
                   )}
-                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableTotal')}</th>
+                  <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400">
+                    {t("flights:tableTotal")}
+                  </th>
                   {columns.time.map((col) => (
                     <th
                       key={col.key}
                       title={t(`flights:${col.titleKey}`)}
-                      className={`px-3 py-3 text-right font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap ${col.revealClass}`}
+                      className={`px-2 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap ${col.revealClass}`}
                     >
                       {t(`flights:${col.labelKey}`)}
                     </th>
                   ))}
                   {columns.function && (
-                    <th className="px-4 py-3 text-center font-medium text-slate-500 dark:text-slate-400">{t('flights:tableFunction')}</th>
-                  )}
-                  {columns.landings && (
-                    <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLdg')}</th>
-                  )}
-                  {columns.remarksRevealClass && (
-                    <th className={`px-4 py-3 text-left font-medium text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}>
-                      {t('flights:tableRemarks')}
+                    <th className="px-3 py-2.5 text-center font-medium text-slate-500 dark:text-slate-400">
+                      {t("flights:tableFunction")}
                     </th>
                   )}
-                  <th className="px-4 py-3 text-right font-medium text-slate-500 dark:text-slate-400" />
+                  {columns.landings && (
+                    <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400">
+                      {t("flights:tableLdg")}
+                    </th>
+                  )}
+                  {columns.remarksRevealClass && (
+                    <th
+                      className={`px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}
+                    >
+                      {t("flights:tableRemarks")}
+                    </th>
+                  )}
+                  <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                {flights.map((flight) => (
-                  <tr
-                    key={flight.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition-colors"
-                    onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
-                  >
-                    <td className="px-4 py-3 whitespace-nowrap text-slate-800 dark:text-slate-200">
-                      {fmtDate(flight.date)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-800 dark:text-slate-100">
-                      <span className="inline-flex items-center gap-1.5">
-                        {flight.departureIcao || '—'} → {flight.arrivalIcao || '—'}
-                        {flight.signatureId && (
-                          <ShieldCheck
-                            className="w-3.5 h-3.5 text-green-600 dark:text-green-400 shrink-0"
-                            aria-label={t('signatures:section.signedBadge')}
-                          />
-                        )}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">
-                      <span className="font-medium">{flight.aircraftReg}</span>
-                      <span className="text-slate-400 dark:text-slate-500 ml-1">({flight.aircraftType})</span>
-                    </td>
-                    {columns.offOnBlock && (
-                      <td className="px-4 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono tabular-nums text-xs">
-                        {flight.offBlockTime?.slice(0, 5) || '—'} / {flight.onBlockTime?.slice(0, 5) || '—'}
-                      </td>
-                    )}
-                    <td className="px-4 py-3 whitespace-nowrap text-right font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">
-                      {fmtDuration(flight.totalTime)}
-                    </td>
-                    {columns.time.map((col) => {
-                      const minutes = col.minutes(flight);
-                      return (
-                        <td
-                          key={col.key}
-                          className={`px-3 py-3 whitespace-nowrap text-right font-mono tabular-nums ${
-                            minutes > 0 ? 'text-slate-600 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'
-                          } ${col.revealClass}`}
+                {monthGroups.map((group) => (
+                  <Fragment key={group.key}>
+                    {group.label && (
+                      // The same month heading the card list uses, so both
+                      // views break a logbook up the same way.
+                      <tr className="bg-slate-50/80 dark:bg-slate-800/60">
+                        <th
+                          scope="colgroup"
+                          colSpan={tableColumnCount}
+                          className="px-3 py-1.5 text-left text-xs font-semibold text-slate-600 dark:text-slate-300"
                         >
-                          {minutes > 0 ? fmtDuration(minutes) : '—'}
+                          {group.label}
+                          <span className="ml-2 font-normal text-slate-400 dark:text-slate-500">
+                            {t("flights:monthTotal", {
+                              count: group.flights.length,
+                              duration: fmtDuration(group.totalMinutes),
+                            })}
+                          </span>
+                        </th>
+                      </tr>
+                    )}
+                    {group.flights.map((flight) => (
+                      <tr
+                        key={flight.id}
+                        className="hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition-colors"
+                        onClick={() =>
+                          navigate(`/flights/${flight.id}`, {
+                            state: { listSearch: location.search },
+                          })
+                        }
+                      >
+                        <td className="px-3 py-2 whitespace-nowrap text-slate-800 dark:text-slate-200">
+                          <span className="text-slate-400 dark:text-slate-500">
+                            {new Date(
+                              `${flight.date}T00:00:00`,
+                            ).toLocaleDateString(i18n.language, {
+                              weekday: "short",
+                            })}
+                          </span>{" "}
+                          <span className="font-mono tabular-nums">
+                            {fmtDate(flight.date)}
+                          </span>
                         </td>
-                      );
-                    })}
-                    {columns.function && (
-                      <td className="px-4 py-3 whitespace-nowrap text-center">
-                        <span className={`badge ${
-                          flight.isPic
-                            ? 'badge-info'
-                            : flight.isDual
-                              ? 'badge-expiring'
-                              : 'badge-neutral'
-                        }`}>
-                          {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : (flight.sicTime || 0) > 0 ? 'SIC' : '—'}
-                        </span>
-                      </td>
-                    )}
-                    {columns.landings && (
-                      <td className="px-4 py-3 whitespace-nowrap text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
-                        {flight.allLandings}
-                      </td>
-                    )}
-                    {columns.remarksRevealClass && (
-                      <td className={`px-4 py-3 text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}>
-                        <span className="block max-w-[28ch] truncate" title={flight.remarks || undefined}>
-                          {flight.remarks || '—'}
-                        </span>
-                      </td>
-                    )}
-                    <td className="px-4 py-3 whitespace-nowrap text-right">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleEdit(flight.id); }}
-                        className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mr-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
-                        aria-label={t('flights:editFlightAriaLabel', { departure: flight.departureIcao || '', arrival: flight.arrivalIcao || '' })}
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(flight.id); }}
-                        className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
-                        aria-label={t('flights:deleteFlightAriaLabel', { departure: flight.departureIcao || '', arrival: flight.arrivalIcao || '' })}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
+                        <td className="px-3 py-2 whitespace-nowrap font-medium text-slate-800 dark:text-slate-100">
+                          <span className="inline-flex items-center gap-1.5">
+                            <RouteEnd
+                              part={splitAirportLabel(
+                                flight.departureIcao,
+                                flight.departureAirportName,
+                              )}
+                              both={routeIsFreeText(flight)}
+                            />
+                            <span
+                              className="text-blue-500 dark:text-blue-400"
+                              aria-hidden="true"
+                            >
+                              →
+                            </span>
+                            <RouteEnd
+                              part={splitAirportLabel(
+                                flight.arrivalIcao,
+                                flight.arrivalAirportName,
+                              )}
+                              both={routeIsFreeText(flight)}
+                            />
+                            {flight.signatureId && (
+                              <>
+                                <ShieldCheck
+                                  className="w-3.5 h-3.5 text-green-600 dark:text-green-400 shrink-0"
+                                  aria-hidden="true"
+                                />
+                                <span className="sr-only">
+                                  {t("flights:signed")}
+                                </span>
+                              </>
+                            )}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300">
+                          <span className="font-medium">
+                            {flight.aircraftReg}
+                          </span>
+                          <span className="text-slate-400 dark:text-slate-500 ml-1">
+                            ({flight.aircraftType})
+                          </span>
+                        </td>
+                        {columns.offOnBlock && (
+                          <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono tabular-nums text-xs">
+                            {flight.offBlockTime?.slice(0, 5) || "—"} /{" "}
+                            {flight.onBlockTime?.slice(0, 5) || "—"}
+                          </td>
+                        )}
+                        <td className="px-3 py-2 whitespace-nowrap text-right font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">
+                          {fmtDuration(flight.totalTime)}
+                        </td>
+                        {columns.time.map((col) => {
+                          const minutes = col.minutes(flight);
+                          return (
+                            <td
+                              key={col.key}
+                              className={`px-2 py-2 whitespace-nowrap text-right font-mono tabular-nums ${
+                                minutes > 0
+                                  ? "text-slate-600 dark:text-slate-300"
+                                  : "text-slate-300 dark:text-slate-600"
+                              } ${col.revealClass}`}
+                            >
+                              {minutes > 0 ? fmtDuration(minutes) : "—"}
+                            </td>
+                          );
+                        })}
+                        {columns.function && (
+                          <td className="px-3 py-2 whitespace-nowrap text-center">
+                            <span
+                              className={`badge ${
+                                flight.isPic
+                                  ? "badge-info"
+                                  : flight.isDual
+                                    ? "badge-expiring"
+                                    : "badge-neutral"
+                              }`}
+                            >
+                              {flight.isPic
+                                ? "PIC"
+                                : flight.isDual
+                                  ? "DUAL"
+                                  : (flight.sicTime || 0) > 0
+                                    ? "SIC"
+                                    : "—"}
+                            </span>
+                          </td>
+                        )}
+                        {columns.landings && (
+                          <td className="px-3 py-2 whitespace-nowrap text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
+                            {flight.allLandings}
+                          </td>
+                        )}
+                        {columns.remarksRevealClass && (
+                          <td
+                            className={`px-3 py-2 text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}
+                          >
+                            <span
+                              className="block max-w-[28ch] truncate"
+                              title={flight.remarks || undefined}
+                            >
+                              {flight.remarks || "—"}
+                            </span>
+                          </td>
+                        )}
+                        <td className="px-3 py-2 whitespace-nowrap text-right">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(flight.id);
+                            }}
+                            className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mr-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
+                            aria-label={t("flights:editFlightAriaLabel", {
+                              departure: flight.departureIcao || "",
+                              arrival: flight.arrivalIcao || "",
+                            })}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(flight.id);
+                            }}
+                            className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
+                            aria-label={t("flights:deleteFlightAriaLabel", {
+                              departure: flight.departureIcao || "",
+                              arrival: flight.arrivalIcao || "",
+                            })}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -644,17 +919,22 @@ export default function FlightsPage() {
                 disabled={page <= 1}
                 className="btn-secondary text-sm"
               >
-                {t('flights:previous')}
+                {t("flights:previous")}
               </button>
               <span className="text-sm text-slate-600 dark:text-slate-400">
-                {t('flights:pagination', { page: pagination.page, totalPages: pagination.totalPages })}
+                {t("flights:pagination", {
+                  page: pagination.page,
+                  totalPages: pagination.totalPages,
+                })}
               </span>
               <button
-                onClick={() => goToPage(Math.min(pagination.totalPages, page + 1))}
+                onClick={() =>
+                  goToPage(Math.min(pagination.totalPages, page + 1))
+                }
                 disabled={page >= pagination.totalPages}
                 className="btn-secondary text-sm"
               >
-                {t('flights:next')}
+                {t("flights:next")}
               </button>
             </div>
           )}
@@ -666,9 +946,9 @@ export default function FlightsPage() {
         open={!!deleteTarget}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        title={t('flights:deleteTitle')}
-        description={t('flights:deleteDescription')}
-        confirmLabel={t('flights:deleteFlight')}
+        title={t("flights:deleteTitle")}
+        description={t("flights:deleteDescription")}
+        confirmLabel={t("flights:deleteFlight")}
         variant="danger"
         isLoading={deleteFlight.isPending}
       />

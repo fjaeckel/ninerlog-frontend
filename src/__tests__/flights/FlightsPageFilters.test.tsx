@@ -111,7 +111,8 @@ describe('FlightsPage filter persistence', () => {
     const user = userEvent.setup();
     renderAt('/flights?q=night&page=2');
 
-    await user.click(screen.getByText('EDDF → EDDH'));
+    // Both views render in jsdom; either one opens the flight the same way
+    await user.click(screen.getAllByText('EDDF')[0]);
     expect(screen.getByTestId('location').textContent).toBe('/flights/flight-1');
 
     await user.click(screen.getByRole('button', { name: /back to flights/i }));

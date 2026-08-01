@@ -151,10 +151,27 @@ describe('selectFlightColumns — custom mode', () => {
   it('reveals the columns in priority order — the first pick survives narrowest', () => {
     const layout = selectFlightColumns([flight()], custom(['picTime', 'ifrTime']));
 
-    expect(layout.time[0].revealClass).toContain('940px');
-    expect(layout.time[1].revealClass).toContain('1030px');
+    // The exact thresholds are calibrated against the rendered table and move
+    // with it; what must hold is that each column needs more width than the one
+    // before it.
+    expect(revealWidth(layout.time[0].revealClass)).toBeLessThan(revealWidth(layout.time[1].revealClass));
+  });
+
+  it('asks more width for remarks than for one more time column', () => {
+    const layout = selectFlightColumns([flight({ remarks: 'Touch and go' })], custom(['picTime', 'ifrTime', 'remarks']));
+
+    // Remarks is roughly three time columns wide, so it cannot share their
+    // ladder without appearing at a width it does not fit in.
+    expect(revealWidth(layout.remarksRevealClass!)).toBeGreaterThan(revealWidth(layout.time[1].revealClass));
   });
 });
+
+/** The container width at which a reveal class switches its column on. */
+function revealWidth(revealClass: string): number {
+  const match = /@min-\[(\d+)px\]/.exec(revealClass);
+  if (!match) throw new Error(`no reveal threshold in ${revealClass}`);
+  return Number(match[1]);
+}
 
 describe('column registry', () => {
   it('does not offer the columns that are always shown', () => {
