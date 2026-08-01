@@ -489,7 +489,9 @@ export default function FlightsPage() {
                     </span>
                   </div>
                 )}
-                <div className="space-y-3">
+                {/* The month's flights as one list: rows sit flush and are told
+                    apart by a hairline, not by a gap. */}
+                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm divide-y divide-slate-200 dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800">
                   {group.flights.map((flight) => (
                     <FlightCard
                       key={flight.id}

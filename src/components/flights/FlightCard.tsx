@@ -84,12 +84,13 @@ export default function FlightCard({ flight, columns, onEdit, onDelete, onClick 
   return (
     <article
       className={cn(
-        'tap-none overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm',
-        'dark:border-slate-700 dark:bg-slate-800',
-        'transition-[transform,box-shadow,border-color] duration-200 ease-out',
-        'hover:border-slate-300 hover:shadow-md dark:hover:border-slate-600',
-        'focus-within:border-blue-300 dark:focus-within:border-blue-700',
-        'active:scale-[0.995]'
+        // A row in a grouped list, not a card of its own: the surrounding list
+        // owns the border and the corners, so rows can sit flush together
+        // without doubling a border between every pair.
+        'tap-none relative bg-white transition-colors dark:bg-slate-800',
+        'hover:bg-slate-50 dark:hover:bg-slate-700/20',
+        'active:bg-slate-100 dark:active:bg-slate-700/40',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500'
       )}
       onClick={onClick}
       onKeyDown={(e) => {
@@ -106,11 +107,20 @@ export default function FlightCard({ flight, columns, onEdit, onDelete, onClick 
         duration: fmtDuration(flight.totalTime),
       })}
     >
-      {/* Header — the entry's identity, on a rail that anchors the card.
+      {/* The rail runs the full height of the row, so where one entry ends and
+          the next begins stays obvious once the rows sit flush. Drawn as an
+          overlay rather than a left border, which would tint the hairline the
+          list draws between rows. */}
+      <span
+        className="absolute inset-y-0 left-0 w-1 bg-blue-600 dark:bg-blue-500"
+        aria-hidden="true"
+      />
+
+      {/* Header — the entry's identity.
           The actions sit on the first line rather than in a row of their own:
           a 44px target already fits inside the height that line needs, so
           keeping them costs the list nothing. */}
-      <div className="border-l-4 border-blue-600 bg-slate-50 px-3 py-1.5 dark:border-blue-500 dark:bg-slate-700/40">
+      <div className="bg-slate-50 pl-4 pr-3 py-1.5 dark:bg-slate-700/40">
         <div className="flex items-center gap-2">
           <FlightRouteHeading className="min-w-0 flex-1" departure={departure} arrival={arrival} />
           <p className="shrink-0 font-mono text-base font-bold tabular-nums text-slate-800 dark:text-slate-100">
@@ -168,17 +178,13 @@ export default function FlightCard({ flight, columns, onEdit, onDelete, onClick 
               <span className="sr-only">{t('signed')}</span>
             </>
           )}
+          {/* Remarks are deliberately not here: they are a sentence, and a
+              sentence clipped to a list row's leftover width says nothing. */}
           <span className="min-w-0 truncate">
             {weekday} <span className="font-mono tabular-nums">{fmtDate(flight.date)}</span>
             {' · '}
             <span className="font-mono font-medium text-slate-600 dark:text-slate-300">{flight.aircraftReg}</span>{' '}
             {flight.aircraftType}
-            {flight.remarks && (
-              <>
-                {' · '}
-                <span className="italic">{flight.remarks}</span>
-              </>
-            )}
           </span>
         </p>
       </div>

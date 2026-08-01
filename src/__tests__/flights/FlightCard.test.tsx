@@ -154,9 +154,9 @@ describe('FlightCard', () => {
     expect(screen.getByText('Signed')).toBeInTheDocument();
   });
 
-  it('renders remarks when present', () => {
+  it('leaves remarks to the detail page', () => {
     renderCard();
-    expect(screen.getByText('Training flight')).toBeInTheDocument();
+    expect(screen.queryByText('Training flight')).not.toBeInTheDocument();
   });
 
   it('calls onClick when the card is clicked', async () => {
