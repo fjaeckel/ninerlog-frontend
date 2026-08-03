@@ -28,6 +28,9 @@ test.describe('Currency Page', () => {
   test('should show credentials section', async ({ page }) => {
     await seedCredential(page, auth.accessToken);
     await page.getByRole('link', { name: 'Currency' }).first().click();
+    // Let the client-side navigation land first. Reloading while it is still
+    // in flight aborts it, which WebKit surfaces as "Frame load interrupted".
+    await expect(page).toHaveURL('/currency');
     await page.reload();
     await expect(page.getByText('Credentials').first()).toBeVisible({ timeout: 10000 });
   });

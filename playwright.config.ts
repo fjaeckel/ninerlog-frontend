@@ -2,13 +2,6 @@ import { defineConfig, devices, type Project } from '@playwright/test';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173';
 
-// Chromium-family switch: treat the in-docker frontend origin as secure so
-// that window.PublicKeyCredential is exposed for WebAuthn tests. There is no
-// equivalent in WebKit or Firefox — see docs/CROSS_BROWSER_TESTING.md.
-const insecureOriginArgs = [
-  '--unsafely-treat-insecure-origin-as-secure=http://app.ninerlog.test:5173,http://frontend-dev:5173',
-];
-
 /**
  * Cross-browser projects.
  *
@@ -27,23 +20,15 @@ const insecureOriginArgs = [
 const ALL_PROJECTS: Record<string, Project> = {
   chromium: {
     name: 'chromium',
-    use: { ...devices['Desktop Chrome'], launchOptions: { args: insecureOriginArgs } },
+    use: { ...devices['Desktop Chrome'] },
   },
   chrome: {
     name: 'chrome',
-    use: {
-      ...devices['Desktop Chrome'],
-      channel: 'chrome',
-      launchOptions: { args: insecureOriginArgs },
-    },
+    use: { ...devices['Desktop Chrome'], channel: 'chrome' },
   },
   msedge: {
     name: 'msedge',
-    use: {
-      ...devices['Desktop Edge'],
-      channel: 'msedge',
-      launchOptions: { args: insecureOriginArgs },
-    },
+    use: { ...devices['Desktop Edge'], channel: 'msedge' },
   },
   // Playwright cannot drive Safari.app — this is its WebKit build, the same
   // engine, which is what catches Safari rendering/JS-engine differences.
@@ -57,7 +42,7 @@ const ALL_PROJECTS: Record<string, Project> = {
   },
   'mobile-chrome': {
     name: 'mobile-chrome',
-    use: { ...devices['Pixel 5'], launchOptions: { args: insecureOriginArgs } },
+    use: { ...devices['Pixel 5'] },
   },
   'mobile-safari': {
     name: 'mobile-safari',
@@ -127,6 +112,10 @@ export default defineConfig({
   use: {
     baseURL,
     trace: 'on-first-retry',
+    // The e2e dev server presents a self-signed certificate (E2E_HTTPS=1). The
+    // origin still counts as secure, which is the point — that is what exposes
+    // window.PublicKeyCredential and navigator.clipboard.
+    ignoreHTTPSErrors: true,
   },
 
   projects: selectedProjects(),

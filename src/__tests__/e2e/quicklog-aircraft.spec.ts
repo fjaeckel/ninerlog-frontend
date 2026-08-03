@@ -27,8 +27,13 @@ test.describe('QuickLog aircraft selection', () => {
 
   test('should quick-add a new aircraft via the dropdown "Add new aircraft" option', async ({ page }) => {
     await page.goto('/quicklog');
+    // Let the lazy route mount before driving the select. Without this the
+    // chunk load, the aircraft query and the option list all have to land
+    // inside the action's own wait, which a slower engine can overrun.
+    await expect(page.getByRole('heading', { name: 'Quick Log' })).toBeVisible({ timeout: 15000 });
 
     const select = page.locator('#quicklog-aircraft');
+    await expect(select).toBeVisible();
     await select.selectOption({ label: '+ Add new aircraft' });
 
     await expect(page.getByText('Add a new aircraft to your fleet')).toBeVisible();
@@ -49,8 +54,13 @@ test.describe('QuickLog aircraft selection', () => {
   test('should let the pilot cancel out of quick-add back to the dropdown', async ({ page }) => {
     await seedAircraft(page, auth.accessToken, { registration: 'D-CNCL', type: 'PA28' });
     await page.goto('/quicklog');
+    // Let the lazy route mount before driving the select. Without this the
+    // chunk load, the aircraft query and the option list all have to land
+    // inside the action's own wait, which a slower engine can overrun.
+    await expect(page.getByRole('heading', { name: 'Quick Log' })).toBeVisible({ timeout: 15000 });
 
     const select = page.locator('#quicklog-aircraft');
+    await expect(select).toBeVisible();
     await select.selectOption({ label: 'D-CNCL — PA28' });
     await select.selectOption({ label: '+ Add new aircraft' });
     await expect(page.getByText('Add a new aircraft to your fleet')).toBeVisible();
@@ -64,8 +74,13 @@ test.describe('QuickLog aircraft selection', () => {
 
   test('should surface a 409 conflict when another device just added the same tail number', async ({ page }) => {
     await page.goto('/quicklog');
+    // Let the lazy route mount before driving the select. Without this the
+    // chunk load, the aircraft query and the option list all have to land
+    // inside the action's own wait, which a slower engine can overrun.
+    await expect(page.getByRole('heading', { name: 'Quick Log' })).toBeVisible({ timeout: 15000 });
 
     const select = page.locator('#quicklog-aircraft');
+    await expect(select).toBeVisible();
     await select.selectOption({ label: '+ Add new aircraft' });
 
     await page.getByPlaceholder('Registration (e.g. D-EFGH)').fill('D-RACE');

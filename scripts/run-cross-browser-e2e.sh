@@ -60,7 +60,10 @@ if [ "$USE_DOCKER" -eq 1 ]; then
   docker compose -f docker-compose.test.yml --profile e2e up -d \
     postgres-test api-test mailpit-test frontend-dev seaweedfs-test
   trap 'docker compose -f docker-compose.test.yml --profile e2e down -v' EXIT
-  export PLAYWRIGHT_BASE_URL="${PLAYWRIGHT_BASE_URL:-http://localhost:5174}"
+  # https: the dev server runs with E2E_HTTPS=1 so the origin is a secure
+  # context. Self-signed — playwright.config.ts sets ignoreHTTPSErrors.
+  export PLAYWRIGHT_BASE_URL="${PLAYWRIGHT_BASE_URL:-https://localhost:5174}"
+  export PLAYWRIGHT_MAILPIT_URL="${PLAYWRIGHT_MAILPIT_URL:-http://localhost:8025}"
 fi
 
 rm -rf test-results/browser-compat

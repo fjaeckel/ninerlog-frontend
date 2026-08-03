@@ -21,6 +21,9 @@ test.describe('Licenses', () => {
   test('should display seeded license', async ({ page }) => {
     await seedLicense(page, auth.accessToken, { regulatoryAuthority: 'EASA', licenseType: 'PPL' });
     await page.getByRole('link', { name: 'Licenses' }).first().click();
+    // See credentials.spec.ts — reloading before the SPA navigation lands
+    // aborts it, and WebKit treats that as an error.
+    await expect(page).toHaveURL('/licenses');
     await page.reload();
     await expect(page.getByText('EASA PPL')).toBeVisible({ timeout: 10000 });
   });

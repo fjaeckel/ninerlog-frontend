@@ -3,12 +3,28 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { visualizer } from 'rollup-plugin-visualizer';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import path from 'path';
+
+/**
+ * The e2e stack serves the app over TLS (self-signed) when E2E_HTTPS=1.
+ *
+ * Plain HTTP on a non-loopback host is not a secure context, which hides
+ * window.PublicKeyCredential and navigator.clipboard — so the passkey suite
+ * could never run and the capability probe reported both as missing. Chromium's
+ * --unsafely-treat-insecure-origin-as-secure was meant to cover this and does
+ * not actually take effect, so the origin has to be genuinely secure instead.
+ *
+ * Off by default: `npm run dev` stays on http so nothing local has to trust a
+ * throwaway certificate.
+ */
+const e2eHttps = process.env.E2E_HTTPS === '1';
 
 export default defineConfig({
   plugins: [
     tailwindcss(),
     react(),
+    e2eHttps && basicSsl(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.svg', 'logo.svg'],
