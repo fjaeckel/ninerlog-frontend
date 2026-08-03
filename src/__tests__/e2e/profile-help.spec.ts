@@ -199,7 +199,8 @@ test.describe('Help Page', () => {
   test('should display help page', async ({ page }) => {
     await page.getByRole('link', { name: 'Help' }).first().click();
     await expect(page).toHaveURL('/help');
-    await expect(page.getByText('Help Base')).toBeVisible({ timeout: 10000 });
+    // The heading, not the phrase — body copy on the page mentions it too.
+    await expect(page.getByRole('heading', { name: 'Help Base' })).toBeVisible({ timeout: 10000 });
   });
 
   test('should search help topics', async ({ page }) => {

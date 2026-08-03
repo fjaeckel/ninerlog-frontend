@@ -21,7 +21,10 @@ test.describe('Credentials', () => {
   test('should display seeded credential', async ({ page }) => {
     await seedCredential(page, auth.accessToken, { credentialNumber: 'DSP-001' });
     await page.getByRole('link', { name: 'Credentials' }).first().click();
-    // Reload to get fresh data since the page may have cached empty state
+    // Reload to get fresh data since the page may have cached empty state.
+    // Wait for the client-side navigation to land first — reloading mid-flight
+    // aborts it, which WebKit surfaces as "Frame load interrupted".
+    await expect(page).toHaveURL('/credentials');
     await page.reload();
     await expect(page.getByText('EASA Class 2 Medical')).toBeVisible({ timeout: 10000 });
   });
@@ -43,6 +46,7 @@ test.describe('Credentials', () => {
   test('should delete credential', async ({ page }) => {
     await seedCredential(page, auth.accessToken, { issuingAuthority: 'ToDelete AME', credentialNumber: 'DEL-001' });
     await page.getByRole('link', { name: 'Credentials' }).first().click();
+    await expect(page).toHaveURL('/credentials');
     await page.reload();
     await expect(page.getByText('ToDelete AME')).toBeVisible({ timeout: 10000 });
 

@@ -133,10 +133,25 @@ test.describe('Passkeys (WebAuthn)', () => {
     await page.evaluate(() => localStorage.clear());
 
     // Step 4 — fill email so the server can advertise a credential, then
-    // click the passkey button. The virtual authenticator answers without
-    // user interaction (automaticPresenceSimulation = true).
+    // click the passkey button.
+    //
+    // The login page starts a conditional (autofill) ceremony on mount, and a
+    // virtual authenticator with automaticPresenceSimulation answers it with no
+    // user gesture at all — the pilot would be signed in and redirected before
+    // #email could be filled. A real platform authenticator does not do that;
+    // conditional UI waits for the user to pick a credential. So silence the
+    // authenticator while the page mounts, then re-arm it for the explicit
+    // button press that is actually under test.
+    const setPresence = (enabled: boolean) =>
+      auth.cdp.send('WebAuthn.setAutomaticPresenceSimulation', {
+        authenticatorId: auth.authenticatorId,
+        enabled,
+      });
+
+    await setPresence(false);
     await page.goto('/login');
     await page.locator('#email').fill(email);
+    await setPresence(true);
     await page.getByRole('button', { name: /sign in with passkey/i }).click();
 
     await expect(page).toHaveURL('/dashboard', { timeout: 15000 });

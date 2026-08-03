@@ -1,4 +1,5 @@
 import { Page, expect } from '@playwright/test';
+import { randomUUID } from 'node:crypto';
 
 /**
  * E2E test helpers — uses REAL API, no mocks.
@@ -7,10 +8,19 @@ import { Page, expect } from '@playwright/test';
  * then logs in via the UI. Data is seeded via direct API calls.
  */
 
-// Generate unique email per test run to avoid conflicts
+/**
+ * A registration address no other test will pick.
+ *
+ * The counter alone is not enough: Playwright runs each worker in its own
+ * process, so every worker starts back at zero. Two workers registering in the
+ * same millisecond then build the same address and the second one gets a 409
+ * from the API. The random suffix is what actually makes this unique across
+ * processes; the timestamp and counter stay because they make a leftover row
+ * in the test database traceable back to a run.
+ */
 let userCounter = 0;
 export function uniqueEmail(): string {
-  return `e2e-${Date.now()}-${++userCounter}@test.ninerlog.app`;
+  return `e2e-${Date.now()}-${++userCounter}-${randomUUID().slice(0, 8)}@test.ninerlog.app`;
 }
 
 const TEST_PASSWORD = 'TestPassword123!';
@@ -26,8 +36,15 @@ function buildOnboardingStorage(userId: string): string {
 
 async function dismissOnboardingTourIfPresent(page: Page): Promise<void> {
   const dialog = page.locator('[role="dialog"][aria-label="Welcome tour"]');
-  const isVisible = await dialog.isVisible().catch(() => false);
-  if (!isVisible) return;
+  // The tour mounts a moment after the dashboard paints, so an instantaneous
+  // isVisible() check loses the race on a slower engine: it reports "no tour",
+  // the helper returns, and the backdrop then appears and swallows the caller's
+  // next click. Give it a bounded window to show up instead.
+  const appeared = await dialog
+    .waitFor({ state: 'visible', timeout: 3000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!appeared) return;
 
   const skipButton = dialog.getByRole('button', { name: /skip|close|finish/i }).first();
   if (await skipButton.isVisible().catch(() => false)) {
@@ -160,7 +177,6 @@ export async function registerAndLogin(page: Page): Promise<AuthContext> {
   await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
   // Wait for the Layout to be fully rendered (header with Logout button)
   await expect(page.locator('button', { hasText: 'Logout' })).toBeVisible({ timeout: 10000 });
-  await dismissOnboardingTourIfPresent(page);
 
   // Get a fresh token by logging in via API (the UI registration token may not be accessible)
   const loginRes = await page.request.post('/api/v1/auth/login', {
@@ -170,11 +186,14 @@ export async function registerAndLogin(page: Page): Promise<AuthContext> {
   const accessToken = loginData.accessToken || '';
   const userId = loginData.user?.id || '';
 
-  // Prevent the first-login welcome tour from intercepting interactions
-  // in tests that navigate immediately after authentication.
+  // Order matters. The storage write only suppresses the tour on *later* page
+  // loads, so it has to happen first; dismissing afterwards then clears the
+  // instance already mounted on this page. Done the other way round, a tour
+  // that mounts late survives both steps.
   await page.evaluate((onboardingJson: string) => {
     localStorage.setItem('ninerlog-onboarding', onboardingJson);
   }, buildOnboardingStorage(userId));
+  await dismissOnboardingTourIfPresent(page);
 
   return { email, password: TEST_PASSWORD, accessToken, userId };
 }

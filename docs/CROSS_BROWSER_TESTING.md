@@ -87,16 +87,23 @@ These are properties of the code and the tooling, not of any particular run:
 
 - **Passkeys / WebAuthn are Chromium-only in e2e.** `passkeys.spec.ts` installs a
   virtual authenticator over the Chrome DevTools Protocol
-  (`newCDPSession`), which WebKit and Firefox do not speak. The spec now skips
+  (`newCDPSession`), which WebKit and Firefox do not speak. The spec skips
   itself with an explicit reason on non-Chromium projects — passkey support in
-  Safari and Firefox has to be verified by hand.
-- **The insecure-origin escape hatch is Chromium-only.** The e2e stack serves
-  the app over plain HTTP on `app.ninerlog.test`, which is not a secure context.
-  Chromium is launched with
-  `--unsafely-treat-insecure-origin-as-secure` so `window.PublicKeyCredential`
-  is exposed; WebKit and Firefox have no equivalent switch, so anything gated on
-  a secure context stays unavailable there until the e2e dev server serves
-  HTTPS ([issue #46](https://github.com/fjaeckel/ninerlog-frontend/issues/46)).
+  Safari and Firefox has to be verified by hand. Note that the login page starts
+  a *conditional* (autofill) ceremony on mount, which a virtual authenticator
+  with `automaticPresenceSimulation` answers with no user gesture; a test that
+  needs the explicit sign-in button must toggle
+  `WebAuthn.setAutomaticPresenceSimulation` around the page load.
+- **The e2e dev server runs over TLS, and needs to.** Plain HTTP on
+  `app.ninerlog.test` is not a secure context, which hid
+  `window.PublicKeyCredential` and `navigator.clipboard` from every browser —
+  including chromium, whose
+  `--unsafely-treat-insecure-origin-as-secure` switch was measured not to take
+  effect. So `frontend-dev` sets `E2E_HTTPS=1` and Vite serves a self-signed
+  certificate via `@vitejs/plugin-basic-ssl`; `playwright.config.ts` sets
+  `ignoreHTTPSErrors`. Do not "simplify" this back to http — the passkey suite
+  goes silently dark if you do. Background in `docs/E2E_KNOWN_FAILURES.md`
+  (E2E-004). `npm run dev` is unaffected and stays on http.
 - **Clipboard writes.** `navigator.clipboard.writeText` (share links in
   `ShareRuleModal`, `SignatureSection`, `CustomCurrencyBuilderPage`) is
   permission-gated. Playwright can pre-grant `clipboard-write` only on
@@ -105,6 +112,12 @@ These are properties of the code and the tooling, not of any particular run:
 - **`backdrop-filter`** already has an `@supports` fallback in
   `src/index.css:349`, so a missing-support result there is expected and not a
   regression.
+
+## What the runs have found
+
+`docs/E2E_KNOWN_FAILURES.md` is the standing record: every currently-red spec,
+its verified root cause, and the fix. Read it before chasing a failure — it is
+probably already in there.
 
 ## Interpreting a run
 
