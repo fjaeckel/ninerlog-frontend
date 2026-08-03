@@ -93,7 +93,7 @@
     "serialize-javascript": ">=7.0.5",
     "tmp": ">=0.2.7",
     "uuid": ">=14.0.0",
-    "brace-expansion": ">=5.0.8",
+    "brace-expansion": ">=5.0.9",
     "filelist": ">=2.0.2",
     "@redocly/openapi-core": {
       "minimatch": ">=10.2.5"
