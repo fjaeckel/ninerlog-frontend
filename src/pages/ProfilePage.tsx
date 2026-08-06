@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LogOut } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useAuthStore } from '../stores/authStore';
-import { useLogout } from '../hooks/useAuth';
+import { useAuthProviders, useLogout } from '../hooks/useAuth';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useUpdateProfile, useChangePassword, useDeleteAccount, useDeleteAllFlights, useDeleteAllUserData } from '../hooks/useProfile';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
@@ -40,6 +40,12 @@ export default function ProfilePage() {
   const setup2FA = useSetup2FA();
   const verify2FA = useVerify2FA();
   const disable2FA = useDisable2FA();
+
+  // In OIDC mode the identity provider owns credentials and identity: name and
+  // email are re-synced from the ID token on every login, and password, TOTP
+  // and passkey management are disabled server-side (the endpoints answer 503).
+  const authProviders = useAuthProviders();
+  const oidcMode = authProviders.data?.mode === 'oidc';
 
   // 2FA state
   const [twoFASetupData, setTwoFASetupData] = useState<{ secret: string; qrUri: string } | null>(null);
@@ -137,7 +143,9 @@ export default function ProfilePage() {
   const handleDeleteAccount = async () => {
     setDeleteError('');
     try {
-      await deleteAccount.mutateAsync(deletePassword);
+      await deleteAccount.mutateAsync(
+        oidcMode ? { confirmEmail: deletePassword.trim() } : { password: deletePassword }
+      );
       navigate('/login');
     } catch {
       setDeleteError(t('dangerZone.deleteAccountFailed'));
@@ -318,6 +326,19 @@ export default function ProfilePage() {
           {/* Profile Information */}
           <div className="card">
             <h2 className="section-title mb-4">{t('profileInfo.title')}</h2>
+            {oidcMode ? (
+              <div className="space-y-4" data-testid="profile-info-readonly">
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t('profileInfo.managedByProvider')}</p>
+                <div>
+                  <label htmlFor="name" className="form-label">{t('profileInfo.name')}</label>
+                  <input id="name" type="text" value={user?.name || ''} className="input mt-1" disabled readOnly />
+                </div>
+                <div>
+                  <label htmlFor="email" className="form-label">{t('profileInfo.email')}</label>
+                  <input id="email" type="email" value={user?.email || ''} className="input mt-1" disabled readOnly />
+                </div>
+              </div>
+            ) : (
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <div>
                 <label htmlFor="name" className="form-label">{t('profileInfo.name')}</label>
@@ -334,9 +355,11 @@ export default function ProfilePage() {
                 {updateProfile.isPending ? t('profileInfo.saving') : t('profileInfo.saveChanges')}
               </button>
             </form>
+            )}
           </div>
 
-          {/* Change Password */}
+          {/* Change Password — a local credential, absent in OIDC mode */}
+          {!oidcMode && (
           <div className="card">
             <h2 className="section-title mb-4">{t('changePassword.title')}</h2>
             <form onSubmit={handleChangePassword} className="space-y-4">
@@ -360,8 +383,10 @@ export default function ProfilePage() {
               </button>
             </form>
           </div>
+          )}
 
-          {/* Two-Factor Authentication */}
+          {/* Two-Factor Authentication — the provider's job in OIDC mode */}
+          {!oidcMode && (
           <div className="card">
             <h2 className="section-title mb-4">{t('twoFactor.title')}</h2>
             {recoveryCodes ? (
@@ -435,8 +460,9 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+          )}
 
-          <PasskeySection />
+          {!oidcMode && <PasskeySection />}
         </div>
       )}
 
@@ -615,8 +641,12 @@ export default function ProfilePage() {
                 <button onClick={() => setShowDeleteConfirm(true)} className="btn-secondary text-red-700 dark:text-red-400 hover:bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700">{t('dangerZone.deleteAccount')}</button>
               ) : (
                 <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                  <p className="text-sm font-medium text-red-800 dark:text-red-300">{t('dangerZone.deleteAccountPrompt')}</p>
-                  <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="input" placeholder="Your password" aria-label="Confirm deletion password" />
+                  <p className="text-sm font-medium text-red-800 dark:text-red-300">{oidcMode ? t('dangerZone.deleteAccountPromptEmail') : t('dangerZone.deleteAccountPrompt')}</p>
+                  {oidcMode ? (
+                    <input type="email" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="input" placeholder={user?.email || ''} aria-label={t('dangerZone.confirmDeletionEmail')} />
+                  ) : (
+                    <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="input" placeholder="Your password" aria-label="Confirm deletion password" />
+                  )}
                   {deleteError && <p className="text-sm text-red-600 dark:text-red-400">{deleteError}</p>}
                   <div className="flex gap-3">
                     <button onClick={handleDeleteAccount} disabled={!deletePassword || deleteAccount.isPending} className="btn-danger">{deleteAccount.isPending ? t('common:deleting') : t('dangerZone.deleteAccountButton')}</button>

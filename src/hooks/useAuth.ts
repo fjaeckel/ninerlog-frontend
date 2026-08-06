@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { apiClient } from '../api/client';
 import i18n from '../i18n';
@@ -13,6 +13,24 @@ type LoginRequest = operations['loginUser']['requestBody']['content']['applicati
 
 type AuthResponse = components['schemas']['AuthResponse'];
 type RegistrationResponse = components['schemas']['RegistrationResponse'];
+export type AuthProviders = components['schemas']['AuthProviders'];
+
+/**
+ * Unauthenticated capability probe: which sign-in methods this server offers.
+ * The server runs in exactly one mode (`local` or `oidc`) for its whole
+ * lifetime, so the result is cached for the session.
+ */
+export const useAuthProviders = () =>
+  useQuery({
+    queryKey: ['auth', 'providers'],
+    queryFn: async (): Promise<AuthProviders> => {
+      const { data, error } = await apiClient.GET('/auth/providers');
+      if (error) throw error;
+      return data as AuthProviders;
+    },
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
 
 export const useRegister = () => {
   return useMutation({
@@ -71,6 +89,26 @@ export const useLogin = () => {
     onSuccess: (data) => {
       // Skip setAuth if 2FA is required — handled by LoginPage
       if (data.requiresTwoFactor) return;
+      setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);
+      if (data.user?.preferredLocale && data.user.preferredLocale !== i18n.language) {
+        i18n.changeLanguage(data.user.preferredLocale);
+      }
+    },
+  });
+};
+
+export const useExchangeOidcCode = () => {
+  const { setAuth } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async (code: string): Promise<NonNullable<AuthResponse>> => {
+      const { data, error } = await apiClient.POST('/auth/oidc/exchange', {
+        body: { code },
+      });
+      if (error) throw error;
+      return data as NonNullable<AuthResponse>;
+    },
+    onSuccess: (data) => {
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);
       if (data.user?.preferredLocale && data.user.preferredLocale !== i18n.language) {
         i18n.changeLanguage(data.user.preferredLocale);

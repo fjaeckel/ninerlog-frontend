@@ -48,9 +48,11 @@ export const useDeleteAccount = () => {
   const { clearAuth } = useAuthStore();
 
   return useMutation({
-    mutationFn: async (password: string): Promise<void> => {
+    // Local mode confirms with the account password; OIDC mode has no local
+    // password, so the API takes the account's own email typed out instead.
+    mutationFn: async (confirmation: { password?: string; confirmEmail?: string }): Promise<void> => {
       const { error } = await apiClient.DELETE('/users/me', {
-        body: { password } as any,
+        body: confirmation as any,
       });
       if (error) throw error;
     },

@@ -67,6 +67,11 @@ apiClient.use({
       url.includes('/auth/register') ||
       url.includes('/auth/refresh') ||
       url.includes('/auth/password-reset') ||
+      // OIDC endpoints are pre-login: a 401 from the exchange means the
+      // handoff code expired or was replayed — refreshing cannot help and
+      // redirecting would hide the error the callback page needs to show.
+      url.includes('/auth/oidc/') ||
+      url.includes('/auth/providers') ||
       // Defense-in-depth: the public /sign/{token} endpoints never require
       // auth and the backend never emits 401 from them, but an anonymous
       // instructor has no refresh token — never redirect them to /login.

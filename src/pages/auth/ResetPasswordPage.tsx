@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRequestPasswordReset } from '../../hooks/useAuth';
+import { useAuthProviders, useRequestPasswordReset } from '../../hooks/useAuth';
 import { createLogger } from '../../lib/logger';
 
 const log = createLogger('ResetPassword');
@@ -17,9 +17,16 @@ type ResetFormData = z.infer<typeof resetSchema>;
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation('auth');
+  const navigate = useNavigate();
   const requestReset = useRequestPasswordReset();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Password resets live at the identity provider in OIDC mode.
+  const providers = useAuthProviders();
+  useEffect(() => {
+    if (providers.data?.mode === 'oidc') navigate('/login', { replace: true });
+  }, [providers.data, navigate]);
 
   const {
     register,

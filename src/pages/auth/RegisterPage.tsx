@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRegister, useResendVerification } from '../../hooks/useAuth';
+import { useAuthProviders, useRegister, useResendVerification } from '../../hooks/useAuth';
 import { APP_NAME } from '../../lib/config';
 import { LogoMark } from '../../components/ui/Logo';
 import { extractApiError, extractApiStatus } from '../../lib/errors';
@@ -34,6 +34,13 @@ export default function RegisterPage() {
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
   const [loginReadyEmail, setLoginReadyEmail] = useState<string | null>(null);
   const [resentNotice, setResentNotice] = useState(false);
+
+  // Self-service registration does not exist in OIDC mode — accounts are
+  // provisioned by the identity provider on first sign-in.
+  const providers = useAuthProviders();
+  useEffect(() => {
+    if (providers.data?.mode === 'oidc') navigate('/login', { replace: true });
+  }, [providers.data, navigate]);
 
   const detectedLanguage =
     supportedLanguages.find(

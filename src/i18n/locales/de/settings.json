@@ -46,7 +46,8 @@
     "updateFailed": "Profil konnte nicht aktualisiert werden.",
     "nameRequired": "Name ist erforderlich.",
     "nameTooLong": "Name darf maximal 255 Zeichen lang sein.",
-    "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein."
+    "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "managedByProvider": "Name und E-Mail werden von Ihrem Identitätsanbieter verwaltet und bei der Anmeldung automatisch aktualisiert."
   },
   "changePassword": {
     "title": "Passwort ändern",
@@ -152,7 +153,9 @@
     "deleteAccountDesc": "Ihr Konto und alle zugehörigen Daten dauerhaft löschen. Dies ist unwiderruflich.",
     "deleteAccountPrompt": "Geben Sie Ihr Passwort ein, um die Kontolöschung zu bestätigen:",
     "deleteAccountButton": "Konto endgültig löschen",
-    "deleteAccountFailed": "Konto konnte nicht gelöscht werden. Überprüfen Sie Ihr Passwort."
+    "deleteAccountFailed": "Konto konnte nicht gelöscht werden. Überprüfen Sie Ihr Passwort.",
+    "deleteAccountPromptEmail": "Geben Sie zur Bestätigung der Kontolöschung Ihre E-Mail-Adresse ein:",
+    "confirmDeletionEmail": "E-Mail-Adresse zur Löschbestätigung"
   },
   "language": {
     "title": "Sprache",

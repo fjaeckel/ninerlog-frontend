@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ProfilePage from '../../pages/ProfilePage';
 import * as useProfileHook from '../../hooks/useProfile';
+import * as useAuthHook from '../../hooks/useAuth';
 import { useAuthStore } from '../../stores/authStore';
 
 const renderWithProviders = (component: React.ReactElement) => {
@@ -155,7 +156,7 @@ describe('ProfilePage', () => {
     await user.click(screen.getByRole('button', { name: /permanently delete account/i }));
 
     await waitFor(() => {
-      expect(mockDeleteAccount.mutateAsync).toHaveBeenCalledWith('mypassword');
+      expect(mockDeleteAccount.mutateAsync).toHaveBeenCalledWith({ password: 'mypassword' });
     });
   });
 
@@ -230,6 +231,55 @@ describe('ProfilePage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/all data deleted successfully/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('OIDC mode', () => {
+    beforeEach(() => {
+      vi.spyOn(useAuthHook, 'useAuthProviders').mockReturnValue({
+        data: {
+          mode: 'oidc',
+          passwordLoginEnabled: false,
+          registrationEnabled: false,
+          twoFactorEnabled: false,
+          webauthnEnabled: false,
+          oidc: { enabled: true, name: 'Authentik', authorizeUrl: '/api/v1/auth/oidc/authorize' },
+        },
+        isPending: false,
+        isError: false,
+      } as any);
+    });
+
+    it('shows read-only identity and hides local credential management', async () => {
+      const user = userEvent.setup();
+      renderWithProviders(<ProfilePage />);
+      await user.click(screen.getByRole('button', { name: 'Account' }));
+
+      expect(screen.getByTestId('profile-info-readonly')).toBeInTheDocument();
+      expect(screen.getByLabelText(/^name$/i)).toBeDisabled();
+      expect(screen.getByLabelText(/^email$/i)).toBeDisabled();
+      expect(screen.queryByRole('button', { name: /save changes/i })).not.toBeInTheDocument();
+      expect(screen.queryByText('Change Password')).not.toBeInTheDocument();
+      expect(screen.queryByText('Two-Factor Authentication')).not.toBeInTheDocument();
+      expect(screen.queryByText(/passkey/i)).not.toBeInTheDocument();
+    });
+
+    it('confirms account deletion with the account email instead of a password', async () => {
+      const user = userEvent.setup();
+      mockDeleteAccount.mutateAsync.mockResolvedValueOnce(undefined);
+
+      renderWithProviders(<ProfilePage />);
+      await user.click(screen.getByRole('button', { name: 'Data & Security' }));
+
+      await user.click(screen.getByRole('button', { name: /delete account/i }));
+      expect(screen.getByText(/type your account email address/i)).toBeInTheDocument();
+
+      await user.type(screen.getByLabelText(/confirm deletion email/i), 'pilot@example.com');
+      await user.click(screen.getByRole('button', { name: /permanently delete account/i }));
+
+      await waitFor(() => {
+        expect(mockDeleteAccount.mutateAsync).toHaveBeenCalledWith({ confirmEmail: 'pilot@example.com' });
+      });
     });
   });
 });

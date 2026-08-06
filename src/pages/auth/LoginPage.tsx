@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { useLogin, useResendVerification } from '../../hooks/useAuth';
+import { useAuthProviders, useLogin, useResendVerification } from '../../hooks/useAuth';
 import { useLogin2FA } from '../../hooks/useTwoFactor';
 import { useLoginWithPasskey, passkeysSupported } from '../../hooks/usePasskeys';
 import { useAuthStore } from '../../stores/authStore';
@@ -19,7 +19,38 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+function OidcLogin({ providerName, authorizeUrl }: { providerName: string; authorizeUrl: string }) {
+  const { t } = useTranslation('auth');
+  const [redirecting, setRedirecting] = useState(false);
+
+  const handleSignIn = () => {
+    setRedirecting(true);
+    // Must be a top-level navigation, not fetch: the API sets the state cookie
+    // and answers with a redirect to the identity provider.
+    window.location.assign(authorizeUrl);
+  };
+
+  return (
+    <div className="card p-6 space-y-5">
+      <p className="text-center text-sm text-slate-600 dark:text-slate-400">
+        {t('auth:login.ssoDescription', { provider: providerName })}
+      </p>
+      <button
+        type="button"
+        onClick={handleSignIn}
+        disabled={redirecting}
+        className="btn-primary w-full btn-lg"
+        data-testid="oidc-signin-button"
+      >
+        {redirecting
+          ? t('auth:login.ssoRedirecting')
+          : t('auth:login.ssoSignIn', { provider: providerName })}
+      </button>
+    </div>
+  );
+}
+
+function LocalLogin() {
   const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const login = useLogin();
@@ -150,6 +181,184 @@ export default function LoginPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  return twoFactorToken ? (
+    // 2FA Code Entry
+    <div className="card p-6 space-y-5">
+      <div className="text-center">
+        <span className="text-3xl">🔐</span>
+        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mt-2">{t('auth:twoFactor.title')}</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          {t('auth:twoFactor.enterCode')}
+        </p>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+
+      <div>
+        <label htmlFor="twoFACode" className="form-label">{t('auth:twoFactor.codeLabel')}</label>
+        <input
+          id="twoFACode"
+          type="text"
+          value={twoFACode}
+          onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+          className="input font-mono text-center text-2xl tracking-[0.5em]"
+          placeholder="000000"
+          maxLength={6}
+          inputMode="numeric"
+          autoFocus
+        />
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+          {t('auth:twoFactor.recoveryHint')}
+        </p>
+      </div>
+
+      <button
+        onClick={handleTwoFactorSubmit}
+        disabled={twoFACode.length < 6 || login2FA.isPending}
+        className="btn-primary w-full btn-lg"
+      >
+        {login2FA.isPending ? t('auth:twoFactor.verifying') : t('auth:twoFactor.verify')}
+      </button>
+
+      <button
+        onClick={() => { setTwoFactorToken(null); setTwoFACode(''); setError(null); }}
+        className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 w-full text-center"
+      >
+        ← {t('auth:twoFactor.backToLogin')}
+      </button>
+    </div>
+  ) : (
+    <form
+      className="card p-6 space-y-5"
+      onSubmit={handleSubmit(onSubmit)}
+    >
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+
+      {unverifiedEmail && (
+        <div
+          className="bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300 px-4 py-3 rounded-lg text-sm space-y-2"
+          data-testid="email-not-verified-banner"
+        >
+          <p>{t('auth:login.emailNotVerified.message')}</p>
+          {resentNotice ? (
+            <p className="font-medium">{t('auth:register.checkYourEmail.resent')}</p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={resendVerification.isPending}
+              className="font-medium underline hover:no-underline"
+            >
+              {t('auth:login.emailNotVerified.resend')}
+            </button>
+          )}
+        </div>
+      )}
+
+      <div>
+        <label htmlFor="email" className="form-label">
+          {t('auth:login.email')}
+        </label>
+        <input
+          {...register('email')}
+          type="email"
+          id="email"
+          autoComplete="email webauthn"
+          className={`input ${errors.email ? 'input-error' : ''}`}
+          placeholder="pilot@example.com"
+        />
+        {errors.email && (
+          <p className="form-error">{errors.email.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="password" className="form-label">
+          {t('auth:login.password')}
+        </label>
+        <input
+          {...register('password')}
+          type="password"
+          id="password"
+          autoComplete="current-password"
+          className={`input ${errors.password ? 'input-error' : ''}`}
+          placeholder="••••••••"
+        />
+        {errors.password && (
+          <p className="form-error">{errors.password.message}</p>
+        )}
+      </div>
+
+      <div className="text-right">
+        <Link
+          to="/reset-password"
+          className="text-sm text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
+        >
+          {t('auth:login.forgotPassword')}
+        </Link>
+      </div>
+
+      <button
+        type="submit"
+        disabled={isSubmitting || login.isPending}
+        className="btn-primary w-full btn-lg"
+      >
+        {isSubmitting || login.isPending ? t('auth:login.signingIn') : t('auth:login.logIn')}
+      </button>
+
+      {passkeyAvailable && (
+        <>
+          <div className="flex items-center gap-3 text-xs text-slate-400">
+            <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+            <span>{t('auth:login.or')}</span>
+            <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+          </div>
+          <button
+            type="button"
+            onClick={handlePasskeyLogin}
+            disabled={passkeyLogin.isPending}
+            className="btn-secondary w-full btn-lg"
+          >
+            {passkeyLogin.isPending ? t('auth:login.passkeySigningIn') : t('auth:login.signInWithPasskey')}
+          </button>
+        </>
+      )}
+
+      <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+        {t('auth:login.noAccount')}{' '}
+        <Link
+          to="/register"
+          className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+        >
+          {t('auth:login.createOne')}
+        </Link>
+      </p>
+    </form>
+  );
+}
+
+export default function LoginPage() {
+  const { t } = useTranslation('auth');
+  const providers = useAuthProviders();
+
+  // OIDC servers must never flash the password form, so wait for the probe.
+  // If the probe itself fails, fall back to the local form rather than locking
+  // everyone out over a transient error — local mode is the default.
+  const oidc =
+    providers.data?.mode === 'oidc' &&
+    providers.data.oidc.enabled &&
+    providers.data.oidc.authorizeUrl
+      ? { name: providers.data.oidc.name, authorizeUrl: providers.data.oidc.authorizeUrl }
+      : null;
+
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-900 px-4 py-10">
       {/* Aviation atmosphere — subtle radial brand glow, hidden in reduced-motion is fine because static */}
@@ -173,167 +382,19 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {twoFactorToken ? (
-          // 2FA Code Entry
-          <div className="card p-6 space-y-5">
-            <div className="text-center">
-              <span className="text-3xl">🔐</span>
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mt-2">{t('auth:twoFactor.title')}</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                {t('auth:twoFactor.enterCode')}
-              </p>
-            </div>
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
-            <div>
-              <label htmlFor="twoFACode" className="form-label">{t('auth:twoFactor.codeLabel')}</label>
-              <input
-                id="twoFACode"
-                type="text"
-                value={twoFACode}
-                onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="input font-mono text-center text-2xl tracking-[0.5em]"
-                placeholder="000000"
-                maxLength={6}
-                inputMode="numeric"
-                autoFocus
-              />
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                {t('auth:twoFactor.recoveryHint')}
-              </p>
-            </div>
-
-            <button
-              onClick={handleTwoFactorSubmit}
-              disabled={twoFACode.length < 6 || login2FA.isPending}
-              className="btn-primary w-full btn-lg"
-            >
-              {login2FA.isPending ? t('auth:twoFactor.verifying') : t('auth:twoFactor.verify')}
-            </button>
-
-            <button
-              onClick={() => { setTwoFactorToken(null); setTwoFACode(''); setError(null); }}
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 w-full text-center"
-            >
-              ← {t('auth:twoFactor.backToLogin')}
-            </button>
+        {providers.isPending ? (
+          <div className="card p-6">
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+              {t('auth:login.checkingSignInOptions')}
+            </p>
           </div>
+        ) : oidc ? (
+          <OidcLogin
+            providerName={oidc.name || t('auth:login.ssoFallbackName')}
+            authorizeUrl={oidc.authorizeUrl}
+          />
         ) : (
-        <form
-          className="card p-6 space-y-5"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          {unverifiedEmail && (
-            <div
-              className="bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300 px-4 py-3 rounded-lg text-sm space-y-2"
-              data-testid="email-not-verified-banner"
-            >
-              <p>{t('auth:login.emailNotVerified.message')}</p>
-              {resentNotice ? (
-                <p className="font-medium">{t('auth:register.checkYourEmail.resent')}</p>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleResendVerification}
-                  disabled={resendVerification.isPending}
-                  className="font-medium underline hover:no-underline"
-                >
-                  {t('auth:login.emailNotVerified.resend')}
-                </button>
-              )}
-            </div>
-          )}
-
-          <div>
-            <label htmlFor="email" className="form-label">
-              {t('auth:login.email')}
-            </label>
-            <input
-              {...register('email')}
-              type="email"
-              id="email"
-              autoComplete="email webauthn"
-              className={`input ${errors.email ? 'input-error' : ''}`}
-              placeholder="pilot@example.com"
-            />
-            {errors.email && (
-              <p className="form-error">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="password" className="form-label">
-              {t('auth:login.password')}
-            </label>
-            <input
-              {...register('password')}
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              className={`input ${errors.password ? 'input-error' : ''}`}
-              placeholder="••••••••"
-            />
-            {errors.password && (
-              <p className="form-error">{errors.password.message}</p>
-            )}
-          </div>
-
-          <div className="text-right">
-            <Link
-              to="/reset-password"
-              className="text-sm text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
-            >
-              {t('auth:login.forgotPassword')}
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting || login.isPending}
-            className="btn-primary w-full btn-lg"
-          >
-            {isSubmitting || login.isPending ? t('auth:login.signingIn') : t('auth:login.logIn')}
-          </button>
-
-          {passkeyAvailable && (
-            <>
-              <div className="flex items-center gap-3 text-xs text-slate-400">
-                <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-                <span>{t('auth:login.or')}</span>
-                <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-              </div>
-              <button
-                type="button"
-                onClick={handlePasskeyLogin}
-                disabled={passkeyLogin.isPending}
-                className="btn-secondary w-full btn-lg"
-              >
-                {passkeyLogin.isPending ? t('auth:login.passkeySigningIn') : t('auth:login.signInWithPasskey')}
-              </button>
-            </>
-          )}
-
-          <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-            {t('auth:login.noAccount')}{' '}
-            <Link
-              to="/register"
-              className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              {t('auth:login.createOne')}
-            </Link>
-          </p>
-        </form>
+          <LocalLogin />
         )}
       </div>
     </div>
