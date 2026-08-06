@@ -30,6 +30,24 @@ const renderWithProviders = (component: React.ReactElement) => {
   );
 };
 
+const localProviders = {
+  mode: 'local',
+  passwordLoginEnabled: true,
+  registrationEnabled: true,
+  twoFactorEnabled: true,
+  webauthnEnabled: true,
+  oidc: { enabled: false },
+};
+
+const oidcProviders = {
+  mode: 'oidc',
+  passwordLoginEnabled: false,
+  registrationEnabled: false,
+  twoFactorEnabled: false,
+  webauthnEnabled: false,
+  oidc: { enabled: true, name: 'Authentik', authorizeUrl: '/api/v1/auth/oidc/authorize' },
+};
+
 describe('LoginPage', () => {
   const mockLogin = {
     mutateAsync: vi.fn(),
@@ -41,6 +59,11 @@ describe('LoginPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(useAuthHook, 'useLogin').mockReturnValue(mockLogin as any);
+    vi.spyOn(useAuthHook, 'useAuthProviders').mockReturnValue({
+      data: localProviders,
+      isPending: false,
+      isError: false,
+    } as any);
   });
 
   it('renders login form', () => {
@@ -152,8 +175,67 @@ describe('LoginPage', () => {
 
   it('navigates to register page', () => {
     renderWithProviders(<LoginPage />);
-    
+
     const registerLink = screen.getByText(/create one/i);
     expect(registerLink).toHaveAttribute('href', '/register');
+  });
+
+  it('shows a loading state while the capability probe is pending', () => {
+    vi.spyOn(useAuthHook, 'useAuthProviders').mockReturnValue({
+      data: undefined,
+      isPending: true,
+      isError: false,
+    } as any);
+
+    renderWithProviders(<LoginPage />);
+
+    expect(screen.getByText(/checking sign-in options/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
+  });
+
+  it('falls back to the password form when the probe fails', () => {
+    vi.spyOn(useAuthHook, 'useAuthProviders').mockReturnValue({
+      data: undefined,
+      isPending: false,
+      isError: true,
+    } as any);
+
+    renderWithProviders(<LoginPage />);
+
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+  });
+
+  describe('OIDC mode', () => {
+    beforeEach(() => {
+      vi.spyOn(useAuthHook, 'useAuthProviders').mockReturnValue({
+        data: oidcProviders,
+        isPending: false,
+        isError: false,
+      } as any);
+    });
+
+    it('renders only the SSO button, no password form or register link', () => {
+      renderWithProviders(<LoginPage />);
+
+      expect(screen.getByRole('button', { name: /sign in with authentik/i })).toBeInTheDocument();
+      expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/create one/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/forgot password/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/sign in with passkey/i)).not.toBeInTheDocument();
+    });
+
+    it('navigates to the authorize URL on click', async () => {
+      const user = userEvent.setup();
+      const assign = vi.fn();
+      const original = window.location.assign;
+      window.location.assign = assign;
+      try {
+        renderWithProviders(<LoginPage />);
+        await user.click(screen.getByRole('button', { name: /sign in with authentik/i }));
+        expect(assign).toHaveBeenCalledWith('/api/v1/auth/oidc/authorize');
+      } finally {
+        window.location.assign = original;
+      }
+    });
   });
 });

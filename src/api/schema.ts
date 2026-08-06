@@ -4,6 +4,63 @@
  */
 
 export interface paths {
+    "/auth/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Which sign-in methods this server offers
+         * @description Unauthenticated capability probe. A NinerLog server runs in exactly one
+         *     authentication mode, and the client uses this to decide which sign-in
+         *     UI to render before anyone has logged in.
+         *
+         *     * `local` — email/password, optional TOTP and passkeys, self-service
+         *       registration (the default).
+         *     * `oidc` — a single external identity provider owns all accounts.
+         *       Password, registration, password-reset, TOTP and passkey endpoints
+         *       all answer `503` in this mode.
+         *
+         *     In `oidc` mode the client sends the browser to `authorizeUrl`, which is
+         *     a redirect endpoint rather than a JSON API.
+         */
+        get: operations["getAuthProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/oidc/exchange": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Exchange an OIDC handoff code for tokens
+         * @description Final step of the OIDC login. After the provider redirects the browser
+         *     back to `/auth/oidc/callback`, the API sends it on to the frontend with
+         *     a single-use `oidc_code` query parameter. The client posts that code
+         *     here to receive the normal access/refresh token pair.
+         *
+         *     The code is redeemable exactly once and expires within a minute, which
+         *     is why the tokens themselves never appear in a URL.
+         */
+        post: operations["exchangeOidcCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/register": {
         parameters: {
             query?: never;
@@ -86,7 +143,14 @@ export interface paths {
         put?: never;
         /**
          * Login
-         * @description Authenticate with email and password to receive JWT tokens
+         * @description Authenticate with email and password.
+         *
+         *     The 200 response has two shapes. An account without two-factor
+         *     authentication receives the tokens directly (`AuthResponse`). An account
+         *     with two-factor authentication receives a challenge
+         *     (`TwoFactorLoginRequired`) instead, and must exchange the
+         *     `twoFactorToken` for tokens at `/auth/2fa/login`. Clients decide which
+         *     one they got from the presence of `requiresTwoFactor`.
          */
         post: operations["loginUser"];
         delete?: never;
@@ -188,6 +252,15 @@ export interface paths {
         /**
          * Reset password with token
          * @description Reset the user's password using a token received via email.
+         *
+         *     **Two-factor accounts:** a password reset does NOT bypass or disable 2FA. When the
+         *     account has TOTP enabled, `twoFactorCode` is required and must be a valid TOTP code
+         *     or one of the account's unused recovery codes; 2FA stays enabled afterwards. Clients
+         *     should submit the token and new password first, then re-submit with the code after
+         *     receiving `401` with `code: two_factor_required`.
+         *
+         *     On success all refresh tokens are revoked and a confirmation email is sent to the
+         *     account address.
          */
         post: operations["resetPassword"];
         delete?: never;
@@ -406,7 +479,13 @@ export interface paths {
         post?: never;
         /**
          * Delete current user account
-         * @description Permanently delete the authenticated user's account and all associated data (licenses, flights, tokens). This action cannot be undone.
+         * @description Permanently delete the authenticated user's account and all associated
+         *     data (licenses, flights, tokens). This action cannot be undone.
+         *
+         *     Confirmation depends on the server's authentication mode:
+         *     * **local mode** — send `password`.
+         *     * **OIDC mode** — there is no local password, so send `confirmEmail`
+         *       holding the account's own email address instead.
          */
         delete: operations["deleteCurrentUser"];
         options?: never;
@@ -2009,6 +2088,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sync/deletions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List deletions since a watermark
+         * @description Deletions are invisible to `updatedSince`: a removed record simply stops appearing, so a client that mirrors the logbook would keep it forever. This endpoint reports what was deleted, against the same watermark the list endpoints take, so a sync pass is "pull changes, then pull deletions".
+         *
+         *     Covers flights, aircraft, contacts, credentials and licenses. Entries are ordered oldest-first so a client can page forward and advance its watermark as it goes.
+         *
+         *     Retention is bounded (90 days by default). When `since` predates the retention horizon, older tombstones may already have been swept, so the response sets `watermarkExpired` and the client must fall back to a full ID-set reconciliation instead of trusting the list to be complete.
+         */
+        get: operations["listDeletions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2128,7 +2231,7 @@ export interface components {
             qrUri: string;
         };
         WebAuthnRegistrationOptions: {
-            /** @description Opaque session id to send back with the verify request */
+            /** @description Opaque single-use ceremony handle to send back with the verify request. Hold it in memory for the duration of the ceremony; it must not be persisted. */
             sessionId: string;
             /** @description WebAuthn `PublicKeyCredentialCreationOptions` (passed verbatim to `navigator.credentials.create`) */
             publicKey: {
@@ -2136,7 +2239,7 @@ export interface components {
             };
         };
         WebAuthnLoginOptions: {
-            /** @description Opaque session id to send back with the verify request */
+            /** @description Opaque single-use ceremony handle to send back with the verify request. Hold it in memory for the duration of the ceremony; it must not be persisted. */
             sessionId: string;
             /** @description WebAuthn `PublicKeyCredentialRequestOptions` (passed verbatim to `navigator.credentials.get`) */
             publicKey: {
@@ -2168,8 +2271,17 @@ export interface components {
              */
             recoveryCodes: string[];
         };
+        /**
+         * @description Returned by `/auth/login` with status 200 when the account has two-factor
+         *     authentication enabled. No session exists yet: the credentials were
+         *     accepted, but the second factor is still outstanding.
+         */
         TwoFactorLoginRequired: {
-            /** @example true */
+            /**
+             * @description Always `true`. Present only on this shape, so clients can use it to
+             *     tell a challenge from a completed `AuthResponse`.
+             * @example true
+             */
             requiresTwoFactor: boolean;
             /** @description Temporary token to use with /auth/2fa/login */
             twoFactorToken: string;
@@ -2191,6 +2303,36 @@ export interface components {
              */
             expiresIn: number;
             user: components["schemas"]["User"];
+        };
+        /** @description The sign-in methods this server offers. Exactly one authentication mode is active; the flags below are all derived from it and from what the operator has configured. */
+        AuthProviders: {
+            /**
+             * @description The active authentication mode
+             * @enum {string}
+             */
+            mode: "local" | "oidc";
+            /** @description Whether email/password sign-in is accepted */
+            passwordLoginEnabled: boolean;
+            /** @description Whether self-service registration is accepted */
+            registrationEnabled: boolean;
+            /** @description Whether users can set up TOTP two-factor authentication */
+            twoFactorEnabled: boolean;
+            /** @description Whether passkey registration and login are available */
+            webauthnEnabled: boolean;
+            oidc: {
+                /** @description Whether OIDC single sign-on is configured */
+                enabled: boolean;
+                /**
+                 * @description Display name for the sign-in button, from OIDC_PROVIDER_NAME
+                 * @example Authentik
+                 */
+                name?: string;
+                /**
+                 * @description Where to send the browser to start the login. A redirect endpoint, not a JSON API — navigate to it, do not fetch it.
+                 * @example /api/v1/auth/oidc/authorize
+                 */
+                authorizeUrl?: string;
+            };
         };
         RegistrationResponse: {
             /**
@@ -2989,7 +3131,7 @@ export interface components {
             isFlightReview?: boolean;
             isProficiencyCheck?: boolean;
             /** @enum {string|null} */
-            launchMethod?: "winch" | "aerotow" | "self-launch" | "null" | null;
+            launchMethod?: "winch" | "aerotow" | "self-launch" | null;
             /** @description Name of the PIC */
             picName?: string | null;
             /** @description Multi-pilot time in minutes */
@@ -3407,6 +3549,62 @@ export interface components {
                  */
                 totalPages: number;
             };
+        };
+        Deletion: {
+            /**
+             * @description Which collection the deleted record belonged to
+             * @example flight
+             * @enum {string}
+             */
+            entity: "flight" | "aircraft" | "contact" | "credential" | "license";
+            /**
+             * Format: uuid
+             * @description Id of the deleted record, as it was reported by the list endpoints
+             * @example 660e8400-e29b-41d4-a716-446655440001
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description When the record was deleted
+             * @example 2026-08-05T11:12:13.456789Z
+             */
+            deletedAt: string;
+        };
+        DeletionFeed: {
+            /** @description Deletions after the watermark, oldest first */
+            data: components["schemas"]["Deletion"][];
+            pagination: {
+                /**
+                 * @description Current page (1-indexed)
+                 * @example 1
+                 */
+                page: number;
+                /**
+                 * @description Items per page
+                 * @example 100
+                 */
+                pageSize: number;
+                /**
+                 * @description Total number of deletions after the watermark
+                 * @example 3
+                 */
+                total: number;
+                /**
+                 * @description Total number of pages
+                 * @example 1
+                 */
+                totalPages: number;
+            };
+            /**
+             * @description How long a tombstone is kept before it is swept
+             * @example 90
+             */
+            retentionDays: number;
+            /**
+             * @description True when `since` predates the retention horizon. Tombstones older than that may already have been swept, so this page is not a complete account of what was deleted and the client must fall back to a full ID-set reconciliation.
+             * @example false
+             */
+            watermarkExpired: boolean;
         };
         FlightSession: {
             /** Format: uuid */
@@ -4335,6 +4533,13 @@ export interface components {
             /** @description Whether cloud backups are enabled (BACKUP_CREDENTIALS_KEY is set) */
             cloudBackupsConfigured: boolean;
             /**
+             * @description Active authentication mode (oidc when OIDC_ISSUER is set)
+             * @enum {string}
+             */
+            authMode?: "local" | "oidc";
+            /** @description Configured OIDC issuer URL. Present only in oidc mode; the client ID and secret are never exposed. */
+            oidcIssuer?: string;
+            /**
              * @description Names of registered cloud backup providers (e.g. s3, sftp, webdav). Empty when cloud backups are disabled.
              * @example [
              *       "s3",
@@ -5028,6 +5233,20 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
+        /** @description The server runs in OIDC mode, where the identity provider owns all accounts and credentials. Every local-credential endpoint — passwords, registration, email verification, TOTP and passkeys — is switched off. Clients should call GET /auth/providers and render the OIDC sign-in path instead. */
+        LocalAuthDisabled: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "Local authentication is disabled on this server (OIDC mode)"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
     };
     parameters: {
         /** @description License UUID */
@@ -5046,6 +5265,12 @@ export interface components {
         CredentialId: string;
         /** @description Import UUID */
         ImportId: string;
+        /**
+         * @description Delta sync: return only records whose `updatedAt` is **strictly after** this instant. The value is an RFC 3339 date-time and is compared with full timestamp precision, so a client can pass back the highest `updatedAt` it has seen and receive exactly what changed since. Combines with the endpoint's other filters (ANDed) and pages as usual; on paginated endpoints `pagination.total` counts the delta.
+         *     A bare `YYYY-MM-DD` is also accepted and read as midnight UTC on that date. An empty value is treated as if the parameter were omitted. Anything else returns 400.
+         *     Deletions are not reported: a removed record simply stops appearing.
+         */
+        UpdatedSince: string;
     };
     requestBodies: never;
     headers: never;
@@ -5053,6 +5278,81 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getAuthProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Enabled authentication methods */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthProviders"];
+                };
+            };
+        };
+    };
+    exchangeOidcCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The single-use code from the `oidc_code` query parameter */
+                    code: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Login successful */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            /** @description The code is unknown, expired, or has already been redeemed */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The account has been disabled by an administrator */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description OIDC is not configured on this server */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     registerUser: {
         parameters: {
             query?: never;
@@ -5105,6 +5405,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            503: components["responses"]["LocalAuthDisabled"];
         };
     };
     verifyEmail: {
@@ -5141,6 +5442,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            503: components["responses"]["LocalAuthDisabled"];
         };
     };
     resendVerificationEmail: {
@@ -5170,6 +5472,7 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["BadRequest"];
+            503: components["responses"]["LocalAuthDisabled"];
         };
     };
     loginUser: {
@@ -5196,13 +5499,18 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Login successful */
+            /**
+             * @description Either a completed login, or — when the account has two-factor
+             *     authentication enabled — a challenge to be completed at
+             *     `/auth/2fa/login`. The two shapes are mutually exclusive: exactly one
+             *     branch validates any given body.
+             */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AuthResponse"];
+                    "application/json": components["schemas"]["AuthResponse"] | components["schemas"]["TwoFactorLoginRequired"];
                 };
             };
             /** @description Invalid credentials */
@@ -5226,6 +5534,16 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Too many failed login attempts — the account is temporarily locked. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            503: components["responses"]["LocalAuthDisabled"];
         };
     };
     logoutUser: {
@@ -5320,6 +5638,7 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            503: components["responses"]["LocalAuthDisabled"];
         };
     };
     requestPasswordReset: {
@@ -5349,6 +5668,7 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["BadRequest"];
+            503: components["responses"]["LocalAuthDisabled"];
         };
     };
     resetPassword: {
@@ -5368,6 +5688,12 @@ export interface operations {
                      * @description The new password (minimum 12 characters)
                      */
                     newPassword: string;
+                    /**
+                     * @description TOTP code or recovery code. Required when the account has 2FA enabled,
+                     *     ignored otherwise.
+                     * @example 123456
+                     */
+                    twoFactorCode?: string;
                 };
             };
         };
@@ -5388,6 +5714,29 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /**
+             * @description The account has 2FA enabled and no code was supplied (`code: two_factor_required`)
+             *     or the supplied code was wrong (`code: invalid_two_factor_code`). The reset token
+             *     is not consumed, so the request can be retried with a valid code.
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Too many failed two-factor attempts — the account is temporarily locked */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            503: components["responses"]["LocalAuthDisabled"];
         };
     };
     webauthnRegisterOptions: {
@@ -5409,7 +5758,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
-            /** @description WebAuthn is not configured on this server */
+            /** @description Passkeys are unavailable: either WEBAUTHN_RP_ID is unset, or the server runs in OIDC mode, where all local credential methods are switched off. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -5428,7 +5777,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Session id returned from `/auth/webauthn/register/options` */
+                    /** @description Single-use ceremony handle returned from `/auth/webauthn/register/options`. Rejected if it has expired, has already been used, or was issued for a different user. */
                     sessionId: string;
                     /** @description Optional human-readable label for the passkey */
                     label?: string;
@@ -5459,7 +5808,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
-            /** @description WebAuthn is not configured on this server */
+            /** @description Passkeys are unavailable: either WEBAUTHN_RP_ID is unset, or the server runs in OIDC mode, where all local credential methods are switched off. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -5496,7 +5845,7 @@ export interface operations {
                     "application/json": components["schemas"]["WebAuthnLoginOptions"];
                 };
             };
-            /** @description WebAuthn is not configured on this server */
+            /** @description Passkeys are unavailable: either WEBAUTHN_RP_ID is unset, or the server runs in OIDC mode, where all local credential methods are switched off. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -5515,6 +5864,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
+                    /** @description Single-use ceremony handle returned from `/auth/webauthn/login/options`. Rejected if it has expired or has already been used. */
                     sessionId: string;
                     /** @description Raw `PublicKeyCredential` returned from `navigator.credentials.get` */
                     response: {
@@ -5551,7 +5901,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description WebAuthn is not configured on this server */
+            /** @description Passkeys are unavailable: either WEBAUTHN_RP_ID is unset, or the server runs in OIDC mode, where all local credential methods are switched off. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -5639,6 +5989,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            503: components["responses"]["LocalAuthDisabled"];
         };
     };
     verify2FA: {
@@ -5668,6 +6019,7 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            503: components["responses"]["LocalAuthDisabled"];
         };
     };
     disable2FA: {
@@ -5694,6 +6046,7 @@ export interface operations {
                 content?: never;
             };
             401: components["responses"]["Unauthorized"];
+            503: components["responses"]["LocalAuthDisabled"];
         };
     };
     login2FA: {
@@ -5724,6 +6077,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            503: components["responses"]["LocalAuthDisabled"];
         };
     };
     getCurrentUser: {
@@ -5759,9 +6113,14 @@ export interface operations {
                 "application/json": {
                     /**
                      * Format: password
-                     * @description Current password for confirmation
+                     * @description Current password for confirmation (local mode)
                      */
-                    password: string;
+                    password?: string;
+                    /**
+                     * Format: email
+                     * @description The account's own email address, typed as confirmation. Required in OIDC mode, where no local password exists.
+                     */
+                    confirmEmail?: string;
                 };
             };
         };
@@ -5773,6 +6132,7 @@ export interface operations {
                 };
                 content?: never;
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
         };
     };
@@ -6008,7 +6368,14 @@ export interface operations {
     };
     listLicenses: {
         parameters: {
-            query?: never;
+            query?: {
+                /**
+                 * @description Delta sync: return only records whose `updatedAt` is **strictly after** this instant. The value is an RFC 3339 date-time and is compared with full timestamp precision, so a client can pass back the highest `updatedAt` it has seen and receive exactly what changed since. Combines with the endpoint's other filters (ANDed) and pages as usual; on paginated endpoints `pagination.total` counts the delta.
+                 *     A bare `YYYY-MM-DD` is also accepted and read as midnight UTC on that date. An empty value is treated as if the parameter were omitted. Anything else returns 400.
+                 *     Deletions are not reported: a removed record simply stops appearing.
+                 */
+                updatedSince?: components["parameters"]["UpdatedSince"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -6024,6 +6391,7 @@ export interface operations {
                     "application/json": components["schemas"]["License"][];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
         };
     };
@@ -6325,7 +6693,14 @@ export interface operations {
     };
     listCredentials: {
         parameters: {
-            query?: never;
+            query?: {
+                /**
+                 * @description Delta sync: return only records whose `updatedAt` is **strictly after** this instant. The value is an RFC 3339 date-time and is compared with full timestamp precision, so a client can pass back the highest `updatedAt` it has seen and receive exactly what changed since. Combines with the endpoint's other filters (ANDed) and pages as usual; on paginated endpoints `pagination.total` counts the delta.
+                 *     A bare `YYYY-MM-DD` is also accepted and read as midnight UTC on that date. An empty value is treated as if the parameter were omitted. Anything else returns 400.
+                 *     Deletions are not reported: a removed record simply stops appearing.
+                 */
+                updatedSince?: components["parameters"]["UpdatedSince"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -6341,6 +6716,7 @@ export interface operations {
                     "application/json": components["schemas"]["Credential"][];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
         };
     };
@@ -6455,6 +6831,12 @@ export interface operations {
                 page?: number;
                 /** @description Items per page */
                 pageSize?: number;
+                /**
+                 * @description Delta sync: return only records whose `updatedAt` is **strictly after** this instant. The value is an RFC 3339 date-time and is compared with full timestamp precision, so a client can pass back the highest `updatedAt` it has seen and receive exactly what changed since. Combines with the endpoint's other filters (ANDed) and pages as usual; on paginated endpoints `pagination.total` counts the delta.
+                 *     A bare `YYYY-MM-DD` is also accepted and read as midnight UTC on that date. An empty value is treated as if the parameter were omitted. Anything else returns 400.
+                 *     Deletions are not reported: a removed record simply stops appearing.
+                 */
+                updatedSince?: components["parameters"]["UpdatedSince"];
             };
             header?: never;
             path?: never;
@@ -6471,6 +6853,7 @@ export interface operations {
                     "application/json": components["schemas"]["PaginatedAircraft"];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
         };
     };
@@ -6683,6 +7066,12 @@ export interface operations {
                 sortOrder?: "asc" | "desc";
                 /** @description Filter flights for a separate-logbook license. Only returns flights on aircraft whose class matches the license's class ratings. */
                 logbookLicenseId?: string;
+                /**
+                 * @description Delta sync: return only records whose `updatedAt` is **strictly after** this instant. The value is an RFC 3339 date-time and is compared with full timestamp precision, so a client can pass back the highest `updatedAt` it has seen and receive exactly what changed since. Combines with the endpoint's other filters (ANDed) and pages as usual; on paginated endpoints `pagination.total` counts the delta.
+                 *     A bare `YYYY-MM-DD` is also accepted and read as midnight UTC on that date. An empty value is treated as if the parameter were omitted. Anything else returns 400.
+                 *     Deletions are not reported: a removed record simply stops appearing.
+                 */
+                updatedSince?: components["parameters"]["UpdatedSince"];
             };
             header?: never;
             path?: never;
@@ -7664,7 +8053,14 @@ export interface operations {
     };
     listContacts: {
         parameters: {
-            query?: never;
+            query?: {
+                /**
+                 * @description Delta sync: return only records whose `updatedAt` is **strictly after** this instant. The value is an RFC 3339 date-time and is compared with full timestamp precision, so a client can pass back the highest `updatedAt` it has seen and receive exactly what changed since. Combines with the endpoint's other filters (ANDed) and pages as usual; on paginated endpoints `pagination.total` counts the delta.
+                 *     A bare `YYYY-MM-DD` is also accepted and read as midnight UTC on that date. An empty value is treated as if the parameter were omitted. Anything else returns 400.
+                 *     Deletions are not reported: a removed record simply stops appearing.
+                 */
+                updatedSince?: components["parameters"]["UpdatedSince"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -7680,6 +8076,7 @@ export interface operations {
                     "application/json": components["schemas"]["Contact"][];
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
         };
     };
@@ -8656,6 +9053,37 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    listDeletions: {
+        parameters: {
+            query: {
+                /** @description Return deletions that happened strictly after this instant (RFC 3339 date-time). Use the same watermark passed to `updatedSince`. */
+                since: string;
+                /** @description Restrict the feed to a single entity type. */
+                entity?: "flight" | "aircraft" | "contact" | "credential" | "license";
+                /** @description Page number (1-indexed) */
+                page?: number;
+                /** @description Items per page */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deletions recorded since the watermark */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletionFeed"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
         };
     };
 }

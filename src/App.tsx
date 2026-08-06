@@ -13,6 +13,7 @@ const RegisterPage = lazyWithRetry(() => import('./pages/auth/RegisterPage'));
 const VerifyEmailPage = lazyWithRetry(() => import('./pages/auth/VerifyEmailPage'));
 const ResetPasswordPage = lazyWithRetry(() => import('./pages/auth/ResetPasswordPage'));
 const NewPasswordPage = lazyWithRetry(() => import('./pages/auth/NewPasswordPage'));
+const OidcCallbackPage = lazyWithRetry(() => import('./pages/auth/OidcCallbackPage'));
 const DashboardPage = lazyWithRetry(() => import('./pages/DashboardPage'));
 const LicensesPage = lazyWithRetry(() => import('./pages/licenses/LicensesPage'));
 const FlightsPage = lazyWithRetry(() => import('./pages/flights/FlightsPage'));
@@ -68,6 +69,7 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/new-password" element={<NewPasswordPage />} />
+        <Route path="/auth/callback" element={<OidcCallbackPage />} />
         <Route path="/sign" element={<SignPage />} />
 
         {/* Protected routes */}

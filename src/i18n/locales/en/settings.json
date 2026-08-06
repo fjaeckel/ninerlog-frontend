@@ -46,7 +46,8 @@
     "updateFailed": "Failed to update profile.",
     "nameRequired": "Name is required.",
     "nameTooLong": "Name must not exceed 255 characters.",
-    "invalidEmail": "Please enter a valid email address."
+    "invalidEmail": "Please enter a valid email address.",
+    "managedByProvider": "Name and email are managed by your identity provider and update automatically when you sign in."
   },
   "changePassword": {
     "title": "Change Password",
@@ -152,7 +153,9 @@
     "deleteAccountDesc": "Permanently delete your account and all associated data. This is irreversible.",
     "deleteAccountPrompt": "Enter your password to confirm account deletion:",
     "deleteAccountButton": "Permanently Delete Account",
-    "deleteAccountFailed": "Failed to delete account. Check your password."
+    "deleteAccountFailed": "Failed to delete account. Check your password.",
+    "deleteAccountPromptEmail": "Type your account email address to confirm deletion:",
+    "confirmDeletionEmail": "Confirm deletion email address"
   },
   "language": {
     "title": "Language",
