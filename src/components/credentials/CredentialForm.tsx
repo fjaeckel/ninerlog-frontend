@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateCredential, useUpdateCredential, useCredential } from '../../hooks/useCredentials';
 import { extractApiError } from '../../lib/errors';
-import { DocumentImageGallery } from '../documents/DocumentImageGallery';
+import { DocumentFileGallery } from '../documents/DocumentFileGallery';
 
 const CREDENTIAL_TYPES = [
   { value: 'EASA_CLASS1_MEDICAL', label: 'EASA Class 1 Medical' },
@@ -206,7 +206,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
         />
       </div>
 
-      <DocumentImageGallery subject="credential" subjectId={credentialId} />
+      <DocumentFileGallery subject="credential" subjectId={credentialId} />
 
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={isSubmitting} className="btn-primary flex-1">

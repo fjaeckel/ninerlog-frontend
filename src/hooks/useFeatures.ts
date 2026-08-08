@@ -3,7 +3,7 @@ import { apiClient } from '../api/client';
 import type { components } from '../api/schema';
 
 type Features = components['schemas']['Features'];
-type DocumentImagesFeature = Features['documentImages'];
+type DocumentFilesFeature = Features['documentFiles'];
 
 /**
  * Which optional features this server has switched on.
@@ -34,13 +34,13 @@ export const useFeatures = () => {
  * limits are only meaningful when `enabled` is true; they mirror the server's
  * own so a file can be rejected before it is sent.
  */
-export const useDocumentImagesFeature = (): DocumentImagesFeature & { isLoading: boolean } => {
+export const useDocumentFilesFeature = (): DocumentFilesFeature & { isLoading: boolean } => {
   const { data, isLoading } = useFeatures();
   return {
-    enabled: data?.documentImages.enabled ?? false,
-    maxBytes: data?.documentImages.maxBytes ?? 0,
-    maxPerDocument: data?.documentImages.maxPerDocument ?? 0,
-    allowedContentTypes: data?.documentImages.allowedContentTypes ?? [],
+    enabled: data?.documentFiles.enabled ?? false,
+    maxBytes: data?.documentFiles.maxBytes ?? 0,
+    maxPerDocument: data?.documentFiles.maxPerDocument ?? 0,
+    allowedContentTypes: data?.documentFiles.allowedContentTypes ?? [],
     isLoading,
   };
 };

@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  useDocumentImages,
-  type DocumentImage,
+  useDocumentFiles,
+  isImageFile,
+  type DocumentFile,
   type DocumentSubject,
-} from '../../hooks/useDocumentImages';
-import { useDocumentImagesFeature } from '../../hooks/useFeatures';
+} from '../../hooks/useDocumentFiles';
+import { useDocumentFilesFeature } from '../../hooks/useFeatures';
 import { Dialog } from '../ui/Dialog';
-import { DocumentImageThumb } from './DocumentImageThumb';
+import { DocumentFileThumb } from './DocumentFileThumb';
 
-interface DocumentImageStripProps {
+interface DocumentFileStripProps {
   subject: DocumentSubject;
   subjectId: string;
   /**
@@ -36,17 +37,17 @@ interface DocumentImageStripProps {
  * when the document has no photos — an empty strip on every card would be
  * noise on an account that never uploads any.
  */
-export function DocumentImageStrip({ subject, subjectId, max = 2 }: DocumentImageStripProps) {
+export function DocumentFileStrip({ subject, subjectId, max = 2 }: DocumentFileStripProps) {
   const { t } = useTranslation('documents');
-  const feature = useDocumentImagesFeature();
-  const [preview, setPreview] = useState<DocumentImage | null>(null);
+  const feature = useDocumentFilesFeature();
+  const [preview, setPreview] = useState<DocumentFile | null>(null);
 
-  const { data: images } = useDocumentImages(subject, subjectId, feature.enabled);
+  const { data: files } = useDocumentFiles(subject, subjectId, feature.enabled);
 
-  if (!feature.enabled || !images || images.length === 0) return null;
+  if (!feature.enabled || !files || files.length === 0) return null;
 
-  const shown = images.slice(0, max);
-  const hidden = images.length - shown.length;
+  const shown = files.slice(0, max);
+  const hidden = files.length - shown.length;
 
   return (
     <div className="mt-3">
@@ -54,21 +55,21 @@ export function DocumentImageStrip({ subject, subjectId, max = 2 }: DocumentImag
         {t('title')}
       </p>
       <ul className="flex items-center gap-2">
-        {shown.map((image) => (
-          <li key={image.id} className="w-14 shrink-0">
-            <DocumentImageThumb
+        {shown.map((file) => (
+          <li key={file.id} className="w-14 shrink-0">
+            <DocumentFileThumb
               subject={subject}
               subjectId={subjectId}
-              image={image}
+              file={file}
               size="sm"
-              onClick={() => setPreview(image)}
+              onClick={isImageFile(file) ? () => setPreview(file) : undefined}
             />
           </li>
         ))}
         {hidden > 0 && (
           <li
             className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300"
-            title={t('count', { count: images.length, max: feature.maxPerDocument })}
+            title={t('count', { count: files.length, max: feature.maxPerDocument })}
           >
             +{hidden}
           </li>
@@ -82,7 +83,7 @@ export function DocumentImageStrip({ subject, subjectId, max = 2 }: DocumentImag
         maxWidthClassName="max-w-3xl"
       >
         {preview && (
-          <DocumentImageThumb subject={subject} subjectId={subjectId} image={preview} full />
+          <DocumentFileThumb subject={subject} subjectId={subjectId} file={preview} full />
         )}
       </Dialog>
     </div>

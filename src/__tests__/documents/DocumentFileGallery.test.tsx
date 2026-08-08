@@ -2,16 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { DocumentImageGallery } from '../../components/documents/DocumentImageGallery';
-import * as documentImageHooks from '../../hooks/useDocumentImages';
+import { DocumentFileGallery } from '../../components/documents/DocumentFileGallery';
+import * as documentFileHooks from '../../hooks/useDocumentFiles';
 import * as featureHooks from '../../hooks/useFeatures';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_PER_DOCUMENT = 5;
 
-const anImage = (id: string, caption?: string) => ({
+const aFile = (id: string, caption?: string, contentType: 'image/png' | 'application/pdf' = 'image/png') => ({
   id,
-  contentType: 'image/png' as const,
+  contentType,
   byteSize: 2048,
   caption,
   createdAt: '2026-01-01T00:00:00Z',
@@ -24,40 +24,42 @@ const renderGallery = (subjectId: string | null = 'lic-1') => {
   });
   return render(
     <QueryClientProvider client={queryClient}>
-      <DocumentImageGallery subject="license" subjectId={subjectId} />
+      <DocumentFileGallery subject="license" subjectId={subjectId} />
     </QueryClientProvider>
   );
 };
 
 const mockUpload = { mutateAsync: vi.fn(), isPending: false };
 const mockDelete = { mutateAsync: vi.fn(), isPending: false };
+const mockDownload = { mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false };
 
-function mockFeature(overrides: Partial<ReturnType<typeof featureHooks.useDocumentImagesFeature>> = {}) {
-  vi.spyOn(featureHooks, 'useDocumentImagesFeature').mockReturnValue({
+function mockFeature(overrides: Partial<ReturnType<typeof featureHooks.useDocumentFilesFeature>> = {}) {
+  vi.spyOn(featureHooks, 'useDocumentFilesFeature').mockReturnValue({
     enabled: true,
     maxBytes: MAX_BYTES,
     maxPerDocument: MAX_PER_DOCUMENT,
-    allowedContentTypes: ['image/jpeg', 'image/png'],
+    allowedContentTypes: ['image/jpeg', 'image/png', 'application/pdf'],
     isLoading: false,
     ...overrides,
   });
 }
 
-function mockImages(images: ReturnType<typeof anImage>[]) {
-  vi.spyOn(documentImageHooks, 'useDocumentImages').mockReturnValue({
+function mockFiles(images: ReturnType<typeof aFile>[]) {
+  vi.spyOn(documentFileHooks, 'useDocumentFiles').mockReturnValue({
     data: images,
     isLoading: false,
   } as never);
 }
 
-describe('DocumentImageGallery', () => {
+describe('DocumentFileGallery', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFeature();
-    mockImages([]);
-    vi.spyOn(documentImageHooks, 'useUploadDocumentImage').mockReturnValue(mockUpload as never);
-    vi.spyOn(documentImageHooks, 'useDeleteDocumentImage').mockReturnValue(mockDelete as never);
-    vi.spyOn(documentImageHooks, 'useDocumentImageUrl').mockReturnValue({
+    mockFiles([]);
+    vi.spyOn(documentFileHooks, 'useUploadDocumentFile').mockReturnValue(mockUpload as never);
+    vi.spyOn(documentFileHooks, 'useDeleteDocumentFile').mockReturnValue(mockDelete as never);
+    vi.spyOn(documentFileHooks, 'useDownloadDocumentFile').mockReturnValue(mockDownload as never);
+    vi.spyOn(documentFileHooks, 'useDocumentFileUrl').mockReturnValue({
       data: 'blob:preview',
       isLoading: false,
       isError: false,
@@ -75,11 +77,11 @@ describe('DocumentImageGallery', () => {
   it('tells the user to save first when the record does not exist yet', () => {
     renderGallery(null);
     expect(screen.getByText(/save the record first/i)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /add photo/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /add file/i })).not.toBeInTheDocument();
   });
 
   it('shows the stored photos and how many slots are used', () => {
-    mockImages([anImage('a', 'Front page'), anImage('b')]);
+    mockFiles([aFile('a', 'Front page'), aFile('b')]);
     renderGallery();
 
     expect(screen.getByText('Front page')).toBeInTheDocument();
@@ -92,7 +94,7 @@ describe('DocumentImageGallery', () => {
     renderGallery();
 
     const file = new File(['x'], 'front.png', { type: 'image/png' });
-    await user.upload(screen.getByTestId('document-image-input'), file);
+    await user.upload(screen.getByTestId('document-file-input'), file);
 
     await waitFor(() => expect(mockUpload.mutateAsync).toHaveBeenCalledWith({ file }));
   });
@@ -105,7 +107,7 @@ describe('DocumentImageGallery', () => {
 
     const tooBig = new File([''], 'huge.png', { type: 'image/png' });
     Object.defineProperty(tooBig, 'size', { value: MAX_BYTES + 1 });
-    await user.upload(screen.getByTestId('document-image-input'), tooBig);
+    await user.upload(screen.getByTestId('document-file-input'), tooBig);
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/limit is 5 MB/i);
     expect(mockUpload.mutateAsync).not.toHaveBeenCalled();
@@ -116,22 +118,22 @@ describe('DocumentImageGallery', () => {
   // picker that ignored it would.
   it('rejects an unsupported format without sending it', async () => {
     renderGallery();
-    const input = screen.getByTestId('document-image-input');
+    const input = screen.getByTestId('document-file-input');
 
     fireEvent.change(input, {
       target: { files: [new File(['<svg/>'], 'evil.svg', { type: 'image/svg+xml' })] },
     });
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/only jpeg and png/i);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/only jpeg, png and pdf/i);
     expect(mockUpload.mutateAsync).not.toHaveBeenCalled();
   });
 
   it('disables uploading once the document is full', () => {
-    mockImages(Array.from({ length: MAX_PER_DOCUMENT }, (_, i) => anImage(`img-${i}`)));
+    mockFiles(Array.from({ length: MAX_PER_DOCUMENT }, (_, i) => aFile(`img-${i}`)));
     renderGallery();
 
-    expect(screen.getByRole('button', { name: /add photo/i })).toBeDisabled();
-    expect(screen.getByText(/maximum of 5 photos/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /add file/i })).toBeDisabled();
+    expect(screen.getByText(/maximum of 5 files/i)).toBeInTheDocument();
   });
 
   it('surfaces a server rejection', async () => {
@@ -140,24 +142,61 @@ describe('DocumentImageGallery', () => {
     renderGallery();
 
     await user.upload(
-      screen.getByTestId('document-image-input'),
+      screen.getByTestId('document-file-input'),
       new File(['x'], 'front.png', { type: 'image/png' })
     );
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/exceeds the maximum size/i);
   });
 
-  it('asks before deleting a photo', async () => {
+
+  // A PDF is served by the API as an attachment specifically so untrusted
+  // document bytes never render in this origin. The client must honour that:
+  // no blob fetch, no preview, download only.
+  describe('PDFs', () => {
+    it('shows an icon tile and never fetches the bytes', () => {
+      const blobUrl = vi.spyOn(documentFileHooks, 'useDocumentFileUrl');
+      mockFiles([aFile('a', 'Official scan', 'application/pdf')]);
+      renderGallery();
+
+      expect(screen.getByTestId('document-file-icon')).toBeInTheDocument();
+      expect(screen.queryByRole('img')).not.toBeInTheDocument();
+      // The hook is still called (hooks must be unconditional) but disabled by
+      // being handed a null id, so no request goes out.
+      expect(blobUrl).toHaveBeenCalledWith('license', 'lic-1', null);
+    });
+
+    it('offers no full-size preview for a PDF', async () => {
+      const user = userEvent.setup();
+      mockFiles([aFile('a', undefined, 'application/pdf')]);
+      renderGallery();
+
+      expect(screen.queryByRole('button', { name: /view full size/i })).not.toBeInTheDocument();
+      // The download control is the way out instead.
+      await user.click(screen.getByRole('button', { name: /download file/i }));
+      await waitFor(() => expect(mockDownload.mutate).toHaveBeenCalled());
+    });
+
+    it('still renders images alongside PDFs', () => {
+      mockFiles([aFile('a', undefined, 'image/png'), aFile('b', undefined, 'application/pdf')]);
+      renderGallery();
+
+      expect(screen.getAllByRole('img')).toHaveLength(1);
+      expect(screen.getByTestId('document-file-icon')).toBeInTheDocument();
+    });
+  });
+
+  it('asks before deleting a file', async () => {
     const user = userEvent.setup();
-    mockImages([anImage('a')]);
+    mockFiles([aFile('a')]);
     renderGallery();
 
-    await user.click(screen.getByRole('button', { name: /delete photo/i }));
+    await user.click(screen.getByRole('button', { name: /delete file/i }));
     expect(await screen.findByText(/cannot be undone/i)).toBeInTheDocument();
     expect(mockDelete.mutateAsync).not.toHaveBeenCalled();
 
     const dialog = screen.getByRole('alertdialog');
-    await user.click(within(dialog).getByRole('button', { name: /delete photo/i }));
+    await user.click(within(dialog).getByRole('button', { name: /delete file/i }));
     await waitFor(() => expect(mockDelete.mutateAsync).toHaveBeenCalledWith('a'));
   });
 });

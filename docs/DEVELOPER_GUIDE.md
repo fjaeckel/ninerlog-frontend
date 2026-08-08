@@ -290,22 +290,30 @@ off, so some endpoints answer `403` on an otherwise valid request.
 redeploys, so it is fetched once and kept for the session.
 
 UI for a switchable feature is gated on the probe rather than on the failure —
-`DocumentImageGallery` renders `null` when licence/credential images are
+`DocumentFileGallery` renders `null` when licence/credential images are
 disabled instead of offering an upload button that can only 403. The
-per-feature hook (e.g. `useDocumentImagesFeature`) defaults to **disabled**
+per-feature hook (e.g. `useDocumentFilesFeature`) defaults to **disabled**
 until the probe answers, so a slow or failed probe never produces a control
 that cannot work. Its limits (max size, max count) mirror the server's, which
 is what lets a doomed upload be rejected client-side before it is sent.
 
 ### Fetching bytes, not JSON
 
-Licence and credential photos are served from authenticated endpoints, so a
-plain `<img src>` pointing at the API would 401. `useDocumentImageUrl` fetches
-through the same `apiClient` with `parseAs: 'blob'` — which keeps the auth
-header and the 401-refresh retry — and hands back an object URL that it revokes
-when the consumer unmounts. Uploads go the other way: a `FormData` body passed
-to `apiClient.POST` is forwarded untouched, so the browser sets the multipart
-boundary and the request still goes through the interceptor.
+Licence and credential files are served from authenticated endpoints, so a plain
+`<img src>` pointing at the API would 401. `useDocumentFileUrl` fetches through the same
+`apiClient` with `parseAs: 'blob'` — which keeps the auth header and the 401-refresh
+retry — and hands back an object URL that it revokes when the consumer unmounts. Uploads
+go the other way: a `FormData` body passed to `apiClient.POST` is forwarded untouched, so
+the browser sets the multipart boundary and the request still goes through the
+interceptor.
+
+**Not every file is fetched.** The API serves images with `Content-Disposition: inline`
+and everything else — today, PDFs — as `attachment`, precisely so untrusted document bytes
+never render inside this origin. The client mirrors that split rather than working around
+it: `isImageFile()` decides, images get a thumbnail, and a PDF gets an icon tile whose
+bytes are **never** fetched. Pulling a PDF into a blob URL to show it in an `<iframe>`
+would walk straight back around the server's decision, so the only way a non-image leaves
+the API is `useDownloadDocumentFile`, on an explicit click.
 
 ---
 

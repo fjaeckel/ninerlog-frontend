@@ -5,7 +5,7 @@ import { isPast, differenceInDays } from 'date-fns';
 import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateClassRating } from '../../hooks/useClassRatings';
 import { extractApiError } from '../../lib/errors';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
-import { DocumentImageStrip } from '../documents/DocumentImageStrip';
+import { DocumentFileStrip } from '../documents/DocumentFileStrip';
 
 const CLASS_TYPE_OPTIONS = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
@@ -138,7 +138,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
               </span>
             </div>
           )}
-          <DocumentImageStrip subject="license" subjectId={license.id} />
+          <DocumentFileStrip subject="license" subjectId={license.id} />
         </div>
 
         {/* Details + Class Ratings */}

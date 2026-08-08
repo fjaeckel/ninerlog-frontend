@@ -1,22 +1,25 @@
 {
-  "title": "Photos",
-  "subtitle": "Keep a photo of the document with the record.",
-  "addPhoto": "Add photo",
+  "title": "Files",
+  "subtitle": "Keep a photo or scan of the document with the record.",
+  "addPhoto": "Add file",
   "uploading": "Uploading…",
-  "noPhotos": "No photos yet.",
+  "noPhotos": "No files yet.",
   "count": "{{count}} of {{max}}",
-  "limitReached": "This document already has the maximum of {{max}} photos.",
-  "saveFirst": "Save the record first — photos can be added once it exists.",
+  "limitReached": "This document already has the maximum of {{max}} files.",
+  "saveFirst": "Save the record first — files can be added once it exists.",
   "captionPlaceholder": "Caption (optional)",
   "openFull": "View full size",
-  "deletePhoto": "Delete photo",
-  "deleteConfirm": "Delete this photo? This cannot be undone.",
-  "loadFailed": "Photo could not be loaded.",
-  "hint": "JPEG or PNG, up to {{size}} each.",
+  "downloadFile": "Download file",
+  "pdf": "PDF",
+  "deletePhoto": "Delete file",
+  "deleteConfirm": "Delete this file? This cannot be undone.",
+  "loadFailed": "File could not be loaded.",
+  "hint": "JPEG, PNG or PDF, up to {{size}} each.",
   "errors": {
     "tooLarge": "That file is {{size}}. The limit is {{max}}.",
-    "unsupportedType": "Only JPEG and PNG photos can be uploaded.",
-    "uploadFailed": "The photo could not be uploaded. Please try again.",
-    "deleteFailed": "The photo could not be deleted. Please try again."
+    "unsupportedType": "Only JPEG, PNG and PDF files can be uploaded.",
+    "uploadFailed": "The file could not be uploaded. Please try again.",
+    "deleteFailed": "The file could not be deleted. Please try again.",
+    "downloadFailed": "The file could not be downloaded. Please try again."
   }
 }

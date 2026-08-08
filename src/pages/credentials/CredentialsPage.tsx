@@ -7,7 +7,7 @@ import { SkeletonGrid } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import HelpLink from '../../components/ui/HelpLink';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
-import { DocumentImageStrip } from '../../components/documents/DocumentImageStrip';
+import { DocumentFileStrip } from '../../components/documents/DocumentFileStrip';
 
 function getExpiryStatus(expiryDate: string | null | undefined): { label: string; class: string } {
   if (!expiryDate) return { label: 'No expiry', class: 'badge-current' };
@@ -142,7 +142,7 @@ export default function CredentialsPage() {
                         {status.label}
                       </span>
                     </div>
-                    <DocumentImageStrip subject="credential" subjectId={cred.id} />
+                    <DocumentFileStrip subject="credential" subjectId={cred.id} />
                   </div>
 
                   {/* Details grid */}

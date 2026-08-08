@@ -22,7 +22,7 @@ async function openCredentialEditForm(page: Page, matchText: string) {
   await expect(page.getByRole('heading', { name: 'Edit Credential' })).toBeVisible();
 }
 
-test.describe('Document images', () => {
+test.describe('Document files', () => {
   let auth: AuthContext;
 
   test.beforeAll(async ({ request }) => {
@@ -33,14 +33,14 @@ test.describe('Document images', () => {
     await injectAuth(page, auth);
   });
 
-  test('uploads, shows and deletes a credential photo', async ({ page }) => {
+  test('uploads, shows and deletes a credential file', async ({ page }) => {
     await seedCredential(page, auth.accessToken, { issuingAuthority: 'Photo AME' });
     await openCredentialEditForm(page, 'Photo AME');
 
-    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
-    await expect(page.getByText('No photos yet.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Files' })).toBeVisible();
+    await expect(page.getByText('No files yet.')).toBeVisible();
 
-    await page.getByTestId('document-image-input').setInputFiles({
+    await page.getByTestId('document-file-input').setInputFiles({
       name: 'medical-front.png',
       mimeType: 'image/png',
       buffer: PNG_1x1,
@@ -52,27 +52,52 @@ test.describe('Document images', () => {
     await expect(photo).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('1 of 5')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Delete photo' }).click();
+    await page.getByRole('button', { name: 'Delete file' }).click();
     await expect(page.getByRole('alertdialog')).toBeVisible();
-    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete photo' }).click();
-    await expect(page.getByText('No photos yet.')).toBeVisible({ timeout: 10000 });
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete file' }).click();
+    await expect(page.getByText('No files yet.')).toBeVisible({ timeout: 10000 });
   });
 
-  test('refuses a file that is not a supported image', async ({ page }) => {
+  test('refuses a file that is not a supported format', async ({ page }) => {
     await seedCredential(page, auth.accessToken, { issuingAuthority: 'Reject AME' });
     await openCredentialEditForm(page, 'Reject AME');
 
-    await page.getByTestId('document-image-input').setInputFiles({
+    await page.getByTestId('document-file-input').setInputFiles({
       name: 'notes.txt',
       mimeType: 'text/plain',
       buffer: Buffer.from('not an image'),
     });
 
-    await expect(page.getByRole('alert')).toContainText(/only jpeg and png/i);
-    await expect(page.getByText('No photos yet.')).toBeVisible();
+    await expect(page.getByRole('alert')).toContainText(/only jpeg, png and pdf/i);
+    await expect(page.getByText('No files yet.')).toBeVisible();
   });
 
-  test('offers photos on a licence only once it has been saved', async ({ page }) => {
+
+  test('accepts a PDF and offers it as a download, never a preview', async ({ page }) => {
+    await seedCredential(page, auth.accessToken, { issuingAuthority: 'PDF AME' });
+    await openCredentialEditForm(page, 'PDF AME');
+
+    // A minimal but structurally real PDF — signature plus %%EOF trailer, which
+    // is exactly what the API checks.
+    const pdf = Buffer.from(
+      '%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n'
+    );
+    await page.getByTestId('document-file-input').setInputFiles({
+      name: 'medical.pdf', mimeType: 'application/pdf', buffer: pdf,
+    });
+
+    // Shown as an icon tile: the API serves PDFs as an attachment so their
+    // bytes never render in this origin, and the client honours that.
+    await expect(page.getByTestId('document-file-icon')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('1 of 5')).toBeVisible();
+    await expect(page.getByRole('button', { name: /view full size/i })).toHaveCount(0);
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Download file' }).click();
+    expect((await download).suggestedFilename()).toBe('medical.pdf');
+  });
+
+  test('offers files on a licence only once it has been saved', async ({ page }) => {
     await page.goto('/licenses');
     await page.getByRole('button', { name: 'Add License' }).first().click();
     await expect(page.getByText(/save the record first/i)).toBeVisible();
@@ -88,7 +113,7 @@ test.describe('Document images', () => {
       .getByRole('button', { name: 'Edit' })
       .click();
 
-    await page.getByTestId('document-image-input').setInputFiles({
+    await page.getByTestId('document-file-input').setInputFiles({
       name: 'licence-front.png',
       mimeType: 'image/png',
       buffer: PNG_1x1,
