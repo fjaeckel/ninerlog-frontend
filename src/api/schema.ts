@@ -4780,7 +4780,7 @@ export interface components {
             createdAt: string;
             /**
              * Format: date-time
-             * @description Last successful login timestamp
+             * @description Last successful sign-in. Recorded for every path that issues a session: password login, the second factor, a passkey, OIDC, and the sign-up verification link (following it signs the new account in). Not updated by a token refresh.
              */
             lastLoginAt?: string;
             /** @description Whether the user has verified their email address and completed sign-up */
