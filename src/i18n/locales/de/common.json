@@ -4,7 +4,11 @@
   "saveChanges": "Änderungen speichern",
   "saving": "Speichern...",
   "cancel": "Abbrechen",
-  "confirm": "Bestätigen",
+  "confirm": {
+    "areYouSure": "Sind Sie sicher?",
+    "cannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.",
+    "typeToConfirm": "Geben Sie '{{word}}' zur Bestätigung ein"
+  },
   "delete": "Löschen",
   "deleting": "Löschen...",
   "loading": "Laden...",
@@ -61,11 +65,6 @@
     "forbidden": "Sie haben keine Berechtigung für diese Aktion.",
     "notFound": "Die angeforderte Ressource wurde nicht gefunden."
   },
-  "confirm": {
-    "areYouSure": "Sind Sie sicher?",
-    "cannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.",
-    "typeToConfirm": "Geben Sie '{{word}}' zur Bestätigung ein"
-  },
   "help": {
     "title": "Hilfe-Center",
     "subtitle": "Erfahren Sie, wie Sie {{appName}} nutzen — Anleitungen für jede Funktion.",
@@ -108,7 +107,8 @@
       "auditLog": "Audit-Log",
       "maintenance": "Wartung",
       "announcements": "Ankündigungen",
-      "config": "Konfiguration"
+      "config": "Konfiguration",
+      "email": "E-Mail"
     },
     "dashboard": {
       "loadingStats": "Statistiken laden...",
@@ -161,7 +161,9 @@
       "enable": "Aktivieren",
       "unlock": "Entsperren",
       "reset2fa": "2FA zurücksetzen",
-      "delete": "Löschen"
+      "delete": "Löschen",
+      "scheduledDeletion": "Löschung {{date}}",
+      "scheduledDeletionTitle": "Dieses Konto wird an diesem Datum gelöscht, sofern die Adresse nicht vorher bestätigt wird."
     },
     "audit": {
       "timestamp": "Zeitstempel",
@@ -178,7 +180,19 @@
       "smtpTest": "SMTP-Test",
       "smtpTestDesc": "Eine Test-E-Mail an Ihre Admin-E-Mail-Adresse senden, um die SMTP-Konfiguration zu überprüfen.",
       "sendTestEmail": "Test-E-Mail senden",
-      "sending": "Senden..."
+      "sending": "Senden...",
+      "unverifiedSweep": "Nicht bestätigte Konten",
+      "unverifiedSweepDesc": "Fällige Bestätigungserinnerungen senden und anschließend Konten löschen, deren Erinnerung länger als die Aufbewahrungsfrist zurückliegt und die weiterhin unbestätigt sind.",
+      "unverifiedSweepWarning": "Das Löschen ist unwiderruflich und entfernt sämtliche Daten des Kontos.",
+      "unverifiedSweepDisabled": "Auf dieser Installation nicht aktiv.",
+      "runSweep": "Durchlauf starten",
+      "sweeping": "Läuft…",
+      "unverifiedResult": "Durchlauf abgeschlossen: {{reminders}} Erinnerung(en) gesendet, {{deleted}} Konto/Konten gelöscht.",
+      "disabledReason": {
+        "oidc_mode": "Hier verwaltet Single Sign-on die Konten. Ein nicht bestätigtes Konto bedeutet, dass der Anbieter die Adresse nicht bestätigt hat — nicht, dass das Konto aufgegeben wurde. Eine Löschung auf dieser Grundlage würde aktiv genutzte Konten entfernen. Im SSO-Modus nicht aktivierbar.",
+        "smtp_not_configured": "SMTP ist nicht konfiguriert; Konten gelten bei der Registrierung sofort als bestätigt, es gibt also nichts nachzuverfolgen.",
+        "disabled_by_configuration": "Über UNVERIFIED_CLEANUP_ENABLED=false deaktiviert."
+      }
     },
     "config": {
       "title": "Laufzeitkonfiguration",
@@ -197,7 +211,12 @@
       "cloudBackupProviders": "Cloud-Backup-Anbieter",
       "cloudBackupProvidersNone": "Keine registriert",
       "configured": "Konfiguriert",
-      "notConfigured": "Nicht konfiguriert"
+      "notConfigured": "Nicht konfiguriert",
+      "unverifiedCleanup": "Bereinigung nicht bestätigter Konten",
+      "unverifiedCleanupOn": "Erinnerung nach {{reminder}}, Löschung {{retention}} später",
+      "unverifiedCleanupOff": "Deaktiviert",
+      "emailSuppressed": "Gesperrte Adressen",
+      "unverifiedCleanupOffOidc": "Deaktiviert (Single Sign-on)"
     },
     "announcements": {
       "createTitle": "Ankündigung erstellen",
@@ -212,6 +231,36 @@
       "activeTitle": "Aktive Ankündigungen",
       "noAnnouncements": "Keine aktiven Ankündigungen.",
       "expires": "Läuft ab"
+    },
+    "email": {
+      "suppressedBadge": "Nicht zustellbar",
+      "suppressedTitle": "Diese Adresse hat E-Mails dauerhaft abgelehnt. Es wird nichts mehr an sie gesendet, das Konto kann also erst nach Aufhebung der Sperre bestätigt werden.",
+      "suppressionsTitle": "Gesperrte Adressen",
+      "suppressionsDesc": "Adressen, die E-Mails dauerhaft abgelehnt haben. An sie wird nichts gesendet. Heben Sie die Sperre auf, sobald das Postfach wieder funktioniert.",
+      "noSuppressions": "Keine gesperrten Adressen — alle Empfänger nehmen weiterhin E-Mails an.",
+      "bouncedSummary": "Letzter Bounce {{date}} · SMTP {{code}} · {{count}} insgesamt",
+      "lift": "Sperre aufheben",
+      "liftSuccess": "An {{email}} wird wieder zugestellt.",
+      "liftFailed": "Die Sperre für {{email}} konnte nicht aufgehoben werden.",
+      "deliveriesTitle": "Zustellprotokoll",
+      "deliveriesDesc": "Was der empfangende Server zu jeder gesendeten Nachricht gemeldet hat.",
+      "filterPlaceholder": "Nach Empfängeradresse filtern…",
+      "noDeliveries": "Keine Zustellereignisse aufgezeichnet.",
+      "colRecipient": "Empfänger",
+      "colType": "Nachricht",
+      "colStatus": "Ergebnis",
+      "colWhen": "Zeitpunkt",
+      "asyncCaveat": "Zugestellt bedeutet, dass der empfangende Server die Nachricht angenommen hat — nicht, dass sie im Postfach angekommen ist. Ein Server, der zuerst annimmt und später zurückweist, ist hier nicht sichtbar.",
+      "status": {
+        "delivered": "Zugestellt",
+        "hard_bounce": "Hard Bounce",
+        "soft_bounce": "Soft Bounce",
+        "rejected": "Abgelehnt",
+        "invalid_address": "Ungültige Adresse",
+        "suppressed": "Gesperrt",
+        "server_error": "Serverfehler",
+        "dry_run": "Nicht gesendet (kein SMTP)"
+      }
     }
   }
 }

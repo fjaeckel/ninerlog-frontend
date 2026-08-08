@@ -129,6 +129,9 @@ export default function RegisterPage() {
             <p className="text-sm text-slate-600 dark:text-slate-400">
               {t('auth:register.checkYourEmail.description', { email: registeredEmail })}
             </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {t('auth:register.checkYourEmail.retentionNotice')}
+            </p>
             {resentNotice && (
               <div className="bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
                 {t('auth:register.checkYourEmail.resent')}

@@ -4,7 +4,11 @@
   "saveChanges": "Save Changes",
   "saving": "Saving...",
   "cancel": "Cancel",
-  "confirm": "Confirm",
+  "confirm": {
+    "areYouSure": "Are you sure?",
+    "cannotBeUndone": "This action cannot be undone.",
+    "typeToConfirm": "Type '{{word}}' to confirm"
+  },
   "delete": "Delete",
   "deleting": "Deleting...",
   "loading": "Loading...",
@@ -61,11 +65,6 @@
     "forbidden": "You don't have permission to perform this action.",
     "notFound": "The requested resource was not found."
   },
-  "confirm": {
-    "areYouSure": "Are you sure?",
-    "cannotBeUndone": "This action cannot be undone.",
-    "typeToConfirm": "Type '{{word}}' to confirm"
-  },
   "help": {
     "title": "Help Base",
     "subtitle": "Learn how to use {{appName}} — guides for every feature.",
@@ -108,7 +107,8 @@
       "auditLog": "Audit Log",
       "maintenance": "Maintenance",
       "announcements": "Announcements",
-      "config": "Config"
+      "config": "Config",
+      "email": "Email"
     },
     "dashboard": {
       "loadingStats": "Loading stats...",
@@ -161,7 +161,9 @@
       "enable": "Enable",
       "unlock": "Unlock",
       "reset2fa": "Reset 2FA",
-      "delete": "Delete"
+      "delete": "Delete",
+      "scheduledDeletion": "Deletion {{date}}",
+      "scheduledDeletionTitle": "This account will be deleted on this date unless the address is confirmed first."
     },
     "audit": {
       "timestamp": "Timestamp",
@@ -178,7 +180,19 @@
       "smtpTest": "SMTP Test",
       "smtpTestDesc": "Send a test email to your admin email address to verify SMTP configuration is working.",
       "sendTestEmail": "Send Test Email",
-      "sending": "Sending..."
+      "sending": "Sending...",
+      "unverifiedSweep": "Unverified accounts",
+      "unverifiedSweepDesc": "Send any due verification reminders, then delete accounts that were reminded longer ago than the retention window and are still unverified.",
+      "unverifiedSweepWarning": "Deletion is irreversible and removes everything the account owns.",
+      "unverifiedSweepDisabled": "Not running on this deployment.",
+      "runSweep": "Run sweep",
+      "sweeping": "Sweeping…",
+      "unverifiedResult": "Sweep complete: {{reminders}} reminder(s) sent, {{deleted}} account(s) deleted.",
+      "disabledReason": {
+        "oidc_mode": "Single sign-on is in charge of accounts here. An unverified account means the provider did not confirm the address — not that the account was abandoned — so deleting on that basis would remove accounts that are in use. This cannot be switched on in SSO mode.",
+        "smtp_not_configured": "SMTP is not configured, so accounts are marked verified at sign-up and there is nothing to chase.",
+        "disabled_by_configuration": "Switched off with UNVERIFIED_CLEANUP_ENABLED=false."
+      }
     },
     "config": {
       "title": "Runtime Configuration",
@@ -197,7 +211,12 @@
       "cloudBackupProviders": "Cloud Backup Providers",
       "cloudBackupProvidersNone": "None registered",
       "configured": "Configured",
-      "notConfigured": "Not configured"
+      "notConfigured": "Not configured",
+      "unverifiedCleanup": "Unverified account cleanup",
+      "unverifiedCleanupOn": "Reminder after {{reminder}}, deleted {{retention}} later",
+      "unverifiedCleanupOff": "Disabled",
+      "emailSuppressed": "Suppressed addresses",
+      "unverifiedCleanupOffOidc": "Disabled (single sign-on)"
     },
     "announcements": {
       "createTitle": "Create Announcement",
@@ -212,6 +231,36 @@
       "activeTitle": "Active Announcements",
       "noAnnouncements": "No active announcements.",
       "expires": "Expires"
+    },
+    "email": {
+      "suppressedBadge": "Undeliverable",
+      "suppressedTitle": "This address refused mail permanently. Nothing further is sent to it, so the account cannot be verified until the suppression is lifted.",
+      "suppressionsTitle": "Suppressed addresses",
+      "suppressionsDesc": "Addresses that refused mail permanently. Nothing is sent to them. Lift a suppression once the mailbox is known to work again.",
+      "noSuppressions": "No suppressed addresses — every recipient is still accepting mail.",
+      "bouncedSummary": "Last bounce {{date}} · SMTP {{code}} · {{count}} total",
+      "lift": "Lift suppression",
+      "liftSuccess": "Mail to {{email}} will be attempted again.",
+      "liftFailed": "Could not lift the suppression for {{email}}.",
+      "deliveriesTitle": "Delivery log",
+      "deliveriesDesc": "What the receiving server said about each message we sent.",
+      "filterPlaceholder": "Filter by recipient address…",
+      "noDeliveries": "No delivery events recorded.",
+      "colRecipient": "Recipient",
+      "colType": "Message",
+      "colStatus": "Outcome",
+      "colWhen": "When",
+      "asyncCaveat": "Delivered means the receiving server accepted the message, not that it reached an inbox — a server that accepts and then bounces later is not visible here.",
+      "status": {
+        "delivered": "Delivered",
+        "hard_bounce": "Hard bounce",
+        "soft_bounce": "Soft bounce",
+        "rejected": "Rejected",
+        "invalid_address": "Invalid address",
+        "suppressed": "Suppressed",
+        "server_error": "Server error",
+        "dry_run": "Not sent (no SMTP)"
+      }
     }
   }
 }
