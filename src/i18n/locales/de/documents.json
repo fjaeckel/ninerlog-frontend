@@ -1,0 +1,22 @@
+{
+  "title": "Fotos",
+  "subtitle": "Bewahre ein Foto des Dokuments beim Eintrag auf.",
+  "addPhoto": "Foto hinzufügen",
+  "uploading": "Wird hochgeladen…",
+  "noPhotos": "Noch keine Fotos.",
+  "count": "{{count}} von {{max}}",
+  "limitReached": "Dieses Dokument hat bereits die maximale Anzahl von {{max}} Fotos.",
+  "saveFirst": "Bitte zuerst speichern – Fotos können danach hinzugefügt werden.",
+  "captionPlaceholder": "Beschriftung (optional)",
+  "openFull": "In voller Größe ansehen",
+  "deletePhoto": "Foto löschen",
+  "deleteConfirm": "Dieses Foto löschen? Das kann nicht rückgängig gemacht werden.",
+  "loadFailed": "Foto konnte nicht geladen werden.",
+  "hint": "JPEG oder PNG, jeweils bis zu {{size}}.",
+  "errors": {
+    "tooLarge": "Diese Datei ist {{size}} groß. Das Limit liegt bei {{max}}.",
+    "unsupportedType": "Es können nur JPEG- und PNG-Fotos hochgeladen werden.",
+    "uploadFailed": "Das Foto konnte nicht hochgeladen werden. Bitte erneut versuchen.",
+    "deleteFailed": "Das Foto konnte nicht gelöscht werden. Bitte erneut versuchen."
+  }
+}

@@ -97,7 +97,10 @@ export function Dialog({
                 </p>
               )}
             </div>
+            {/* Renders inline, so an untyped button would submit a
+                surrounding <form> when the dialog is opened from one. */}
             <button
+              type="button"
               onClick={onClose}
               aria-label="Close"
               className="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full p-1 -mt-1 -mr-1"

@@ -281,6 +281,32 @@ graph TB
 When you add a query whose data derives from flights, **add its key to
 `FLIGHT_DEPENDENT_QUERY_KEYS`** so it stays fresh after edits.
 
+### Server-side feature switches
+
+A self-hosted NinerLog server can be deployed with optional features turned
+off, so some endpoints answer `403` on an otherwise valid request.
+`GET /features` is the capability probe, wrapped by
+[`useFeatures`](../src/hooks/useFeatures.ts). It changes only when the operator
+redeploys, so it is fetched once and kept for the session.
+
+UI for a switchable feature is gated on the probe rather than on the failure —
+`DocumentImageGallery` renders `null` when licence/credential images are
+disabled instead of offering an upload button that can only 403. The
+per-feature hook (e.g. `useDocumentImagesFeature`) defaults to **disabled**
+until the probe answers, so a slow or failed probe never produces a control
+that cannot work. Its limits (max size, max count) mirror the server's, which
+is what lets a doomed upload be rejected client-side before it is sent.
+
+### Fetching bytes, not JSON
+
+Licence and credential photos are served from authenticated endpoints, so a
+plain `<img src>` pointing at the API would 401. `useDocumentImageUrl` fetches
+through the same `apiClient` with `parseAs: 'blob'` — which keeps the auth
+header and the 401-refresh retry — and hands back an object URL that it revokes
+when the consumer unmounts. Uploads go the other way: a `FormData` body passed
+to `apiClient.POST` is forwarded untouched, so the browser sets the multipart
+boundary and the request still goes through the interceptor.
+
 ---
 
 ## 6. State Management

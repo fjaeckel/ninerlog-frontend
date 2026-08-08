@@ -50,6 +50,10 @@ describe('CredentialForm', () => {
     expect(screen.getByText('ICAO Language Level 4')).toBeInTheDocument();
     expect(screen.getByText(/ZÜP/)).toBeInTheDocument();
     expect(screen.getByText(/ZUBB/)).toBeInTheDocument();
+    // The German radio certificates are three separate options, not one.
+    expect(screen.getByText(/BZF II/)).toBeInTheDocument();
+    expect(screen.getByText(/BZF I \(/)).toBeInTheDocument();
+    expect(screen.getByText(/AZF/)).toBeInTheDocument();
   });
 
   it('validates required fields', async () => {
