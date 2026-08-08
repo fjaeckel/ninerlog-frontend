@@ -184,10 +184,15 @@
       "unverifiedSweep": "Nicht bestätigte Konten",
       "unverifiedSweepDesc": "Fällige Bestätigungserinnerungen senden und anschließend Konten löschen, deren Erinnerung länger als die Aufbewahrungsfrist zurückliegt und die weiterhin unbestätigt sind.",
       "unverifiedSweepWarning": "Das Löschen ist unwiderruflich und entfernt sämtliche Daten des Kontos.",
-      "unverifiedSweepDisabled": "Auf dieser Installation deaktiviert — erfordert eine SMTP-Konfiguration und UNVERIFIED_CLEANUP_ENABLED darf nicht auf false stehen.",
+      "unverifiedSweepDisabled": "Auf dieser Installation nicht aktiv.",
       "runSweep": "Durchlauf starten",
       "sweeping": "Läuft…",
-      "unverifiedResult": "Durchlauf abgeschlossen: {{reminders}} Erinnerung(en) gesendet, {{deleted}} Konto/Konten gelöscht."
+      "unverifiedResult": "Durchlauf abgeschlossen: {{reminders}} Erinnerung(en) gesendet, {{deleted}} Konto/Konten gelöscht.",
+      "disabledReason": {
+        "oidc_mode": "Hier verwaltet Single Sign-on die Konten. Ein nicht bestätigtes Konto bedeutet, dass der Anbieter die Adresse nicht bestätigt hat — nicht, dass das Konto aufgegeben wurde. Eine Löschung auf dieser Grundlage würde aktiv genutzte Konten entfernen. Im SSO-Modus nicht aktivierbar.",
+        "smtp_not_configured": "SMTP ist nicht konfiguriert; Konten gelten bei der Registrierung sofort als bestätigt, es gibt also nichts nachzuverfolgen.",
+        "disabled_by_configuration": "Über UNVERIFIED_CLEANUP_ENABLED=false deaktiviert."
+      }
     },
     "config": {
       "title": "Laufzeitkonfiguration",
@@ -210,7 +215,8 @@
       "unverifiedCleanup": "Bereinigung nicht bestätigter Konten",
       "unverifiedCleanupOn": "Erinnerung nach {{reminder}}, Löschung {{retention}} später",
       "unverifiedCleanupOff": "Deaktiviert",
-      "emailSuppressed": "Gesperrte Adressen"
+      "emailSuppressed": "Gesperrte Adressen",
+      "unverifiedCleanupOffOidc": "Deaktiviert (Single Sign-on)"
     },
     "announcements": {
       "createTitle": "Ankündigung erstellen",

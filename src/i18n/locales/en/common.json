@@ -184,10 +184,15 @@
       "unverifiedSweep": "Unverified accounts",
       "unverifiedSweepDesc": "Send any due verification reminders, then delete accounts that were reminded longer ago than the retention window and are still unverified.",
       "unverifiedSweepWarning": "Deletion is irreversible and removes everything the account owns.",
-      "unverifiedSweepDisabled": "Disabled on this deployment — it requires SMTP to be configured and UNVERIFIED_CLEANUP_ENABLED not set to false.",
+      "unverifiedSweepDisabled": "Not running on this deployment.",
       "runSweep": "Run sweep",
       "sweeping": "Sweeping…",
-      "unverifiedResult": "Sweep complete: {{reminders}} reminder(s) sent, {{deleted}} account(s) deleted."
+      "unverifiedResult": "Sweep complete: {{reminders}} reminder(s) sent, {{deleted}} account(s) deleted.",
+      "disabledReason": {
+        "oidc_mode": "Single sign-on is in charge of accounts here. An unverified account means the provider did not confirm the address — not that the account was abandoned — so deleting on that basis would remove accounts that are in use. This cannot be switched on in SSO mode.",
+        "smtp_not_configured": "SMTP is not configured, so accounts are marked verified at sign-up and there is nothing to chase.",
+        "disabled_by_configuration": "Switched off with UNVERIFIED_CLEANUP_ENABLED=false."
+      }
     },
     "config": {
       "title": "Runtime Configuration",
@@ -210,7 +215,8 @@
       "unverifiedCleanup": "Unverified account cleanup",
       "unverifiedCleanupOn": "Reminder after {{reminder}}, deleted {{retention}} later",
       "unverifiedCleanupOff": "Disabled",
-      "emailSuppressed": "Suppressed addresses"
+      "emailSuppressed": "Suppressed addresses",
+      "unverifiedCleanupOffOidc": "Disabled (single sign-on)"
     },
     "announcements": {
       "createTitle": "Create Announcement",

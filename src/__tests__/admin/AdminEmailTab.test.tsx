@@ -256,6 +256,7 @@ describe('AdminPage — unverified account lifecycle', () => {
         cloudBackupsConfigured: false,
         cloudBackupProviders: [],
         unverifiedCleanupEnabled: false,
+        unverifiedCleanupDisabledReason: 'smtp_not_configured',
       },
     });
 
@@ -265,7 +266,69 @@ describe('AdminPage — unverified account lifecycle', () => {
 
     const sweepButton = await screen.findByRole('button', { name: /run sweep/i });
     expect(sweepButton).toBeDisabled();
-    expect(screen.getByText(/Disabled on this deployment/i)).toBeInTheDocument();
+    expect(screen.getByText(/SMTP is not configured/i)).toBeInTheDocument();
+  });
+
+  it('refuses the sweep in SSO mode and explains that it cannot be switched on', async () => {
+    setAdmin();
+    mockApi({
+      '/admin/config': {
+        goVersion: 'go1.26',
+        serverUptime: '1d',
+        migrationVersion: 56,
+        airportDatabaseSize: 100,
+        corsOrigins: [],
+        rateLimitAuth: '10 req/min',
+        rateLimitAdmin: '30 req/min',
+        smtpConfigured: true,
+        adminEmailConfigured: true,
+        cloudBackupsConfigured: false,
+        cloudBackupProviders: [],
+        authMode: 'oidc',
+        // SMTP is configured and mail works — the mode alone forbids reaping,
+        // because here "unverified" describes a live account the provider did
+        // not vouch for, not an abandoned signup.
+        unverifiedCleanupEnabled: false,
+        unverifiedCleanupDisabledReason: 'oidc_mode',
+      },
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<AdminPage />);
+    await user.click(screen.getAllByRole('button', { name: /maintenance/i })[0]);
+
+    expect(await screen.findByRole('button', { name: /run sweep/i })).toBeDisabled();
+    expect(screen.getByText(/cannot be switched on in SSO mode/i)).toBeInTheDocument();
+    // The irreversible-deletion warning belongs only where deletion can happen.
+    expect(screen.queryByText(/irreversible/i)).not.toBeInTheDocument();
+  });
+
+  it('names single sign-on in the config tab rather than a bare "disabled"', async () => {
+    setAdmin();
+    mockApi({
+      '/admin/config': {
+        goVersion: 'go1.26',
+        serverUptime: '1d',
+        migrationVersion: 56,
+        airportDatabaseSize: 100,
+        corsOrigins: [],
+        rateLimitAuth: '10 req/min',
+        rateLimitAdmin: '30 req/min',
+        smtpConfigured: true,
+        adminEmailConfigured: true,
+        cloudBackupsConfigured: false,
+        cloudBackupProviders: [],
+        authMode: 'oidc',
+        unverifiedCleanupEnabled: false,
+        unverifiedCleanupDisabledReason: 'oidc_mode',
+      },
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<AdminPage />);
+    await user.click(screen.getAllByRole('button', { name: /^config$/i })[0]);
+
+    expect(await screen.findByText(/Disabled \(single sign-on\)/i)).toBeInTheDocument();
   });
 
   it('warns that the sweep deletes irreversibly when it is enabled', async () => {

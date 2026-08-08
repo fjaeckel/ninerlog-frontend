@@ -654,7 +654,9 @@ function MaintenanceTab() {
           </p>
         ) : (
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-            {t('admin.maintenance.unverifiedSweepDisabled')}
+            {t('admin.maintenance.unverifiedSweepDisabled')}{' '}
+            {config?.unverifiedCleanupDisabledReason &&
+              t(`admin.maintenance.disabledReason.${config.unverifiedCleanupDisabledReason}`)}
           </p>
         )}
         <button
@@ -719,7 +721,13 @@ function ConfigTab() {
             })}
           </span>
         )
-        : <span className="text-slate-400">{t('admin.config.unverifiedCleanupOff')}</span>,
+        : (
+          <span className="text-slate-400">
+            {data.unverifiedCleanupDisabledReason === 'oidc_mode'
+              ? t('admin.config.unverifiedCleanupOffOidc')
+              : t('admin.config.unverifiedCleanupOff')}
+          </span>
+        ),
     },
     {
       label: t('admin.config.emailSuppressed'),
