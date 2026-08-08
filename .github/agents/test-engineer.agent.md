@@ -83,7 +83,7 @@ npx playwright test --project=chromium src/__tests__/e2e/flights.spec.ts
 docker compose -f docker-compose.test.yml --profile e2e down -v
 ```
 
-**CI:** `.github/workflows/e2e.yml` — triggers on frontend changes, runs docker compose for API+DB, then Playwright.
+**CI:** `.github/workflows/e2e.yml` — runs on pull requests to `main` (and on demand), on a GitHub-hosted runner. It brings the whole `--profile e2e` stack up with `docker-compose.actions.yml` layered on top, then runs Playwright in the `frontend-e2e` container.
 
 ### E2E Helper Functions (`helpers.ts`)
 

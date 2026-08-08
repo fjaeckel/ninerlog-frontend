@@ -1,0 +1,20 @@
+# Overrides for the GitHub Actions E2E run (.github/workflows/e2e.yml).
+#
+# Everything else — services, networking, env — comes from
+# docker-compose.test.yml, so the PR gate runs the same stack developers run
+# locally. Only the two things that cannot hold on a hosted runner are changed:
+#
+#   1. The API build context. Locally the API is a sibling checkout
+#      (../ninerlog-api); actions/checkout refuses to write outside
+#      GITHUB_WORKSPACE, so CI checks it out into ./ninerlog-api instead.
+#   2. Worker count. A GitHub-hosted runner has 4 vCPUs shared with the Vite
+#      dev server, the API and Postgres, so the config default is turned down
+#      via PLAYWRIGHT_WORKERS rather than hard-coded here.
+services:
+  api-test:
+    build:
+      context: ./ninerlog-api
+
+  frontend-e2e:
+    environment:
+      - PLAYWRIGHT_WORKERS=${PLAYWRIGHT_WORKERS:-2}
