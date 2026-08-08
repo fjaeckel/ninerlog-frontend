@@ -106,7 +106,9 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 4 : undefined,
+  // 4 matches the local Docker stack; the GitHub-hosted PR runner has fewer
+  // cores to spare and turns this down via PLAYWRIGHT_WORKERS.
+  workers: process.env.CI ? Number(process.env.PLAYWRIGHT_WORKERS || 4) : undefined,
   timeout: 30000,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {

@@ -1,7 +1,18 @@
 name: E2E Tests
 
+# Pull requests only — never on push/merge. The suite boots a full stack
+# (Postgres, API, MailPit, SeaweedFS, Vite) and is the pre-merge gate, so
+# re-running it on main would only repeat what the PR already proved.
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      api_ref:
+        description: 'API branch or tag to test against (defaults to main)'
+        required: false
+        default: 'main'
+        type: string
 
 permissions:
   contents: read
@@ -13,63 +24,71 @@ concurrency:
 jobs:
   e2e:
     name: Playwright E2E Tests
+    # GitHub-hosted, not self-hosted: every run gets a clean disk, which is
+    # what the image builds below need.
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
+
+    env:
+      # Same stack developers run locally, plus the CI-only overrides.
+      COMPOSE_FILE: docker-compose.test.yml:docker-compose.actions.yml
+      COMPOSE_PROFILES: e2e
+      # A hosted runner has 4 vCPUs shared with the dev server, API and
+      # Postgres; the config default of 4 workers oversubscribes it.
+      PLAYWRIGHT_WORKERS: '2'
 
     steps:
       - name: Checkout frontend
         uses: actions/checkout@v7
 
+      # The API image is built from source. actions/checkout cannot write
+      # outside GITHUB_WORKSPACE, so the checkout lands here instead of the
+      # sibling ../ninerlog-api used locally; docker-compose.actions.yml
+      # repoints the build context to match.
+      #
+      # Cloned unauthenticated on purpose: ninerlog-api is public, and the
+      # PROJECT_REPO_TOKEN this step used to hand actions/checkout is now
+      # rejected by github.com with a 401.
       - name: Checkout API (for docker build)
-        uses: actions/checkout@v7
-        with:
-          repository: fjaeckel/ninerlog-api
-          token: ${{ secrets.PROJECT_REPO_TOKEN }}
-          path: ../ninerlog-api
+        env:
+          API_REF: ${{ inputs.api_ref || 'main' }}
+        run: |
+          git clone --depth 1 --branch "$API_REF" \
+            https://github.com/fjaeckel/ninerlog-api.git ninerlog-api
+          git -C ninerlog-api log -1 --format='API at %h %s'
 
-      - name: Start API + Database
-        run: docker compose -f docker-compose.test.yml --profile e2e up -d postgres-test api-test
+      # The Playwright, Node and Go images together are a few GB; the
+      # preinstalled toolchains are not used by this job.
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc || true
+          df -h /
+
+      - name: Build images
+        run: docker compose build
         env:
           DOCKER_BUILDKIT: 1
 
-      - name: Wait for API to be healthy
-        run: |
-          for i in $(seq 1 30); do
-            if docker compose -f docker-compose.test.yml exec -T api-test wget --no-verbose --tries=1 --spider http://localhost:3000/health 2>/dev/null; then
-              echo "API is healthy"
-              exit 0
-            fi
-            echo "Waiting for API... ($i/30)"
-            sleep 2
-          done
-          echo "API failed to start"
-          docker compose -f docker-compose.test.yml logs api-test
-          exit 1
+      # --wait blocks until both healthchecks pass, so a broken API or dev
+      # server fails here with its own logs instead of as a wall of Playwright
+      # timeouts. Postgres, MailPit, SeaweedFS and the bucket-init job come
+      # along via depends_on.
+      - name: Start API + frontend dev server
+        run: docker compose up -d --wait api-test frontend-dev
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '26'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
+      # Playwright runs inside the compose network, where the app is served on
+      # https://app.ninerlog.test:5173 and MailPit on mailpit-test:8025 — the
+      # hostnames the API's WebAuthn RP ID and mail links are configured for.
       - name: Run E2E tests
-        run: npx playwright test --project=chromium
-        env:
-          VITE_API_BASE_URL: http://localhost:3000/api/v1
+        run: docker compose run --rm frontend-e2e
 
       - name: Dump logs on failure
         if: failure()
-        run: docker compose -f docker-compose.test.yml --profile e2e logs
+        run: docker compose logs --tail=200
 
       - name: Stop services
         if: always()
-        run: docker compose -f docker-compose.test.yml --profile e2e down -v
+        run: docker compose down -v
 
       - name: Upload test report
         uses: actions/upload-artifact@v7
