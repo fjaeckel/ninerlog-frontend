@@ -4881,6 +4881,34 @@ export interface components {
             /** @description Addresses currently suppressed after a permanent delivery failure. */
             emailSuppressedCount?: number;
             /**
+             * @description Whether unverified accounts are reminded and then deleted. Requires
+             *     SMTP to be configured; without it, registration marks accounts
+             *     verified immediately and nothing is reaped. Always false in OIDC
+             *     mode.
+             */
+            unverifiedCleanupEnabled?: boolean;
+            /**
+             * @description Why the cleanup is not running, absent when it is. `oidc_mode` is not
+             *     configurable: with an identity provider in charge, an unverified
+             *     account is one the provider did not assert `email_verified` for — not
+             *     an abandoned signup — so reaping is refused outright.
+             * @enum {string}
+             */
+            unverifiedCleanupDisabledReason?: "oidc_mode" | "smtp_not_configured" | "disabled_by_configuration";
+            /**
+             * @description How long after signup the verification reminder is sent.
+             * @example 24h0m0s
+             */
+            unverifiedReminderAfter?: string;
+            /**
+             * @description How long an account survives, unverified, after that reminder before
+             *     it is deleted.
+             * @example 720h0m0s
+             */
+            unverifiedRetention?: string;
+            /** @description Addresses currently suppressed after a permanent delivery failure. */
+            emailSuppressedCount?: number;
+            /**
              * @description Active authentication mode (oidc when OIDC_ISSUER is set)
              * @enum {string}
              */

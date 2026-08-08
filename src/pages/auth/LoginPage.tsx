@@ -248,6 +248,9 @@ function LocalLogin() {
           data-testid="email-not-verified-banner"
         >
           <p>{t('auth:login.emailNotVerified.message')}</p>
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            {t('auth:login.emailNotVerified.retentionNotice')}
+          </p>
           {resentNotice ? (
             <p className="font-medium">{t('auth:register.checkYourEmail.resent')}</p>
           ) : (

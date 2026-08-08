@@ -169,6 +169,33 @@ describe('RegisterPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('check-email-view')).toBeInTheDocument();
     });
+
+    // Unverified accounts are deleted after 30 days. Someone who is never told
+    // that has no way to act on it, so the deadline belongs on the one screen
+    // every new signup lands on.
+    expect(screen.getByText(/deleted after 30 days/i)).toBeInTheDocument();
+  });
+
+  it('does not mention the deletion deadline when no verification is needed', async () => {
+    const user = userEvent.setup();
+    mockRegister.mutateAsync.mockResolvedValueOnce({
+      email: 'pilot@example.com',
+      verificationRequired: false,
+      message: 'account ready',
+    });
+
+    renderWithProviders(<RegisterPage />);
+
+    await user.type(screen.getByLabelText(/name/i), 'A Pilot');
+    await user.type(screen.getByLabelText(/^email/i), 'pilot@example.com');
+    await user.type(screen.getByLabelText(/^password/i), 'password1234');
+    await user.type(screen.getByLabelText(/confirm password/i), 'password1234');
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('check-email-view')).not.toBeInTheDocument();
+    });
+    expect(screen.queryByText(/deleted after 30 days/i)).not.toBeInTheDocument();
   });
 
   it('shows login-ready view when verification is not required', async () => {

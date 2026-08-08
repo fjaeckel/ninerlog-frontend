@@ -248,6 +248,77 @@ describe('ImportPage', () => {
     expect(screen.getByText('(Student)')).toBeInTheDocument();
   });
 
+  describe('drag & drop', () => {
+    const dropzone = () => document.querySelector('input[type="file"]')!.parentElement as HTMLElement;
+    const dataTransfer = (files: File[]) => ({ files, types: ['Files'], dropEffect: 'none' });
+
+    it('uploads a CSV file dropped onto the upload card', async () => {
+      const mockUpload = vi.fn().mockResolvedValue({
+        uploadToken: 'test-token',
+        format: 'CSV',
+        columns: ['Date'],
+        previewRows: [],
+        totalRows: 1,
+        suggestedMappings: [],
+      });
+      vi.spyOn(useImportHook, 'useUploadImport').mockReturnValue({ mutateAsync: mockUpload, isPending: false } as any);
+
+      renderWithProviders(<ImportPage />);
+
+      const file = new File(['test'], 'logbook.csv', { type: 'text/csv' });
+      fireEvent.drop(dropzone(), { dataTransfer: dataTransfer([file]) });
+
+      await waitFor(() => expect(mockUpload).toHaveBeenCalledWith(file));
+      await waitFor(() => expect(screen.getByText('Column Mapping')).toBeInTheDocument());
+    });
+
+    it('rejects a file whose type is not accepted', async () => {
+      const mockUpload = vi.fn();
+      vi.spyOn(useImportHook, 'useUploadImport').mockReturnValue({ mutateAsync: mockUpload, isPending: false } as any);
+
+      renderWithProviders(<ImportPage />);
+
+      const file = new File(['test'], 'logbook.pdf', { type: 'application/pdf' });
+      fireEvent.drop(dropzone(), { dataTransfer: dataTransfer([file]) });
+
+      await waitFor(() => expect(screen.getByText(/unsupported file: logbook\.pdf/i)).toBeInTheDocument());
+      expect(mockUpload).not.toHaveBeenCalled();
+    });
+
+    it('highlights the drop zone while a file is dragged over it', () => {
+      renderWithProviders(<ImportPage />);
+      const zone = dropzone();
+
+      fireEvent.dragEnter(zone, { dataTransfer: dataTransfer([]) });
+      expect(zone).toHaveAttribute('data-dragging');
+
+      fireEvent.dragLeave(zone, { dataTransfer: dataTransfer([]) });
+      expect(zone).not.toHaveAttribute('data-dragging');
+    });
+
+    it('restores a dropped JSON backup in the JSON tab', async () => {
+      const mockRestore = vi.fn().mockResolvedValue({
+        aircraftImported: 1,
+        aircraftSkipped: 0,
+        licensesImported: 0,
+        classRatingsImported: 0,
+        credentialsImported: 0,
+        flightsImported: 3,
+        crewMembersImported: 0,
+      });
+      vi.spyOn(useImportHook, 'useRestoreJSON').mockReturnValue({ mutateAsync: mockRestore, isPending: false } as any);
+
+      renderWithProviders(<ImportPage />);
+      fireEvent.click(screen.getByRole('tab', { name: /restore json backup/i }));
+
+      const file = new File(['{}'], 'backup.json', { type: 'application/json' });
+      fireEvent.drop(dropzone(), { dataTransfer: dataTransfer([file]) });
+
+      await waitFor(() => expect(mockRestore).toHaveBeenCalledWith(file));
+      await waitFor(() => expect(screen.getByText('Backup restored')).toBeInTheDocument());
+    });
+  });
+
   it('shows contacts created in result', async () => {
     const mockUpload = vi.fn().mockResolvedValue({
       uploadToken: 'test-token',
