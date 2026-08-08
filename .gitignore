@@ -1,6 +1,9 @@
 node_modules
 dist
 
+# API checkout used to build the e2e stack in GitHub Actions
+/ninerlog-api/
+
 # Test output
 test-results/
 playwright-report/

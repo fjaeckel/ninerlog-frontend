@@ -37,6 +37,10 @@ logs/
 .git/
 .gitignore
 
+# API checkout used to build the e2e stack in GitHub Actions — it has its own
+# build context and must not be copied into the frontend images.
+ninerlog-api/
+
 # CI/CD
 .github/
 
