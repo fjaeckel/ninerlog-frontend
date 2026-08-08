@@ -645,6 +645,64 @@ export interface paths {
         patch: operations["updateLicense"];
         trace?: never;
     };
+    "/licenses/{licenseId}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a licence's reference images
+         * @description Returns metadata only — the bytes are fetched one image at a time from
+         *     `/licenses/{licenseId}/images/{imageId}`.
+         */
+        get: operations["listLicenseImages"];
+        put?: never;
+        /**
+         * Upload a reference image for a licence
+         * @description Attaches a photo or scan of the licence document. At most
+         *     **5 images per licence**, each at most **5 MB**.
+         *
+         *     Only JPEG and PNG are accepted, and the format is determined from the
+         *     file's own bytes — the declared part `Content-Type` is ignored, and a
+         *     file whose *header* does not parse as the format it claims is rejected.
+         *     Validation stops at the header, so trailing bytes after a valid one are
+         *     stored as-is rather than refused; the response always serves the sniffed
+         *     type with `X-Content-Type-Options: nosniff`, so such bytes can never be
+         *     reinterpreted as anything but an image.
+         */
+        post: operations["uploadLicenseImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/licenses/{licenseId}/images/{imageId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download a licence reference image
+         * @description Returns the raw image bytes. This is an authenticated request like any
+         *     other — the image is never reachable from an unauthenticated URL, so it
+         *     cannot be loaded straight into an `<img src>`; fetch it with the
+         *     `Authorization` header and render the resulting blob.
+         */
+        get: operations["getLicenseImage"];
+        put?: never;
+        post?: never;
+        /** Delete a licence reference image */
+        delete: operations["deleteLicenseImage"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/licenses/{licenseId}/statistics": {
         parameters: {
             query?: never;
@@ -782,6 +840,87 @@ export interface paths {
         head?: never;
         /** Update credential */
         patch: operations["updateCredential"];
+        trace?: never;
+    };
+    "/credentials/{credentialId}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a credential's reference images
+         * @description Returns metadata only — the bytes are fetched one image at a time from
+         *     `/credentials/{credentialId}/images/{imageId}`.
+         */
+        get: operations["listCredentialImages"];
+        put?: never;
+        /**
+         * Upload a reference image for a credential
+         * @description Attaches a photo or scan of the credential (medical certificate,
+         *     language proficiency endorsement, radio licence, …). At most
+         *     **5 images per credential**, each at most **5 MB**.
+         *
+         *     Only JPEG and PNG are accepted, and the format is determined from the
+         *     file's own bytes — the declared part `Content-Type` is ignored, and a
+         *     file whose *header* does not parse as the format it claims is rejected.
+         *     Validation stops at the header, so trailing bytes after a valid one are
+         *     stored as-is rather than refused; the response always serves the sniffed
+         *     type with `X-Content-Type-Options: nosniff`, so such bytes can never be
+         *     reinterpreted as anything but an image.
+         */
+        post: operations["uploadCredentialImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/credentials/{credentialId}/images/{imageId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download a credential reference image
+         * @description Returns the raw image bytes. This is an authenticated request like any
+         *     other — the image is never reachable from an unauthenticated URL, so it
+         *     cannot be loaded straight into an `<img src>`; fetch it with the
+         *     `Authorization` header and render the resulting blob.
+         */
+        get: operations["getCredentialImage"];
+        put?: never;
+        post?: never;
+        /** Delete a credential reference image */
+        delete: operations["deleteCredentialImage"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/features": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Which optional features this server has switched on
+         * @description Capability probe for features an operator can disable at deploy time.
+         *     A client should call this once after sign-in and hide the affected UI
+         *     rather than discovering the `403` by trying.
+         */
+        get: operations["getFeatures"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/aircraft": {
@@ -3515,6 +3654,86 @@ export interface components {
             total: number;
         };
         /**
+         * @description Metadata for one reference photo attached to a licence or credential.
+         *     The bytes themselves are never inlined — fetch them from the image's
+         *     own authenticated URL.
+         */
+        DocumentImage: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * Format: uuid
+             * @description Set when the image belongs to a licence; null otherwise
+             */
+            licenseId?: string | null;
+            /**
+             * Format: uuid
+             * @description Set when the image belongs to a credential; null otherwise
+             */
+            credentialId?: string | null;
+            /**
+             * @description Determined from the stored bytes, not from what the uploader declared
+             * @enum {string}
+             */
+            contentType: "image/jpeg" | "image/png";
+            /**
+             * @description Size of the stored image in bytes
+             * @example 1843200
+             */
+            byteSize: number;
+            /** @example 2048 */
+            width?: number | null;
+            /** @example 1536 */
+            height?: number | null;
+            /**
+             * @description Original filename, sanitized to a basename. Display only.
+             * @example licence-front.jpg
+             */
+            filename?: string | null;
+            /** @example Front page */
+            caption?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        DocumentImageUpload: {
+            /**
+             * Format: binary
+             * @description JPEG or PNG image, at most 5 MB
+             */
+            file: string;
+            /** @description Optional short label shown with the image */
+            caption?: string;
+        };
+        /**
+         * @description Optional features an operator can switch off at deploy time, with the
+         *     limits a client needs in order to validate before uploading.
+         */
+        Features: {
+            documentImages: {
+                /** @description When false, every /images endpoint answers 403 — uploads and downloads alike */
+                enabled: boolean;
+                /**
+                 * @description Maximum size of a single image in bytes
+                 * @example 5242880
+                 */
+                maxBytes: number;
+                /**
+                 * @description Maximum number of images per licence or credential
+                 * @example 5
+                 */
+                maxPerDocument: number;
+                /**
+                 * @example [
+                 *       "image/jpeg",
+                 *       "image/png"
+                 *     ]
+                 */
+                allowedContentTypes: string[];
+            };
+        };
+        /**
          * @description Credential type:
          *     - EASA_CLASS1_MEDICAL: EASA Class 1 Medical Certificate
          *     - EASA_CLASS2_MEDICAL: EASA Class 2 Medical Certificate
@@ -3527,10 +3746,13 @@ export interface components {
          *     - LANG_ICAO_LEVEL6: Language Proficiency ICAO Level 6 (Expert)
          *     - SEC_CLEARANCE_ZUP: Security Clearance ZÜP (Germany)
          *     - SEC_CLEARANCE_ZUBB: Security Clearance ZüBB (Germany)
+         *     - RADIO_BZF2: Beschränktes Sprechfunkzeugnis II (Germany, VFR, German only)
+         *     - RADIO_BZF1: Beschränktes Sprechfunkzeugnis I (Germany, VFR, German and English)
+         *     - RADIO_AZF: Allgemeines Sprechfunkzeugnis (Germany, VFR and IFR)
          *     - OTHER: Other credential
          * @enum {string}
          */
-        CredentialType: "EASA_CLASS1_MEDICAL" | "EASA_CLASS2_MEDICAL" | "EASA_LAPL_MEDICAL" | "FAA_CLASS1_MEDICAL" | "FAA_CLASS2_MEDICAL" | "FAA_CLASS3_MEDICAL" | "LANG_ICAO_LEVEL4" | "LANG_ICAO_LEVEL5" | "LANG_ICAO_LEVEL6" | "SEC_CLEARANCE_ZUP" | "SEC_CLEARANCE_ZUBB" | "OTHER";
+        CredentialType: "EASA_CLASS1_MEDICAL" | "EASA_CLASS2_MEDICAL" | "EASA_LAPL_MEDICAL" | "FAA_CLASS1_MEDICAL" | "FAA_CLASS2_MEDICAL" | "FAA_CLASS3_MEDICAL" | "LANG_ICAO_LEVEL4" | "LANG_ICAO_LEVEL5" | "LANG_ICAO_LEVEL6" | "SEC_CLEARANCE_ZUP" | "SEC_CLEARANCE_ZUBB" | "RADIO_BZF2" | "RADIO_BZF1" | "RADIO_AZF" | "OTHER";
         Credential: {
             /** Format: uuid */
             id: string;
@@ -4628,6 +4850,8 @@ export interface components {
             adminEmailConfigured: boolean;
             /** @description Whether cloud backups are enabled (BACKUP_CREDENTIALS_KEY is set) */
             cloudBackupsConfigured: boolean;
+            /** @description Whether licence/credential reference images are enabled (DOCUMENT_IMAGES_ENABLED is not "false") */
+            documentImagesEnabled?: boolean;
             /**
              * @description Whether unverified accounts are reminded and then deleted. Requires
              *     SMTP to be configured; without it, registration marks accounts
@@ -4683,7 +4907,7 @@ export interface components {
             createdAt: string;
             /**
              * Format: date-time
-             * @description Last successful login timestamp
+             * @description Last successful sign-in. Recorded for every path that issues a session: password login, the second factor, a passkey, OIDC, and the sign-up verification link (following it signs the new account in). Not updated by a token refresh.
              */
             lastLoginAt?: string;
             /** @description Whether the user has verified their email address and completed sign-up */
@@ -5420,6 +5644,48 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
+        /** @description Document images are switched off on this server (DOCUMENT_IMAGES_ENABLED=false). Applies to reading as well as uploading: serving stored images is the bandwidth half of the abuse surface the switch exists to close. Already-stored images are retained and become reachable again if the operator re-enables the feature. Clients should consult GET /features and hide the UI. */
+        DocumentImagesDisabled: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "Document image uploads are disabled on this server"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description The licence or credential already holds the maximum number of images */
+        DocumentImageLimitReached: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "Maximum number of images for this document reached"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description The uploaded file exceeds the maximum allowed size */
+        PayloadTooLarge: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "Image exceeds the maximum size of 5 MB"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
         /** @description The server runs in OIDC mode, where the identity provider owns all accounts and credentials. Every local-credential endpoint — passwords, registration, email verification, TOTP and passkeys — is switched off. Clients should call GET /auth/providers and render the OIDC sign-in path instead. */
         LocalAuthDisabled: {
             headers: {
@@ -5450,6 +5716,8 @@ export interface components {
         SignatureToken: string;
         /** @description Credential UUID */
         CredentialId: string;
+        /** @description Document image UUID */
+        DocumentImageId: string;
         /** @description Import UUID */
         ImportId: string;
         /**
@@ -6692,6 +6960,120 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
+    listLicenseImages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The licence's images, oldest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentImage"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["DocumentImagesDisabled"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    uploadLicenseImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["DocumentImageUpload"];
+            };
+        };
+        responses: {
+            /** @description Image stored */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentImage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["DocumentImagesDisabled"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["DocumentImageLimitReached"];
+            413: components["responses"]["PayloadTooLarge"];
+        };
+    };
+    getLicenseImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+                /** @description Document image UUID */
+                imageId: components["parameters"]["DocumentImageId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Image bytes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
+                    "image/png": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["DocumentImagesDisabled"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteLicenseImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+                /** @description Document image UUID */
+                imageId: components["parameters"]["DocumentImageId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Image deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["DocumentImagesDisabled"];
+            404: components["responses"]["NotFound"];
+        };
+    };
     getLicenseStatistics: {
         parameters: {
             query?: {
@@ -7009,6 +7391,141 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    listCredentialImages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Credential UUID */
+                credentialId: components["parameters"]["CredentialId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The credential's images, oldest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentImage"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["DocumentImagesDisabled"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    uploadCredentialImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Credential UUID */
+                credentialId: components["parameters"]["CredentialId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["DocumentImageUpload"];
+            };
+        };
+        responses: {
+            /** @description Image stored */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentImage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["DocumentImagesDisabled"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["DocumentImageLimitReached"];
+            413: components["responses"]["PayloadTooLarge"];
+        };
+    };
+    getCredentialImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Credential UUID */
+                credentialId: components["parameters"]["CredentialId"];
+                /** @description Document image UUID */
+                imageId: components["parameters"]["DocumentImageId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Image bytes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
+                    "image/png": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["DocumentImagesDisabled"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteCredentialImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Credential UUID */
+                credentialId: components["parameters"]["CredentialId"];
+                /** @description Document image UUID */
+                imageId: components["parameters"]["DocumentImageId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Image deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["DocumentImagesDisabled"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getFeatures: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Enabled features and their limits */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Features"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
         };
     };
     listAircraft: {

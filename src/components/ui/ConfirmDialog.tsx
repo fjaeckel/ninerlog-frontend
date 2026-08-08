@@ -115,8 +115,12 @@ export function ConfirmDialog({
               </p>
             </div>
           </div>
+          {/* type="button" is load-bearing: this dialog renders inline, so
+              when it is opened from inside a <form> an untyped button would
+              default to submit and save the surrounding form instead. */}
           <div className="flex gap-3 justify-end">
             <button
+              type="button"
               onClick={onCancel}
               className="btn-secondary"
               disabled={isLoading}
@@ -124,6 +128,7 @@ export function ConfirmDialog({
               {cancelLabel}
             </button>
             <button
+              type="button"
               ref={confirmRef}
               onClick={onConfirm}
               className={cn(

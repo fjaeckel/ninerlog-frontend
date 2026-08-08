@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateCredential, useUpdateCredential, useCredential } from '../../hooks/useCredentials';
 import { extractApiError } from '../../lib/errors';
+import { DocumentImageGallery } from '../documents/DocumentImageGallery';
 
 const CREDENTIAL_TYPES = [
   { value: 'EASA_CLASS1_MEDICAL', label: 'EASA Class 1 Medical' },
@@ -18,6 +19,9 @@ const CREDENTIAL_TYPES = [
   { value: 'LANG_ICAO_LEVEL6', label: 'Language Proficiency ICAO Level 6 (Expert)' },
   { value: 'SEC_CLEARANCE_ZUP', label: 'Security Clearance ZÜP (Germany)' },
   { value: 'SEC_CLEARANCE_ZUBB', label: 'Security Clearance ZüBB (Germany)' },
+  { value: 'RADIO_BZF2', label: 'Radio Certificate BZF II (Germany)' },
+  { value: 'RADIO_BZF1', label: 'Radio Certificate BZF I (Germany)' },
+  { value: 'RADIO_AZF', label: 'Radio Certificate AZF (Germany)' },
   { value: 'OTHER', label: 'Other' },
 ];
 
@@ -201,6 +205,8 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
           placeholder="Additional notes..."
         />
       </div>
+
+      <DocumentImageGallery subject="credential" subjectId={credentialId} />
 
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={isSubmitting} className="btn-primary flex-1">
