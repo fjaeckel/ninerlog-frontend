@@ -37,8 +37,16 @@ test.describe('Document images', () => {
     await seedCredential(page, auth.accessToken, { issuingAuthority: 'Photo AME' });
     await openCredentialEditForm(page, 'Photo AME');
 
-    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
-    await expect(page.getByText('No photos yet.')).toBeVisible();
+    // Scope to the edit modal. The card behind it now carries a thumbnail
+    // strip of its own, so once a photo exists the page holds *two* controls
+    // labelled "View full size: medical-front.png" — one on the card, one in
+    // this gallery. An unscoped locator is a strict-mode violation, and
+    // `.first()` would silently assert against whichever happened to render
+    // first. This test is about the gallery in the form.
+    const gallery = page.getByRole('dialog');
+
+    await expect(gallery.getByRole('heading', { name: 'Photos' })).toBeVisible();
+    await expect(gallery.getByText('No photos yet.')).toBeVisible();
 
     await page.getByTestId('document-image-input').setInputFiles({
       name: 'medical-front.png',
@@ -48,14 +56,13 @@ test.describe('Document images', () => {
 
     // The bytes come back over an authenticated request and are rendered from
     // a blob URL — an <img> that resolved means the whole round trip worked.
-    const photo = page.getByRole('button', { name: /view full size/i });
-    await expect(photo).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('1 of 5')).toBeVisible();
+    await expect(gallery.getByRole('button', { name: /view full size/i })).toBeVisible({ timeout: 10000 });
+    await expect(gallery.getByText('1 of 5')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Delete photo' }).click();
+    await gallery.getByRole('button', { name: 'Delete photo' }).click();
     await expect(page.getByRole('alertdialog')).toBeVisible();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Delete photo' }).click();
-    await expect(page.getByText('No photos yet.')).toBeVisible({ timeout: 10000 });
+    await expect(gallery.getByText('No photos yet.')).toBeVisible({ timeout: 10000 });
   });
 
   test('refuses a file that is not a supported image', async ({ page }) => {
