@@ -88,12 +88,29 @@ async function fetchImageBlob(subject: DocumentSubject, subjectId: string, image
   return data as Blob;
 }
 
+/**
+ * How long a document's image list stays fresh.
+ *
+ * The global default is `staleTime: 0` with `refetchOnMount` and
+ * `refetchOnWindowFocus`, which is wrong for this query now that a strip
+ * renders on every licence and credential card: one visit to the list page
+ * would re-list images for *every* card, and again on every tab refocus. The
+ * `/images` routes share the tight per-user rate-limit bucket, so a pilot with
+ * a handful of documents would burn through it just by navigating.
+ *
+ * Deferring is safe because it never delays the user's own edits — uploading
+ * and deleting both invalidate this key, and invalidation overrides staleTime.
+ * What it defers is a change made in another tab or on another device.
+ */
+export const DOCUMENT_IMAGES_STALE_TIME_MS = 60_000;
+
 /** Metadata for a document's images. The bytes are fetched per image. */
 export const useDocumentImages = (subject: DocumentSubject, subjectId: string | null | undefined, enabled = true) => {
   return useQuery({
     queryKey: documentImagesKey(subject, subjectId ?? ''),
     queryFn: () => fetchImages(subject, subjectId as string),
     enabled: enabled && !!subjectId,
+    staleTime: DOCUMENT_IMAGES_STALE_TIME_MS,
   });
 };
 

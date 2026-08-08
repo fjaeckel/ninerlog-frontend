@@ -9,6 +9,8 @@ interface DocumentImageThumbProps {
   image: DocumentImage;
   /** Rendered at full width instead of as a fixed-height tile. */
   full?: boolean;
+  /** 'sm' is the compact square used on list cards; 'md' is the gallery tile. */
+  size?: 'sm' | 'md';
   onClick?: () => void;
 }
 
@@ -20,25 +22,26 @@ interface DocumentImageThumbProps {
  * hands over an object URL, which means every thumbnail has a real loading and
  * failure state rather than the browser's broken-image icon.
  */
-export function DocumentImageThumb({ subject, subjectId, image, full = false, onClick }: DocumentImageThumbProps) {
+export function DocumentImageThumb({ subject, subjectId, image, full = false, size = 'md', onClick }: DocumentImageThumbProps) {
   const { t } = useTranslation('documents');
   const { data: url, isLoading, isError } = useDocumentImageUrl(subject, subjectId, image.id);
 
-  const frame = full
-    ? 'w-full max-h-[70vh] object-contain'
-    : 'h-28 w-full object-cover';
+  const tile = size === 'sm' ? 'h-14 w-14' : 'h-28 w-full';
+  const frame = full ? 'w-full max-h-[70vh] object-contain' : `${tile} object-cover`;
+  const placeholder = full ? 'w-full h-64' : tile;
 
   if (isLoading) {
-    return <Skeleton className={full ? 'w-full h-64 rounded-lg' : 'h-28 w-full rounded-lg'} />;
+    return <Skeleton className={`${placeholder} rounded-lg`} />;
   }
 
   if (isError || !url) {
     return (
       <div
-        className={`flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500 ${full ? 'h-64' : 'h-28'}`}
+        className={`flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500 ${placeholder}`}
+        title={t('loadFailed')}
       >
         <ImageOff className="w-5 h-5" aria-hidden="true" />
-        <span className="text-xs px-2 text-center">{t('loadFailed')}</span>
+        {size === 'md' && <span className="text-xs px-2 text-center">{t('loadFailed')}</span>}
       </div>
     );
   }
@@ -55,7 +58,7 @@ export function DocumentImageThumb({ subject, subjectId, image, full = false, on
       onClick={onClick}
       title={t('openFull')}
       aria-label={`${t('openFull')}: ${alt}`}
-      className="block w-full rounded-lg overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      className={`block rounded-lg overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${size === 'sm' ? 'w-14' : 'w-full'}`}
     >
       <img src={url} alt={alt} className={`rounded-lg ${frame}`} />
     </button>
