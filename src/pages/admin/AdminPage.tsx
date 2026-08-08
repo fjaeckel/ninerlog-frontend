@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
-import { ShieldCheck, Search, Ban, CheckCircle, Unlock, KeyRound, Users, BarChart3, Wrench, ScrollText, Settings2, Megaphone, Trash2 } from 'lucide-react';
+import { ShieldCheck, Search, Ban, CheckCircle, Unlock, KeyRound, Users, BarChart3, Wrench, ScrollText, Settings2, Megaphone, Trash2, Mail, MailX } from 'lucide-react';
 import {
   useAdminUsers, useDisableUser, useEnableUser, useUnlockUser, useResetUser2fa, useDeleteUser,
   useAdminStats, useAdminAuditLog, useCleanupTokens, useSmtpTest, useAdminConfig,
+  useEmailDeliveries, useEmailSuppressions, useLiftEmailSuppression, useCleanupUnverifiedAccounts,
 } from '../../hooks/useAdmin';
 import { useCreateAnnouncement, useDeleteAnnouncement, useAnnouncements } from '../../hooks/useAnnouncements';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import type { AdminUser } from '../../hooks/useAdmin';
 
-type Tab = 'dashboard' | 'users' | 'audit' | 'maintenance' | 'announcements' | 'config';
+type Tab = 'dashboard' | 'users' | 'audit' | 'email' | 'maintenance' | 'announcements' | 'config';
 
 export default function AdminPage() {
   const { t } = useTranslation('common');
@@ -45,6 +46,7 @@ export default function AdminPage() {
           { id: 'dashboard' as Tab, label: t('admin.tabs.dashboard'), icon: <BarChart3 className="w-4 h-4" /> },
           { id: 'users' as Tab, label: t('admin.tabs.users'), icon: <Users className="w-4 h-4" /> },
           { id: 'audit' as Tab, label: t('admin.tabs.auditLog'), icon: <ScrollText className="w-4 h-4" /> },
+          { id: 'email' as Tab, label: t('admin.tabs.email'), icon: <Mail className="w-4 h-4" /> },
           { id: 'maintenance' as Tab, label: t('admin.tabs.maintenance'), icon: <Wrench className="w-4 h-4" /> },
           { id: 'announcements' as Tab, label: t('admin.tabs.announcements'), icon: <Megaphone className="w-4 h-4" /> },
           { id: 'config' as Tab, label: t('admin.tabs.config'), icon: <Settings2 className="w-4 h-4" /> },
@@ -77,6 +79,7 @@ export default function AdminPage() {
       {tab === 'dashboard' && <DashboardTab />}
       {tab === 'users' && <UsersTab />}
       {tab === 'audit' && <AuditLogTab />}
+      {tab === 'email' && <EmailTab />}
       {tab === 'maintenance' && <MaintenanceTab />}
       {tab === 'announcements' && <AnnouncementsTab />}
       {tab === 'config' && <ConfigTab />}
@@ -222,6 +225,16 @@ function UsersTab() {
                     {u.emailVerified
                       ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.verified')}</span>
                       : <span className="text-amber-600 dark:text-amber-400 text-xs font-medium" title={t('admin.users.unverifiedTitle')}>{t('admin.users.unverified')}</span>}
+                    {!u.emailVerified && u.scheduledDeletionAt && (
+                      <span className="text-red-600 dark:text-red-400 text-xs" title={t('admin.users.scheduledDeletionTitle')}>
+                        {t('admin.users.scheduledDeletion', { date: fmtDate(u.scheduledDeletionAt) })}
+                      </span>
+                    )}
+                    {u.emailSuppressed && (
+                      <span className="text-red-600 dark:text-red-400 text-xs font-medium" title={t('admin.email.suppressedTitle')}>
+                        {t('admin.email.suppressedBadge')}
+                      </span>
+                    )}
                   </div></td>
                   <td className="px-4 py-3">{u.twoFactorEnabled ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.enabled')}</span> : <span className="text-slate-400 text-xs">{t('admin.users.off')}</span>}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{u.flightCount}</td>
@@ -256,6 +269,14 @@ function UsersTab() {
                   {u.emailVerified
                     ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.verified')}</span>
                     : <span className="text-amber-600 dark:text-amber-400 text-xs font-medium">{t('admin.users.unverified')}</span>}
+                  {!u.emailVerified && u.scheduledDeletionAt && (
+                    <span className="text-red-600 dark:text-red-400 text-xs text-right">
+                      {t('admin.users.scheduledDeletion', { date: fmtDate(u.scheduledDeletionAt) })}
+                    </span>
+                  )}
+                  {u.emailSuppressed && (
+                    <span className="text-red-600 dark:text-red-400 text-xs font-medium">{t('admin.email.suppressedBadge')}</span>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
@@ -413,10 +434,169 @@ function AuditLogTab() {
   );
 }
 
+// Delivery statuses, ordered so the ones an operator must act on read first.
+// Only `hard_bounce` and `invalid_address` stop mail to an address; the rest
+// are informational, and colouring them alike would hide that difference.
+const DELIVERY_STATUS_TONE: Record<string, string> = {
+  delivered: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  hard_bounce: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  invalid_address: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  suppressed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  soft_bounce: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  rejected: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  server_error: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  dry_run: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+};
+
+function EmailTab() {
+  const { t } = useTranslation('common');
+  const { fmtDateTime } = useFormatPrefs();
+  const [recipientInput, setRecipientInput] = useState('');
+  const [recipient, setRecipient] = useState('');
+  const [message, setMessage] = useState('');
+
+  const deliveries = useEmailDeliveries(recipient, 100);
+  const suppressions = useEmailSuppressions(100);
+  const liftSuppression = useLiftEmailSuppression();
+
+  const handleLift = async (email: string) => {
+    setMessage('');
+    try {
+      await liftSuppression.mutateAsync(email);
+      setMessage(t('admin.email.liftSuccess', { email }));
+    } catch {
+      setMessage(t('admin.email.liftFailed', { email }));
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {message && (
+        <div className="px-4 py-3 rounded-lg text-sm bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+          {message}
+        </div>
+      )}
+
+      <div className="card">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">
+          {t('admin.email.suppressionsTitle')}
+        </h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          {t('admin.email.suppressionsDesc')}
+        </p>
+        {suppressions.isLoading && <div className="text-slate-400 text-sm">{t('common:loading')}</div>}
+        {!suppressions.isLoading && suppressions.data?.length === 0 && (
+          <div className="text-sm text-slate-500 dark:text-slate-400">{t('admin.email.noSuppressions')}</div>
+        )}
+        {!!suppressions.data?.length && (
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {suppressions.data.map((s) => (
+              <div key={s.email} className="flex flex-wrap items-center justify-between gap-2 py-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-200 break-all">
+                    <MailX className="w-4 h-4 shrink-0 text-red-500" />
+                    {s.email}
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    {t('admin.email.bouncedSummary', {
+                      count: s.bounceCount,
+                      date: fmtDateTime(s.lastBouncedAt),
+                      code: s.smtpCode ?? '—',
+                    })}
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleLift(s.email)}
+                  disabled={liftSuppression.isPending}
+                  className="btn-secondary btn-sm text-xs"
+                >
+                  {t('admin.email.lift')}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">
+          {t('admin.email.deliveriesTitle')}
+        </h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          {t('admin.email.deliveriesDesc')}
+        </p>
+        <form
+          onSubmit={(e) => { e.preventDefault(); setRecipient(recipientInput.trim()); }}
+          className="flex gap-2 mb-4"
+        >
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={recipientInput}
+              onChange={(e) => setRecipientInput(e.target.value)}
+              placeholder={t('admin.email.filterPlaceholder')}
+              className="form-input pl-9 w-full"
+            />
+          </div>
+          <button type="submit" className="btn-primary">{t('admin.users.search')}</button>
+          {recipient && (
+            <button
+              type="button"
+              onClick={() => { setRecipient(''); setRecipientInput(''); }}
+              className="btn-secondary"
+            >
+              {t('admin.users.clear')}
+            </button>
+          )}
+        </form>
+
+        {deliveries.isLoading && <div className="text-slate-400 text-sm">{t('common:loading')}</div>}
+        {!deliveries.isLoading && deliveries.data?.length === 0 && (
+          <div className="text-sm text-slate-500 dark:text-slate-400">{t('admin.email.noDeliveries')}</div>
+        )}
+        {!!deliveries.data?.length && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-slate-200 dark:border-slate-700 text-left">
+                <th className="px-3 py-2 font-medium text-slate-500">{t('admin.email.colRecipient')}</th>
+                <th className="px-3 py-2 font-medium text-slate-500">{t('admin.email.colType')}</th>
+                <th className="px-3 py-2 font-medium text-slate-500">{t('admin.email.colStatus')}</th>
+                <th className="px-3 py-2 font-medium text-slate-500">{t('admin.email.colWhen')}</th>
+              </tr></thead>
+              <tbody>
+                {deliveries.data.map((e) => (
+                  <tr key={e.id} className="border-b border-slate-100 dark:border-slate-800">
+                    <td className="px-3 py-2 text-slate-700 dark:text-slate-200 break-all">{e.recipient}</td>
+                    <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400 font-mono">{e.emailType}</td>
+                    <td className="px-3 py-2">
+                      <span
+                        className={`badge text-xs ${DELIVERY_STATUS_TONE[e.status] ?? DELIVERY_STATUS_TONE.dry_run}`}
+                        title={e.detail ?? undefined}
+                      >
+                        {t(`admin.email.status.${e.status}`)}
+                        {e.smtpCode ? ` (${e.smtpCode})` : ''}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-xs text-slate-400 whitespace-nowrap">{fmtDateTime(e.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className="mt-4 text-xs text-slate-400">{t('admin.email.asyncCaveat')}</p>
+      </div>
+    </div>
+  );
+}
+
 function MaintenanceTab() {
   const { t } = useTranslation('common');
   const cleanupTokens = useCleanupTokens();
   const smtpTest = useSmtpTest();
+  const cleanupUnverified = useCleanupUnverifiedAccounts();
+  const { data: config } = useAdminConfig();
   const [message, setMessage] = useState('');
 
   const handleCleanup = async () => {
@@ -433,6 +613,17 @@ function MaintenanceTab() {
       const result = await smtpTest.mutateAsync();
       setMessage(result.message);
     } catch { setMessage('Failed to send test email.'); }
+  };
+
+  const handleCleanupUnverified = async () => {
+    setMessage('');
+    try {
+      const result = await cleanupUnverified.mutateAsync();
+      setMessage(t('admin.maintenance.unverifiedResult', {
+        reminders: result.remindersSent,
+        deleted: result.accountsDeleted,
+      }));
+    } catch { setMessage('Failed to sweep unverified accounts.'); }
   };
 
   return (
@@ -452,6 +643,26 @@ function MaintenanceTab() {
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{t('admin.maintenance.smtpTestDesc')}</p>
         <button onClick={handleSmtpTest} disabled={smtpTest.isPending} className="btn-primary">
           {smtpTest.isPending ? t('admin.maintenance.sending') : t('admin.maintenance.sendTestEmail')}
+        </button>
+      </div>
+      <div className="card">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('admin.maintenance.unverifiedSweep')}</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{t('admin.maintenance.unverifiedSweepDesc')}</p>
+        {config?.unverifiedCleanupEnabled ? (
+          <p className="text-xs text-amber-600 dark:text-amber-400 mb-4">
+            {t('admin.maintenance.unverifiedSweepWarning')}
+          </p>
+        ) : (
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            {t('admin.maintenance.unverifiedSweepDisabled')}
+          </p>
+        )}
+        <button
+          onClick={handleCleanupUnverified}
+          disabled={cleanupUnverified.isPending || !config?.unverifiedCleanupEnabled}
+          className="btn-primary"
+        >
+          {cleanupUnverified.isPending ? t('admin.maintenance.sweeping') : t('admin.maintenance.runSweep')}
         </button>
       </div>
     </div>
@@ -496,6 +707,27 @@ function ConfigTab() {
       value: data.cloudBackupProviders.length > 0
         ? <span className="font-mono text-xs uppercase">{data.cloudBackupProviders.join(', ')}</span>
         : <span className="text-slate-400">{t('admin.config.cloudBackupProvidersNone')}</span>,
+    },
+    {
+      label: t('admin.config.unverifiedCleanup'),
+      value: data.unverifiedCleanupEnabled
+        ? (
+          <span className="text-slate-800 dark:text-slate-200">
+            {t('admin.config.unverifiedCleanupOn', {
+              reminder: data.unverifiedReminderAfter ?? '—',
+              retention: data.unverifiedRetention ?? '—',
+            })}
+          </span>
+        )
+        : <span className="text-slate-400">{t('admin.config.unverifiedCleanupOff')}</span>,
+    },
+    {
+      label: t('admin.config.emailSuppressed'),
+      value: data.emailSuppressedCount === undefined
+        ? <span className="text-slate-400">—</span>
+        : data.emailSuppressedCount > 0
+          ? <span className="text-red-600 dark:text-red-400 font-medium">{data.emailSuppressedCount}</span>
+          : <span className="text-green-600 dark:text-green-400 font-medium">0</span>,
     },
   ];
 

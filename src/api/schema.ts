@@ -1868,6 +1868,97 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/maintenance/cleanup-unverified": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sweep unverified accounts now
+         * @description Immediately run the unverified-account sweep instead of waiting for the
+         *     next scheduled pass: send any due verification reminders, then delete
+         *     accounts that were reminded longer ago than the retention window and are
+         *     still unverified.
+         *
+         *     The sweep is a no-op when SMTP is not configured, because registration
+         *     marks accounts verified on the spot in that mode and there is nothing to
+         *     chase. Deletion is irreversible. Requires admin privileges.
+         */
+        post: operations["cleanupUnverifiedAccounts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/email/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recent email delivery events
+         * @description Returns what SMTP said about recent send attempts, newest first.
+         *     Requires admin privileges.
+         */
+        get: operations["listEmailDeliveries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/email/suppressions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List suppressed email addresses
+         * @description Addresses that refused mail permanently and are no longer being written
+         *     to. Requires admin privileges.
+         */
+        get: operations["listEmailSuppressions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/email/suppressions/{email}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Lift an email suppression
+         * @description Removes the address from the suppression list so mail to it is attempted
+         *     again. Use when the mailbox is known to work again — a domain that was
+         *     misconfigured, a mailbox that was over quota. Requires admin privileges.
+         */
+        delete: operations["deleteEmailSuppression"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/config": {
         parameters: {
             query?: never;
@@ -4332,6 +4423,11 @@ export interface components {
              * @example 2
              */
             contactsCreated?: number;
+            /**
+             * @description Number of aircraft auto-created from the imported rows. Any registration that appears in the file but not yet in the user's fleet is added, so imported flights are backed by a fleet entry.
+             * @example 4
+             */
+            aircraftCreated?: number;
             /** @description IDs of the created flight log entries */
             importedFlightIds?: string[];
             /** @description Per-row errors for rows that were not imported */
@@ -4533,6 +4629,25 @@ export interface components {
             /** @description Whether cloud backups are enabled (BACKUP_CREDENTIALS_KEY is set) */
             cloudBackupsConfigured: boolean;
             /**
+             * @description Whether unverified accounts are reminded and then deleted. Requires
+             *     SMTP to be configured; without it, registration marks accounts
+             *     verified immediately and nothing is reaped.
+             */
+            unverifiedCleanupEnabled?: boolean;
+            /**
+             * @description How long after signup the verification reminder is sent.
+             * @example 24h0m0s
+             */
+            unverifiedReminderAfter?: string;
+            /**
+             * @description How long an account survives, unverified, after that reminder before
+             *     it is deleted.
+             * @example 720h0m0s
+             */
+            unverifiedRetention?: string;
+            /** @description Addresses currently suppressed after a permanent delivery failure. */
+            emailSuppressedCount?: number;
+            /**
              * @description Active authentication mode (oidc when OIDC_ISSUER is set)
              * @enum {string}
              */
@@ -4578,6 +4693,69 @@ export interface components {
             flightCount: number;
             /** @description Number of aircraft in database */
             aircraftCount: number;
+            /**
+             * Format: date-time
+             * @description When the follow-up email-verification reminder was sent. Absent when
+             *     the account is verified, or when the reminder is not due yet. This
+             *     timestamp starts the retention clock: an account still unverified
+             *     once the retention window has elapsed from here is deleted.
+             */
+            verificationReminderSentAt?: string;
+            /**
+             * Format: date-time
+             * @description When this unverified account will be deleted if the address is still
+             *     not confirmed. Absent for verified accounts and for accounts that
+             *     have not been reminded yet.
+             */
+            scheduledDeletionAt?: string;
+            /**
+             * @description Whether this address is on the suppression list after a permanent
+             *     delivery failure. A suppressed address receives no further mail, so
+             *     an unverified account with this flag set will never verify.
+             */
+            emailSuppressed?: boolean;
+        };
+        EmailDeliveryEvent: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * Format: uuid
+             * @description Account the address belonged to when sent, if any.
+             */
+            userId?: string;
+            /** Format: email */
+            recipient: string;
+            /** @description What the message was for, e.g. verify_email, verification_reminder. */
+            emailType: string;
+            /**
+             * @description What the SMTP conversation said. `delivered` means the receiving
+             *     server accepted the message — not that it reached an inbox, which an
+             *     SMTP client cannot observe. `hard_bounce` is a permanent refusal of
+             *     the recipient itself and is the only status that suppresses an
+             *     address; `rejected` and `server_error` blame the message or our own
+             *     mail setup and never do.
+             * @enum {string}
+             */
+            status: "delivered" | "hard_bounce" | "soft_bounce" | "rejected" | "invalid_address" | "suppressed" | "server_error" | "dry_run";
+            /** @description SMTP reply code, absent when there was no conversation. */
+            smtpCode?: number;
+            /** @description Server reply text or internal reason, for operators. */
+            detail?: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        EmailSuppression: {
+            /** Format: email */
+            email: string;
+            /** @description Delivery status that caused the suppression. */
+            reason: string;
+            smtpCode?: number;
+            detail?: string;
+            /** Format: date-time */
+            firstBouncedAt: string;
+            /** Format: date-time */
+            lastBouncedAt: string;
+            bounceCount: number;
         };
         PaginatedAdminUsers: {
             data: components["schemas"]["AdminUser"][];
@@ -8662,6 +8840,119 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
+        };
+    };
+    cleanupUnverifiedAccounts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sweep results */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        remindersSent: number;
+                        accountsDeleted: number;
+                        message?: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description Unverified-account cleanup is disabled on this deployment */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listEmailDeliveries: {
+        parameters: {
+            query?: {
+                /** @description Narrow the log to one address. */
+                recipient?: string;
+                /** @description Maximum events to return. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Delivery events */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EmailDeliveryEvent"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    listEmailSuppressions: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Suppressed addresses */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EmailSuppression"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    deleteEmailSuppression: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Suppression lifted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     getAdminConfig: {

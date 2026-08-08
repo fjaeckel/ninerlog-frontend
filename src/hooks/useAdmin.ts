@@ -7,8 +7,18 @@ type PaginatedAdminUsers = components['schemas']['PaginatedAdminUsers'];
 type AdminStats = components['schemas']['AdminStats'];
 type AdminConfig = components['schemas']['AdminConfig'];
 type PaginatedAdminAuditLog = components['schemas']['PaginatedAdminAuditLog'];
+type EmailDeliveryEvent = components['schemas']['EmailDeliveryEvent'];
+type EmailSuppression = components['schemas']['EmailSuppression'];
 
-export type { AdminUser, PaginatedAdminUsers, AdminStats, AdminConfig, PaginatedAdminAuditLog };
+export type {
+  AdminUser,
+  PaginatedAdminUsers,
+  AdminStats,
+  AdminConfig,
+  PaginatedAdminAuditLog,
+  EmailDeliveryEvent,
+  EmailSuppression,
+};
 
 export const useAdminUsers = (page = 1, pageSize = 20, search?: string) => {
   return useQuery({
@@ -155,6 +165,68 @@ export const useAdminConfig = () => {
       const { data, error } = await apiClient.GET('/admin/config');
       if (error) throw error;
       return data as AdminConfig;
+    },
+  });
+};
+
+export const useEmailDeliveries = (recipient?: string, limit = 100) => {
+  return useQuery({
+    queryKey: ['admin', 'email', 'deliveries', recipient, limit],
+    queryFn: async (): Promise<EmailDeliveryEvent[]> => {
+      const { data, error } = await apiClient.GET('/admin/email/deliveries', {
+        params: { query: { recipient: recipient || undefined, limit } },
+      });
+      if (error) throw error;
+      return (data as { data: EmailDeliveryEvent[] }).data;
+    },
+  });
+};
+
+export const useEmailSuppressions = (limit = 100) => {
+  return useQuery({
+    queryKey: ['admin', 'email', 'suppressions', limit],
+    queryFn: async (): Promise<EmailSuppression[]> => {
+      const { data, error } = await apiClient.GET('/admin/email/suppressions', {
+        params: { query: { limit } },
+      });
+      if (error) throw error;
+      return (data as { data: EmailSuppression[] }).data;
+    },
+  });
+};
+
+export const useLiftEmailSuppression = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const { error } = await apiClient.DELETE('/admin/email/suppressions/{email}', {
+        params: { path: { email } },
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      // The delivery log and the admin user list both show suppression state,
+      // and /admin/config counts suppressed addresses.
+      queryClient.invalidateQueries({ queryKey: ['admin', 'email'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'config'] });
+    },
+  });
+};
+
+export const useCleanupUnverifiedAccounts = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await apiClient.POST('/admin/maintenance/cleanup-unverified');
+      if (error) throw error;
+      return data as { remindersSent: number; accountsDeleted: number; message?: string };
+    },
+    onSuccess: () => {
+      // A sweep both sends reminders and deletes accounts, so the user list
+      // and the delivery log are stale afterwards.
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'email'] });
     },
   });
 };

@@ -173,6 +173,26 @@ describe('LoginPage', () => {
     });
   });
 
+  it('tells an unverified user their account is on a deletion clock', async () => {
+    const user = userEvent.setup();
+    mockLogin.mutateAsync.mockRejectedValueOnce({
+      code: 'email_not_verified',
+      error: 'Email address not verified.',
+    });
+
+    renderWithProviders(<LoginPage />);
+
+    await user.type(screen.getByLabelText(/^email/i), 'unverified@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /log in/i }));
+
+    const banner = await screen.findByTestId('email-not-verified-banner');
+    // Someone coming back later to find they still cannot log in is exactly
+    // who needs to know the account will not wait forever.
+    expect(banner).toHaveTextContent(/deleted after 30 days/i);
+    expect(screen.getByRole('button', { name: /resend verification email/i })).toBeInTheDocument();
+  });
+
   it('navigates to register page', () => {
     renderWithProviders(<LoginPage />);
 

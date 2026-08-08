@@ -72,6 +72,9 @@ export default function VerifyEmailPage() {
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {t('auth:verifyEmail.invalidOrExpired')}
               </h2>
+              <p className="text-center text-sm text-slate-600 dark:text-slate-400">
+                {t('auth:verifyEmail.expiredHint')}
+              </p>
               <p className="text-center text-sm text-slate-500 dark:text-slate-400">
                 <Link
                   to="/login"
