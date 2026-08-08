@@ -3,7 +3,7 @@ import { apiClient } from '../api/client';
 import type { components } from '../api/schema';
 
 type Features = components['schemas']['Features'];
-type DocumentImagesFeature = Features['documentImages'];
+type DocumentFilesFeature = Features['documentFiles'];
 
 /**
  * Which optional features this server has switched on.
@@ -27,20 +27,29 @@ export const useFeatures = () => {
 };
 
 /**
- * The document-image capability, with a conservative default.
+ * The document-file capability, with a conservative default.
  *
  * Until the probe answers — and if it fails — the feature reads as disabled,
  * so the UI never offers an upload control that the server would refuse. The
  * limits are only meaningful when `enabled` is true; they mirror the server's
  * own so a file can be rejected before it is sent.
+ *
+ * Every step is optional-chained, including the `documentFiles` key itself,
+ * even though the generated type says it is always present. The type describes
+ * the spec this client was built against, not whatever server it is actually
+ * talking to — an older or newer API answering `/features` without that key
+ * would otherwise throw here, during render, and take the whole page down with
+ * it rather than merely hiding an upload button. A capability probe that can
+ * crash the app is worse than no probe at all.
  */
-export const useDocumentImagesFeature = (): DocumentImagesFeature & { isLoading: boolean } => {
+export const useDocumentFilesFeature = (): DocumentFilesFeature & { isLoading: boolean } => {
   const { data, isLoading } = useFeatures();
+  const feature = data?.documentFiles as Partial<DocumentFilesFeature> | undefined;
   return {
-    enabled: data?.documentImages.enabled ?? false,
-    maxBytes: data?.documentImages.maxBytes ?? 0,
-    maxPerDocument: data?.documentImages.maxPerDocument ?? 0,
-    allowedContentTypes: data?.documentImages.allowedContentTypes ?? [],
+    enabled: feature?.enabled ?? false,
+    maxBytes: feature?.maxBytes ?? 0,
+    maxPerDocument: feature?.maxPerDocument ?? 0,
+    allowedContentTypes: feature?.allowedContentTypes ?? [],
     isLoading,
   };
 };

@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateLicense, useUpdateLicense, useLicenses } from '../../hooks/useLicenses';
 import { extractApiError } from '../../lib/errors';
-import { DocumentImageGallery } from '../documents/DocumentImageGallery';
+import { DocumentFileGallery } from '../documents/DocumentFileGallery';
 import type { LicenseCreate, LicenseUpdate } from '../../types/api';
 
 const licenseSchema = z.object({
@@ -222,7 +222,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
         </label>
       </div>
 
-      <DocumentImageGallery subject="license" subjectId={licenseId} />
+      <DocumentFileGallery subject="license" subjectId={licenseId} />
 
       <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
         <button

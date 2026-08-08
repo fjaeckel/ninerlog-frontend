@@ -645,7 +645,7 @@ export interface paths {
         patch: operations["updateLicense"];
         trace?: never;
     };
-    "/licenses/{licenseId}/images": {
+    "/licenses/{licenseId}/files": {
         parameters: {
             query?: never;
             header?: never;
@@ -653,33 +653,41 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List a licence's reference images
+         * List a licence's reference files
          * @description Returns metadata only — the bytes are fetched one image at a time from
-         *     `/licenses/{licenseId}/images/{imageId}`.
+         *     `/licenses/{licenseId}/files/{fileId}`.
          */
-        get: operations["listLicenseImages"];
+        get: operations["listLicenseFiles"];
         put?: never;
         /**
-         * Upload a reference image for a licence
+         * Upload a reference file for a licence
          * @description Attaches a photo or scan of the licence document. At most
-         *     **5 images per licence**, each at most **5 MB**.
+         *     **5 files per licence**, each at most **5 MB**.
          *
-         *     Only JPEG and PNG are accepted, and the format is determined from the
-         *     file's own bytes — the declared part `Content-Type` is ignored, and a
-         *     file whose *header* does not parse as the format it claims is rejected.
-         *     Validation stops at the header, so trailing bytes after a valid one are
-         *     stored as-is rather than refused; the response always serves the sniffed
-         *     type with `X-Content-Type-Options: nosniff`, so such bytes can never be
-         *     reinterpreted as anything but an image.
+         *     **JPEG, PNG and PDF** are accepted, and the format is determined from
+         *     the file's own bytes — the declared part `Content-Type` is ignored.
+         *
+         *     * Images must have a header that parses as the format they claim.
+         *       Validation stops at the header, so trailing bytes after a valid one
+         *       are stored as-is rather than refused.
+         *     * PDFs cannot be validated the same way: there is no header to decode
+         *       and no dimensions to bound, so the check is the `%PDF-` signature plus
+         *       a `%%EOF` trailer, and the size cap does the rest.
+         *
+         *     Every response serves the sniffed type behind
+         *     `X-Content-Type-Options: nosniff`. PDFs are additionally served with
+         *     `Content-Disposition: attachment`, because unlike an image a PDF is an
+         *     active format — it can carry scripts and embedded files — and is
+         *     therefore never rendered inside the application's own origin.
          */
-        post: operations["uploadLicenseImage"];
+        post: operations["uploadLicenseFile"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/licenses/{licenseId}/images/{imageId}": {
+    "/licenses/{licenseId}/files/{fileId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -693,11 +701,11 @@ export interface paths {
          *     cannot be loaded straight into an `<img src>`; fetch it with the
          *     `Authorization` header and render the resulting blob.
          */
-        get: operations["getLicenseImage"];
+        get: operations["getLicenseFile"];
         put?: never;
         post?: never;
         /** Delete a licence reference image */
-        delete: operations["deleteLicenseImage"];
+        delete: operations["deleteLicenseFile"];
         options?: never;
         head?: never;
         patch?: never;
@@ -842,7 +850,7 @@ export interface paths {
         patch: operations["updateCredential"];
         trace?: never;
     };
-    "/credentials/{credentialId}/images": {
+    "/credentials/{credentialId}/files": {
         parameters: {
             query?: never;
             header?: never;
@@ -850,34 +858,42 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List a credential's reference images
+         * List a credential's reference files
          * @description Returns metadata only — the bytes are fetched one image at a time from
-         *     `/credentials/{credentialId}/images/{imageId}`.
+         *     `/credentials/{credentialId}/files/{fileId}`.
          */
-        get: operations["listCredentialImages"];
+        get: operations["listCredentialFiles"];
         put?: never;
         /**
-         * Upload a reference image for a credential
+         * Upload a reference file for a credential
          * @description Attaches a photo or scan of the credential (medical certificate,
          *     language proficiency endorsement, radio licence, …). At most
-         *     **5 images per credential**, each at most **5 MB**.
+         *     **5 files per credential**, each at most **5 MB**.
          *
-         *     Only JPEG and PNG are accepted, and the format is determined from the
-         *     file's own bytes — the declared part `Content-Type` is ignored, and a
-         *     file whose *header* does not parse as the format it claims is rejected.
-         *     Validation stops at the header, so trailing bytes after a valid one are
-         *     stored as-is rather than refused; the response always serves the sniffed
-         *     type with `X-Content-Type-Options: nosniff`, so such bytes can never be
-         *     reinterpreted as anything but an image.
+         *     **JPEG, PNG and PDF** are accepted, and the format is determined from
+         *     the file's own bytes — the declared part `Content-Type` is ignored.
+         *
+         *     * Images must have a header that parses as the format they claim.
+         *       Validation stops at the header, so trailing bytes after a valid one
+         *       are stored as-is rather than refused.
+         *     * PDFs cannot be validated the same way: there is no header to decode
+         *       and no dimensions to bound, so the check is the `%PDF-` signature plus
+         *       a `%%EOF` trailer, and the size cap does the rest.
+         *
+         *     Every response serves the sniffed type behind
+         *     `X-Content-Type-Options: nosniff`. PDFs are additionally served with
+         *     `Content-Disposition: attachment`, because unlike an image a PDF is an
+         *     active format — it can carry scripts and embedded files — and is
+         *     therefore never rendered inside the application's own origin.
          */
-        post: operations["uploadCredentialImage"];
+        post: operations["uploadCredentialFile"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/credentials/{credentialId}/images/{imageId}": {
+    "/credentials/{credentialId}/files/{fileId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -891,11 +907,11 @@ export interface paths {
          *     cannot be loaded straight into an `<img src>`; fetch it with the
          *     `Authorization` header and render the resulting blob.
          */
-        get: operations["getCredentialImage"];
+        get: operations["getCredentialFile"];
         put?: never;
         post?: never;
         /** Delete a credential reference image */
-        delete: operations["deleteCredentialImage"];
+        delete: operations["deleteCredentialFile"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3658,7 +3674,7 @@ export interface components {
          *     The bytes themselves are never inlined — fetch them from the image's
          *     own authenticated URL.
          */
-        DocumentImage: {
+        DocumentFile: {
             /** Format: uuid */
             id: string;
             /**
@@ -3675,15 +3691,21 @@ export interface components {
              * @description Determined from the stored bytes, not from what the uploader declared
              * @enum {string}
              */
-            contentType: "image/jpeg" | "image/png";
+            contentType: "image/jpeg" | "image/png" | "application/pdf";
             /**
              * @description Size of the stored image in bytes
              * @example 1843200
              */
             byteSize: number;
-            /** @example 2048 */
+            /**
+             * @description Pixel width; null for formats without intrinsic dimensions, such as PDF
+             * @example 2048
+             */
             width?: number | null;
-            /** @example 1536 */
+            /**
+             * @description Pixel height; null for formats without intrinsic dimensions, such as PDF
+             * @example 1536
+             */
             height?: number | null;
             /**
              * @description Original filename, sanitized to a basename. Display only.
@@ -3697,10 +3719,10 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
-        DocumentImageUpload: {
+        DocumentFileUpload: {
             /**
              * Format: binary
-             * @description JPEG or PNG image, at most 5 MB
+             * @description JPEG, PNG or PDF, at most 5 MB
              */
             file: string;
             /** @description Optional short label shown with the image */
@@ -3711,8 +3733,8 @@ export interface components {
          *     limits a client needs in order to validate before uploading.
          */
         Features: {
-            documentImages: {
-                /** @description When false, every /images endpoint answers 403 — uploads and downloads alike */
+            documentFiles: {
+                /** @description When false, every /files endpoint answers 403 — uploads and downloads alike */
                 enabled: boolean;
                 /**
                  * @description Maximum size of a single image in bytes
@@ -3720,14 +3742,15 @@ export interface components {
                  */
                 maxBytes: number;
                 /**
-                 * @description Maximum number of images per licence or credential
+                 * @description Maximum number of files per licence or credential
                  * @example 5
                  */
                 maxPerDocument: number;
                 /**
                  * @example [
                  *       "image/jpeg",
-                 *       "image/png"
+                 *       "image/png",
+                 *       "application/pdf"
                  *     ]
                  */
                 allowedContentTypes: string[];
@@ -4850,8 +4873,8 @@ export interface components {
             adminEmailConfigured: boolean;
             /** @description Whether cloud backups are enabled (BACKUP_CREDENTIALS_KEY is set) */
             cloudBackupsConfigured: boolean;
-            /** @description Whether licence/credential reference images are enabled (DOCUMENT_IMAGES_ENABLED is not "false") */
-            documentImagesEnabled?: boolean;
+            /** @description Whether licence/credential reference files are enabled (DOCUMENT_FILES_ENABLED is not "false") */
+            documentFilesEnabled?: boolean;
             /**
              * @description Whether unverified accounts are reminded and then deleted. Requires
              *     SMTP to be configured; without it, registration marks accounts
@@ -5644,29 +5667,29 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
-        /** @description Document images are switched off on this server (DOCUMENT_IMAGES_ENABLED=false). Applies to reading as well as uploading: serving stored images is the bandwidth half of the abuse surface the switch exists to close. Already-stored images are retained and become reachable again if the operator re-enables the feature. Clients should consult GET /features and hide the UI. */
-        DocumentImagesDisabled: {
+        /** @description Document files are switched off on this server (DOCUMENT_FILES_ENABLED=false). Applies to reading as well as uploading: serving stored files is the bandwidth half of the abuse surface the switch exists to close. Already-stored files are retained and become reachable again if the operator re-enables the feature. Clients should consult GET /features and hide the UI. */
+        DocumentFilesDisabled: {
             headers: {
                 [name: string]: unknown;
             };
             content: {
                 /**
                  * @example {
-                 *       "error": "Document image uploads are disabled on this server"
+                 *       "error": "Document file uploads are disabled on this server"
                  *     }
                  */
                 "application/json": components["schemas"]["Error"];
             };
         };
-        /** @description The licence or credential already holds the maximum number of images */
-        DocumentImageLimitReached: {
+        /** @description The licence or credential already holds the maximum number of files */
+        DocumentFileLimitReached: {
             headers: {
                 [name: string]: unknown;
             };
             content: {
                 /**
                  * @example {
-                 *       "error": "Maximum number of images for this document reached"
+                 *       "error": "Maximum number of files for this document reached"
                  *     }
                  */
                 "application/json": components["schemas"]["Error"];
@@ -5716,8 +5739,8 @@ export interface components {
         SignatureToken: string;
         /** @description Credential UUID */
         CredentialId: string;
-        /** @description Document image UUID */
-        DocumentImageId: string;
+        /** @description Document file UUID */
+        DocumentFileId: string;
         /** @description Import UUID */
         ImportId: string;
         /**
@@ -6960,7 +6983,7 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
-    listLicenseImages: {
+    listLicenseFiles: {
         parameters: {
             query?: never;
             header?: never;
@@ -6972,21 +6995,21 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The licence's images, oldest first */
+            /** @description The licence's files, oldest first */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentImage"][];
+                    "application/json": components["schemas"]["DocumentFile"][];
                 };
             };
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["DocumentImagesDisabled"];
+            403: components["responses"]["DocumentFilesDisabled"];
             404: components["responses"]["NotFound"];
         };
     };
-    uploadLicenseImage: {
+    uploadLicenseFile: {
         parameters: {
             query?: never;
             header?: never;
@@ -6998,7 +7021,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["DocumentImageUpload"];
+                "multipart/form-data": components["schemas"]["DocumentFileUpload"];
             };
         };
         responses: {
@@ -7008,32 +7031,35 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentImage"];
+                    "application/json": components["schemas"]["DocumentFile"];
                 };
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["DocumentImagesDisabled"];
+            403: components["responses"]["DocumentFilesDisabled"];
             404: components["responses"]["NotFound"];
-            409: components["responses"]["DocumentImageLimitReached"];
+            409: components["responses"]["DocumentFileLimitReached"];
             413: components["responses"]["PayloadTooLarge"];
         };
     };
-    getLicenseImage: {
+    getLicenseFile: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 /** @description License UUID */
                 licenseId: components["parameters"]["LicenseId"];
-                /** @description Document image UUID */
-                imageId: components["parameters"]["DocumentImageId"];
+                /** @description Document file UUID */
+                fileId: components["parameters"]["DocumentFileId"];
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Image bytes */
+            /**
+             * @description File bytes, served with the stored content type. PDFs additionally
+             *     carry `Content-Disposition: attachment`.
+             */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -7041,22 +7067,23 @@ export interface operations {
                 content: {
                     "image/jpeg": string;
                     "image/png": string;
+                    "application/pdf": string;
                 };
             };
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["DocumentImagesDisabled"];
+            403: components["responses"]["DocumentFilesDisabled"];
             404: components["responses"]["NotFound"];
         };
     };
-    deleteLicenseImage: {
+    deleteLicenseFile: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 /** @description License UUID */
                 licenseId: components["parameters"]["LicenseId"];
-                /** @description Document image UUID */
-                imageId: components["parameters"]["DocumentImageId"];
+                /** @description Document file UUID */
+                fileId: components["parameters"]["DocumentFileId"];
             };
             cookie?: never;
         };
@@ -7070,7 +7097,7 @@ export interface operations {
                 content?: never;
             };
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["DocumentImagesDisabled"];
+            403: components["responses"]["DocumentFilesDisabled"];
             404: components["responses"]["NotFound"];
         };
     };
@@ -7393,7 +7420,7 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
-    listCredentialImages: {
+    listCredentialFiles: {
         parameters: {
             query?: never;
             header?: never;
@@ -7405,21 +7432,21 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The credential's images, oldest first */
+            /** @description The credential's files, oldest first */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentImage"][];
+                    "application/json": components["schemas"]["DocumentFile"][];
                 };
             };
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["DocumentImagesDisabled"];
+            403: components["responses"]["DocumentFilesDisabled"];
             404: components["responses"]["NotFound"];
         };
     };
-    uploadCredentialImage: {
+    uploadCredentialFile: {
         parameters: {
             query?: never;
             header?: never;
@@ -7431,7 +7458,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["DocumentImageUpload"];
+                "multipart/form-data": components["schemas"]["DocumentFileUpload"];
             };
         };
         responses: {
@@ -7441,32 +7468,35 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentImage"];
+                    "application/json": components["schemas"]["DocumentFile"];
                 };
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["DocumentImagesDisabled"];
+            403: components["responses"]["DocumentFilesDisabled"];
             404: components["responses"]["NotFound"];
-            409: components["responses"]["DocumentImageLimitReached"];
+            409: components["responses"]["DocumentFileLimitReached"];
             413: components["responses"]["PayloadTooLarge"];
         };
     };
-    getCredentialImage: {
+    getCredentialFile: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 /** @description Credential UUID */
                 credentialId: components["parameters"]["CredentialId"];
-                /** @description Document image UUID */
-                imageId: components["parameters"]["DocumentImageId"];
+                /** @description Document file UUID */
+                fileId: components["parameters"]["DocumentFileId"];
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Image bytes */
+            /**
+             * @description File bytes, served with the stored content type. PDFs additionally
+             *     carry `Content-Disposition: attachment`.
+             */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -7474,22 +7504,23 @@ export interface operations {
                 content: {
                     "image/jpeg": string;
                     "image/png": string;
+                    "application/pdf": string;
                 };
             };
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["DocumentImagesDisabled"];
+            403: components["responses"]["DocumentFilesDisabled"];
             404: components["responses"]["NotFound"];
         };
     };
-    deleteCredentialImage: {
+    deleteCredentialFile: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 /** @description Credential UUID */
                 credentialId: components["parameters"]["CredentialId"];
-                /** @description Document image UUID */
-                imageId: components["parameters"]["DocumentImageId"];
+                /** @description Document file UUID */
+                fileId: components["parameters"]["DocumentFileId"];
             };
             cookie?: never;
         };
@@ -7503,7 +7534,7 @@ export interface operations {
                 content?: never;
             };
             401: components["responses"]["Unauthorized"];
-            403: components["responses"]["DocumentImagesDisabled"];
+            403: components["responses"]["DocumentFilesDisabled"];
             404: components["responses"]["NotFound"];
         };
     };
