@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       api_ref:
-        description: 'API branch or ref to test against (defaults to main)'
+        description: 'API branch or tag to test against (defaults to main)'
         required: false
         default: 'main'
         type: string
@@ -42,17 +42,20 @@ jobs:
         uses: actions/checkout@v7
 
       # The API image is built from source. actions/checkout cannot write
-      # outside GITHUB_WORKSPACE, so it lands here instead of the sibling
-      # ../ninerlog-api used locally; docker-compose.actions.yml repoints the
-      # build context to match. The repo is public, so the default token works
-      # where PROJECT_REPO_TOKEN is unavailable (e.g. a fork PR).
+      # outside GITHUB_WORKSPACE, so the checkout lands here instead of the
+      # sibling ../ninerlog-api used locally; docker-compose.actions.yml
+      # repoints the build context to match.
+      #
+      # Cloned unauthenticated on purpose: ninerlog-api is public, and the
+      # PROJECT_REPO_TOKEN this step used to hand actions/checkout is now
+      # rejected by github.com with a 401.
       - name: Checkout API (for docker build)
-        uses: actions/checkout@v7
-        with:
-          repository: fjaeckel/ninerlog-api
-          token: ${{ secrets.PROJECT_REPO_TOKEN || github.token }}
-          path: ./ninerlog-api
-          ref: ${{ inputs.api_ref || 'main' }}
+        env:
+          API_REF: ${{ inputs.api_ref || 'main' }}
+        run: |
+          git clone --depth 1 --branch "$API_REF" \
+            https://github.com/fjaeckel/ninerlog-api.git ninerlog-api
+          git -C ninerlog-api log -1 --format='API at %h %s'
 
       # The Playwright, Node and Go images together are a few GB; the
       # preinstalled toolchains are not used by this job.
