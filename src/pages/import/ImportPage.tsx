@@ -1,8 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUploadImport, usePreviewImport, useConfirmImport, useRestoreJSON } from '../../hooks/useImport';
 import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportJSONResult } from '../../hooks/useImport';
 import HelpLink from '../../components/ui/HelpLink';
+import { FileDropzone } from '../../components/ui/FileDropzone';
+
+const CSV_ACCEPT = '.csv,.txt';
+const JSON_ACCEPT = 'application/json,.json';
 
 const IMPORT_FIELDS = [
   { value: 'ignore', label: '— Skip —' },
@@ -54,17 +58,13 @@ export default function ImportPage() {
   const [result, setResult] = useState<ImportResult | null>(null);
   const [jsonResult, setJsonResult] = useState<ImportJSONResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const jsonInputRef = useRef<HTMLInputElement>(null);
 
   const upload = useUploadImport();
   const preview = usePreviewImport();
   const confirm = useConfirmImport();
   const restore = useRestoreJSON();
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileSelect = async (file: File) => {
     setError(null);
     try {
       const data = await upload.mutateAsync(file);
@@ -126,8 +126,6 @@ export default function ImportPage() {
     setResult(null);
     setJsonResult(null);
     setError(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    if (jsonInputRef.current) jsonInputRef.current.value = '';
   };
 
   const handleSwitchMode = (next: Mode) => {
@@ -136,9 +134,7 @@ export default function ImportPage() {
     setMode(next);
   };
 
-  const handleJSONFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleJSONFileSelect = async (file: File) => {
     setError(null);
     setJsonResult(null);
     try {
@@ -147,10 +143,14 @@ export default function ImportPage() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Restore failed';
       setError(message);
-    } finally {
-      // Reset the input so the same file can be re-selected after an error.
-      if (jsonInputRef.current) jsonInputRef.current.value = '';
     }
+  };
+
+  const handleFileRejected = (file: File, accept: string) => {
+    setError(t('unsupportedFileType', 'Unsupported file: {{name}}. Expected {{accept}}.', {
+      name: file.name,
+      accept,
+    }));
   };
 
   return (
@@ -225,7 +225,19 @@ export default function ImportPage() {
 
       {/* JSON Restore flow — single-step upload, immediate result. */}
       {mode === 'json' && !jsonResult && (
-        <div className="card text-center py-12">
+        <FileDropzone
+          accept={JSON_ACCEPT}
+          disabled={restore.isPending}
+          onFileSelected={handleJSONFileSelect}
+          onFileRejected={(file) => handleFileRejected(file, JSON_ACCEPT)}
+          buttonLabel={
+            restore.isPending
+              ? t('restoringJson', 'Restoring…')
+              : t('selectJsonFile', 'Choose JSON backup')
+          }
+          hint={t('dropHintJson', 'or drag & drop a JSON backup here')}
+          className="card text-center py-12"
+        >
           <div className="text-5xl mb-4">💾</div>
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
             {t('restoreJsonTitle', 'Restore JSON Backup')}
@@ -242,23 +254,7 @@ export default function ImportPage() {
               'The restore is additive — existing data is never modified or deleted. Aircraft whose registration already exists in your account are skipped.',
             )}
           </p>
-          <input
-            ref={jsonInputRef}
-            type="file"
-            accept="application/json,.json"
-            onChange={handleJSONFileSelect}
-            className="hidden"
-          />
-          <button
-            onClick={() => jsonInputRef.current?.click()}
-            disabled={restore.isPending}
-            className="btn-primary"
-          >
-            {restore.isPending
-              ? t('restoringJson', 'Restoring…')
-              : t('selectJsonFile', 'Choose JSON backup')}
-          </button>
-        </div>
+        </FileDropzone>
       )}
 
       {mode === 'json' && jsonResult && (
@@ -317,27 +313,21 @@ export default function ImportPage() {
 
       {/* Step 1: Upload */}
       {mode === 'csv' && step === 'upload' && (
-        <div className="card text-center py-12">
+        <FileDropzone
+          accept={CSV_ACCEPT}
+          disabled={upload.isPending}
+          onFileSelected={handleFileSelect}
+          onFileRejected={(file) => handleFileRejected(file, CSV_ACCEPT)}
+          buttonLabel={upload.isPending ? t('importing', 'Uploading...') : t('selectFile', 'Choose File')}
+          hint={t('dropHintCsv', 'or drag & drop a CSV file here')}
+          className="card text-center py-12"
+        >
           <div className="text-5xl mb-4">📂</div>
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('uploadCsv', 'Upload Flight Log File')}</h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
             {t('supportedFormats', 'Supports CSV files including ForeFlight logbook exports. Maximum file size: 10 MB.')}
           </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv,.txt"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={upload.isPending}
-            className="btn-primary"
-          >
-            {upload.isPending ? t('importing', 'Uploading...') : t('selectFile', 'Choose File')}
-          </button>
-        </div>
+        </FileDropzone>
       )}
 
       {/* Step 2: Column Mapping */}
