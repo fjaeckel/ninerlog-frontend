@@ -666,7 +666,11 @@ export interface paths {
          *
          *     Only JPEG and PNG are accepted, and the format is determined from the
          *     file's own bytes — the declared part `Content-Type` is ignored, and a
-         *     file whose contents do not decode as the format they claim is rejected.
+         *     file whose *header* does not parse as the format it claims is rejected.
+         *     Validation stops at the header, so trailing bytes after a valid one are
+         *     stored as-is rather than refused; the response always serves the sniffed
+         *     type with `X-Content-Type-Options: nosniff`, so such bytes can never be
+         *     reinterpreted as anything but an image.
          */
         post: operations["uploadLicenseImage"];
         delete?: never;
@@ -860,7 +864,11 @@ export interface paths {
          *
          *     Only JPEG and PNG are accepted, and the format is determined from the
          *     file's own bytes — the declared part `Content-Type` is ignored, and a
-         *     file whose contents do not decode as the format they claim is rejected.
+         *     file whose *header* does not parse as the format it claims is rejected.
+         *     Validation stops at the header, so trailing bytes after a valid one are
+         *     stored as-is rather than refused; the response always serves the sniffed
+         *     type with `X-Content-Type-Options: nosniff`, so such bytes can never be
+         *     reinterpreted as anything but an image.
          */
         post: operations["uploadCredentialImage"];
         delete?: never;
