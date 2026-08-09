@@ -39,6 +39,7 @@ Push gate: `npx vitest run && npm run type-check && npm run lint`, plus e2e when
 | Styling, components, tokens, dark mode | skill `design-system` |
 | Translatable strings, namespaces | skill `i18n` |
 | New route/page | skill `add-page` |
+| Admin console — stat tiles, config rows, maintenance actions, tabs | skill `admin-surface` |
 | Writing or running tests | skill `testing` |
 | Deep architecture reference | `docs/DEVELOPER_GUIDE.md` |
 
