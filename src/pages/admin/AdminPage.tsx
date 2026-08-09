@@ -679,6 +679,23 @@ function ConfigTab() {
   if (!data) return null;
 
   const rows: { label: string; value: React.ReactNode }[] = [
+    {
+      // Reported before everything else: the auth mode decides how accounts are
+      // created at all, and switches other rows off (unverified cleanup never
+      // runs under SSO).
+      label: t('admin.config.authMode'),
+      value: data.authMode === undefined
+        ? <span className="text-slate-400">{'—'}</span>
+        : data.authMode === 'oidc'
+          ? <span className="text-slate-800 dark:text-slate-200">{t('admin.config.authModeOidc')}</span>
+          : <span className="text-slate-800 dark:text-slate-200">{t('admin.config.authModeLocal')}</span>,
+    },
+    {
+      label: t('admin.config.oidcIssuer'),
+      value: data.oidcIssuer
+        ? <span className="font-mono text-xs break-all">{data.oidcIssuer}</span>
+        : <span className="text-slate-400">{'—'}</span>,
+    },
     { label: t('admin.config.goVersion'), value: data.goVersion },
     { label: t('admin.config.serverUptime'), value: data.serverUptime },
     { label: t('admin.config.migrationVersion'), value: data.migrationVersion },
@@ -709,6 +726,16 @@ function ConfigTab() {
       value: data.cloudBackupProviders.length > 0
         ? <span className="font-mono text-xs uppercase">{data.cloudBackupProviders.join(', ')}</span>
         : <span className="text-slate-400">{t('admin.config.cloudBackupProvidersNone')}</span>,
+    },
+    {
+      // Off is a deliberate deployment choice here, not a misconfiguration, so
+      // it renders muted rather than amber.
+      label: t('admin.config.documentFiles'),
+      value: data.documentFilesEnabled === undefined
+        ? <span className="text-slate-400">{'—'}</span>
+        : data.documentFilesEnabled
+          ? <span className="text-green-600 dark:text-green-400 font-medium">{t('admin.config.enabled')}</span>
+          : <span className="text-slate-400">{t('admin.config.disabled')}</span>,
     },
     {
       label: t('admin.config.unverifiedCleanup'),
