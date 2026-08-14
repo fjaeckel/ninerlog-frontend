@@ -1522,7 +1522,12 @@ export interface paths {
         };
         /**
          * Export flights as PDF logbook
-         * @description Export all flight data as a formatted PDF document. Supports EASA AMC1 FCL.050, FAA (ASA/Jeppesen), and summary formats.
+         * @description Export all flight data as a formatted PDF document. Supports EASA AMC1 FCL.050
+         *     and FAA 14 CFR § 61.51 (ASA/Jeppesen-style) logbook layouts plus a summary format.
+         *
+         *     Every logbook page carries the three-row totals block (total this page /
+         *     total from previous pages / total time) and a per-page certification and
+         *     signature block, so each printed page can be individually signed.
          */
         get: operations["exportFlightsPDF"];
         put?: never;
@@ -5045,7 +5050,7 @@ export interface components {
          * @description Hint for rendering provider config/credential form fields.
          * @enum {string}
          */
-        BackupFieldType: "string" | "password" | "region" | "url";
+        BackupFieldType: "string" | "password" | "region" | "url" | "bool";
         BackupField: {
             /** @description Stable field key sent back as part of the config or credentials map. */
             name: string;
@@ -8653,10 +8658,14 @@ export interface operations {
             query?: {
                 /** @description Filter flights for a specific logbook license */
                 logbookLicenseId?: string;
-                /** @description PDF format — easa (AMC1 FCL.050 two-page spread), faa (ASA/Jeppesen layout), or summary (simplified totals) */
+                /** @description PDF format — easa (AMC1 FCL.050 columns), faa (14 CFR § 61.51 / ASA-Jeppesen columns), or summary (simplified totals) */
                 format?: "easa" | "faa" | "summary";
-                /** @description Page size for the generated PDF. All sizes are rendered in landscape orientation. EASA format is laid out as a book-style two-page spread (left + right) intended for double-sided printing. */
+                /** @description Page size for the generated PDF. All sizes are rendered in landscape orientation. */
                 page_size?: "a4" | "a5" | "letter";
+                /** @description Page layout. `spread` (default) lays the logbook out as a book-style two-page spread (left + right facing pages) intended for double-sided printing, in any page size; intentionally-blank filler pages (one at the start, one before the totals summary) keep each spread on facing pages when printed duplex. `single` renders all columns on one landscape page per batch of flights — designed for single-page A4 landscape printing. Ignored for the summary format. */
+                layout?: "spread" | "single";
+                /** @description Number of flight rows per logbook page. When set, the row height — and, for dense layouts, the body font — scales dynamically so the rows fill the page: fewer rows give an airier, larger-print logbook, more rows a denser one. Values are clamped to what stays legible on the chosen page size; omitted, the row count is derived from the page size's default row height. Ignored for the summary format. */
+                rows_per_page?: number;
             };
             header?: never;
             path?: never;
