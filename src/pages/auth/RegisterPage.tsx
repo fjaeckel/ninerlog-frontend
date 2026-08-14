@@ -1,25 +1,41 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthProviders, useRegister, useResendVerification } from '../../hooks/useAuth';
 import { APP_NAME } from '../../lib/config';
 import { LogoMark } from '../../components/ui/Logo';
+import { PasswordStrengthMeter } from '../../components/ui/PasswordStrengthMeter';
 import { extractApiError, extractApiStatus } from '../../lib/errors';
 import { supportedLanguages, languageNames } from '../../i18n';
+import { PASSWORD_ISSUE_KEYS, passwordIssue } from '../../lib/passwordStrength';
 
+// Messages are translation keys, resolved with `t` at render time — the schema
+// is built once, outside the component, so it cannot capture a stale language.
 const registerSchema = z
   .object({
-    name: z.string().min(1, 'Name is required').max(255, 'Name must be less than 255 characters'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(12, 'Password must be at least 12 characters'),
+    name: z
+      .string()
+      .min(1, 'auth:register.nameRequired')
+      .max(255, 'auth:register.nameMaxLength'),
+    email: z.string().email('auth:register.invalidEmail'),
+    // Mirrors the API's password policy; the server rejects the same set.
+    password: z.string().superRefine((value, ctx) => {
+      const issue = passwordIssue(value);
+      if (issue) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `auth:register.${PASSWORD_ISSUE_KEYS[issue]}`,
+        });
+      }
+    }),
     confirmPassword: z.string(),
     language: z.enum(supportedLanguages),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
+    message: 'auth:register.passwordsNoMatch',
     path: ['confirmPassword'],
   });
 
@@ -50,6 +66,7 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -59,6 +76,8 @@ export default function RegisterPage() {
   });
 
   const languageField = register('language');
+  // Drives the live strength meter as the user types.
+  const passwordValue = useWatch({ control, name: 'password' }) ?? '';
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
@@ -193,7 +212,7 @@ export default function RegisterPage() {
               className={`input ${errors.name ? 'input-error' : ''}`}
               placeholder="John Doe"
             />
-            {errors.name && <p className="form-error">{errors.name.message}</p>}
+            {errors.name && <p className="form-error">{t(errors.name.message ?? '')}</p>}
           </div>
 
           <div>
@@ -208,7 +227,7 @@ export default function RegisterPage() {
               className={`input ${errors.email ? 'input-error' : ''}`}
               placeholder="pilot@example.com"
             />
-            {errors.email && <p className="form-error">{errors.email.message}</p>}
+            {errors.email && <p className="form-error">{t(errors.email.message ?? '')}</p>}
           </div>
 
           <div>
@@ -220,13 +239,22 @@ export default function RegisterPage() {
               type="password"
               id="password"
               autoComplete="new-password"
+              aria-describedby="password-strength"
               className={`input ${errors.password ? 'input-error' : ''}`}
               placeholder="••••••••••••"
             />
             {errors.password && (
-              <p className="form-error">{errors.password.message}</p>
+              <p className="form-error">{t(errors.password.message ?? '')}</p>
             )}
-            <p className="form-helper">{t('auth:register.passwordHint')}</p>
+            {/* The meter lists the rules once typing starts, so the static hint
+                is only needed while the field is still empty. */}
+            {passwordValue ? (
+              <PasswordStrengthMeter id="password-strength" password={passwordValue} />
+            ) : (
+              <p className="form-helper" id="password-strength">
+                {t('auth:register.passwordHint')}
+              </p>
+            )}
           </div>
 
           <div>
@@ -242,7 +270,7 @@ export default function RegisterPage() {
               placeholder="••••••••••••"
             />
             {errors.confirmPassword && (
-              <p className="form-error">{errors.confirmPassword.message}</p>
+              <p className="form-error">{t(errors.confirmPassword.message ?? '')}</p>
             )}
           </div>
 

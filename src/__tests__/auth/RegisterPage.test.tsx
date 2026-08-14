@@ -69,13 +69,83 @@ describe('RegisterPage', () => {
     renderWithProviders(<RegisterPage />);
     
     await user.type(screen.getByLabelText(/^email/i), 'test@example.com');
-    await user.type(screen.getByLabelText(/^password/i), 'password1234');
-    await user.type(screen.getByLabelText(/confirm password/i), 'password4567');
+    await user.type(screen.getByLabelText(/^password/i), 'Password1234!');
+    await user.type(screen.getByLabelText(/confirm password/i), 'Password4567!');
     await user.click(screen.getByRole('button', { name: /create account/i }));
     
     await waitFor(() => {
       expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
     });
+  });
+
+  it('hides the strength meter until the user types a password', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RegisterPage />);
+
+    expect(screen.queryByTestId('password-strength')).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText(/^password/i), 'a');
+    expect(screen.getByTestId('password-strength')).toBeInTheDocument();
+  });
+
+  it('moves the strength meter red → amber → green as the password improves', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RegisterPage />);
+
+    const passwordInput = screen.getByLabelText(/^password/i);
+
+    await user.type(passwordInput, 'abc');
+    expect(screen.getByTestId('password-strength-level')).toHaveAttribute(
+      'data-level',
+      'weak',
+    );
+
+    await user.clear(passwordInput);
+    await user.type(passwordInput, 'Abcdefghijkl');
+    expect(screen.getByTestId('password-strength-level')).toHaveAttribute(
+      'data-level',
+      'fair',
+    );
+
+    await user.clear(passwordInput);
+    await user.type(passwordInput, 'Abcdefghij1!');
+    expect(screen.getByTestId('password-strength-level')).toHaveAttribute(
+      'data-level',
+      'strong',
+    );
+  });
+
+  it('refuses to submit a long password that is missing a character class', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RegisterPage />);
+
+    await user.type(screen.getByLabelText(/name/i), 'John Doe');
+    await user.type(screen.getByLabelText(/^email/i), 'john@example.com');
+    // 12 characters, but no special character.
+    await user.type(screen.getByLabelText(/^password/i), 'Abcdefghij12');
+    await user.type(screen.getByLabelText(/confirm password/i), 'Abcdefghij12');
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/must include a lowercase letter/i)).toBeInTheDocument();
+    });
+    expect(mockRegister.mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('refuses to submit a password below the minimum length', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RegisterPage />);
+
+    await user.type(screen.getByLabelText(/name/i), 'John Doe');
+    await user.type(screen.getByLabelText(/^email/i), 'john@example.com');
+    await user.type(screen.getByLabelText(/^password/i), 'Abcdefghi1!');
+    await user.type(screen.getByLabelText(/confirm password/i), 'Abcdefghi1!');
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/at least 12 characters/i)).toBeInTheDocument();
+    });
+    expect(mockRegister.mutateAsync).not.toHaveBeenCalled();
   });
 
   it('submits form with valid data', async () => {
@@ -86,14 +156,14 @@ describe('RegisterPage', () => {
     
     await user.type(screen.getByLabelText(/name/i), 'John Doe');
     await user.type(screen.getByLabelText(/^email/i), 'john@example.com');
-    await user.type(screen.getByLabelText(/^password/i), 'password1234');
-    await user.type(screen.getByLabelText(/confirm password/i), 'password1234');
+    await user.type(screen.getByLabelText(/^password/i), 'Password1234!');
+    await user.type(screen.getByLabelText(/confirm password/i), 'Password1234!');
     await user.click(screen.getByRole('button', { name: /create account/i }));
     
     await waitFor(() => {
       expect(mockRegister.mutateAsync).toHaveBeenCalledWith({
         email: 'john@example.com',
-        password: 'password1234',
+        password: 'Password1234!',
         name: 'John Doe',
         preferredLocale: 'en',
       });
@@ -118,8 +188,8 @@ describe('RegisterPage', () => {
     
     await user.type(nameInput, 'Test User');
     await user.type(emailInput, 'existing@example.com');
-    await user.type(passwordInput, 'password1234');
-    await user.type(confirmPasswordInput, 'password1234');
+    await user.type(passwordInput, 'Password1234!');
+    await user.type(confirmPasswordInput, 'Password1234!');
     
     // Submit the form
     const submitButton = screen.getByRole('button', { name: /create account/i });
@@ -137,8 +207,8 @@ describe('RegisterPage', () => {
 
     await user.type(screen.getByLabelText(/name/i), 'John Doe');
     await user.type(screen.getByLabelText(/^email/i), 'john@example.com');
-    await user.type(screen.getByLabelText(/^password/i), 'password1234');
-    await user.type(screen.getByLabelText(/confirm password/i), 'password1234');
+    await user.type(screen.getByLabelText(/^password/i), 'Password1234!');
+    await user.type(screen.getByLabelText(/confirm password/i), 'Password1234!');
     const submitButton = screen.getByRole('button', { name: /create account/i });
     await user.selectOptions(screen.getByLabelText(/language/i), 'de');
     await user.click(submitButton);
@@ -162,8 +232,8 @@ describe('RegisterPage', () => {
 
     await user.type(screen.getByLabelText(/name/i), 'A Pilot');
     await user.type(screen.getByLabelText(/^email/i), 'pilot@example.com');
-    await user.type(screen.getByLabelText(/^password/i), 'password1234');
-    await user.type(screen.getByLabelText(/confirm password/i), 'password1234');
+    await user.type(screen.getByLabelText(/^password/i), 'Password1234!');
+    await user.type(screen.getByLabelText(/confirm password/i), 'Password1234!');
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => {
@@ -188,8 +258,8 @@ describe('RegisterPage', () => {
 
     await user.type(screen.getByLabelText(/name/i), 'A Pilot');
     await user.type(screen.getByLabelText(/^email/i), 'pilot@example.com');
-    await user.type(screen.getByLabelText(/^password/i), 'password1234');
-    await user.type(screen.getByLabelText(/confirm password/i), 'password1234');
+    await user.type(screen.getByLabelText(/^password/i), 'Password1234!');
+    await user.type(screen.getByLabelText(/confirm password/i), 'Password1234!');
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => {
@@ -210,8 +280,8 @@ describe('RegisterPage', () => {
 
     await user.type(screen.getByLabelText(/name/i), 'A Pilot');
     await user.type(screen.getByLabelText(/^email/i), 'pilot@example.com');
-    await user.type(screen.getByLabelText(/^password/i), 'password1234');
-    await user.type(screen.getByLabelText(/confirm password/i), 'password1234');
+    await user.type(screen.getByLabelText(/^password/i), 'Password1234!');
+    await user.type(screen.getByLabelText(/confirm password/i), 'Password1234!');
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => {

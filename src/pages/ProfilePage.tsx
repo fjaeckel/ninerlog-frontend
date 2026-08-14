@@ -10,6 +10,8 @@ import { useCurrentUser, useUpdateProfile, useChangePassword, useDeleteAccount, 
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
 import { useSetup2FA, useVerify2FA, useDisable2FA } from '../hooks/useTwoFactor';
 import { ThemeSwitcher } from '../components/ui/ThemeSwitcher';
+import { PasswordStrengthMeter } from '../components/ui/PasswordStrengthMeter';
+import { passwordIssue } from '../lib/passwordStrength';
 import { API_BASE_URL as API_BASE } from '../lib/config';
 import { extractApiError, extractApiStatus } from '../lib/errors';
 import { NotificationHistory } from '../components/NotificationHistory';
@@ -127,8 +129,19 @@ export default function ProfilePage() {
       setPasswordMessage(t('changePassword.noMatch'));
       return;
     }
-    if (newPassword.length < 12) {
-      setPasswordMessage(t('changePassword.tooShort'));
+    // Same policy the API enforces — reject here so the user gets the specific
+    // reason instead of a generic 400.
+    const issue = passwordIssue(newPassword);
+    if (issue) {
+      setPasswordMessage(
+        t(
+          {
+            tooShort: 'changePassword.tooShort',
+            tooLong: 'changePassword.tooLong',
+            tooWeak: 'changePassword.tooWeak',
+          }[issue],
+        ),
+      );
       return;
     }
 
@@ -372,7 +385,8 @@ export default function ProfilePage() {
               </div>
               <div>
                 <label htmlFor="newPassword" className="form-label">{t('changePassword.newPassword')}</label>
-                <input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="input mt-1" minLength={12} required />
+                <input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="input mt-1" minLength={12} aria-describedby="new-password-strength" required />
+                <PasswordStrengthMeter id="new-password-strength" password={newPassword} />
               </div>
               <div>
                 <label htmlFor="confirmPassword" className="form-label">{t('changePassword.confirmNewPassword')}</label>

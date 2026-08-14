@@ -1,16 +1,28 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useResetPassword } from '../../hooks/useAuth';
+import { PasswordStrengthMeter } from '../../components/ui/PasswordStrengthMeter';
+import { PASSWORD_ISSUE_KEYS, passwordIssue } from '../../lib/passwordStrength';
 
+// Messages are translation keys, resolved with `t` at render time.
 const newPasswordSchema = z.object({
-  newPassword: z.string().min(12, 'Password must be at least 12 characters'),
+  // Mirrors the API's password policy; the server rejects the same set.
+  newPassword: z.string().superRefine((value, ctx) => {
+    const issue = passwordIssue(value);
+    if (issue) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `auth:newPassword.${PASSWORD_ISSUE_KEYS[issue]}`,
+      });
+    }
+  }),
   confirmPassword: z.string(),
 }).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Passwords do not match',
+  message: 'auth:newPassword.passwordsNoMatch',
   path: ['confirmPassword'],
 });
 
@@ -27,10 +39,14 @@ export default function NewPasswordPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<NewPasswordFormData>({
     resolver: zodResolver(newPasswordSchema),
   });
+
+  // Drives the live strength meter as the user types.
+  const newPasswordValue = useWatch({ control, name: 'newPassword' }) ?? '';
 
   if (!token) {
     return (
@@ -107,10 +123,18 @@ export default function NewPasswordPage() {
               type="password"
               id="newPassword"
               autoComplete="new-password"
+              aria-describedby="password-strength"
               className={`input ${errors.newPassword ? 'input-error' : ''}`}
             />
             {errors.newPassword && (
-              <p className="form-error">{errors.newPassword.message}</p>
+              <p className="form-error">{t(errors.newPassword.message ?? '')}</p>
+            )}
+            {newPasswordValue ? (
+              <PasswordStrengthMeter id="password-strength" password={newPasswordValue} />
+            ) : (
+              <p className="form-helper" id="password-strength">
+                {t('auth:passwordStrength.requirements')}
+              </p>
             )}
           </div>
 
@@ -126,7 +150,7 @@ export default function NewPasswordPage() {
               className={`input ${errors.confirmPassword ? 'input-error' : ''}`}
             />
             {errors.confirmPassword && (
-              <p className="form-error">{errors.confirmPassword.message}</p>
+              <p className="form-error">{t(errors.confirmPassword.message ?? '')}</p>
             )}
           </div>
 
