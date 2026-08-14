@@ -19,10 +19,12 @@
   },
   "errors": {
     "nameRequired": "Name is required.",
-    "nameTooLong": "Name must be 255 characters or fewer.",
+    "nameTooLong": "Name must be 100 characters or fewer.",
     "invalidEmail": "Enter a valid email address.",
-    "phoneTooLong": "Phone must be 50 characters or fewer.",
-    "notesTooLong": "Notes must be 500 characters or fewer."
+    "phoneTooLong": "Phone must be 20 characters or fewer.",
+    "notesTooLong": "Notes must be 1000 characters or fewer.",
+    "duplicateName": "“{{name}}” is already in your people. Open that entry to edit it instead.",
+    "emailTooLong": "Email must be 254 characters or fewer."
   },
   "create": "Add person",
   "save": "Save",
@@ -39,5 +41,10 @@
   "empty": {
     "title": "No people yet",
     "description": "People are created automatically when you add crew members to a flight, or add someone manually with “Add person”."
-  }
+  },
+  "exportVCard": "Export vCard",
+  "exporting": "Exporting…",
+  "exportFailed": "Could not export your people. Please try again.",
+  "crewEntriesRenamed_one": "Renamed this person on {{count}} logbook entry. Signed flights keep the name they were signed with.",
+  "crewEntriesRenamed_other": "Renamed this person on {{count}} logbook entries. Signed flights keep the name they were signed with."
 }

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Users, Pencil, Trash2, Search } from 'lucide-react';
+import { Users, Pencil, Trash2, Search, Download } from 'lucide-react';
 import { PageWrapper, PageHeader } from '../../components/ui';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
@@ -11,13 +11,20 @@ import { SkeletonList } from '../../components/ui/Skeleton';
 import { useContacts, useCreateContact, useUpdateContact, useDeleteContact } from '../../hooks/useContacts';
 import type { Contact } from '../../types/api';
 import { extractApiError } from '../../lib/errors';
+import { httpStatusOf } from '../../api/client';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import { exportContactsVCard } from '../../hooks/useExport';
 
+// Bounds mirror the API's own validation (internal/models/validation.go) so a
+// value the server will refuse is caught here rather than coming back as a 400.
+// The server counts bytes and this counts characters, so a name of accented
+// characters can still be rejected server-side — these are the common case, not
+// an exact copy of the rule.
 const contactSchema = z.object({
-  name: z.string().trim().min(1, 'nameRequired').max(255, 'nameTooLong'),
-  email: z.string().trim().email('invalidEmail').or(z.literal('')),
-  phone: z.string().trim().max(50, 'phoneTooLong'),
-  notes: z.string().trim().max(500, 'notesTooLong'),
+  name: z.string().trim().min(1, 'nameRequired').max(100, 'nameTooLong'),
+  email: z.string().trim().max(254, 'emailTooLong').email('invalidEmail').or(z.literal('')),
+  phone: z.string().trim().max(20, 'phoneTooLong'),
+  notes: z.string().trim().max(1000, 'notesTooLong'),
 });
 type ContactFormData = z.infer<typeof contactSchema>;
 
@@ -42,6 +49,8 @@ export default function PeoplePage() {
   const [editing, setEditing] = useState<Contact | 'new' | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const {
     register,
@@ -72,6 +81,7 @@ export default function PeoplePage() {
 
   const onSubmit = handleSubmit(async (values) => {
     setApiError(null);
+    setNotice(null);
     const body = {
       name: values.name,
       email: values.email || null,
@@ -82,21 +92,47 @@ export default function PeoplePage() {
       if (editing === 'new') {
         await createContact.mutateAsync(body);
       } else if (editing) {
-        await updateContact.mutateAsync({ id: editing.id, data: body });
+        const renamed = values.name !== editing.name;
+        const result = await updateContact.mutateAsync({ id: editing.id, data: body });
+        // A rename reaches the logbook: the crew entries of unsigned flights
+        // are rewritten to match. Say so, because the edit changed more than
+        // the row the user was looking at.
+        if (renamed && result.crewEntriesRenamed) {
+          setNotice(t('crewEntriesRenamed', { count: result.crewEntriesRenamed }));
+        }
       }
       closeForm();
     } catch (err) {
+      // A person is identified by their name, so the server refuses a second
+      // contact with one it already has rather than silently merging them.
+      if (httpStatusOf(err) === 409) {
+        setApiError(t('errors.duplicateName', { name: values.name }));
+        return;
+      }
       setApiError(extractApiError(err, t('saveFailed')));
     }
   });
 
   const handleDelete = async (id: string) => {
     setApiError(null);
+    setNotice(null);
     try {
       await deleteContact.mutateAsync(id);
       setConfirmDeleteId(null);
     } catch (err) {
       setApiError(extractApiError(err, t('deleteFailed')));
+    }
+  };
+
+  const handleExportVCard = async () => {
+    setApiError(null);
+    setExporting(true);
+    try {
+      await exportContactsVCard();
+    } catch {
+      setApiError(t('exportFailed'));
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -133,15 +169,36 @@ export default function PeoplePage() {
         title={t('title')}
         subtitle={t('subtitle')}
         action={
-          <button onClick={openCreate} className="btn-primary whitespace-nowrap">
-            + {t('addPerson')}
-          </button>
+          <div className="flex items-center gap-2">
+            {(contacts?.length ?? 0) > 0 && (
+              <button
+                onClick={handleExportVCard}
+                disabled={exporting}
+                className="btn-ghost whitespace-nowrap inline-flex items-center gap-1.5"
+              >
+                <Download className="w-4 h-4" />
+                {exporting ? t('exporting') : t('exportVCard')}
+              </button>
+            )}
+            <button onClick={openCreate} className="btn-primary whitespace-nowrap">
+              + {t('addPerson')}
+            </button>
+          </div>
         }
       />
 
       {apiError && (
         <div className="mb-4 px-4 py-3 rounded-lg text-sm bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400">
           {apiError}
+        </div>
+      )}
+
+      {notice && (
+        <div
+          role="status"
+          className="mb-4 px-4 py-3 rounded-lg text-sm bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300"
+        >
+          {notice}
         </div>
       )}
 

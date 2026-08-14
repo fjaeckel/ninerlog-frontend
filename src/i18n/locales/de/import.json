@@ -40,6 +40,7 @@
   "restoreSummaryCredentials": "Nachweise",
   "restoreSummaryFlights": "Flüge",
   "restoreSummaryCrew": "Crew-Mitglieder",
+  "restoreSummaryContacts": "Personen",
   "restoreAnother": "Weitere Sicherung wiederherstellen",
   "history": {
     "title": "Import-Verlauf",

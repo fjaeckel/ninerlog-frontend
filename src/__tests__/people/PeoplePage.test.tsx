@@ -5,9 +5,12 @@ import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import PeoplePage from '../../pages/people/PeoplePage';
 import * as contactHooks from '../../hooks/useContacts';
+import * as exportHooks from '../../hooks/useExport';
+import { HTTP_STATUS_KEY } from '../../api/client';
 import type { Contact } from '../../types/api';
 
 vi.mock('../../hooks/useContacts');
+vi.mock('../../hooks/useExport');
 
 const contacts: Contact[] = [
   {
@@ -103,5 +106,104 @@ describe('PeoplePage', () => {
     );
     renderPage();
     expect(screen.getByText('No people yet')).toBeInTheDocument();
+  });
+
+  // A person is identified by their name, so the API refuses a second contact
+  // with a name the user already has rather than silently making a duplicate.
+  // The generic "failed to save" message would leave the user retrying.
+  it('explains a duplicate name instead of showing the generic save error', async () => {
+    const create = {
+      mutateAsync: vi.fn().mockRejectedValue({ error: 'A contact with this name already exists', [HTTP_STATUS_KEY]: 409 }),
+      isPending: false,
+    };
+    vi.mocked(contactHooks.useCreateContact).mockReturnValue(
+      create as unknown as ReturnType<typeof contactHooks.useCreateContact>
+    );
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: '+ Add person' }));
+    await user.type(screen.getByLabelText(/Name/), 'Anna Meier');
+    await user.click(screen.getByRole('button', { name: 'Add person' }));
+
+    expect(await screen.findByText(/already in your people/)).toBeInTheDocument();
+    expect(screen.queryByText('Failed to save person.')).not.toBeInTheDocument();
+    // The form stays open so the name can be corrected.
+    expect(screen.getByLabelText(/Name/)).toBeInTheDocument();
+  });
+
+  it('falls back to the generic error for a non-conflict failure', async () => {
+    const create = {
+      mutateAsync: vi.fn().mockRejectedValue({ error: 'Failed to create contact', [HTTP_STATUS_KEY]: 400 }),
+      isPending: false,
+    };
+    vi.mocked(contactHooks.useCreateContact).mockReturnValue(
+      create as unknown as ReturnType<typeof contactHooks.useCreateContact>
+    );
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: '+ Add person' }));
+    await user.type(screen.getByLabelText(/Name/), 'Someone New');
+    await user.click(screen.getByRole('button', { name: 'Add person' }));
+
+    expect(await screen.findByText('Failed to create contact')).toBeInTheDocument();
+    expect(screen.queryByText(/already in your people/)).not.toBeInTheDocument();
+  });
+
+  // Renaming rewrites the crew entries of unsigned flights server-side, so the
+  // edit changed more than the row the user was looking at — say so.
+  it('reports how many logbook entries a rename rewrote', async () => {
+    const update = {
+      mutateAsync: vi.fn().mockResolvedValue({ contact: contacts[0], crewEntriesRenamed: 3 }),
+      isPending: false,
+    };
+    vi.mocked(contactHooks.useUpdateContact).mockReturnValue(
+      update as unknown as ReturnType<typeof contactHooks.useUpdateContact>
+    );
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByLabelText('Edit Anna Meier'));
+    await user.clear(screen.getByLabelText(/Name/));
+    await user.type(screen.getByLabelText(/Name/), 'Anna Meier-Huber');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent(/3 logbook entries/);
+  });
+
+  it('stays quiet when an edit did not touch the name', async () => {
+    const update = {
+      mutateAsync: vi.fn().mockResolvedValue({ contact: contacts[0], crewEntriesRenamed: 0 }),
+      isPending: false,
+    };
+    vi.mocked(contactHooks.useUpdateContact).mockReturnValue(
+      update as unknown as ReturnType<typeof contactHooks.useUpdateContact>
+    );
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByLabelText('Edit Anna Meier'));
+    await user.clear(screen.getByLabelText(/Phone/));
+    await user.type(screen.getByLabelText(/Phone/), '+49 151 0000000');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(update.mutateAsync).toHaveBeenCalled();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('exports the address book as a vCard', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole('button', { name: /Export vCard/ }));
+    expect(exportHooks.exportContactsVCard).toHaveBeenCalled();
+  });
+
+  it('hides the vCard export when there is nobody to export', () => {
+    vi.mocked(contactHooks.useContacts).mockReturnValue(
+      { data: [], isLoading: false, error: null } as unknown as ReturnType<typeof contactHooks.useContacts>
+    );
+    renderPage();
+    expect(screen.queryByRole('button', { name: /Export vCard/ })).not.toBeInTheDocument();
   });
 });

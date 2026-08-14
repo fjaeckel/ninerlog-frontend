@@ -1465,6 +1465,33 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/exports/vcard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export contacts as vCard
+         * @description Export the authenticated user's contacts as a single vCard 3.0 (.vcf)
+         *     stream, for import into a phone or mail client's address book.
+         *
+         *     Each card carries the contact's name, email, phone and notes. Contacts
+         *     the pilot has flown with also carry their logged crew roles as
+         *     `CATEGORIES` (most-flown role first), and every card carries a stable
+         *     `UID`, so re-importing a later export updates the existing cards instead
+         *     of duplicating them.
+         */
+        get: operations["exportContactsVCard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/exports/json": {
         parameters: {
             query?: never;
@@ -1528,6 +1555,17 @@ export interface paths {
          *     Every logbook page carries the three-row totals block (total this page /
          *     total from previous pages / total time) and a per-page certification and
          *     signature block, so each printed page can be individually signed.
+         *
+         *     If the pilot has recorded prior experience (`PUT /users/me/baseline`),
+         *     those hours open the balance: they are carried into the first
+         *     "total from previous pages" row and into every running total and the
+         *     summary page after it, the way a paper logbook carries the previous
+         *     book's closing totals forward. A snapshot records no single-/multi-engine
+         *     split, no FSTD session time and no approach or hold counts, so those
+         *     columns cover logged flights only; a footer line on every page and a note
+         *     on the summary page disclose both facts. A `logbookLicenseId`-filtered
+         *     export covers part of the logbook, so the career-wide snapshot is left
+         *     out of it.
          */
         get: operations["exportFlightsPDF"];
         put?: never;
@@ -1616,6 +1654,15 @@ export interface paths {
         /**
          * Create a contact
          * @description Creates a new reusable contact for the authenticated user.
+         *
+         *     A contact is identified by its name: names are unique per user,
+         *     case-insensitively and ignoring surrounding whitespace. Creating one
+         *     that already exists returns 409 rather than a second row — use
+         *     `GET /contacts/search` to find the existing contact.
+         *
+         *     Contacts are also created automatically for crew names on flight
+         *     create/update, spreadsheet import and backup restore, so a contact
+         *     normally exists before anyone posts one.
          */
         post: operations["createContact"];
         delete?: never;
@@ -1659,12 +1706,27 @@ export interface paths {
         /**
          * Update a contact
          * @description Updates an existing contact.
+         *
+         *     Renaming propagates: the crew entries of the user's flights that are
+         *     linked to this contact are rewritten to the new name, so correcting a
+         *     misspelling also corrects the logbook. Flights carrying a completed
+         *     instructor signature are excluded — their crew names are attested
+         *     content and stay as signed. The response header `X-Crew-Entries-Renamed`
+         *     reports how many crew entries were rewritten.
+         *
+         *     Renaming onto a name another contact already holds returns 409;
+         *     contacts are not merged implicitly.
          */
         put: operations["updateContact"];
         post?: never;
         /**
          * Delete a contact
          * @description Deletes a contact by ID.
+         *
+         *     This removes the address-book entry only. Flights the contact appears on
+         *     keep the crew entry and the name it was logged with; the entry's
+         *     `contactId` becomes null. No logbook content is lost, so deleting is
+         *     allowed even for a contact referenced by signed flights.
          */
         delete: operations["deleteContact"];
         options?: never;
@@ -4725,6 +4787,11 @@ export interface components {
             flightsImported: number;
             /** @example 11 */
             crewMembersImported: number;
+            /**
+             * @description Contacts created because a crew name in the backup matched none of this account's contacts. Contacts are not carried in the backup format, so a restore into an empty account creates one per distinct crew name.
+             * @example 5
+             */
+            contactsCreated: number;
         };
         PaginatedImports: {
             data: components["schemas"]["ImportResult"][];
@@ -4798,6 +4865,8 @@ export interface components {
             totalUsers: number;
             totalFlights: number;
             totalAircraft: number;
+            /** @description Contacts across all users. Grows on its own as flights are logged, since crew names are turned into contacts automatically. */
+            totalContacts: number;
             totalCredentials: number;
             totalImports: number;
             flightsThisMonth: number;
@@ -5672,6 +5741,20 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
+        /** @description The request collides with a resource that already exists — for contacts, another contact of this user already has that name (matched case-insensitively, ignoring surrounding whitespace). */
+        Conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "A contact with this name already exists"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
         /** @description Document files are switched off on this server (DOCUMENT_FILES_ENABLED=false). Applies to reading as well as uploading: serving stored files is the bandwidth half of the abuse surface the switch exists to close. Already-stored files are retained and become reachable again if the operator re-enables the feature. Clients should consult GET /features and hide the UI. */
         DocumentFilesDisabled: {
             headers: {
@@ -5853,7 +5936,7 @@ export interface operations {
                     email: string;
                     /**
                      * Format: password
-                     * @description Must be at least 12 characters
+                     * @description 12–72 characters, containing at least one lowercase letter, one uppercase letter, one digit and one special character.
                      * @example SecurePass123!
                      */
                     password: string;
@@ -6105,7 +6188,7 @@ export interface operations {
                     currentPassword: string;
                     /**
                      * Format: password
-                     * @description The new password (minimum 12 characters)
+                     * @description The new password. 12–72 characters, containing at least one lowercase letter, one uppercase letter, one digit and one special character.
                      */
                     newPassword: string;
                 };
@@ -6168,7 +6251,7 @@ export interface operations {
                     token: string;
                     /**
                      * Format: password
-                     * @description The new password (minimum 12 characters)
+                     * @description The new password. 12–72 characters, containing at least one lowercase letter, one uppercase letter, one digit and one special character.
                      */
                     newPassword: string;
                     /**
@@ -8596,6 +8679,27 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
+    exportContactsVCard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description vCard file download */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/vcard": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
     exportDataJSON: {
         parameters: {
             query?: never;
@@ -8848,6 +8952,7 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
         };
     };
     searchContacts: {
@@ -8918,6 +9023,8 @@ export interface operations {
             /** @description Contact updated */
             200: {
                 headers: {
+                    /** @description Number of flight crew entries rewritten to the new name */
+                    "X-Crew-Entries-Renamed"?: number;
                     [name: string]: unknown;
                 };
                 content: {
@@ -8927,6 +9034,7 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
         };
     };
     deleteContact: {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { exportFlightsCSV, exportDataJSON, exportFlightsPDF } from '../../hooks/useExport';
+import { exportFlightsCSV, exportDataJSON, exportFlightsPDF, exportContactsVCard } from '../../hooks/useExport';
 
 export default function ExportPage() {
   const { t } = useTranslation('reports');
@@ -12,7 +12,7 @@ export default function ExportPage() {
   const [pdfRowsPerPage, setPdfRowsPerPage] = useState<string>('');
   const [csvFormat, setCsvFormat] = useState<'standard' | 'easa' | 'faa'>('standard');
 
-  const handleExport = async (format: 'csv' | 'json' | 'pdf') => {
+  const handleExport = async (format: 'csv' | 'json' | 'pdf' | 'vcard') => {
     setExporting(format);
     setError(null);
     try {
@@ -21,6 +21,8 @@ export default function ExportPage() {
       } else if (format === 'pdf') {
         const rows = pdfRowsPerPage ? Number(pdfRowsPerPage) : undefined;
         await exportFlightsPDF(undefined, pdfFormat, pdfPageSize, pdfLayout, rows);
+      } else if (format === 'vcard') {
+        await exportContactsVCard();
       } else {
         await exportDataJSON();
       }
@@ -147,6 +149,22 @@ export default function ExportPage() {
           </button>
         </div>
 
+        {/* vCard address book */}
+        <div className="card">
+          <div className="text-3xl mb-3">👥</div>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.vcardTitle', 'People (vCard)')}</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+            {t('export.vcardDescription', 'Export the crew, instructors and passengers from your logbook as a .vcf address book for your phone or mail client.')}
+          </p>
+          <button
+            onClick={() => handleExport('vcard')}
+            disabled={exporting === 'vcard'}
+            className="btn-secondary w-full"
+          >
+            {exporting === 'vcard' ? t('export.downloading') : t('export.download') + ' vCard'}
+          </button>
+        </div>
+
         {/* Import Link */}
         <div className="card">
           <div className="text-3xl mb-3">📥</div>
@@ -169,6 +187,7 @@ export default function ExportPage() {
           <li>• <strong>PDF EASA</strong> — Full AMC1 FCL.050 compliant logbook with SP-SE/ME split, FSTD sessions, and page totals.</li>
           <li>• <strong>PDF FAA</strong> — Standard ASA/Jeppesen layout with approaches, holds, and IPC/Flight Review markers.</li>
           <li>• <strong>JSON Backup</strong> — Complete data snapshot including aircraft fleet, licenses with class ratings, and credentials.</li>
+          <li>• <strong>vCard</strong> — Your people as a standard .vcf address book, each card tagged with the roles they flew in. Re-importing a later export updates the same cards instead of duplicating them.</li>
           <li>• Your data is yours — export anytime, no restrictions, no fees.</li>
         </ul>
       </div>

@@ -224,6 +224,8 @@
     "layoutSpread": "Doppelseite (beidseitiger Druck)",
     "layoutSingle": "Einzelseite (alle Spalten auf einer Seite)",
     "rowsPerPage": "Zeilen pro Seite",
-    "rowsPerPageAuto": "Zeilen pro Seite (automatisch)"
+    "rowsPerPageAuto": "Zeilen pro Seite (automatisch)",
+    "vcardTitle": "Personen (vCard)",
+    "vcardDescription": "Exportiere Crew, Fluglehrer und Passagiere aus deinem Flugbuch als .vcf-Adressbuch für Telefon oder Mail-Programm."
   }
 }

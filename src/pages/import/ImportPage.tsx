@@ -304,6 +304,13 @@ export default function ImportPage() {
               value={jsonResult.crewMembersImported}
               color="green"
             />
+            {/* Contacts are not carried in the backup format, so a restore
+                rebuilds the address book from the crew names it finds. */}
+            <SummaryCard
+              label={t('restoreSummaryContacts', 'People')}
+              value={jsonResult.contactsCreated ?? 0}
+              color="green"
+            />
           </div>
 
           <button onClick={handleReset} className="btn-primary">

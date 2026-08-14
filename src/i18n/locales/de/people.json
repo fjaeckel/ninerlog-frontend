@@ -19,10 +19,12 @@
   },
   "errors": {
     "nameRequired": "Name ist erforderlich.",
-    "nameTooLong": "Name darf höchstens 255 Zeichen lang sein.",
+    "nameTooLong": "Name darf höchstens 100 Zeichen lang sein.",
     "invalidEmail": "Gib eine gültige E-Mail-Adresse ein.",
-    "phoneTooLong": "Telefonnummer darf höchstens 50 Zeichen lang sein.",
-    "notesTooLong": "Notizen dürfen höchstens 500 Zeichen lang sein."
+    "phoneTooLong": "Telefon darf höchstens 20 Zeichen lang sein.",
+    "notesTooLong": "Notizen dürfen höchstens 1000 Zeichen lang sein.",
+    "duplicateName": "„{{name}}“ ist bereits in deinen Personen vorhanden. Bearbeite stattdessen diesen Eintrag.",
+    "emailTooLong": "E-Mail darf höchstens 254 Zeichen lang sein."
   },
   "create": "Person hinzufügen",
   "save": "Speichern",
@@ -39,5 +41,10 @@
   "empty": {
     "title": "Noch keine Personen",
     "description": "Personen werden automatisch angelegt, wenn du Crew-Mitglieder zu einem Flug hinzufügst — oder füge jemanden manuell über „Person hinzufügen“ hinzu."
-  }
+  },
+  "exportVCard": "vCard exportieren",
+  "exporting": "Exportiere…",
+  "exportFailed": "Personen konnten nicht exportiert werden. Bitte erneut versuchen.",
+  "crewEntriesRenamed_one": "Person in {{count}} Flugbucheintrag umbenannt. Signierte Flüge behalten den Namen, mit dem sie signiert wurden.",
+  "crewEntriesRenamed_other": "Person in {{count}} Flugbucheinträgen umbenannt. Signierte Flüge behalten den Namen, mit dem sie signiert wurden."
 }

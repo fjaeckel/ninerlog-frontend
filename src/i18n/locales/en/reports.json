@@ -224,6 +224,8 @@
     "layoutSpread": "Two-page spread (duplex printing)",
     "layoutSingle": "Single page (all columns on one page)",
     "rowsPerPage": "Rows per page",
-    "rowsPerPageAuto": "Rows per page (auto)"
+    "rowsPerPageAuto": "Rows per page (auto)",
+    "vcardTitle": "People (vCard)",
+    "vcardDescription": "Export the crew, instructors and passengers from your logbook as a .vcf address book for your phone or mail client."
   }
 }

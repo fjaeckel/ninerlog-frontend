@@ -40,6 +40,7 @@
   "restoreSummaryCredentials": "Credentials",
   "restoreSummaryFlights": "Flights",
   "restoreSummaryCrew": "Crew members",
+  "restoreSummaryContacts": "People",
   "restoreAnother": "Restore another backup",
   "history": {
     "title": "Import History",

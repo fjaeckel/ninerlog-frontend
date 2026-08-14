@@ -24,6 +24,15 @@ export const exportFlightsCSV = (format?: 'standard' | 'easa' | 'faa') => {
 export const exportDataJSON = () =>
   downloadFile(`${API_BASE}/exports/json`, `ninerlog_backup_${new Date().toISOString().slice(0, 10)}.json`);
 
+/**
+ * The address book as a vCard 3.0 file, for importing into a phone or mail
+ * client. Each card carries the person's logged crew roles as CATEGORIES and a
+ * stable UID, so re-importing a later export updates the existing cards rather
+ * than duplicating them.
+ */
+export const exportContactsVCard = () =>
+  downloadFile(`${API_BASE}/exports/vcard`, `ninerlog_contacts_${new Date().toISOString().slice(0, 10)}.vcf`);
+
 export const exportFlightsPDF = (
   logbookLicenseId?: string,
   format?: 'easa' | 'faa' | 'summary',

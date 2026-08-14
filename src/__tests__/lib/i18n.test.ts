@@ -78,4 +78,45 @@ describe('i18n setup', () => {
     expect(many).toContain('3');
     expect(one).not.toBe(many);
   });
+
+  // The contact-deduplication surfaces. A missing German key is invisible at
+  // runtime — i18next silently falls back to English — so pin both languages.
+  describe('contact deduplication strings', () => {
+    const keys = [
+      'people:errors.duplicateName',
+      'people:exportVCard',
+      'people:exportFailed',
+      'common:admin.dashboard.totalContacts',
+      'reports:export.vcardTitle',
+      'reports:export.vcardDescription',
+      'import:restoreSummaryContacts',
+    ];
+
+    for (const lang of ['en', 'de'] as const) {
+      it(`resolves every key in ${lang}`, async () => {
+        await i18n.changeLanguage(lang);
+        for (const key of keys) {
+          const value = i18n.t(key, { name: 'Hans Müller' });
+          expect(value, `${key} missing in ${lang}`).not.toBe(key);
+          expect(value.length).toBeGreaterThan(0);
+        }
+      });
+
+      it(`pluralises the rename count in ${lang}`, async () => {
+        await i18n.changeLanguage(lang);
+        const one = i18n.t('people:crewEntriesRenamed', { count: 1 });
+        const many = i18n.t('people:crewEntriesRenamed', { count: 5 });
+        expect(one).toContain('1');
+        expect(many).toContain('5');
+        expect(one).not.toBe(many);
+      });
+    }
+
+    it('differs between English and German', async () => {
+      await i18n.changeLanguage('en');
+      const en = i18n.t('people:exportVCard');
+      await i18n.changeLanguage('de');
+      expect(i18n.t('people:exportVCard')).not.toBe(en);
+    });
+  });
 });

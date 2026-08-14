@@ -99,6 +99,7 @@ function DashboardTab() {
     { label: t('admin.dashboard.totalUsers'), value: data.totalUsers },
     { label: t('admin.dashboard.totalFlights'), value: data.totalFlights },
     { label: t('admin.dashboard.totalAircraft'), value: data.totalAircraft },
+    { label: t('admin.dashboard.totalContacts'), value: data.totalContacts },
     { label: t('admin.dashboard.totalCredentials'), value: data.totalCredentials },
     { label: t('admin.dashboard.totalImports'), value: data.totalImports },
     { label: t('admin.dashboard.flightsThisMonth'), value: data.flightsThisMonth },

@@ -13,6 +13,9 @@ export const FLIGHT_DEPENDENT_QUERY_KEYS: readonly (readonly unknown[])[] = [
   ['statsByClass'],
   ['trends'],
   ['aircraft', 'stats'],
+  // Saving a flight creates a contact for every crew name the address book
+  // does not have yet, so the People list grows as a side effect of logging.
+  ['contacts'],
 ];
 
 /**

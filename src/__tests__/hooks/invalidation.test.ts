@@ -18,6 +18,12 @@ describe('invalidateFlightDependentQueries', () => {
     }
   });
 
+  it('covers contacts, which the API creates as a side effect of saving a flight', () => {
+    // Crew names typed into the flight form become contacts server-side, so a
+    // cached People list is stale the moment a flight is saved.
+    expect(FLIGHT_DEPENDENT_QUERY_KEYS.map((k) => k[0])).toContain('contacts');
+  });
+
   it('covers dashboard time/landing stats query keys', () => {
     // Regression guard for ninerlog-frontend#33: stats must reload when
     // flights are created/updated/deleted/imported.
