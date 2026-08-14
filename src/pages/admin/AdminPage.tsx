@@ -6,6 +6,7 @@ import {
   useAdminUsers, useDisableUser, useEnableUser, useUnlockUser, useResetUser2fa, useDeleteUser,
   useAdminStats, useAdminAuditLog, useCleanupTokens, useSmtpTest, useAdminConfig,
   useEmailDeliveries, useEmailSuppressions, useLiftEmailSuppression, useCleanupUnverifiedAccounts,
+  useTriggerNotifications,
 } from '../../hooks/useAdmin';
 import { useCreateAnnouncement, useDeleteAnnouncement, useAnnouncements } from '../../hooks/useAnnouncements';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
@@ -596,6 +597,7 @@ function MaintenanceTab() {
   const cleanupTokens = useCleanupTokens();
   const smtpTest = useSmtpTest();
   const cleanupUnverified = useCleanupUnverifiedAccounts();
+  const triggerNotifications = useTriggerNotifications();
   const { data: config } = useAdminConfig();
   const [message, setMessage] = useState('');
 
@@ -624,6 +626,14 @@ function MaintenanceTab() {
         deleted: result.accountsDeleted,
       }));
     } catch { setMessage('Failed to sweep unverified accounts.'); }
+  };
+
+  const handleTriggerNotifications = async () => {
+    setMessage('');
+    try {
+      const result = await triggerNotifications.mutateAsync();
+      setMessage(result.message || t('admin.maintenance.notificationsTriggered'));
+    } catch { setMessage('Failed to trigger notification check.'); }
   };
 
   return (
@@ -665,6 +675,13 @@ function MaintenanceTab() {
           className="btn-primary"
         >
           {cleanupUnverified.isPending ? t('admin.maintenance.sweeping') : t('admin.maintenance.runSweep')}
+        </button>
+      </div>
+      <div className="card">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('admin.maintenance.notificationCheck')}</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{t('admin.maintenance.notificationCheckDesc')}</p>
+        <button onClick={handleTriggerNotifications} disabled={triggerNotifications.isPending} className="btn-primary">
+          {triggerNotifications.isPending ? t('admin.maintenance.triggering') : t('admin.maintenance.runNotificationCheck')}
         </button>
       </div>
     </div>

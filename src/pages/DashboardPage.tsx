@@ -7,6 +7,7 @@ import { useMyStatistics } from '../hooks/useStatistics';
 import { useCredentials } from '../hooks/useCredentials';
 import { useAllCurrencyStatus } from '../hooks/useCurrency';
 import { useStatsByClass } from '../hooks/useStatsByClass';
+import { useTrends, fillTrendMonths } from '../hooks/useTrends';
 import { useAircraftStats } from '../hooks/useAircraft';
 import { CurrencyCard } from '../components/currency/CurrencyCard';
 import { StatCard } from '../components/ui/StatCard';
@@ -14,10 +15,17 @@ import { useFormatPrefs } from '../hooks/useFormatPrefs';
 import { useRecencyPrefs } from '../hooks/useRecencyPrefs';
 import { recencyLevel, RECENCY_DOT_CLASSES } from '../lib/recency';
 
+/** Renders an API `YYYY-MM` key as a locale-aware short month name. */
+function shortMonth(month: string, locale: string) {
+  const [y, m] = month.split('-');
+  if (!y || !m) return month;
+  return new Date(Date.UTC(Number(y), Number(m) - 1, 1)).toLocaleDateString(locale, { month: 'short' });
+}
+
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const { t } = useTranslation(['dashboard', 'common']);
+  const { t, i18n } = useTranslation(['dashboard', 'common']);
   const { fmtDuration, fmtDate } = useFormatPrefs();
 
   const { data: flightsData } = useFlights({
@@ -31,8 +39,13 @@ export default function DashboardPage() {
   const { data: currencyStatus } = useAllCurrencyStatus();
   const { data: credentials } = useCredentials();
   const { data: classStat } = useStatsByClass();
+  const { data: trends } = useTrends(12);
   const { data: aircraftStats } = useAircraftStats();
   const recencyPrefs = useRecencyPrefs();
+
+  const trendMonths = fillTrendMonths(trends?.trends, 12);
+  const hasTrendActivity = trendMonths.some((m) => (m.totalMinutes ?? 0) > 0);
+  const maxTrendMinutes = Math.max(...trendMonths.map((m) => m.totalMinutes ?? 0), 1);
 
   const modelStats = [...(aircraftStats?.byType.values() ?? [])]
     .sort((a, b) => b.totalMinutes - a.totalMinutes)
@@ -178,6 +191,30 @@ export default function DashboardPage() {
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</p>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Monthly activity trend */}
+      {hasTrendActivity && (
+        <div className="card mb-6" data-testid="monthly-activity-section">
+          <h2 className="section-title mb-4">{t('dashboard:monthlyActivity')}</h2>
+          <div className="flex items-end gap-1.5 h-28" role="img" aria-label={t('dashboard:monthlyActivityLabel')}>
+            {trendMonths.map((m) => {
+              const minutes = m.totalMinutes ?? 0;
+              const pct = (minutes / maxTrendMinutes) * 100;
+              const label = shortMonth(m.month ?? '', i18n.language);
+              return (
+                <div key={m.month} className="flex-1 flex flex-col items-center justify-end gap-1 min-w-0 h-full">
+                  <div
+                    className={`w-full rounded-t ${minutes > 0 ? 'bg-blue-500 dark:bg-blue-400' : 'bg-slate-200 dark:bg-slate-700'}`}
+                    style={{ height: minutes > 0 ? `${Math.max(pct, 4)}%` : '2px' }}
+                    title={`${label}: ${fmtDuration(minutes)} · ${m.flights ?? 0} ${t('common:flights')}`}
+                  />
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{label}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

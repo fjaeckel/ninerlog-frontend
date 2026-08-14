@@ -19,6 +19,23 @@ interface BackupDestinationFormProps {
 
 const SCHEDULES: BackupSchedule[] = ['manual', 'daily', 'weekly', 'monthly'];
 
+/**
+ * Strips untouched fields and converts `bool`-typed values back into real
+ * booleans — the API type-asserts them, so `"true"` (string) would be ignored.
+ */
+function cleanValues(
+  values: Record<string, string>,
+  fields: BackupField[] | undefined,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(values)) {
+    if (v === '') continue;
+    const type = fields?.find((f) => f.name === k)?.type;
+    out[k] = type === 'bool' ? v === 'true' : v;
+  }
+  return out;
+}
+
 export default function BackupDestinationForm({ destination, onClose }: BackupDestinationFormProps) {
   const { t } = useTranslation('backups');
   const { data: providers, isLoading: providersLoading } = useBackupProviders();
@@ -83,20 +100,11 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
           },
         });
       } else {
-        // Strip empty optional fields from config/credentials
-        const configClean: Record<string, unknown> = {};
-        for (const [k, v] of Object.entries(config)) {
-          if (v !== '') configClean[k] = v;
-        }
-        const credsClean: Record<string, unknown> = {};
-        for (const [k, v] of Object.entries(credentials)) {
-          if (v !== '') credsClean[k] = v;
-        }
         await createMutation.mutateAsync({
           provider: providerName,
           displayName,
-          config: configClean,
-          credentials: credsClean,
+          config: cleanValues(config, selectedProvider?.configSchema.fields),
+          credentials: cleanValues(credentials, selectedProvider?.credentialSchema.fields),
           schedule,
           scheduleHourUtc: schedule === 'manual' ? undefined : scheduleHourUtc,
           scheduleDayOfWeek: schedule === 'weekly' ? scheduleDayOfWeek : undefined,
@@ -118,6 +126,31 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
     value: string,
     onChange: (name: string, val: string) => void,
   ) => {
+    if (field.type === 'bool') {
+      // Untouched checkboxes stay out of the submitted map so the provider's
+      // server-side default applies; once toggled, an explicit true/false is
+      // sent (cleanValues converts the string to a real boolean).
+      return (
+        <div key={field.name}>
+          <label htmlFor={`bf-${field.name}`} className="flex items-center gap-2 min-h-[44px]">
+            <input
+              id={`bf-${field.name}`}
+              type="checkbox"
+              checked={value === 'true'}
+              onChange={(e) => onChange(field.name, e.target.checked ? 'true' : 'false')}
+              className="rounded"
+            />
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              {field.label}
+              {field.required && <span className="text-red-500 ml-0.5">*</span>}
+            </span>
+          </label>
+          {field.description && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{field.description}</p>
+          )}
+        </div>
+      );
+    }
     const inputType =
       field.type === 'password' ? 'password' : field.type === 'url' ? 'url' : 'text';
     return (

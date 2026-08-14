@@ -8,6 +8,8 @@ export default function ExportPage() {
   const [error, setError] = useState<string | null>(null);
   const [pdfFormat, setPdfFormat] = useState<'easa' | 'faa' | 'summary'>('easa');
   const [pdfPageSize, setPdfPageSize] = useState<'a4' | 'a5' | 'letter'>('a4');
+  const [pdfLayout, setPdfLayout] = useState<'spread' | 'single'>('spread');
+  const [pdfRowsPerPage, setPdfRowsPerPage] = useState<string>('');
   const [csvFormat, setCsvFormat] = useState<'standard' | 'easa' | 'faa'>('standard');
 
   const handleExport = async (format: 'csv' | 'json' | 'pdf') => {
@@ -17,7 +19,8 @@ export default function ExportPage() {
       if (format === 'csv') {
         await exportFlightsCSV(csvFormat);
       } else if (format === 'pdf') {
-        await exportFlightsPDF(undefined, pdfFormat, pdfPageSize);
+        const rows = pdfRowsPerPage ? Number(pdfRowsPerPage) : undefined;
+        await exportFlightsPDF(undefined, pdfFormat, pdfPageSize, pdfLayout, rows);
       } else {
         await exportDataJSON();
       }
@@ -112,6 +115,29 @@ export default function ExportPage() {
             <option value="a5">{t('export.pageSizeA5', 'A5 (landscape)')}</option>
             <option value="letter">{t('export.pageSizeLetter', 'US Letter (landscape)')}</option>
           </select>
+          {pdfFormat !== 'summary' && (
+            <>
+              <select
+                value={pdfLayout}
+                onChange={(e) => setPdfLayout(e.target.value as 'spread' | 'single')}
+                className="input mb-3 text-sm"
+                aria-label={t('export.pdfLayout', 'Page layout')}
+              >
+                <option value="spread">{t('export.layoutSpread', 'Two-page spread (duplex printing)')}</option>
+                <option value="single">{t('export.layoutSingle', 'Single page (all columns on one page)')}</option>
+              </select>
+              <input
+                type="number"
+                min={5}
+                max={50}
+                value={pdfRowsPerPage}
+                onChange={(e) => setPdfRowsPerPage(e.target.value)}
+                placeholder={t('export.rowsPerPageAuto', 'Rows per page (auto)')}
+                className="input mb-3 text-sm"
+                aria-label={t('export.rowsPerPage', 'Rows per page')}
+              />
+            </>
+          )}
           <button
             onClick={() => handleExport('pdf')}
             disabled={exporting === 'pdf'}

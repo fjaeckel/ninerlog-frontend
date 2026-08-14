@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
-import { API_BASE_URL as API_BASE } from '../lib/config';
+import { apiClient } from '../api/client';
 
 interface ClassStat {
   class: string;
@@ -28,14 +28,11 @@ export const useStatsByClass = () => {
   return useQuery<StatsByClassResponse>({
     queryKey: ['stats', 'by-class'],
     queryFn: async (): Promise<StatsByClassResponse> => {
-      const res = await fetch(`${API_BASE}/reports/stats-by-class?months=0`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
+      const { data, error } = await apiClient.GET('/reports/stats-by-class', {
+        params: { query: { months: 0 } },
       });
-      if (!res.ok) throw new Error('Failed to fetch stats');
-      return res.json();
+      if (error) throw error;
+      return data as StatsByClassResponse;
     },
     enabled: !!accessToken,
   });

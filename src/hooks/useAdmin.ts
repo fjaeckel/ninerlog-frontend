@@ -158,6 +158,16 @@ export const useSmtpTest = () => {
   });
 };
 
+export const useTriggerNotifications = () => {
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await apiClient.POST('/admin/maintenance/trigger-notifications');
+      if (error) throw error;
+      return data as { message: string };
+    },
+  });
+};
+
 export const useAdminConfig = () => {
   return useQuery({
     queryKey: ['admin', 'config'],

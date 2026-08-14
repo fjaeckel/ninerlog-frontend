@@ -23,7 +23,6 @@
   "rowsDetected_one": "{{count}} Zeile erkannt",
   "rowsDetected_other": "{{count}} Zeilen erkannt",
   "duplicateWarning": "Einige Flüge könnten bereits vorhandenen Einträgen entsprechen.",
-
   "modeTabsLabel": "Import-Modus",
   "modeCsv": "CSV-Flüge",
   "modeJson": "JSON-Sicherung wiederherstellen",
@@ -41,5 +40,23 @@
   "restoreSummaryCredentials": "Nachweise",
   "restoreSummaryFlights": "Flüge",
   "restoreSummaryCrew": "Crew-Mitglieder",
-  "restoreAnother": "Weitere Sicherung wiederherstellen"
+  "restoreAnother": "Weitere Sicherung wiederherstellen",
+  "history": {
+    "title": "Import-Verlauf",
+    "subtitle": "Frühere CSV-Importe in dieses Konto.",
+    "date": "Datum",
+    "file": "Datei",
+    "status": "Status",
+    "imported": "Importiert",
+    "skipped": "Übersprungen",
+    "errors": "Fehler",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "pageOf": "Seite {{page}} von {{total}}",
+    "statusLabels": {
+      "completed": "Abgeschlossen",
+      "partial": "Teilweise",
+      "failed": "Fehlgeschlagen"
+    }
+  }
 }

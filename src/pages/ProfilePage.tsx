@@ -6,7 +6,7 @@ import QRCode from 'qrcode';
 import { useAuthStore } from '../stores/authStore';
 import { useAuthProviders, useLogout } from '../hooks/useAuth';
 import { useOnboardingStore } from '../stores/onboardingStore';
-import { useUpdateProfile, useChangePassword, useDeleteAccount, useDeleteAllFlights, useDeleteAllUserData } from '../hooks/useProfile';
+import { useCurrentUser, useUpdateProfile, useChangePassword, useDeleteAccount, useDeleteAllFlights, useDeleteAllUserData } from '../hooks/useProfile';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
 import { useSetup2FA, useVerify2FA, useDisable2FA } from '../hooks/useTwoFactor';
 import { ThemeSwitcher } from '../components/ui/ThemeSwitcher';
@@ -17,6 +17,7 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { PasskeySection } from '../components/auth/PasskeySection';
 import BackupsPage from './backups/BackupsPage';
 import { BaselineSection } from '../components/profile/BaselineSection';
+import { ContactsSection } from '../components/profile/ContactsSection';
 import { FlightColumnsSection } from '../components/profile/FlightColumnsSection';
 
 export default function ProfilePage() {
@@ -30,6 +31,9 @@ export default function ProfilePage() {
     await logout.mutateAsync();
     navigate('/login');
   };
+  // Re-syncs the auth store from GET /users/me, so a profile changed
+  // server-side (admin edit, OIDC re-sync) shows up without re-logging-in.
+  useCurrentUser();
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
   const deleteAccount = useDeleteAccount();
@@ -579,6 +583,9 @@ export default function ProfilePage() {
         <div className="space-y-6">
           {/* Initial Hours Snapshot */}
           <BaselineSection />
+
+          {/* Crew Contacts */}
+          <ContactsSection />
 
           {/* Flight Data Maintenance */}
           <div className="card">

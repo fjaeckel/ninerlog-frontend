@@ -45,5 +45,7 @@
   "recentFlights": "Letzte Flüge",
   "noFlights": "Noch keine Flüge eingetragen",
   "logFirstFlight": "Ersten Flug eintragen",
-  "startJourney": "Beginnen Sie Ihr digitales Flugbuch mit dem Eintrag Ihres ersten Fluges."
+  "startJourney": "Beginnen Sie Ihr digitales Flugbuch mit dem Eintrag Ihres ersten Fluges.",
+  "monthlyActivity": "Monatliche Aktivität",
+  "monthlyActivityLabel": "Flugstunden pro Monat in den letzten 12 Monaten"
 }

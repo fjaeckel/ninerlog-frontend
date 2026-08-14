@@ -1,5 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
+import { apiClient } from '../api/client';
 import type { components } from '../api/schema';
 import { invalidateFlightDependentQueries } from './invalidation';
 
@@ -8,6 +9,7 @@ type ImportPreviewResponse = components['schemas']['ImportPreviewResponse'];
 type ImportResult = components['schemas']['ImportResult'];
 type ImportColumnMapping = components['schemas']['ImportColumnMapping'];
 type ImportJSONResult = components['schemas']['ImportJSONResult'];
+type PaginatedImports = components['schemas']['PaginatedImports'];
 
 export type {
   ImportUploadResponse,
@@ -15,6 +17,7 @@ export type {
   ImportResult,
   ImportColumnMapping,
   ImportJSONResult,
+  PaginatedImports,
 };
 
 import { API_BASE_URL } from '../lib/config';
@@ -23,6 +26,21 @@ function getAuthHeaders() {
   const token = useAuthStore.getState().accessToken;
   return { Authorization: `Bearer ${token}` };
 }
+
+/** Past CSV imports, newest first. Confirm/restore invalidate ['imports']. */
+export const useImportHistory = (page = 1, pageSize = 10) => {
+  return useQuery({
+    queryKey: ['imports', page, pageSize],
+    queryFn: async (): Promise<PaginatedImports> => {
+      const { data, error } = await apiClient.GET('/imports', {
+        params: { query: { page, pageSize } },
+      });
+      if (error) throw error;
+      return data as PaginatedImports;
+    },
+    placeholderData: keepPreviousData,
+  });
+};
 
 export const useUploadImport = () => {
   return useMutation({

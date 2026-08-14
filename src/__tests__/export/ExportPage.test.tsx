@@ -86,6 +86,36 @@ describe('ExportPage', () => {
     );
   });
 
+  it('PDF export sends layout and rows_per_page when set', async () => {
+    const user = userEvent.setup();
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      blob: () => Promise.resolve(new Blob(['%PDF'], { type: 'application/pdf' })),
+    });
+    global.fetch = mockFetch;
+    global.URL.createObjectURL = vi.fn(() => 'blob:test');
+    global.URL.revokeObjectURL = vi.fn();
+
+    renderWithProviders(<ExportPage />);
+    await user.selectOptions(screen.getByLabelText('Page layout'), 'single');
+    await user.type(screen.getByLabelText('Rows per page'), '20');
+    await user.click(screen.getByText('Download PDF Logbook'));
+
+    const url = mockFetch.mock.calls[0][0] as string;
+    expect(url).toContain('/exports/pdf');
+    expect(url).toContain('layout=single');
+    expect(url).toContain('rows_per_page=20');
+  });
+
+  it('hides layout and row controls for the summary format', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ExportPage />);
+    expect(screen.getByLabelText('Page layout')).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText('PDF format'), 'summary');
+    expect(screen.queryByLabelText('Page layout')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Rows per page')).not.toBeInTheDocument();
+  });
+
   it('shows error message on export failure', async () => {
     const user = userEvent.setup();
     global.fetch = vi.fn().mockResolvedValue({ ok: false });
