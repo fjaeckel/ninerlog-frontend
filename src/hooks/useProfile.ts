@@ -1,10 +1,38 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 import type { components, operations } from '../api/schema';
 import { invalidateFlightDependentQueries } from './invalidation';
 
 type User = components['schemas']['User'];
+
+/**
+ * Fresh profile from GET /users/me. The auth store is otherwise only fed by
+ * the login/refresh payloads, so server-side changes (an admin edit, an OIDC
+ * re-sync) never reached a running session. On success the store is updated
+ * so the header and greeting reflect the server's view.
+ */
+export const useCurrentUser = () => {
+  const { updateUser } = useAuthStore();
+  const query = useQuery({
+    queryKey: ['user', 'me'],
+    queryFn: async (): Promise<User> => {
+      const { data, error } = await apiClient.GET('/users/me');
+      if (error) throw error;
+      return data as User;
+    },
+  });
+
+  const { data } = query;
+  useEffect(() => {
+    if (data) {
+      updateUser({ name: data.name, email: data.email, timeDisplayFormat: data.timeDisplayFormat as never });
+    }
+  }, [data, updateUser]);
+
+  return query;
+};
 
 /** Everything PATCH /users/me accepts — identity fields and display preferences. */
 type UpdateProfileRequest = NonNullable<

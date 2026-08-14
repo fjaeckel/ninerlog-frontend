@@ -219,6 +219,11 @@
     "pdfPageSize": "Seitenformat",
     "pageSizeA4": "A4 (Querformat)",
     "pageSizeA5": "A5 (Querformat)",
-    "pageSizeLetter": "US Letter (Querformat)"
+    "pageSizeLetter": "US Letter (Querformat)",
+    "pdfLayout": "Seitenlayout",
+    "layoutSpread": "Doppelseite (beidseitiger Druck)",
+    "layoutSingle": "Einzelseite (alle Spalten auf einer Seite)",
+    "rowsPerPage": "Zeilen pro Seite",
+    "rowsPerPageAuto": "Zeilen pro Seite (automatisch)"
   }
 }

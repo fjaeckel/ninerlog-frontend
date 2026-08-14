@@ -192,7 +192,12 @@
         "oidc_mode": "Hier verwaltet Single Sign-on die Konten. Ein nicht bestätigtes Konto bedeutet, dass der Anbieter die Adresse nicht bestätigt hat — nicht, dass das Konto aufgegeben wurde. Eine Löschung auf dieser Grundlage würde aktiv genutzte Konten entfernen. Im SSO-Modus nicht aktivierbar.",
         "smtp_not_configured": "SMTP ist nicht konfiguriert; Konten gelten bei der Registrierung sofort als bestätigt, es gibt also nichts nachzuverfolgen.",
         "disabled_by_configuration": "Über UNVERIFIED_CLEANUP_ENABLED=false deaktiviert."
-      }
+      },
+      "notificationCheck": "Benachrichtigungsprüfung",
+      "notificationCheckDesc": "Führt die Ablauf-Benachrichtigungsprüfung für alle Benutzer sofort aus und umgeht dabei die tägliche Prüfstunde. Nützlich nach Änderungen an den Benachrichtigungseinstellungen oder zum Testen des E-Mail-Versands.",
+      "runNotificationCheck": "Benachrichtigungsprüfung ausführen",
+      "triggering": "Wird ausgeführt…",
+      "notificationsTriggered": "Benachrichtigungsprüfung angestoßen."
     },
     "config": {
       "title": "Laufzeitkonfiguration",

@@ -1,0 +1,43 @@
+{
+  "title": "Personen",
+  "subtitle": "Crew, Fluglehrer und Passagiere aus deinem Flugbuch.",
+  "addPerson": "Person hinzufügen",
+  "editPerson": "Person bearbeiten",
+  "editingName": "{{name}} bearbeiten",
+  "searchPlaceholder": "Nach Name, E-Mail, Telefon oder Notizen suchen…",
+  "searchLabel": "Personen durchsuchen",
+  "noMatches": "Keine Personen passen zu „{{query}}“.",
+  "noDetails": "Keine Kontaktdaten",
+  "addedOn": "Hinzugefügt am {{date}}",
+  "autoCreateHint": "Personen werden auch automatisch angelegt, wenn du Crew-Namen im Flugformular eingibst oder Flüge importierst.",
+  "fields": {
+    "name": "Name",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "notes": "Notizen",
+    "notesPlaceholder": "z. B. CFI, Sicherheitspilot…"
+  },
+  "errors": {
+    "nameRequired": "Name ist erforderlich.",
+    "nameTooLong": "Name darf höchstens 255 Zeichen lang sein.",
+    "invalidEmail": "Gib eine gültige E-Mail-Adresse ein.",
+    "phoneTooLong": "Telefonnummer darf höchstens 50 Zeichen lang sein.",
+    "notesTooLong": "Notizen dürfen höchstens 500 Zeichen lang sein."
+  },
+  "create": "Person hinzufügen",
+  "save": "Speichern",
+  "saving": "Wird gespeichert…",
+  "cancel": "Abbrechen",
+  "confirmDelete": "Person löschen",
+  "deleting": "Wird gelöscht…",
+  "editAria": "{{name}} bearbeiten",
+  "deleteAria": "{{name}} löschen",
+  "saveFailed": "Person konnte nicht gespeichert werden.",
+  "deleteFailed": "Person konnte nicht gelöscht werden.",
+  "failedToLoad": "Personen konnten nicht geladen werden",
+  "failedToLoadMessage": "Deine Kontakte konnten nicht geladen werden. Bitte versuche es erneut.",
+  "empty": {
+    "title": "Noch keine Personen",
+    "description": "Personen werden automatisch angelegt, wenn du Crew-Mitglieder zu einem Flug hinzufügst — oder füge jemanden manuell über „Person hinzufügen“ hinzu."
+  }
+}

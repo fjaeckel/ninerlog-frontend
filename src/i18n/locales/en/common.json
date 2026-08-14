@@ -192,7 +192,12 @@
         "oidc_mode": "Single sign-on is in charge of accounts here. An unverified account means the provider did not confirm the address — not that the account was abandoned — so deleting on that basis would remove accounts that are in use. This cannot be switched on in SSO mode.",
         "smtp_not_configured": "SMTP is not configured, so accounts are marked verified at sign-up and there is nothing to chase.",
         "disabled_by_configuration": "Switched off with UNVERIFIED_CLEANUP_ENABLED=false."
-      }
+      },
+      "notificationCheck": "Notification check",
+      "notificationCheckDesc": "Immediately run the expiry-notification checker for all users, bypassing the daily check-hour gating. Useful after changing notification settings or for testing email delivery.",
+      "runNotificationCheck": "Run notification check",
+      "triggering": "Running…",
+      "notificationsTriggered": "Notification check triggered."
     },
     "config": {
       "title": "Runtime Configuration",

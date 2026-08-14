@@ -6,7 +6,7 @@ import QRCode from 'qrcode';
 import { useAuthStore } from '../stores/authStore';
 import { useAuthProviders, useLogout } from '../hooks/useAuth';
 import { useOnboardingStore } from '../stores/onboardingStore';
-import { useUpdateProfile, useChangePassword, useDeleteAccount, useDeleteAllFlights, useDeleteAllUserData } from '../hooks/useProfile';
+import { useCurrentUser, useUpdateProfile, useChangePassword, useDeleteAccount, useDeleteAllFlights, useDeleteAllUserData } from '../hooks/useProfile';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '../hooks/useNotifications';
 import { useSetup2FA, useVerify2FA, useDisable2FA } from '../hooks/useTwoFactor';
 import { ThemeSwitcher } from '../components/ui/ThemeSwitcher';
@@ -30,6 +30,9 @@ export default function ProfilePage() {
     await logout.mutateAsync();
     navigate('/login');
   };
+  // Re-syncs the auth store from GET /users/me, so a profile changed
+  // server-side (admin edit, OIDC re-sync) shows up without re-logging-in.
+  useCurrentUser();
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
   const deleteAccount = useDeleteAccount();

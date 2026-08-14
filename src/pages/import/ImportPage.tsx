@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useUploadImport, usePreviewImport, useConfirmImport, useRestoreJSON } from '../../hooks/useImport';
+import { useUploadImport, usePreviewImport, useConfirmImport, useRestoreJSON, useImportHistory } from '../../hooks/useImport';
 import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportJSONResult } from '../../hooks/useImport';
 import HelpLink from '../../components/ui/HelpLink';
 import { FileDropzone } from '../../components/ui/FileDropzone';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
 const CSV_ACCEPT = '.csv,.txt';
 const JSON_ACCEPT = 'application/json,.json';
@@ -522,6 +523,85 @@ export default function ImportPage() {
             </div>
           )}
           <button onClick={handleReset} className="btn-primary">{t('importAnother', 'Import Another File')}</button>
+        </div>
+      )}
+
+      {/* Past imports — always visible below the wizard so a pilot can check
+          what a previous file actually did without re-running it. */}
+      <ImportHistory />
+    </div>
+  );
+}
+
+function ImportHistory() {
+  const { t } = useTranslation('import');
+  const { fmtDateTime } = useFormatPrefs();
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useImportHistory(page, 10);
+
+  // An empty first page means no imports at all — hide the section entirely
+  // rather than showing an empty shell under the wizard.
+  if (isLoading || !data || (data.pagination.total === 0)) return null;
+
+  return (
+    <div className="card mt-8" data-testid="import-history">
+      <h2 className="section-title mb-1">{t('history.title', 'Import History')}</h2>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+        {t('history.subtitle', 'Previous CSV imports into this account.')}
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 dark:border-slate-700">
+              <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('history.date', 'Date')}</th>
+              <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('history.file', 'File')}</th>
+              <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('history.status', 'Status')}</th>
+              <th className="px-3 py-2 text-right text-slate-500 dark:text-slate-400 font-medium">{t('history.imported', 'Imported')}</th>
+              <th className="px-3 py-2 text-right text-slate-500 dark:text-slate-400 font-medium">{t('history.skipped', 'Skipped')}</th>
+              <th className="px-3 py-2 text-right text-slate-500 dark:text-slate-400 font-medium">{t('history.errors', 'Errors')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.data.map((imp) => (
+              <tr key={imp.id} className="border-b border-slate-100 dark:border-slate-800">
+                <td className="px-3 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap tabular-nums">{fmtDateTime(imp.createdAt)}</td>
+                <td className="px-3 py-2 text-slate-700 dark:text-slate-300 max-w-[220px] truncate" title={imp.fileName}>{imp.fileName}</td>
+                <td className="px-3 py-2">
+                  <span className={`badge text-xs ${
+                    imp.status === 'completed' ? 'badge-current' :
+                    imp.status === 'partial' ? 'badge-expiring' :
+                    'badge-expired'
+                  }`}>
+                    {t(`history.statusLabels.${imp.status}`, imp.status)}
+                  </span>
+                </td>
+                <td className="px-3 py-2 text-right font-mono tabular-nums text-green-600 dark:text-green-400">{imp.importedCount}</td>
+                <td className="px-3 py-2 text-right font-mono tabular-nums text-slate-600 dark:text-slate-400">{imp.skippedCount}</td>
+                <td className={`px-3 py-2 text-right font-mono tabular-nums ${imp.errorCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-400'}`}>{imp.errorCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {data.pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+            className="btn-ghost btn-sm"
+          >
+            ← {t('history.previous', 'Previous')}
+          </button>
+          <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+            {t('history.pageOf', { page: data.pagination.page, total: data.pagination.totalPages, defaultValue: 'Page {{page}} of {{total}}' })}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(data.pagination.totalPages, p + 1))}
+            disabled={page >= data.pagination.totalPages}
+            className="btn-ghost btn-sm"
+          >
+            {t('history.next', 'Next')} →
+          </button>
         </div>
       )}
     </div>
