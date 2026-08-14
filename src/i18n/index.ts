@@ -20,6 +20,7 @@ import enBackups from './locales/en/backups.json';
 import enOnboarding from './locales/en/onboarding.json';
 import enQuicklog from './locales/en/quicklog.json';
 import enSignatures from './locales/en/signatures.json';
+import enPeople from './locales/en/people.json';
 import enDocuments from './locales/en/documents.json';
 
 // German namespaces
@@ -40,6 +41,7 @@ import deBackups from './locales/de/backups.json';
 import deOnboarding from './locales/de/onboarding.json';
 import deQuicklog from './locales/de/quicklog.json';
 import deSignatures from './locales/de/signatures.json';
+import dePeople from './locales/de/people.json';
 import deDocuments from './locales/de/documents.json';
 
 export const supportedLanguages = ['en', 'de'] as const;
@@ -73,6 +75,7 @@ i18n
         onboarding: enOnboarding,
         quicklog: enQuicklog,
         signatures: enSignatures,
+        people: enPeople,
         documents: enDocuments,
       },
       de: {
@@ -93,6 +96,7 @@ i18n
         onboarding: deOnboarding,
         quicklog: deQuicklog,
         signatures: deSignatures,
+        people: dePeople,
         documents: deDocuments,
       },
     },
@@ -101,7 +105,7 @@ i18n
     ns: [
       'common', 'auth', 'nav', 'flights', 'aircraft', 'dashboard',
       'currency', 'licenses', 'credentials', 'reports', 'settings',
-      'import', 'help', 'backups', 'onboarding', 'quicklog', 'signatures',
+      'import', 'help', 'backups', 'onboarding', 'quicklog', 'signatures', 'people',
       'documents',
     ],
     interpolation: {

@@ -224,24 +224,5 @@
       "notes": "Notes",
       "notesPlaceholder": "e.g. From paper logbook 1998-2010"
     }
-  },
-  "contacts": {
-    "title": "Crew Contacts",
-    "description": "People from your flight log — created automatically when you type crew names into the flight form or import flights. Fix a name or add contact details here.",
-    "empty": "No contacts yet. They are created automatically when you add crew members to a flight.",
-    "name": "Name",
-    "email": "Email",
-    "phone": "Phone",
-    "notes": "Notes",
-    "noDetails": "No contact details",
-    "save": "Save",
-    "saving": "Saving…",
-    "cancel": "Cancel",
-    "edit": "Edit {{name}}",
-    "delete": "Delete {{name}}",
-    "confirmDelete": "Delete contact",
-    "deleting": "Deleting…",
-    "saveFailed": "Failed to save contact.",
-    "deleteFailed": "Failed to delete contact."
   }
 }

@@ -1,0 +1,43 @@
+{
+  "title": "People",
+  "subtitle": "Crew, instructors and passengers from your flight log.",
+  "addPerson": "Add person",
+  "editPerson": "Edit person",
+  "editingName": "Editing {{name}}",
+  "searchPlaceholder": "Search by name, email, phone or notes…",
+  "searchLabel": "Search people",
+  "noMatches": "No people match “{{query}}”.",
+  "noDetails": "No contact details",
+  "addedOn": "Added {{date}}",
+  "autoCreateHint": "People are also created automatically when you type crew names into the flight form or import flights.",
+  "fields": {
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "notes": "Notes",
+    "notesPlaceholder": "e.g. CFI, safety pilot…"
+  },
+  "errors": {
+    "nameRequired": "Name is required.",
+    "nameTooLong": "Name must be 255 characters or fewer.",
+    "invalidEmail": "Enter a valid email address.",
+    "phoneTooLong": "Phone must be 50 characters or fewer.",
+    "notesTooLong": "Notes must be 500 characters or fewer."
+  },
+  "create": "Add person",
+  "save": "Save",
+  "saving": "Saving…",
+  "cancel": "Cancel",
+  "confirmDelete": "Delete person",
+  "deleting": "Deleting…",
+  "editAria": "Edit {{name}}",
+  "deleteAria": "Delete {{name}}",
+  "saveFailed": "Failed to save person.",
+  "deleteFailed": "Failed to delete person.",
+  "failedToLoad": "Failed to load people",
+  "failedToLoadMessage": "Your contacts could not be loaded. Please try again.",
+  "empty": {
+    "title": "No people yet",
+    "description": "People are created automatically when you add crew members to a flight, or add someone manually with “Add person”."
+  }
+}

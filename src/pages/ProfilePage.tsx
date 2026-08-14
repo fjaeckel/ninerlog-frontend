@@ -17,7 +17,6 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { PasskeySection } from '../components/auth/PasskeySection';
 import BackupsPage from './backups/BackupsPage';
 import { BaselineSection } from '../components/profile/BaselineSection';
-import { ContactsSection } from '../components/profile/ContactsSection';
 import { FlightColumnsSection } from '../components/profile/FlightColumnsSection';
 
 export default function ProfilePage() {
@@ -583,9 +582,6 @@ export default function ProfilePage() {
         <div className="space-y-6">
           {/* Initial Hours Snapshot */}
           <BaselineSection />
-
-          {/* Crew Contacts */}
-          <ContactsSection />
 
           {/* Flight Data Maintenance */}
           <div className="card">

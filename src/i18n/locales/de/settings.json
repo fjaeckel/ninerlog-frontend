@@ -224,24 +224,5 @@
       "notes": "Notizen",
       "notesPlaceholder": "z.B. aus Papierlogbuch 1998–2010"
     }
-  },
-  "contacts": {
-    "title": "Crew-Kontakte",
-    "description": "Personen aus deinem Flugbuch — werden automatisch angelegt, wenn du Crew-Namen im Flugformular eingibst oder Flüge importierst. Hier kannst du Namen korrigieren oder Kontaktdaten ergänzen.",
-    "empty": "Noch keine Kontakte. Sie werden automatisch angelegt, wenn du Crew-Mitglieder zu einem Flug hinzufügst.",
-    "name": "Name",
-    "email": "E-Mail",
-    "phone": "Telefon",
-    "notes": "Notizen",
-    "noDetails": "Keine Kontaktdaten",
-    "save": "Speichern",
-    "saving": "Wird gespeichert…",
-    "cancel": "Abbrechen",
-    "edit": "{{name}} bearbeiten",
-    "delete": "{{name}} löschen",
-    "confirmDelete": "Kontakt löschen",
-    "deleting": "Wird gelöscht…",
-    "saveFailed": "Kontakt konnte nicht gespeichert werden.",
-    "deleteFailed": "Kontakt konnte nicht gelöscht werden."
   }
 }

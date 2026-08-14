@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router';
 import {
   LayoutDashboard, Plane, FileText, PlaneTakeoff, BarChart3, Map,
-  Award, User, Upload, Download, Shield, LogOut, Menu, Plus, ShieldCheck, HelpCircle, Bug, ExternalLink, Timer
+  Award, User, Users, Upload, Download, Shield, LogOut, Menu, Plus, ShieldCheck, HelpCircle, Bug, ExternalLink, Timer
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLogout } from '../../hooks/useAuth';
@@ -148,6 +148,7 @@ export default function Layout() {
           <SidebarItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
           <SidebarItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} />
           <SidebarItem to="/aircraft" tourId="aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} />
+          <SidebarItem to="/people" label={t('nav:people')} icon={<Users className="w-5 h-5" />} />
           <SidebarItem to="/currency" tourId="currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} />
 
           <SidebarGroup label={t('nav:licenses')} />
@@ -252,6 +253,7 @@ export default function Layout() {
               <MoreMenuItem to="/credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <MoreMenuItem to="/people" label={t('nav:people')} icon={<Users className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
             </nav>

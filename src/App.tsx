@@ -22,6 +22,7 @@ const QuickLogPage = lazyWithRetry(() => import('./pages/quicklog/QuickLogPage')
 const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage'));
 const CredentialsPage = lazyWithRetry(() => import('./pages/credentials/CredentialsPage'));
 const AircraftPage = lazyWithRetry(() => import('./pages/aircraft/AircraftPage'));
+const PeoplePage = lazyWithRetry(() => import('./pages/people/PeoplePage'));
 const ReportsPage = lazyWithRetry(() => import('./pages/reports/ReportsPage'));
 const MapPage = lazyWithRetry(() => import('./pages/maps/MapPage'));
 const ImportPage = lazyWithRetry(() => import('./pages/import/ImportPage'));
@@ -82,6 +83,7 @@ function App() {
           <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />} />
           <Route path="/credentials" element={isAuthenticated ? <CredentialsPage /> : <Navigate to="/login" />} />
           <Route path="/aircraft" element={isAuthenticated ? <AircraftPage /> : <Navigate to="/login" />} />
+          <Route path="/people" element={isAuthenticated ? <PeoplePage /> : <Navigate to="/login" />} />
           <Route path="/reports" element={isAuthenticated ? <ReportsPage /> : <Navigate to="/login" />} />
           <Route path="/map" element={isAuthenticated ? <MapPage /> : <Navigate to="/login" />} />
           <Route path="/import" element={isAuthenticated ? <ImportPage /> : <Navigate to="/login" />} />
