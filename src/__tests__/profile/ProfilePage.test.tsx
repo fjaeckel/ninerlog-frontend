@@ -93,15 +93,15 @@ describe('ProfilePage', () => {
     renderWithProviders(<ProfilePage />);
     await user.click(screen.getByRole('button', { name: 'Account' }));
 
-    await user.type(screen.getByLabelText(/current password/i), 'oldpassword123');
-    await user.type(screen.getByLabelText(/^new password$/i), 'newpassword456');
-    await user.type(screen.getByLabelText(/confirm new password/i), 'newpassword456');
+    await user.type(screen.getByLabelText(/current password/i), 'OldPassword123!');
+    await user.type(screen.getByLabelText(/^new password$/i), 'NewPassword456!');
+    await user.type(screen.getByLabelText(/confirm new password/i), 'NewPassword456!');
     await user.click(screen.getByRole('button', { name: /change password/i }));
 
     await waitFor(() => {
       expect(mockChangePassword.mutateAsync).toHaveBeenCalledWith({
-        currentPassword: 'oldpassword123',
-        newPassword: 'newpassword456',
+        currentPassword: 'OldPassword123!',
+        newPassword: 'NewPassword456!',
       });
     });
   });
@@ -111,9 +111,9 @@ describe('ProfilePage', () => {
     renderWithProviders(<ProfilePage />);
     await user.click(screen.getByRole('button', { name: 'Account' }));
 
-    await user.type(screen.getByLabelText(/current password/i), 'oldpassword123');
-    await user.type(screen.getByLabelText(/^new password$/i), 'newpassword456');
-    await user.type(screen.getByLabelText(/confirm new password/i), 'differentpass1');
+    await user.type(screen.getByLabelText(/current password/i), 'OldPassword123!');
+    await user.type(screen.getByLabelText(/^new password$/i), 'NewPassword456!');
+    await user.type(screen.getByLabelText(/confirm new password/i), 'DifferentPass1!');
     await user.click(screen.getByRole('button', { name: /change password/i }));
 
     await waitFor(() => {

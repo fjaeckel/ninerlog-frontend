@@ -59,7 +59,9 @@
     "success": "Passwort erfolgreich geändert.",
     "noMatch": "Neue Passwörter stimmen nicht überein.",
     "tooShort": "Neues Passwort muss mindestens 12 Zeichen lang sein.",
-    "failed": "Passwort konnte nicht geändert werden. Überprüfen Sie Ihr aktuelles Passwort."
+    "failed": "Passwort konnte nicht geändert werden. Überprüfen Sie Ihr aktuelles Passwort.",
+    "tooWeak": "Passwort muss einen Kleinbuchstaben, einen Großbuchstaben, eine Ziffer und ein Sonderzeichen enthalten.",
+    "tooLong": "Passwort darf maximal 72 Zeichen lang sein."
   },
   "notifications": {
     "title": "Benachrichtigungseinstellungen",

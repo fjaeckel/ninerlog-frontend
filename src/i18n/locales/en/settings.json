@@ -59,7 +59,9 @@
     "success": "Password changed successfully.",
     "noMatch": "New passwords do not match.",
     "tooShort": "New password must be at least 12 characters.",
-    "failed": "Failed to change password. Check your current password."
+    "failed": "Failed to change password. Check your current password.",
+    "tooWeak": "Password must include a lowercase letter, an uppercase letter, a number and a special character.",
+    "tooLong": "Password must not exceed 72 characters."
   },
   "notifications": {
     "title": "Notification Settings",
