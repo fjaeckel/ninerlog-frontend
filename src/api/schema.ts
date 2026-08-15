@@ -1465,6 +1465,128 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/exports/targets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the logbook products this account can export to
+         * @description List every third-party logbook product `GET /exports/logbook` can write
+         *     a native import file for.
+         *
+         *     Each entry carries the product's own name, the notes a pilot should read
+         *     before downloading (including what that product cannot represent), and
+         *     whether the layout has been round-tripped through a live import of the
+         *     destination product. Clients render this list rather than hard-coding it,
+         *     so a newly supported product appears without a client release.
+         */
+        get: operations["listExportTargets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/exports/logbook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export the logbook in another product's import format
+         * @description Export the authenticated pilot's logbook as a file the named product's
+         *     own importer accepts, so moving to another logbook is a single upload
+         *     rather than a hand-mapped spreadsheet.
+         *
+         *     Each target is a lossy projection: a destination can only store what it
+         *     models. ForeFlight, LogTen Pro and MyFlightbook are built around FAA
+         *     columns and have nowhere to put EASA multi-pilot time or the
+         *     single-/multi-engine split; CrewLounge PILOTLOG carries those but not
+         *     licenses, medicals or instructor signatures. **No vendor format carries
+         *     everything** — for a complete, lossless copy use `GET /exports/archive`.
+         *
+         *     Aircraft flown but never added to the pilot's fleet are reconstructed
+         *     from the flights themselves, so no entry is dropped for want of a fleet
+         *     record.
+         *
+         *     Call `GET /exports/targets` for the supported targets and their caveats.
+         */
+        get: operations["exportLogbookForTarget"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/exports/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export the complete logbook as an open, documented archive
+         * @description Download everything this account holds as a single ZIP of plain UTF-8
+         *     CSV and JSON — flights, aircraft, licenses, class ratings, credentials,
+         *     contacts, per-flight crew, instructor signatures (with their images) and
+         *     the pre-NinerLog opening balance.
+         *
+         *     Unlike the vendor formats behind `GET /exports/logbook`, this archive is
+         *     lossless: it carries the records no third-party importer models. It is
+         *     versioned and documented in `docs/PORTABILITY.md`, needs no NinerLog
+         *     software to read, and includes a `manifest.json` index and a `README.md`
+         *     explaining its own conventions.
+         *
+         *     This is the portability guarantee the vendor exports sit on top of: a
+         *     pilot's logbook is a career-long legal record and must remain readable
+         *     whatever happens to any single product, including this one.
+         */
+        get: operations["exportPortabilityArchive"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/exports/vcard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export contacts as vCard
+         * @description Export the authenticated user's contacts as a single vCard 3.0 (.vcf)
+         *     stream, for import into a phone or mail client's address book.
+         *
+         *     Each card carries the contact's name, email, phone and notes. Contacts
+         *     the pilot has flown with also carry their logged crew roles as
+         *     `CATEGORIES` (most-flown role first), and every card carries a stable
+         *     `UID`, so re-importing a later export updates the existing cards instead
+         *     of duplicating them.
+         */
+        get: operations["exportContactsVCard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/exports/json": {
         parameters: {
             query?: never;
@@ -1528,6 +1650,17 @@ export interface paths {
          *     Every logbook page carries the three-row totals block (total this page /
          *     total from previous pages / total time) and a per-page certification and
          *     signature block, so each printed page can be individually signed.
+         *
+         *     If the pilot has recorded prior experience (`PUT /users/me/baseline`),
+         *     those hours open the balance: they are carried into the first
+         *     "total from previous pages" row and into every running total and the
+         *     summary page after it, the way a paper logbook carries the previous
+         *     book's closing totals forward. A snapshot records no single-/multi-engine
+         *     split, no FSTD session time and no approach or hold counts, so those
+         *     columns cover logged flights only; a footer line on every page and a note
+         *     on the summary page disclose both facts. A `logbookLicenseId`-filtered
+         *     export covers part of the logbook, so the career-wide snapshot is left
+         *     out of it.
          */
         get: operations["exportFlightsPDF"];
         put?: never;
@@ -1616,6 +1749,15 @@ export interface paths {
         /**
          * Create a contact
          * @description Creates a new reusable contact for the authenticated user.
+         *
+         *     A contact is identified by its name: names are unique per user,
+         *     case-insensitively and ignoring surrounding whitespace. Creating one
+         *     that already exists returns 409 rather than a second row — use
+         *     `GET /contacts/search` to find the existing contact.
+         *
+         *     Contacts are also created automatically for crew names on flight
+         *     create/update, spreadsheet import and backup restore, so a contact
+         *     normally exists before anyone posts one.
          */
         post: operations["createContact"];
         delete?: never;
@@ -1659,12 +1801,27 @@ export interface paths {
         /**
          * Update a contact
          * @description Updates an existing contact.
+         *
+         *     Renaming propagates: the crew entries of the user's flights that are
+         *     linked to this contact are rewritten to the new name, so correcting a
+         *     misspelling also corrects the logbook. Flights carrying a completed
+         *     instructor signature are excluded — their crew names are attested
+         *     content and stay as signed. The response header `X-Crew-Entries-Renamed`
+         *     reports how many crew entries were rewritten.
+         *
+         *     Renaming onto a name another contact already holds returns 409;
+         *     contacts are not merged implicitly.
          */
         put: operations["updateContact"];
         post?: never;
         /**
          * Delete a contact
          * @description Deletes a contact by ID.
+         *
+         *     This removes the address-book entry only. Flights the contact appears on
+         *     keep the crew entry and the name it was logged with; the entry's
+         *     `contactId` becomes null. No logbook content is lost, so deleting is
+         *     allowed even for a contact referenced by signed flights.
          */
         delete: operations["deleteContact"];
         options?: never;
@@ -4703,6 +4860,43 @@ export interface components {
              */
             createdAt: string;
         };
+        /**
+         * @description Identifier of a third-party logbook product NinerLog can export to.
+         *     Values are stable; new products are added over time, so clients should
+         *     take the list from `GET /exports/targets` rather than hard-coding it.
+         * @example foreflight
+         * @enum {string}
+         */
+        ExportTargetId: "foreflight" | "logten" | "myflightbook" | "crewlounge";
+        /** @description One destination logbook product, as returned by `GET /exports/targets`. */
+        ExportTarget: {
+            id: components["schemas"]["ExportTargetId"];
+            /**
+             * @description The destination product's own name for itself.
+             * @example ForeFlight Logbook
+             */
+            product: string;
+            /**
+             * @description MIME type the export is served with.
+             * @example text/csv; charset=utf-8
+             */
+            contentType: string;
+            /**
+             * @description File extension of the generated file, without the dot.
+             * @example csv
+             */
+            extension: string;
+            /**
+             * @description What a pilot should know before downloading, including what this destination cannot represent. Shown verbatim in the UI.
+             * @example Two-table ForeFlight import template. Carries the aircraft fleet, times, landings, approaches, holds, instructor and crew names.
+             */
+            notes: string;
+            /**
+             * @description True once this layout has been round-tripped through a live import of the destination product. False means it was built from the product's published template but not yet confirmed end to end — the UI says so rather than implying an untested guarantee.
+             * @example false
+             */
+            verified: boolean;
+        };
         /** @description Summary returned by `POST /imports/json` after restoring a backup. */
         ImportJSONResult: {
             /**
@@ -4725,6 +4919,11 @@ export interface components {
             flightsImported: number;
             /** @example 11 */
             crewMembersImported: number;
+            /**
+             * @description Contacts created because a crew name in the backup matched none of this account's contacts. Contacts are not carried in the backup format, so a restore into an empty account creates one per distinct crew name.
+             * @example 5
+             */
+            contactsCreated: number;
         };
         PaginatedImports: {
             data: components["schemas"]["ImportResult"][];
@@ -4798,6 +4997,8 @@ export interface components {
             totalUsers: number;
             totalFlights: number;
             totalAircraft: number;
+            /** @description Contacts across all users. Grows on its own as flights are logged, since crew names are turned into contacts automatically. */
+            totalContacts: number;
             totalCredentials: number;
             totalImports: number;
             flightsThisMonth: number;
@@ -4924,6 +5125,26 @@ export interface components {
              *     ]
              */
             cloudBackupProviders: string[];
+            /**
+             * @description Third-party logbook products this deployment can export to, as served by `GET /exports/targets`. Lets an operator confirm at a glance that the leave-whenever-you-want path is present and which destinations it offers.
+             * @example [
+             *       "foreflight",
+             *       "logten",
+             *       "myflightbook",
+             *       "crewlounge"
+             *     ]
+             */
+            exportTargets?: string[];
+            /**
+             * @description Export targets whose column layout has not yet been round-tripped through a live import of the destination product. Surfaced so an operator fielding "my import failed" knows which layouts are still unconfirmed without reading the source.
+             * @example [
+             *       "foreflight",
+             *       "logten",
+             *       "myflightbook",
+             *       "crewlounge"
+             *     ]
+             */
+            exportTargetsUnverified?: string[];
         };
         AdminUser: {
             /** Format: uuid */
@@ -5672,6 +5893,20 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
+        /** @description The request collides with a resource that already exists — for contacts, another contact of this user already has that name (matched case-insensitively, ignoring surrounding whitespace). */
+        Conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "A contact with this name already exists"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
         /** @description Document files are switched off on this server (DOCUMENT_FILES_ENABLED=false). Applies to reading as well as uploading: serving stored files is the bandwidth half of the abuse surface the switch exists to close. Already-stored files are retained and become reachable again if the operator re-enables the feature. Clients should consult GET /features and hide the UI. */
         DocumentFilesDisabled: {
             headers: {
@@ -5853,7 +6088,7 @@ export interface operations {
                     email: string;
                     /**
                      * Format: password
-                     * @description Must be at least 12 characters
+                     * @description 12–72 characters, containing at least one lowercase letter, one uppercase letter, one digit and one special character.
                      * @example SecurePass123!
                      */
                     password: string;
@@ -6105,7 +6340,7 @@ export interface operations {
                     currentPassword: string;
                     /**
                      * Format: password
-                     * @description The new password (minimum 12 characters)
+                     * @description The new password. 12–72 characters, containing at least one lowercase letter, one uppercase letter, one digit and one special character.
                      */
                     newPassword: string;
                 };
@@ -6168,7 +6403,7 @@ export interface operations {
                     token: string;
                     /**
                      * Format: password
-                     * @description The new password (minimum 12 characters)
+                     * @description The new password. 12–72 characters, containing at least one lowercase letter, one uppercase letter, one digit and one special character.
                      */
                     newPassword: string;
                     /**
@@ -8596,6 +8831,96 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
+    listExportTargets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Supported export targets */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        targets: components["schemas"]["ExportTarget"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    exportLogbookForTarget: {
+        parameters: {
+            query: {
+                /** @description The destination logbook product. */
+                target: components["schemas"]["ExportTargetId"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A file in the destination product's import format */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    exportPortabilityArchive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description ZIP archive of the complete account */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    exportContactsVCard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description vCard file download */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/vcard": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
     exportDataJSON: {
         parameters: {
             query?: never;
@@ -8848,6 +9173,7 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
         };
     };
     searchContacts: {
@@ -8918,6 +9244,8 @@ export interface operations {
             /** @description Contact updated */
             200: {
                 headers: {
+                    /** @description Number of flight crew entries rewritten to the new name */
+                    "X-Crew-Entries-Renamed"?: number;
                     [name: string]: unknown;
                 };
                 content: {
@@ -8927,6 +9255,7 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
         };
     };
     deleteContact: {
