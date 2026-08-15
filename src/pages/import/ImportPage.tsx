@@ -5,6 +5,7 @@ import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportC
 import HelpLink from '../../components/ui/HelpLink';
 import { FileDropzone } from '../../components/ui/FileDropzone';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import SupportedLogbooks from './SupportedLogbooks';
 
 const CSV_ACCEPT = '.csv,.txt';
 const JSON_ACCEPT = 'application/json,.json';
@@ -76,6 +77,14 @@ export default function ImportPage() {
       setError(err.message || 'Upload failed');
     }
   };
+
+  // Columns the file has that no mapping covers. Counted from the file's own
+  // column list rather than the mapping list, since a column with no entry at
+  // all and one explicitly set to "skip" are the same thing to the importer.
+  const unmappedColumnCount = (uploadData?.columns ?? []).filter((col) => {
+    const mapping = mappings.find((m) => m.sourceColumn === col);
+    return !mapping || mapping.targetField === 'ignore';
+  }).length;
 
   const updateMapping = (sourceColumn: string, targetField: string) => {
     setMappings((prev) => {
@@ -159,7 +168,7 @@ export default function ImportPage() {
       <div className="mb-6">
         <h1 className="page-title">{t('importFlights')}</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-          {t('supportedFormats', 'Import flight logs from CSV files (including ForeFlight exports)')}
+          {t('pageSubtitle', 'Move your flights over from another logbook — the format is detected for you')}
           <HelpLink topic="import-export" />
         </p>
       </div>
@@ -314,21 +323,25 @@ export default function ImportPage() {
 
       {/* Step 1: Upload */}
       {mode === 'csv' && step === 'upload' && (
-        <FileDropzone
-          accept={CSV_ACCEPT}
-          disabled={upload.isPending}
-          onFileSelected={handleFileSelect}
-          onFileRejected={(file) => handleFileRejected(file, CSV_ACCEPT)}
-          buttonLabel={upload.isPending ? t('importing', 'Uploading...') : t('selectFile', 'Choose File')}
-          hint={t('dropHintCsv', 'or drag & drop a CSV file here')}
-          className="card text-center py-12"
-        >
-          <div className="text-5xl mb-4">📂</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('uploadCsv', 'Upload Flight Log File')}</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-            {t('supportedFormats', 'Supports CSV files including ForeFlight logbook exports. Maximum file size: 10 MB.')}
-          </p>
-        </FileDropzone>
+        <div className="space-y-4">
+          <FileDropzone
+            accept={CSV_ACCEPT}
+            disabled={upload.isPending}
+            onFileSelected={handleFileSelect}
+            onFileRejected={(file) => handleFileRejected(file, CSV_ACCEPT)}
+            buttonLabel={upload.isPending ? t('importing', 'Uploading...') : t('selectFile', 'Choose File')}
+            hint={t('dropHintCsv', 'or drag & drop a CSV file here')}
+            className="card text-center py-12"
+          >
+            <div className="text-5xl mb-4">📂</div>
+            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('uploadCsv', 'Upload Flight Log File')}</h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+              {t('uploadCsvDescription', 'Your logbook format is detected automatically. Maximum file size: 10 MB.')}
+            </p>
+          </FileDropzone>
+
+          <SupportedLogbooks />
+        </div>
       )}
 
       {/* Step 2: Column Mapping */}
@@ -339,12 +352,26 @@ export default function ImportPage() {
               <div>
                 <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t('columnMapping')}</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                  {uploadData.format === 'FOREFLIGHT_CSV' ? '✈ ForeFlight format detected — mappings pre-filled' : t('mapColumns', 'Map each column to a flight log field')}
+                  {uploadData.detectedTemplate
+                    ? t('formatDetected', '{{name}} format detected — mappings pre-filled', {
+                        name: uploadData.detectedTemplate.name,
+                      })
+                    : t('formatNotDetected', 'Format not recognised — check each column below')}
                   {' · '}{t('rowsDetected', { count: uploadData.totalRows })}
                 </p>
               </div>
-              <button onClick={handleReset} className="btn-ghost btn-sm text-xs min-h-[44px]">Start Over</button>
+              <button onClick={handleReset} className="btn-ghost btn-sm text-xs min-h-[44px]">
+                {t('startOver', 'Start Over')}
+              </button>
             </div>
+
+            {/* Unmapped columns are the reason an import loses data silently, so
+                say how many there are before the pilot scrolls a long list. */}
+            {unmappedColumnCount > 0 && (
+              <div className="mb-4 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300 text-sm">
+                {t('unmappedColumns', { count: unmappedColumnCount })}
+              </div>
+            )}
 
             <div className="space-y-2">
               {uploadData.columns.map((col) => {

@@ -112,6 +112,13 @@ function DashboardTab() {
     ? Object.entries(backups.byProvider).sort(([a], [b]) => a.localeCompare(b))
     : [];
 
+  // Which logbooks pilots are migrating from. Ordered by volume, since the
+  // useful question is "where is most of the inbound traffic coming from" —
+  // that is what decides which import template is worth more attention.
+  const importFormats = Object.entries(data.importsByFormat ?? {}).sort(
+    ([aName, aCount], [bName, bCount]) => bCount - aCount || aName.localeCompare(bName),
+  );
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -121,6 +128,27 @@ function DashboardTab() {
             <div className="text-xs text-slate-500 mt-1">{s.label}</div>
           </div>
         ))}
+      </div>
+
+      <div className="card p-4">
+        <div className="flex items-baseline justify-between mb-3">
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+            {t('admin.dashboard.importsByFormat')}
+          </h3>
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">{data.totalImports}</div>
+        </div>
+        {importFormats.length === 0 ? (
+          <div className="text-xs text-slate-500">{t('admin.dashboard.importsByFormatNone')}</div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {importFormats.map(([format, count]) => (
+              <div key={format} className="rounded border border-slate-200 dark:border-slate-700 px-3 py-2 text-center">
+                <div className="text-lg font-semibold text-slate-800 dark:text-slate-100">{count}</div>
+                <div className="text-xs text-slate-500 mt-0.5 uppercase tracking-wide break-words">{format}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {backups && (

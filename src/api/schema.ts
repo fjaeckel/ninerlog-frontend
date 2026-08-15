@@ -1327,6 +1327,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/imports/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List supported logbook import templates
+         * @description The catalogue of logbook export formats NinerLog can read, each with the
+         *     steps for exporting from that application.
+         *
+         *     The list is static configuration, not per-user data — it is the same for
+         *     every caller and safe to cache for the lifetime of a session. Uploading
+         *     a file does not require picking a template first: the format is detected
+         *     from the header row, and this endpoint exists so the import screen can
+         *     tell a pilot up front whether their current logbook is covered and how
+         *     to get the file out of it.
+         */
+        get: operations["listImportTemplates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/imports/upload": {
         parameters: {
             query?: never;
@@ -1338,16 +1366,20 @@ export interface paths {
         put?: never;
         /**
          * Upload file for import
-         * @description Upload a CSV or XLS/XLSX file containing flight log entries.
-         *     The server parses the file, detects the format (generic CSV, ForeFlight CSV,
-         *     or Excel), and returns the detected columns along with a preview of the
-         *     first rows.  No flights are created at this stage.
+         * @description Upload a CSV file containing flight log entries. The server parses the
+         *     file, matches its header row against the import-template catalogue
+         *     (`GET /imports/templates`), and returns the detected columns, the
+         *     matched template, and a preview of the first rows. No flights are
+         *     created at this stage.
          *
-         *     **Supported formats:**
-         *     - Generic CSV (comma, semicolon, or tab delimited)
-         *     - ForeFlight logbook export CSV (auto-detected via header row)
-         *     - XLS (Excel 97-2003)
-         *     - XLSX (Excel 2007+)
+         *     Detection is automatic — the caller does not select a template. When no
+         *     template matches, `format` is `CSV` and the suggested mappings come from
+         *     a cross-vendor alias table, so the file still imports via the mapping
+         *     step rather than being rejected.
+         *
+         *     Delimiters (comma, semicolon, tab) are detected per file, and a
+         *     ForeFlight export's Aircraft Table is parsed alongside the flights so
+         *     the pilot's fleet is created too.
          *
          *     Maximum file size: 10 MB.
          */
@@ -1465,6 +1497,33 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/exports/vcard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export contacts as vCard
+         * @description Export the authenticated user's contacts as a single vCard 3.0 (.vcf)
+         *     stream, for import into a phone or mail client's address book.
+         *
+         *     Each card carries the contact's name, email, phone and notes. Contacts
+         *     the pilot has flown with also carry their logged crew roles as
+         *     `CATEGORIES` (most-flown role first), and every card carries a stable
+         *     `UID`, so re-importing a later export updates the existing cards instead
+         *     of duplicating them.
+         */
+        get: operations["exportContactsVCard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/exports/json": {
         parameters: {
             query?: never;
@@ -1528,6 +1587,17 @@ export interface paths {
          *     Every logbook page carries the three-row totals block (total this page /
          *     total from previous pages / total time) and a per-page certification and
          *     signature block, so each printed page can be individually signed.
+         *
+         *     If the pilot has recorded prior experience (`PUT /users/me/baseline`),
+         *     those hours open the balance: they are carried into the first
+         *     "total from previous pages" row and into every running total and the
+         *     summary page after it, the way a paper logbook carries the previous
+         *     book's closing totals forward. A snapshot records no single-/multi-engine
+         *     split, no FSTD session time and no approach or hold counts, so those
+         *     columns cover logged flights only; a footer line on every page and a note
+         *     on the summary page disclose both facts. A `logbookLicenseId`-filtered
+         *     export covers part of the logbook, so the career-wide snapshot is left
+         *     out of it.
          */
         get: operations["exportFlightsPDF"];
         put?: never;
@@ -1616,6 +1686,15 @@ export interface paths {
         /**
          * Create a contact
          * @description Creates a new reusable contact for the authenticated user.
+         *
+         *     A contact is identified by its name: names are unique per user,
+         *     case-insensitively and ignoring surrounding whitespace. Creating one
+         *     that already exists returns 409 rather than a second row — use
+         *     `GET /contacts/search` to find the existing contact.
+         *
+         *     Contacts are also created automatically for crew names on flight
+         *     create/update, spreadsheet import and backup restore, so a contact
+         *     normally exists before anyone posts one.
          */
         post: operations["createContact"];
         delete?: never;
@@ -1659,12 +1738,27 @@ export interface paths {
         /**
          * Update a contact
          * @description Updates an existing contact.
+         *
+         *     Renaming propagates: the crew entries of the user's flights that are
+         *     linked to this contact are rewritten to the new name, so correcting a
+         *     misspelling also corrects the logbook. Flights carrying a completed
+         *     instructor signature are excluded — their crew names are attested
+         *     content and stay as signed. The response header `X-Crew-Entries-Renamed`
+         *     reports how many crew entries were rewritten.
+         *
+         *     Renaming onto a name another contact already holds returns 409;
+         *     contacts are not merged implicitly.
          */
         put: operations["updateContact"];
         post?: never;
         /**
          * Delete a contact
          * @description Deletes a contact by ID.
+         *
+         *     This removes the address-book entry only. Flights the contact appears on
+         *     keep the crew entry and the name it was logged with; the entry's
+         *     `contactId` becomes null. No logbook content is lost, so deleting is
+         *     allowed even for a contact referenced by signed flights.
          */
         delete: operations["deleteContact"];
         options?: never;
@@ -4428,16 +4522,38 @@ export interface components {
             notes?: string | null;
         };
         /**
-         * @description Detected file format:
-         *     - CSV: Generic comma/semicolon/tab-separated values
-         *     - FOREFLIGHT_CSV: ForeFlight logbook export (auto-detected from header structure)
+         * @description The import template that matched the uploaded file, detected from its
+         *     header row. Recording the source format is what makes the import
+         *     auditable — and it is the value the admin dashboard groups by to show
+         *     which logbooks pilots are migrating from.
+         *
+         *     - CSV: no template matched; columns were mapped by name and by hand
+         *     - FOREFLIGHT_CSV: ForeFlight Logbook export (also carries an Aircraft Table)
+         *     - NINERLOG_CSV: NinerLog's own CSV export, re-imported
+         *     - LOGTEN_CSV: LogTen Pro (Coradine), human-readable or `flight_…` key dialect
+         *     - MYFLIGHTBOOK_CSV: MyFlightbook
+         *     - CAPZLOG_CSV: capzlog.aero
+         *     - FLYLOG_CSV: FLYLOG.io
+         *     - WADER_CSV: Wader Pilot Logbook
+         *     - VEREINSFLIEGER_CSV: Vereinsflieger club flight list (German headers)
+         *     - MCC_PILOTLOG_CSV: mccPILOTLOG / CrewLounge PILOTLOG
+         *     - SKYDEMON_CSV: SkyDemon logbook export
+         *     - EASA_CSV: generic EASA AMC1 FCL.050 column layout
+         *     - FAA_CSV: generic FAA/ASA column layout
          *     - XLS: Microsoft Excel 97-2003 workbook
          *     - XLSX: Microsoft Excel 2007+ workbook (Open XML)
          * @enum {string}
          */
-        ImportFormat: "CSV" | "FOREFLIGHT_CSV" | "XLS" | "XLSX";
+        ImportFormat: "CSV" | "FOREFLIGHT_CSV" | "NINERLOG_CSV" | "LOGTEN_CSV" | "MYFLIGHTBOOK_CSV" | "CAPZLOG_CSV" | "FLYLOG_CSV" | "WADER_CSV" | "VEREINSFLIEGER_CSV" | "MCC_PILOTLOG_CSV" | "SKYDEMON_CSV" | "EASA_CSV" | "FAA_CSV" | "XLS" | "XLSX";
         /**
          * @description Target flight log field for column mapping.
+         *
+         *     Landings can be mapped either as a day/night split (`landingsDay` +
+         *     `landingsNight`, which are summed) or as a single `landingsTotal`
+         *     column. When a file carries both — as ForeFlight and MyFlightbook do —
+         *     the larger of the two wins, so touch-and-go landings counted only in
+         *     the total column are not lost.
+         *
          *     Person fields (`person1`–`person6`) extract crew members from import rows.
          *     During ForeFlight imports, role assignment is automatic:
          *     - If an instructor is detected (via `instructorName` or dual-received time),
@@ -4448,7 +4564,57 @@ export interface components {
          *     Use `ignore` to skip a column during import.
          * @enum {string}
          */
-        ImportField: "date" | "aircraftReg" | "aircraftType" | "departureIcao" | "arrivalIcao" | "offBlockTime" | "onBlockTime" | "departureTime" | "arrivalTime" | "totalTime" | "isPic" | "isDual" | "nightTime" | "ifrTime" | "landingsDay" | "landingsNight" | "remarks" | "route" | "approachesCount" | "holds" | "isIpc" | "isFlightReview" | "actualInstrumentTime" | "simulatedInstrumentTime" | "instructorName" | "instructorComments" | "dualGivenTime" | "person1" | "person2" | "person3" | "person4" | "person5" | "person6" | "ignore";
+        ImportField: "date" | "aircraftReg" | "aircraftType" | "departureIcao" | "arrivalIcao" | "offBlockTime" | "onBlockTime" | "departureTime" | "arrivalTime" | "totalTime" | "isPic" | "isDual" | "nightTime" | "ifrTime" | "landingsDay" | "landingsNight" | "landingsTotal" | "remarks" | "route" | "approachesCount" | "holds" | "isIpc" | "isFlightReview" | "actualInstrumentTime" | "simulatedInstrumentTime" | "instructorName" | "instructorComments" | "dualGivenTime" | "person1" | "person2" | "person3" | "person4" | "person5" | "person6" | "ignore";
+        /**
+         * @description One logbook export format NinerLog knows how to read, together with the
+         *     steps for getting that file out of the source application.
+         */
+        ImportTemplate: {
+            id: components["schemas"]["ImportFormat"];
+            /**
+             * @description Display name of the source logbook
+             * @example MyFlightbook
+             */
+            name: string;
+            /**
+             * @description Company or project behind the source logbook
+             * @example MyFlightbook
+             */
+            vendor?: string;
+            /**
+             * @description Homepage of the source logbook, when it has one
+             * @example https://myflightbook.com
+             */
+            website?: string;
+            /** @description What this template covers and what it cannot carry across */
+            description: string;
+            /**
+             * @description How the template's column list was built.
+             *     - `exact`: the header row is known verbatim (NinerLog's own exports,
+             *       or a published and stable column list)
+             *     - `best-effort`: the aliases cover the documented columns plus the
+             *       usual spelling variants, but the export has not been verified byte
+             *       for byte. Auto-detection may miss; the column-mapping step catches it.
+             * @enum {string}
+             */
+            confidence: "exact" | "best-effort";
+            /** @description Regulatory layouts the source targets */
+            regions: ("EASA" | "FAA")[];
+            /**
+             * @description Ordered, human-readable instructions for exporting from the source
+             *     application. Shown on the import screen.
+             */
+            exportSteps: string[];
+            /**
+             * @description Whether a file in this format is recognised automatically from its
+             *     header row. `false` means the file still imports, but every column
+             *     is mapped on the mapping screen.
+             */
+            autoDetected: boolean;
+        };
+        ImportTemplateList: {
+            templates: components["schemas"]["ImportTemplate"][];
+        };
         ImportColumnMapping: {
             /**
              * @description Column header name from the uploaded file
@@ -4519,10 +4685,17 @@ export interface components {
             totalRows: number;
             /**
              * @description Server-suggested column mappings based on header names.
-             *     For ForeFlight exports these are pre-filled from the known column layout.
+             *     When a template matched, these come from that template's column
+             *     layout; otherwise they fall back to a cross-vendor alias table.
              *     The user can adjust mappings before submitting the preview request.
              */
             suggestedMappings: components["schemas"]["ImportColumnMapping"][];
+            /**
+             * @description The import template recognised from the header row. Absent when no
+             *     template matched, in which case `format` is `CSV` and the suggested
+             *     mappings come from the generic alias table.
+             */
+            detectedTemplate?: components["schemas"]["ImportTemplate"];
         };
         ImportPreviewRequest: {
             /**
@@ -4725,6 +4898,11 @@ export interface components {
             flightsImported: number;
             /** @example 11 */
             crewMembersImported: number;
+            /**
+             * @description Contacts created because a crew name in the backup matched none of this account's contacts. Contacts are not carried in the backup format, so a restore into an empty account creates one per distinct crew name.
+             * @example 5
+             */
+            contactsCreated: number;
         };
         PaginatedImports: {
             data: components["schemas"]["ImportResult"][];
@@ -4798,6 +4976,8 @@ export interface components {
             totalUsers: number;
             totalFlights: number;
             totalAircraft: number;
+            /** @description Contacts across all users. Grows on its own as flights are logged, since crew names are turned into contacts automatically. */
+            totalContacts: number;
             totalCredentials: number;
             totalImports: number;
             flightsThisMonth: number;
@@ -4818,6 +4998,17 @@ export interface components {
                 byProvider: {
                     [key: string]: number;
                 };
+            };
+            /**
+             * @description Completed imports grouped by the detected source format, i.e. which logbook pilots are migrating from. Keys are ImportFormat values; formats nobody has imported are omitted.
+             * @example {
+             *       "FOREFLIGHT_CSV": 12,
+             *       "MYFLIGHTBOOK_CSV": 4,
+             *       "CSV": 2
+             *     }
+             */
+            importsByFormat: {
+                [key: string]: number;
             };
         };
         Announcement: {
@@ -5672,6 +5863,20 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
+        /** @description The request collides with a resource that already exists — for contacts, another contact of this user already has that name (matched case-insensitively, ignoring surrounding whitespace). */
+        Conflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "A contact with this name already exists"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
         /** @description Document files are switched off on this server (DOCUMENT_FILES_ENABLED=false). Applies to reading as well as uploading: serving stored files is the bandwidth half of the abuse surface the switch exists to close. Already-stored files are retained and become reachable again if the operator re-enables the feature. Clients should consult GET /features and hide the UI. */
         DocumentFilesDisabled: {
             headers: {
@@ -5853,7 +6058,7 @@ export interface operations {
                     email: string;
                     /**
                      * Format: password
-                     * @description Must be at least 12 characters
+                     * @description 12–72 characters, containing at least one lowercase letter, one uppercase letter, one digit and one special character.
                      * @example SecurePass123!
                      */
                     password: string;
@@ -6105,7 +6310,7 @@ export interface operations {
                     currentPassword: string;
                     /**
                      * Format: password
-                     * @description The new password (minimum 12 characters)
+                     * @description The new password. 12–72 characters, containing at least one lowercase letter, one uppercase letter, one digit and one special character.
                      */
                     newPassword: string;
                 };
@@ -6168,7 +6373,7 @@ export interface operations {
                     token: string;
                     /**
                      * Format: password
-                     * @description The new password (minimum 12 characters)
+                     * @description The new password. 12–72 characters, containing at least one lowercase letter, one uppercase letter, one digit and one special character.
                      */
                     newPassword: string;
                     /**
@@ -8411,6 +8616,27 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
+    listImportTemplates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Supported import templates */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportTemplateList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
     uploadImportFile: {
         parameters: {
             query?: never;
@@ -8591,6 +8817,27 @@ export interface operations {
                 };
                 content: {
                     "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    exportContactsVCard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description vCard file download */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/vcard": string;
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -8848,6 +9095,7 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            409: components["responses"]["Conflict"];
         };
     };
     searchContacts: {
@@ -8918,6 +9166,8 @@ export interface operations {
             /** @description Contact updated */
             200: {
                 headers: {
+                    /** @description Number of flight crew entries rewritten to the new name */
+                    "X-Crew-Entries-Renamed"?: number;
                     [name: string]: unknown;
                 };
                 content: {
@@ -8927,6 +9177,7 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
         };
     };
     deleteContact: {

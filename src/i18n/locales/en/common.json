@@ -117,6 +117,8 @@
       "totalAircraft": "Total Aircraft",
       "totalCredentials": "Total Credentials",
       "totalImports": "Total Imports",
+      "importsByFormat": "Imports by source logbook",
+      "importsByFormatNone": "No imports yet.",
       "flightsThisMonth": "Flights This Month",
       "newUsersWeek": "New Users (7d)",
       "lockedAccounts": "Locked Accounts",
