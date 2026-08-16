@@ -2,8 +2,19 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUploadImport, usePreviewImport, useConfirmImport, useRestoreJSON, useImportHistory } from '../../hooks/useImport';
 import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportJSONResult } from '../../hooks/useImport';
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  DatabaseBackup,
+  FolderOpen,
+  XCircle,
+} from 'lucide-react';
 import HelpLink from '../../components/ui/HelpLink';
 import { FileDropzone } from '../../components/ui/FileDropzone';
+import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
 const CSV_ACCEPT = '.csv,.txt';
@@ -155,21 +166,19 @@ export default function ImportPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[960px] py-6">
-      <div className="mb-6">
-        <h1 className="page-title">{t('importFlights')}</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-          {t('supportedFormats', 'Import flight logs from CSV files (including ForeFlight exports)')}
-          <HelpLink topic="import-export" />
-        </p>
-      </div>
+    <PageWrapper>
+      <PageHeader
+        title={t('importFlights')}
+        subtitle={t('supportedFormats')}
+        titleAdornment={<HelpLink topic="import-export" />}
+      />
 
       {/* Mode tabs: CSV flight import vs. full JSON backup restore. The two
           flows share zero state and reset each other, which keeps the
           underlying step machine simple. */}
       <div
         role="tablist"
-        aria-label={t('modeTabsLabel', 'Import mode')}
+        aria-label={t('modeTabsLabel')}
         className="flex gap-2 mb-6 border-b border-slate-200 dark:border-slate-700"
       >
         <button
@@ -182,7 +191,7 @@ export default function ImportPage() {
               : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
         >
-          {t('modeCsv', 'CSV Flights')}
+          {t('modeCsv')}
         </button>
         <button
           role="tab"
@@ -194,7 +203,7 @@ export default function ImportPage() {
               : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
         >
-          {t('modeJson', 'Restore JSON Backup')}
+          {t('modeJson')}
         </button>
       </div>
 
@@ -203,7 +212,9 @@ export default function ImportPage() {
       <div className="flex items-center gap-2 mb-6 text-sm">
         {(['upload', 'mapping', 'preview', 'result'] as Step[]).map((s, i) => (
           <div key={s} className="flex items-center gap-2">
-            {i > 0 && <span className="text-slate-300 dark:text-slate-600">→</span>}
+            {i > 0 && (
+              <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600" aria-hidden="true" />
+            )}
             <span
               className={`px-3 py-1 rounded-full ${
                 step === s
@@ -211,7 +222,7 @@ export default function ImportPage() {
                   : 'text-slate-400 dark:text-slate-500'
               }`}
             >
-              {i + 1}. {s === 'upload' ? t('uploadCsv', 'Upload') : s === 'mapping' ? t('mapColumns', 'Map Columns') : s === 'preview' ? t('preview') : t('done', 'Done')}
+              {i + 1}. {s === 'upload' ? t('uploadCsv') : s === 'mapping' ? t('mapColumns') : s === 'preview' ? t('preview') : t('done', 'Done')}
             </span>
           </div>
         ))}
@@ -233,81 +244,75 @@ export default function ImportPage() {
           onFileRejected={(file) => handleFileRejected(file, JSON_ACCEPT)}
           buttonLabel={
             restore.isPending
-              ? t('restoringJson', 'Restoring…')
-              : t('selectJsonFile', 'Choose JSON backup')
+              ? t('restoringJson')
+              : t('selectJsonFile')
           }
-          hint={t('dropHintJson', 'or drag & drop a JSON backup here')}
+          hint={t('dropHintJson')}
           className="card text-center py-12"
         >
-          <div className="text-5xl mb-4">💾</div>
+          <DatabaseBackup className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" strokeWidth={1.5} aria-hidden="true" />
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
-            {t('restoreJsonTitle', 'Restore JSON Backup')}
+            {t('restoreJsonTitle')}
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mb-2 max-w-md mx-auto">
-            {t(
-              'restoreJsonDescription',
-              'Upload a NinerLog JSON backup (from Export → Full Data Backup) to restore your flights, aircraft, licenses, class ratings, credentials and crew members.',
-            )}
+            {t('restoreJsonDescription')}
           </p>
           <p className="text-xs text-slate-400 dark:text-slate-500 mb-6 max-w-md mx-auto">
-            {t(
-              'restoreJsonNote',
-              'The restore is additive — existing data is never modified or deleted. Aircraft whose registration already exists in your account are skipped.',
-            )}
+            {t('restoreJsonNote')}
           </p>
         </FileDropzone>
       )}
 
       {mode === 'json' && jsonResult && (
         <div className="card text-center py-12">
-          <div className="text-5xl mb-4">✅</div>
+          <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-green-500 dark:text-green-400" strokeWidth={1.5} aria-hidden="true" />
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
-            {t('restoreJsonSuccess', 'Backup restored')}
+            {t('restoreJsonSuccess')}
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-            {t('restoreJsonSummary', 'Your data was successfully imported into this account.')}
+            {t('restoreJsonSummary')}
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto mb-6">
             <SummaryCard
-              label={t('restoreSummaryAircraftImported', 'Aircraft imported')}
+              label={t('restoreSummaryAircraftImported')}
               value={jsonResult.aircraftImported}
               color="green"
             />
             <SummaryCard
-              label={t('restoreSummaryAircraftSkipped', 'Aircraft skipped')}
+              label={t('restoreSummaryAircraftSkipped')}
               value={jsonResult.aircraftSkipped}
               color="amber"
             />
             <SummaryCard
-              label={t('restoreSummaryLicenses', 'Licenses')}
+              label={t('restoreSummaryLicenses')}
               value={jsonResult.licensesImported}
               color="green"
             />
             <SummaryCard
-              label={t('restoreSummaryClassRatings', 'Class ratings')}
+              label={t('restoreSummaryClassRatings')}
               value={jsonResult.classRatingsImported}
               color="green"
             />
             <SummaryCard
-              label={t('restoreSummaryCredentials', 'Credentials')}
+              label={t('restoreSummaryCredentials')}
               value={jsonResult.credentialsImported}
               color="green"
             />
             <SummaryCard
-              label={t('restoreSummaryFlights', 'Flights')}
+              label={t('restoreSummaryFlights')}
               value={jsonResult.flightsImported}
               color="green"
             />
             <SummaryCard
-              label={t('restoreSummaryCrew', 'Crew members')}
+              label={t('restoreSummaryCrew')}
               value={jsonResult.crewMembersImported}
               color="green"
             />
           </div>
 
           <button onClick={handleReset} className="btn-primary">
-            {t('restoreAnother', 'Restore another backup')}
+            {t('restoreAnother')}
           </button>
         </div>
       )}
@@ -319,14 +324,14 @@ export default function ImportPage() {
           disabled={upload.isPending}
           onFileSelected={handleFileSelect}
           onFileRejected={(file) => handleFileRejected(file, CSV_ACCEPT)}
-          buttonLabel={upload.isPending ? t('importing', 'Uploading...') : t('selectFile', 'Choose File')}
-          hint={t('dropHintCsv', 'or drag & drop a CSV file here')}
+          buttonLabel={upload.isPending ? t('importing') : t('selectFile')}
+          hint={t('dropHintCsv')}
           className="card text-center py-12"
         >
-          <div className="text-5xl mb-4">📂</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('uploadCsv', 'Upload Flight Log File')}</h2>
+          <FolderOpen className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" strokeWidth={1.5} aria-hidden="true" />
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('uploadCsv')}</h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-            {t('supportedFormats', 'Supports CSV files including ForeFlight logbook exports. Maximum file size: 10 MB.')}
+            {t('supportedFormats')}
           </p>
         </FileDropzone>
       )}
@@ -339,11 +344,11 @@ export default function ImportPage() {
               <div>
                 <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t('columnMapping')}</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                  {uploadData.format === 'FOREFLIGHT_CSV' ? '✈ ForeFlight format detected — mappings pre-filled' : t('mapColumns', 'Map each column to a flight log field')}
+                  {uploadData.format === 'FOREFLIGHT_CSV' ? t('foreFlightDetected') : t('mapColumns')}
                   {' · '}{t('rowsDetected', { count: uploadData.totalRows })}
                 </p>
               </div>
-              <button onClick={handleReset} className="btn-ghost btn-sm text-xs min-h-[44px]">Start Over</button>
+              <button onClick={handleReset} className="btn-ghost btn-sm min-h-[44px]">{t('startOver')}</button>
             </div>
 
             <div className="space-y-2">
@@ -354,7 +359,7 @@ export default function ImportPage() {
                     <span className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300 truncate" title={col}>
                       {col}
                     </span>
-                    <span className="text-slate-400 dark:text-slate-500">→</span>
+                    <ArrowRight className="w-4 h-4 shrink-0 text-slate-400 dark:text-slate-500" aria-hidden="true" />
                     <select
                       value={mapping?.targetField || 'ignore'}
                       onChange={(e) => updateMapping(col, e.target.value)}
@@ -417,7 +422,7 @@ export default function ImportPage() {
           </div>
 
           <div className="card">
-            <h2 className="section-title mb-4">{t('preview', 'Import Preview')}</h2>
+            <h2 className="section-title mb-4">{t('preview')}</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -447,7 +452,9 @@ export default function ImportPage() {
                       <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{f.flight.date || '—'}</td>
                       <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{f.flight.aircraftReg || '—'}</td>
                       <td className="px-3 py-2 text-slate-700 dark:text-slate-300">
-                        {f.flight.departureIcao || '?'} → {f.flight.arrivalIcao || '?'}
+                        {f.flight.departureIcao || '?'}
+                        <ArrowRight className="w-3 h-3 inline mx-1 text-slate-400 dark:text-slate-500" aria-hidden="true" />
+                        {f.flight.arrivalIcao || '?'}
                       </td>
                       <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
                         {f.flight.crewMembers && f.flight.crewMembers.length > 0 ? (
@@ -496,18 +503,24 @@ export default function ImportPage() {
       {/* Step 4: Result */}
       {mode === 'csv' && step === 'result' && result && (
         <div className="card text-center py-12">
-          <div className="text-5xl mb-4">
-            {result.status === 'completed' ? '✅' : result.status === 'partial' ? '⚠' : '❌'}
+          <div className="mb-4">
+            {result.status === 'completed' ? (
+              <CheckCircle2 className="w-12 h-12 mx-auto text-green-500 dark:text-green-400" strokeWidth={1.5} aria-hidden="true" />
+            ) : result.status === 'partial' ? (
+              <AlertTriangle className="w-12 h-12 mx-auto text-amber-500 dark:text-amber-400" strokeWidth={1.5} aria-hidden="true" />
+            ) : (
+              <XCircle className="w-12 h-12 mx-auto text-red-500 dark:text-red-400" strokeWidth={1.5} aria-hidden="true" />
+            )}
           </div>
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
             {result.status === 'completed' ? t('importSuccess', { count: result.importedCount }) :
-             result.status === 'partial' ? t('partialImport', 'Partially Imported') : t('importFailed')}
+             result.status === 'partial' ? t('partialImport') : t('importFailed')}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 max-w-lg mx-auto mt-6 mb-8">
-            <SummaryCard label="Imported" value={result.importedCount} color="green" />
-            <SummaryCard label="Contacts" value={result.contactsCreated ?? 0} color="green" />
-            <SummaryCard label="Skipped" value={result.skippedCount} color="amber" />
-            <SummaryCard label="Errors" value={result.errorCount} color="red" />
+            <SummaryCard label={t('summary.imported')} value={result.importedCount} color="green" />
+            <SummaryCard label={t('summary.contacts')} value={result.contactsCreated ?? 0} color="green" />
+            <SummaryCard label={t('summary.skipped')} value={result.skippedCount} color="amber" />
+            <SummaryCard label={t('summary.errors')} value={result.errorCount} color="red" />
             <SummaryCard label="Duplicates" value={result.duplicateCount} />
           </div>
           {result.errors && result.errors.length > 0 && (
@@ -529,7 +542,7 @@ export default function ImportPage() {
       {/* Past imports — always visible below the wizard so a pilot can check
           what a previous file actually did without re-running it. */}
       <ImportHistory />
-    </div>
+    </PageWrapper>
   );
 }
 
@@ -545,20 +558,20 @@ function ImportHistory() {
 
   return (
     <div className="card mt-8" data-testid="import-history">
-      <h2 className="section-title mb-1">{t('history.title', 'Import History')}</h2>
+      <h2 className="section-title mb-1">{t('history.title')}</h2>
       <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-        {t('history.subtitle', 'Previous CSV imports into this account.')}
+        {t('history.subtitle')}
       </p>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700">
-              <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('history.date', 'Date')}</th>
-              <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('history.file', 'File')}</th>
-              <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('history.status', 'Status')}</th>
-              <th className="px-3 py-2 text-right text-slate-500 dark:text-slate-400 font-medium">{t('history.imported', 'Imported')}</th>
-              <th className="px-3 py-2 text-right text-slate-500 dark:text-slate-400 font-medium">{t('history.skipped', 'Skipped')}</th>
-              <th className="px-3 py-2 text-right text-slate-500 dark:text-slate-400 font-medium">{t('history.errors', 'Errors')}</th>
+              <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('history.date')}</th>
+              <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('history.file')}</th>
+              <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('history.status')}</th>
+              <th className="px-3 py-2 text-right text-slate-500 dark:text-slate-400 font-medium">{t('history.imported')}</th>
+              <th className="px-3 py-2 text-right text-slate-500 dark:text-slate-400 font-medium">{t('history.skipped')}</th>
+              <th className="px-3 py-2 text-right text-slate-500 dark:text-slate-400 font-medium">{t('history.errors')}</th>
             </tr>
           </thead>
           <tbody>
@@ -590,7 +603,8 @@ function ImportHistory() {
             disabled={page <= 1}
             className="btn-ghost btn-sm"
           >
-            ← {t('history.previous', 'Previous')}
+            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+            {t('history.previous')}
           </button>
           <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
             {t('history.pageOf', { page: data.pagination.page, total: data.pagination.totalPages, defaultValue: 'Page {{page}} of {{total}}' })}
@@ -600,7 +614,8 @@ function ImportHistory() {
             disabled={page >= data.pagination.totalPages}
             className="btn-ghost btn-sm"
           >
-            {t('history.next', 'Next')} →
+            {t('history.next')}
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       )}

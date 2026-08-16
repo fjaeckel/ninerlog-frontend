@@ -13,10 +13,13 @@ import { recencyLevel, RECENCY_BADGE_CLASSES, RECENCY_REQUIRED_LANDINGS } from '
 import { CurrencyCard } from '../../components/currency/CurrencyCard';
 import { CustomCurrencyCard } from '../../components/currency/CustomCurrencyCard';
 import { CurrencyExpiryBanner } from '../../components/currency/CurrencyExpiryBanner';
-import { ChevronDown, ChevronRight, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
+import { AlertTriangle, Check, ChevronDown, ChevronRight, Plane, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
 import { isPast, differenceInDays } from 'date-fns';
 import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
 import HelpLink from '../../components/ui/HelpLink';
+import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
+import { RequirementIcon } from '../../components/ui/RequirementIcon';
+import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
 const CLASS_TYPE_LABELS: Record<string, string> = {
@@ -117,29 +120,17 @@ export default function CurrencyPage() {
   const isLoading = currencyLoading || credentialsLoading;
 
   return (
-    <div className="mx-auto max-w-[960px] py-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="page-title flex items-center gap-2">
-            {totalAlerts > 0 ? <ShieldAlert className="w-6 h-6 text-amber-500" /> : <ShieldCheck className="w-6 h-6 text-green-500" />}
-            {t('title')}
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-            {t('subtitle')}
-            <HelpLink topic="currency" />
-          </p>
-        </div>
-        {totalAlerts > 0 && (
-          <span className="badge-expiring">
-            {t('alerts', { count: totalAlerts })}
-          </span>
-        )}
-      </div>
+    <PageWrapper>
+      <PageHeader
+        title={t('title')}
+        subtitle={t('subtitle')}
+        icon={totalAlerts > 0 ? ShieldAlert : ShieldCheck}
+        iconClassName={totalAlerts > 0 ? 'text-amber-500' : 'text-green-500'}
+        titleAdornment={<HelpLink topic="currency" />}
+        action={totalAlerts > 0 ? <span className="badge-expiring">{t('alerts', { count: totalAlerts })}</span> : undefined}
+      />
 
-      {isLoading && (
-        <div className="text-center py-12 text-slate-400 dark:text-slate-500">{t('loading')}</div>
-      )}
+      {isLoading && <SkeletonList rows={3} />}
 
       {!isLoading && currencyStatus && (
         <CurrencyExpiryBanner ratings={currencyStatus.ratings} flightReview={currencyStatus.flightReview} />
@@ -212,8 +203,9 @@ export default function CurrencyPage() {
               data-testid="flight-review-card"
             >
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100">
-                  ✈️ {t('flightReview')}
+                <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100 inline-flex items-center gap-1.5">
+                  <Plane className="w-4 h-4 text-slate-500 dark:text-slate-400 dark:text-slate-500" aria-hidden="true" />
+                  {t('flightReview')}
                 </h3>
                 <span className={
                   currencyStatus.flightReview.status === 'current' ? 'badge-current' :
@@ -225,9 +217,10 @@ export default function CurrencyPage() {
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-300">{currencyStatus.flightReview.message}</p>
               {currencyStatus.flightReview.lastCompleted && (
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                  Last completed: {currencyStatus.flightReview.lastCompleted}
-                  {currencyStatus.flightReview.expiresOn && ` · Expires: ${currencyStatus.flightReview.expiresOn}`}
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {t('lastCompleted', { date: fmtDate(currencyStatus.flightReview.lastCompleted) })}
+                  {currencyStatus.flightReview.expiresOn &&
+                    ` · ${t('expiresOn', { date: fmtDate(currencyStatus.flightReview.expiresOn) })}`}
                 </p>
               )}
             </div>
@@ -253,7 +246,7 @@ export default function CurrencyPage() {
                   onClick={() => toggleLicense(licenseId)}
                   className="w-full flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
                 >
-                  {isExpanded ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
+                  {isExpanded ? <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                   <span className="font-semibold text-slate-800 dark:text-slate-100 flex-1">
                     {license ? `${license.regulatoryAuthority} ${license.licenseType}` : ratings[0]?.regulatoryAuthority || 'License'}
                     {license?.licenseNumber && <span className="text-sm font-normal text-slate-500 dark:text-slate-400 ml-2">({license.licenseNumber})</span>}
@@ -318,11 +311,12 @@ export default function CurrencyPage() {
                   {/* Day currency bar */}
                   <div className="space-y-1 mb-1">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
-                        {dayOk ? '✓' : '○'} Day
+                      <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
+                        <RequirementIcon met={dayOk} />
+                        {t('common:day')}
                       </span>
-                      <span className="text-slate-500 dark:text-slate-400">
-                        {pax.dayLandings} / {pax.dayRequired} landings
+                      <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
+                        {t('landingsOf', { current: pax.dayLandings, required: pax.dayRequired })}
                       </span>
                     </div>
                     <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -336,11 +330,12 @@ export default function CurrencyPage() {
                   {hasNight && (
                   <div className="space-y-1">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
-                        {nightOk ? '✓' : '○'} Night
+                      <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
+                        <RequirementIcon met={nightOk} />
+                        {t('common:night')}
                       </span>
-                      <span className="text-slate-500 dark:text-slate-400">
-                        {pax.nightLandings} / {pax.nightRequired} landings
+                      <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
+                        {t('landingsOf', { current: pax.nightLandings, required: pax.nightRequired })}
                       </span>
                     </div>
                     <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -359,10 +354,15 @@ export default function CurrencyPage() {
                   {/* Passenger privilege badge (LAPL, SPL, UL) */}
                   {pax.passengerPrivilege && (
                     <div
-                      className={`mt-2 px-2 py-1 rounded text-xs ${pax.passengerPrivilege.eligible ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'}`}
+                      className={`mt-2 px-2 py-1 rounded inline-flex items-start gap-1.5 text-xs ${pax.passengerPrivilege.eligible ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'}`}
                       data-testid="passenger-privilege-badge"
                     >
-                      {pax.passengerPrivilege.eligible ? '✓' : '⚠'} {pax.passengerPrivilege.message}
+                      {pax.passengerPrivilege.eligible ? (
+                        <Check className="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden="true" />
+                      ) : (
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden="true" />
+                      )}
+                      {pax.passengerPrivilege.message}
                     </div>
                   )}
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">
@@ -519,6 +519,6 @@ export default function CurrencyPage() {
           setDeleteRuleId(null);
         }}
       />
-    </div>
+    </PageWrapper>
   );
 }

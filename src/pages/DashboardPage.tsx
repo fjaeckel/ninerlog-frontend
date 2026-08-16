@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Clock, Plane, ArrowDownToLine, BadgeCheck, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Clock, Plane, ArrowDownToLine, BadgeCheck, ShieldCheck, TimerReset } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useFlights } from '../hooks/useFlights';
 import { useMyStatistics } from '../hooks/useStatistics';
@@ -11,6 +11,7 @@ import { useTrends, fillTrendMonths } from '../hooks/useTrends';
 import { useAircraftStats } from '../hooks/useAircraft';
 import { CurrencyCard } from '../components/currency/CurrencyCard';
 import { StatCard } from '../components/ui/StatCard';
+import { PageWrapper } from '../components/ui/PageWrapper';
 import { useFormatPrefs } from '../hooks/useFormatPrefs';
 import { useRecencyPrefs } from '../hooks/useRecencyPrefs';
 import { recencyLevel, RECENCY_DOT_CLASSES } from '../lib/recency';
@@ -25,7 +26,7 @@ function shortMonth(month: string, locale: string) {
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation(['dashboard', 'common']);
+  const { t, i18n } = useTranslation(['dashboard', 'common', 'credentials']);
   const { fmtDuration, fmtDate } = useFormatPrefs();
 
   const { data: flightsData } = useFlights({
@@ -59,7 +60,7 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? t('dashboard:greeting.morning') : hour < 18 ? t('dashboard:greeting.afternoon') : t('dashboard:greeting.evening');
 
   return (
-    <div className="mx-auto max-w-[1280px] py-6">
+    <PageWrapper maxWidth="dashboard">
       {/* Hero greeting */}
       <div className="hero-greeting mb-6">
         <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -84,7 +85,7 @@ export default function DashboardPage() {
       {currencyStatus && currencyStatus.ratings.length > 0 && (
         <div className="mb-6" data-testid="currency-section">
           <h2 className="section-title mb-3 flex items-center gap-2">
-            <span>🛡</span>
+            <ShieldCheck className="w-5 h-5 text-slate-400 dark:text-slate-500" aria-hidden="true" />
             {t('dashboard:flightCurrency')}
           </h2>
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
@@ -110,22 +111,36 @@ export default function DashboardPage() {
               const days = Math.ceil((new Date(cred.expiryDate!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
               const isExpired = days < 0;
               return (
-                <div
+                <button
                   key={cred.id}
-                  className={`rounded-lg px-4 py-3 flex items-center justify-between text-sm cursor-pointer ${
+                  type="button"
+                  className={`w-full text-left rounded-lg px-4 py-3 flex items-center justify-between gap-3 text-sm transition-colors ${
                     isExpired
-                      ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-                      : 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
+                      ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30'
+                      : 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/30'
                   }`}
                   onClick={() => navigate('/credentials')}
                 >
-                  <span className={isExpired ? 'text-red-800 dark:text-red-300' : 'text-amber-800 dark:text-amber-300'}>
-                    {isExpired ? '⚠ ' : '⏰ '}
-                    <strong>{cred.credentialType.replace(/_/g, ' ')}</strong>
-                    {' '}{isExpired ? t('dashboard:credentialAlert.expired', { days: Math.abs(days) }) : t('dashboard:credentialAlert.expiresSoon', { days })}
+                  <span
+                    className={`inline-flex items-center gap-2 min-w-0 ${
+                      isExpired ? 'text-red-800 dark:text-red-300' : 'text-amber-800 dark:text-amber-300'
+                    }`}
+                  >
+                    {isExpired ? (
+                      <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    ) : (
+                      <TimerReset className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    )}
+                    <span className="truncate">
+                      <strong>{t(`credentials:types.${cred.credentialType}`, { defaultValue: cred.credentialType })}</strong>
+                      {' '}{isExpired ? t('dashboard:credentialAlert.expired', { days: Math.abs(days) }) : t('dashboard:credentialAlert.expiresSoon', { days })}
+                    </span>
                   </span>
-                  <span className="text-xs opacity-60">View →</span>
-                </div>
+                  <span className="shrink-0 inline-flex items-center gap-1 text-xs opacity-70">
+                    {t('common:view')}
+                    <ArrowRight className="w-3 h-3" aria-hidden="true" />
+                  </span>
+                </button>
               );
             })}
           </div>
@@ -288,9 +303,10 @@ export default function DashboardPage() {
           {totalFlights > 0 && (
             <button
               onClick={() => navigate('/flights')}
-              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium min-h-[44px] flex items-center"
+              className="btn-ghost btn-sm min-h-[44px]"
             >
-              View all →
+              {t('common:viewAll')}
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -306,7 +322,7 @@ export default function DashboardPage() {
                   <span className="font-medium font-mono text-slate-800 dark:text-slate-100 whitespace-nowrap">
                     {flight.departureIcao || '—'}
                   </span>
-                  <span className="text-slate-400">→</span>
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0 text-slate-400 dark:text-slate-500" aria-hidden="true" />
                   <span className="font-medium font-mono text-slate-800 dark:text-slate-100 whitespace-nowrap">
                     {flight.arrivalIcao || '—'}
                   </span>
@@ -327,7 +343,11 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="text-center py-8">
-            <div className="text-4xl mb-3">✈</div>
+            <Plane
+              className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
             <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">{t('dashboard:noFlights')}</p>
             <button
               onClick={() => navigate('/flights', { state: { openForm: true } })}
@@ -338,6 +358,6 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageWrapper>
   );
 }

@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar, Clock } from 'lucide-react';
 import type { ClassRatingCurrency, CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import { RequirementIcon } from '../ui/RequirementIcon';
 
 const STATUS_CONFIG: Record<CurrencyStatus, {
   bg: string; border: string; iconWrap: string; badge: string; badgeKey: string; Icon: typeof Shield;
@@ -56,10 +57,8 @@ function RequirementBar({ req }: { req: CurrencyRequirement }) {
   return (
     <div className="space-y-1" data-testid={`requirement-${req.name}`}>
       <div className="flex justify-between items-center text-xs">
-        <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1">
-          <span aria-hidden="true" className={req.met ? 'text-green-600 dark:text-green-400' : 'text-slate-400'}>
-            {req.met ? '✓' : '○'}
-          </span>
+        <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
+          <RequirementIcon met={req.met} />
           {req.name}
         </span>
         <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
@@ -156,10 +155,8 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
           <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('launchMethod')}</p>
           {rating.launchMethodCurrency.map((lmc) => (
             <div key={lmc.method} className="flex justify-between items-center text-xs" data-testid={`launch-method-${lmc.method}`}>
-              <span className="text-slate-700 dark:text-slate-300 inline-flex items-center gap-1">
-                <span aria-hidden="true" className={lmc.met ? 'text-green-600 dark:text-green-400' : 'text-slate-400'}>
-                  {lmc.met ? '✓' : '○'}
-                </span>
+              <span className="text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
+                <RequirementIcon met={lmc.met} />
                 {lmc.method}
               </span>
               <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">

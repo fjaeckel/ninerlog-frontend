@@ -8,6 +8,7 @@ import { useHelpContent, helpSectionIds, type HelpSectionId } from './content';
 import { HelpFigure } from './figures';
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import { APP_NAME } from '../../lib/config';
+import { PageWrapper } from '../../components/ui/PageWrapper';
 
 const sectionIcons: Record<HelpSectionId, React.ReactNode> = {
   'getting-started': <BookOpen className="w-4 h-4" />,
@@ -101,12 +102,12 @@ export default function HelpPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[1100px] py-6 print:max-w-none print:py-0">
+    <PageWrapper maxWidth="dashboard" className="print:max-w-none print:py-0">
       {/* Header — hidden on print */}
       <div className="mb-6 print:hidden">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <HelpCircle className="w-6 h-6 text-blue-600" />
+            <HelpCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
             <h1 className="page-title">{t('help.title')}</h1>
           </div>
           <button
@@ -124,7 +125,7 @@ export default function HelpPage() {
       {/* Search bar — hidden on print */}
       <div className="mb-4 print:hidden">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
           <input
             type="text"
             value={searchQuery}
@@ -134,7 +135,7 @@ export default function HelpPage() {
             aria-label={t('help.searchAriaLabel')}
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label={t('help.clearSearch')}>
+            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-600" aria-label={t('help.clearSearch')}>
               <X className="w-4 h-4" />
             </button>
           )}
@@ -144,9 +145,9 @@ export default function HelpPage() {
       {/* Search results */}
       {searchResults !== null ? (
         <div className="space-y-3 print:hidden">
-          <p className="text-sm text-slate-500">{t('help.resultCount', { count: searchResults.length, query: searchQuery })}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t('help.resultCount', { count: searchResults.length, query: searchQuery })}</p>
           {searchResults.length === 0 && (
-            <div className="card text-center py-8 text-slate-400">{t('help.noResults')}</div>
+            <div className="card text-center py-8 text-slate-500 dark:text-slate-400">{t('help.noResults')}</div>
           )}
           {searchResults.map((s) => (
             <button
@@ -219,7 +220,7 @@ export default function HelpPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">{t('help.reportBug.title')}</h2>
-                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" aria-hidden="true" />
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" aria-hidden="true" />
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{t('help.reportBug.body')}</p>
                 <span className="inline-block mt-2 text-sm font-medium text-amber-700 dark:text-amber-300 group-hover:underline">{t('help.reportBug.cta')} →</span>
@@ -228,6 +229,6 @@ export default function HelpPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageWrapper>
   );
 }

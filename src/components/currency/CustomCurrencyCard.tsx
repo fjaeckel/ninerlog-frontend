@@ -2,6 +2,7 @@ import { ShieldCheck, ShieldX, Shield, Share2, Pencil, Trash2, CalendarClock, Pa
 import type { CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import type { CustomRuleWithStatus } from '../../types/customCurrency';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import { RequirementIcon } from '../ui/RequirementIcon';
 
 const STATUS_CONFIG: Record<CurrencyStatus, { bg: string; border: string; iconWrap: string; badge: string; label: string; Icon: typeof Shield }> = {
   current: {
@@ -47,10 +48,8 @@ function RequirementBar({ req }: { req: CurrencyRequirement }) {
   return (
     <div className="space-y-1" data-testid={`custom-requirement-${req.name}`}>
       <div className="flex justify-between items-center text-xs">
-        <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1">
-          <span aria-hidden="true" className={req.met ? 'text-green-600 dark:text-green-400' : 'text-slate-400'}>
-            {req.met ? '✓' : '○'}
-          </span>
+        <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
+          <RequirementIcon met={req.met} />
           {req.name}
         </span>
         <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{displayMessage}</span>

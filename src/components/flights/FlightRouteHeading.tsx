@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { abbreviateSiteName, type AirportParts } from '../../lib/airport';
 import { cn } from '../../lib/cn';
+import { ArrowRight } from 'lucide-react';
 
 /**
  * How much of a site name a list row keeps.
@@ -52,11 +53,7 @@ export default function FlightRouteHeading({
   // the width to spare, and shows both names in full in the route card anyway.
   const oneLine = size === 'card';
 
-  const arrow = (
-    <span className="shrink-0 text-blue-500 dark:text-blue-400" aria-hidden="true">
-      →
-    </span>
-  );
+  const arrow = <ArrowRight className="w-4 h-4 shrink-0 text-blue-500 dark:text-blue-400" aria-hidden="true" />;
 
   if (isCodes || oneLine) {
     return (

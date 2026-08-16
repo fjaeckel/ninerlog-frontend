@@ -203,7 +203,9 @@
     "statistics": "Airport Statistics",
     "noRoutes": "No flight routes to display yet.",
     "flightCount_one": "{{count}} flight",
-    "flightCount_other": "{{count}} flights"
+    "flightCount_other": "{{count}} flights",
+    "failedToLoad": "Failed to load map data",
+    "failedToLoadMessage": "An error occurred while loading your flight routes. Please try again."
   },
   "export": {
     "title": "Export",
@@ -211,7 +213,7 @@
     "easaLogbook": "EASA Logbook (AMC1 FCL.050)",
     "faaLogbook": "FAA Logbook",
     "summaryReport": "Summary Report",
-    "standardCsv": "Standard CSV",
+    "standardCsv": "Standard CSV (ForeFlight-compatible)",
     "download": "Download",
     "downloading": "Downloading...",
     "preview": "Column Preview",
@@ -224,6 +226,30 @@
     "layoutSpread": "Two-page spread (duplex printing)",
     "layoutSingle": "Single page (all columns on one page)",
     "rowsPerPage": "Rows per page",
-    "rowsPerPageAuto": "Rows per page (auto)"
+    "rowsPerPageAuto": "Rows per page (auto)",
+    "subtitle": "Download your flight data in various formats",
+    "failed": "Export failed. Please try again.",
+    "csvTitle": "Flight Log CSV",
+    "csvDescription": "Export all flights as a CSV file. Choose a column format for your authority.",
+    "downloadCsv": "Download CSV",
+    "jsonBackup": "Full Data Backup",
+    "jsonDescription": "Export everything — flights, aircraft, licenses, class ratings, and credentials as a JSON backup file.",
+    "downloadJson": "Download JSON backup",
+    "pdfTitle": "PDF Logbook",
+    "pdfDescription": "Generate a formatted logbook PDF. Print it, sign it, and use it as a paper logbook.",
+    "downloadPdf": "Download PDF logbook",
+    "importTitle": "Import Flights",
+    "importDescription": "Import flights from ForeFlight, CSV files, or other logbook exports. Auto-detects format and column mapping.",
+    "goToImport": "Go to import",
+    "aboutTitle": "About exports",
+    "aboutItems": [
+      "CSV Standard — ForeFlight-compatible with all flight fields. Opens in Excel, Google Sheets, or any spreadsheet app.",
+      "CSV EASA — AMC1 FCL.050 column layout (24 columns: SP-SE/ME, Multi-Pilot, PIC Name, Co-Pilot, Instructor, FSTD).",
+      "CSV FAA — ASA/Jeppesen standard logbook columns with decimal hours.",
+      "PDF EASA — Full AMC1 FCL.050 compliant logbook with SP-SE/ME split, FSTD sessions, and page totals.",
+      "PDF FAA — Standard ASA/Jeppesen layout with approaches, holds, and IPC/Flight Review markers.",
+      "JSON Backup — Complete data snapshot including aircraft fleet, licenses with class ratings, and credentials.",
+      "Your data is yours — export anytime, no restrictions, no fees."
+    ]
   }
 }

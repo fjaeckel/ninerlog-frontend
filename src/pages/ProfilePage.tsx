@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { LogOut } from 'lucide-react';
+import { LogOut, ShieldCheck } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useAuthStore } from '../stores/authStore';
+import { PageWrapper } from '../components/ui/PageWrapper';
 import { useAuthProviders, useLogout } from '../hooks/useAuth';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import { useCurrentUser, useUpdateProfile, useChangePassword, useDeleteAccount, useDeleteAllFlights, useDeleteAllUserData } from '../hooks/useProfile';
@@ -197,7 +198,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="max-w-[640px] mx-auto px-4 py-8">
+    <PageWrapper maxWidth="form">
       <div className="flex items-center justify-between gap-3 mb-6">
         <h1 className="page-title">{t('title')}</h1>
         <button
@@ -424,7 +425,7 @@ export default function ProfilePage() {
                   {qrDataUrl ? (
                     <img src={qrDataUrl} alt="2FA QR Code" className="w-48 h-48" />
                   ) : (
-                    <div className="w-48 h-48 flex items-center justify-center text-slate-400">Loading...</div>
+                    <div className="w-48 h-48 flex items-center justify-center text-slate-500 dark:text-slate-400">Loading...</div>
                   )}
                 </div>
                 <div>
@@ -440,20 +441,20 @@ export default function ProfilePage() {
                   <button onClick={async () => { setTwoFAMessage(''); try { const result = await verify2FA.mutateAsync(twoFACode); setRecoveryCodes(result.recoveryCodes); updateUser({ twoFactorEnabled: true }); setTwoFACode(''); } catch { setTwoFAMessage(t('twoFactor.invalidCode')); } }} disabled={twoFACode.length !== 6 || verify2FA.isPending} className="btn-primary flex-1">
                     {verify2FA.isPending ? t('twoFactor.verifying') : t('twoFactor.verifyAndEnable')}
                   </button>
-                  <button onClick={() => { setTwoFASetupData(null); setQrDataUrl(null); setTwoFACode(''); setTwoFAMessage(''); }} className="btn-secondary flex-1">Cancel</button>
+                  <button onClick={() => { setTwoFASetupData(null); setQrDataUrl(null); setTwoFACode(''); setTwoFAMessage(''); }} className="btn-secondary flex-1">{t('common:cancel')}</button>
                 </div>
               </div>
             ) : user?.twoFactorEnabled ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-green-600 text-lg">🛡</span>
+                  <ShieldCheck className="w-5 h-5 shrink-0 text-green-600 dark:text-green-400" aria-hidden="true" />
                   <div>
                     <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('twoFactor.enabled')}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">{t('twoFactor.enabledDesc')}</p>
                   </div>
                 </div>
                 {!showDisable2FA ? (
-                  <button onClick={() => setShowDisable2FA(true)} className="btn-secondary text-sm text-red-600">{t('twoFactor.disable')}</button>
+                  <button onClick={() => setShowDisable2FA(true)} className="btn-secondary text-sm text-red-600 dark:text-red-400">{t('twoFactor.disable')}</button>
                 ) : (
                   <div className="space-y-3 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                     <p className="text-sm text-red-800 dark:text-red-300">{t('twoFactor.disablePrompt')}</p>
@@ -675,6 +676,6 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-    </div>
+    </PageWrapper>
   );
 }

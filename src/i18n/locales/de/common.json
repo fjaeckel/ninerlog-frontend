@@ -29,8 +29,8 @@
   "no": "Nein",
   "or": "oder",
   "and": "und",
-  "viewAll": "Alle anzeigen →",
-  "view": "Anzeigen →",
+  "viewAll": "Alle anzeigen",
+  "view": "Anzeigen",
   "learnMore": "Mehr erfahren",
   "logout": "Abmelden",
   "skipToContent": "Zum Inhalt springen",
@@ -163,7 +163,8 @@
       "reset2fa": "2FA zurücksetzen",
       "delete": "Löschen",
       "scheduledDeletion": "Löschung {{date}}",
-      "scheduledDeletionTitle": "Dieses Konto wird an diesem Datum gelöscht, sofern die Adresse nicht vorher bestätigt wird."
+      "scheduledDeletionTitle": "Dieses Konto wird an diesem Datum gelöscht, sofern die Adresse nicht vorher bestätigt wird.",
+      "twoFactorShort": "2FA"
     },
     "audit": {
       "timestamp": "Zeitstempel",
@@ -274,5 +275,10 @@
         "dry_run": "Nicht gesendet (kein SMTP)"
       }
     }
+  },
+  "errorState": {
+    "title": "Etwas ist schiefgelaufen",
+    "message": "Der Inhalt konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "retry": "Erneut versuchen"
   }
 }

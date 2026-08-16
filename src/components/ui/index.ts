@@ -3,6 +3,7 @@ export { StatCard } from './StatCard';
 export { DataTile, DataTileGrid } from './DataTile';
 export { ConfirmDialog } from './ConfirmDialog';
 export { Dialog } from './Dialog';
+export { FormModal } from './FormModal';
 export { Skeleton, SkeletonCard, SkeletonList, SkeletonGrid } from './Skeleton';
 export { ErrorState } from './ErrorState';
 export { FileDropzone } from './FileDropzone';

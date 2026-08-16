@@ -722,7 +722,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               <button
                 type="button"
                 onClick={() => setCrewMembers((prev) => prev.filter((_, i) => i !== idx))}
-                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-red-500"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400"
                 aria-label={`Remove ${member.name}`}
               >
                 <X className="w-4 h-4" />

@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { AlertTriangle, CheckCircle2, Loader, TimerOff, type LucideIcon } from 'lucide-react';
+import { LogoMark } from '../components/ui/Logo';
 import { usePublicSignatureInfo, useCompletePublicSignature } from '../hooks/useSignatures';
 import { SignatureCanvas, type SignatureCanvasHandle } from '../components/SignatureCanvas';
 import { formatDuration } from '../lib/duration';
@@ -22,23 +24,23 @@ export default function SignPage() {
   const [success, setSuccess] = useState(false);
 
   if (!token) {
-    return <StatusCard icon="⚠" title={t('publicPage.invalidTitle')} description={t('publicPage.invalidDescription')} />;
+    return <StatusCard icon={AlertTriangle} title={t('publicPage.invalidTitle')} description={t('publicPage.invalidDescription')} />;
   }
 
   if (info.isLoading) {
-    return <StatusCard icon="…" title={t('publicPage.loading')} description="" />;
+    return <StatusCard icon={Loader} title={t('publicPage.loading')} description="" />;
   }
 
   if (info.isError) {
     const status = extractApiStatus(info.error);
     if (status === 410) {
-      return <StatusCard icon="⏱" title={t('publicPage.expiredTitle')} description={t('publicPage.expiredDescription')} />;
+      return <StatusCard icon={TimerOff} title={t('publicPage.expiredTitle')} description={t('publicPage.expiredDescription')} />;
     }
-    return <StatusCard icon="⚠" title={t('publicPage.invalidTitle')} description={t('publicPage.invalidDescription')} />;
+    return <StatusCard icon={AlertTriangle} title={t('publicPage.invalidTitle')} description={t('publicPage.invalidDescription')} />;
   }
 
   if (success) {
-    return <StatusCard icon="✓" title={t('publicPage.successTitle')} description={t('publicPage.successDescription')} tone="success" />;
+    return <StatusCard icon={CheckCircle2} title={t('publicPage.successTitle')} description={t('publicPage.successDescription')} tone="success" />;
   }
 
   const flight = info.data!;
@@ -70,7 +72,7 @@ export default function SignPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 py-8">
       <div className="w-full max-w-[480px] space-y-6">
         <div className="text-center">
-          <div className="text-4xl mb-2">✈</div>
+          <LogoMark size={40} decorative className="mx-auto mb-3 drop-shadow-sm" />
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{t('publicPage.title')}</h1>
         </div>
 
@@ -164,12 +166,12 @@ export default function SignPage() {
 }
 
 function StatusCard({
-  icon,
+  icon: Icon,
   title,
   description,
   tone = 'neutral',
 }: {
-  icon: string;
+  icon: LucideIcon;
   title: string;
   description: string;
   tone?: 'neutral' | 'success';
@@ -178,9 +180,13 @@ function StatusCard({
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4">
       <div className="w-full max-w-[400px]">
         <div className="card p-6 text-center">
-          <div className={tone === 'success' ? 'text-green-600 text-5xl mb-4' : 'text-slate-400 text-5xl mb-4'}>
-            {icon}
-          </div>
+          <Icon
+            className={`w-12 h-12 mx-auto mb-4 ${
+              tone === 'success' ? 'text-green-600 dark:text-green-400' : 'text-slate-300 dark:text-slate-600'
+            }`}
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
           <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">{title}</h2>
           {description && <p className="text-slate-500 dark:text-slate-400">{description}</p>}
         </div>

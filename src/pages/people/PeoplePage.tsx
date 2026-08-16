@@ -188,7 +188,7 @@ export default function PeoplePage() {
 
       {(contacts?.length ?? 0) === 0 ? (
         <EmptyState
-          icon={<Users className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600" />}
+          icon={Users}
           title={t('empty.title')}
           description={t('empty.description')}
         />

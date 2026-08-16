@@ -29,8 +29,8 @@
   "no": "No",
   "or": "or",
   "and": "and",
-  "viewAll": "View all →",
-  "view": "View →",
+  "viewAll": "View all",
+  "view": "View",
   "learnMore": "Learn more",
   "logout": "Logout",
   "skipToContent": "Skip to content",
@@ -163,7 +163,8 @@
       "reset2fa": "Reset 2FA",
       "delete": "Delete",
       "scheduledDeletion": "Deletion {{date}}",
-      "scheduledDeletionTitle": "This account will be deleted on this date unless the address is confirmed first."
+      "scheduledDeletionTitle": "This account will be deleted on this date unless the address is confirmed first.",
+      "twoFactorShort": "2FA"
     },
     "audit": {
       "timestamp": "Timestamp",
@@ -274,5 +275,10 @@
         "dry_run": "Not sent (no SMTP)"
       }
     }
+  },
+  "errorState": {
+    "title": "Something went wrong",
+    "message": "We could not load this. Please try again.",
+    "retry": "Try again"
   }
 }

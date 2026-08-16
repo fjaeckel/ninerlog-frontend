@@ -34,6 +34,7 @@ import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { exportAnalyticsToCSV, exportAnalyticsToPDF } from '../../lib/exportReports';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
+import { PageWrapper } from '../../components/ui/PageWrapper';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { useChartTheme } from '../../components/reports/chartTheme';
 import { SectionNav, ReportSectionBlock, type ReportSection } from '../../components/reports/SectionNav';
@@ -77,20 +78,17 @@ export default function ReportsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[1280px] py-6">
+      <PageWrapper maxWidth="dashboard">
         <SkeletonList rows={4} />
-      </div>
+      </PageWrapper>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="mx-auto max-w-[1280px] py-6">
-        <ErrorState
-          title={t('failedToLoad')}
-          message={t('failedToLoadMessage')}
-        />
-      </div>
+      <PageWrapper maxWidth="dashboard">
+        <ErrorState title={t('failedToLoad')} message={t('failedToLoadMessage')} />
+      </PageWrapper>
     );
   }
 
@@ -112,7 +110,7 @@ export default function ReportsPage() {
       });
 
   return (
-    <div className="mx-auto max-w-[1280px] py-6">
+    <PageWrapper maxWidth="dashboard">
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
@@ -159,7 +157,7 @@ export default function ReportsPage() {
 
       {empty ? (
         <EmptyState
-          icon={<BarChart3 className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600" />}
+          icon={BarChart3}
           title={t('empty.title')}
           description={t('empty.description')}
         />
@@ -753,7 +751,7 @@ export default function ReportsPage() {
           </div>
         </>
       )}
-    </div>
+    </PageWrapper>
   );
 }
 

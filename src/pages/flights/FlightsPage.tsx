@@ -1,7 +1,7 @@
 import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Pencil, Trash2, ShieldCheck } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUp, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { useFlights, useInfiniteFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
@@ -9,6 +9,11 @@ import FlightForm from '../../components/flights/FlightForm';
 import FlightCard from '../../components/flights/FlightCard';
 import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { FormModal } from '../../components/ui/FormModal';
+import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
+import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -331,19 +336,9 @@ export default function FlightsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[960px] xl:max-w-[1600px] py-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48"></div>
-          <div className="card p-0">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="px-4 py-4 border-b border-slate-100 dark:border-slate-700 last:border-0">
-                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <PageWrapper maxWidth="wide">
+        <SkeletonList rows={5} />
+      </PageWrapper>
     );
   }
 
@@ -356,13 +351,9 @@ export default function FlightsPage() {
 
   if (error && !searchError) {
     return (
-      <div className="mx-auto max-w-[960px] py-6">
-        <div className="card text-center py-12">
-          <div className="text-4xl mb-3">⚠</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('flights:errorTitle')}</h2>
-          <p className="text-slate-500 dark:text-slate-400">{t('flights:errorDescription')}</p>
-        </div>
-      </div>
+      <PageWrapper maxWidth="wide">
+        <ErrorState title={t('flights:errorTitle')} message={t('flights:errorDescription')} />
+      </PageWrapper>
     );
   }
 
@@ -382,21 +373,19 @@ export default function FlightsPage() {
     (columns.remarksRevealClass ? 1 : 0);
 
   return (
-    <div className="mx-auto max-w-[960px] xl:max-w-[1600px] py-6">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h1 className="page-title">{t('flights:pageTitle')}</h1>
-          {pagination && (
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-              {t('flights:flightsTotal', { count: pagination.total })}
-              <HelpLink topic="flights" />
-            </p>
-          )}
-        </div>
-        <button onClick={() => setShowForm(true)} className="btn-primary">
-          + {t('flights:logFlight')}
-        </button>
-      </div>
+    <PageWrapper maxWidth="wide">
+      <PageHeader
+        title={t('flights:pageTitle')}
+        subtitle={pagination ? t('flights:flightsTotal', { count: pagination.total }) : undefined}
+        titleAdornment={<HelpLink topic="flights" />}
+        className="mb-4"
+        action={
+          <button onClick={() => setShowForm(true)} className="btn-primary whitespace-nowrap">
+            <Plus className="w-4 h-4" aria-hidden="true" />
+            {t('flights:logFlight')}
+          </button>
+        }
+      />
 
       {/* Logbook Selector — only shown if separate-logbook licenses exist */}
       {separateLogbookLicenses.length > 0 && (
@@ -443,14 +432,19 @@ export default function FlightsPage() {
           <button
             key={field}
             onClick={() => toggleSort(field)}
-            className={`px-3 py-2 min-h-[44px] rounded-full text-xs transition-colors ${
+            className={`inline-flex items-center gap-1 px-3 py-2 min-h-[44px] rounded-full text-xs transition-colors ${
               sortBy === field
                 ? 'bg-blue-100 text-blue-700 font-medium dark:bg-blue-900/30 dark:text-blue-400'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
             }`}
           >
             {field === 'date' ? t('flights:sortDate') : field === 'totalTime' ? t('flights:sortHours') : t('flights:sortAdded')}
-            {sortBy === field && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+            {sortBy === field &&
+              (sortOrder === 'asc' ? (
+                <ArrowUp className="w-3 h-3" aria-hidden="true" />
+              ) : (
+                <ArrowDown className="w-3 h-3" aria-hidden="true" />
+              ))}
           </button>
         ))}
       </div>
@@ -526,40 +520,23 @@ export default function FlightsPage() {
       )}
 
       {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-[1020]" role="dialog" aria-modal="true" aria-labelledby="flight-form-title">
-          <div className="bg-white dark:bg-slate-800 w-full sm:rounded-xl sm:max-w-2xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto shadow-2xl pt-safe-top">
-            <div className="p-4 sm:p-6">
-              <div className="flex justify-between items-center mb-4 sm:mb-6 sticky top-0 bg-white dark:bg-slate-800 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 -mt-4 sm:-mt-6 pt-4 sm:pt-6 border-b border-slate-100 dark:border-slate-700 sm:border-0">
-                <h2 id="flight-form-title" className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100">
-                  {editingFlight ? t('flights:editFlight') : t('flights:logNewFlight')}
-                </h2>
-                <button
-                  onClick={handleCloseForm}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  aria-label={t('common:close')}
-                >
-                  ✕
-                </button>
-              </div>
-              <FlightForm flightId={editingFlight} onClose={handleCloseForm} />
-            </div>
-          </div>
-        </div>
-      )}
+      <FormModal
+        open={showForm}
+        onClose={handleCloseForm}
+        title={editingFlight ? t('flights:editFlight') : t('flights:logNewFlight')}
+        size="xl"
+      >
+        <FlightForm flightId={editingFlight} onClose={handleCloseForm} />
+      </FormModal>
 
       {/* Flight List */}
       {flights.length === 0 ? (
-        <div className="card text-center py-12">
-          <div className="text-5xl mb-4">✈</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('flights:noFlights')}</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-6">
-            {t('flights:startBuildingLogbook')}
-          </p>
-          <button onClick={() => setShowForm(true)} className="btn-primary">
-            + {t('flights:logFirstFlight')}
-          </button>
-        </div>
+        <EmptyState
+          icon={Plane}
+          title={t('flights:noFlights')}
+          description={t('flights:startBuildingLogbook')}
+          action={{ label: t('flights:logFirstFlight'), onClick: () => setShowForm(true) }}
+        />
       ) : (
         <>
           {/* Phones and tablets get a card per flight: the table below needs a
@@ -703,7 +680,7 @@ export default function FlightsPage() {
                           part={splitAirportLabel(flight.departureIcao, flight.departureAirportName)}
                           both={routeIsFreeText(flight)}
                         />
-                        <span className="text-blue-500 dark:text-blue-400" aria-hidden="true">→</span>
+                        <ArrowRight className="w-3.5 h-3.5 shrink-0 text-blue-500 dark:text-blue-400" aria-hidden="true" />
                         <RouteEnd
                           part={splitAirportLabel(flight.arrivalIcao, flight.arrivalAirportName)}
                           both={routeIsFreeText(flight)}
@@ -829,6 +806,6 @@ export default function FlightsPage() {
         variant="danger"
         isLoading={deleteFlight.isPending}
       />
-    </div>
+    </PageWrapper>
   );
 }

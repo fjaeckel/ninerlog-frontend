@@ -41,7 +41,7 @@
   },
   "expiresIn": "Läuft in {{days}} Tagen ab",
   "expiredAgo": "Vor {{days}} Tagen abgelaufen",
-  "expiresOn": "Gültig bis {{date}}",
+  "expiresOn": "Läuft ab: {{date}}",
   "noExpiry": "Kein Ablaufdatum",
   "dayLandings": "Taglandungen",
   "nightLandings": "Nachtlandungen",
@@ -57,7 +57,7 @@
   "tier1Description": "Bestimmt, ob Sie in dieser Klasse überhaupt fliegen dürfen.",
   "tier2Description": "Bestimmt, ob Sie Passagiere mitnehmen dürfen. Alleinflug ist auch ohne Passagier-Gültigkeit möglich.",
   "flightReviewRequired": "Flugüberprüfung erforderlich",
-  "lastCompleted": "Zuletzt durchgeführt: {{date}}",
+  "lastCompleted": "Zuletzt absolviert: {{date}}",
   "viewDetails": "Details anzeigen",
   "classTypes": {
     "SEP_LAND": "SEP (Land)",
@@ -114,5 +114,9 @@
     "faa_flight_review": "Flugüberprüfung alle 24 Kalendermonate erforderlich (14 CFR 61.56)",
     "ul_luftpersv": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer in 24 Monaten (LuftPersV §45)",
     "ul_pax": "Passagierberechtigung erforderlich — 3 Starts & Landungen in 90 Tagen"
+  },
+  "landingsOf": "{{current}} / {{required}} Landungen",
+  "customCurrency": {
+    "builderTitle": "Baukasten für eigene Regeln"
   }
 }

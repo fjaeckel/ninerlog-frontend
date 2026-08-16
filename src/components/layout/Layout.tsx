@@ -361,7 +361,7 @@ function SidebarExternalItem({ href, label, title, icon }: { href: string; label
     >
       <span className="shrink-0" aria-hidden="true">{icon}</span>
       <span className="flex-1">{label}</span>
-      <ExternalLink className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+      <ExternalLink className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" aria-hidden="true" />
     </a>
   );
 }

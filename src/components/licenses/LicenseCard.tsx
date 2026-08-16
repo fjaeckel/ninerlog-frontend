@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BookOpen, Pencil, Trash2 } from 'lucide-react';
 import { License } from '../../stores/licenseStore';
 import { isPast, differenceInDays } from 'date-fns';
 import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateClassRating } from '../../hooks/useClassRatings';
@@ -16,7 +17,7 @@ function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
   const { t } = useTranslation('licenses');
   const { fmtDate } = useFormatPrefs();
   if (!expiryDate) {
-    return <span className="text-xs text-slate-400">{t('card.noExpiry')}</span>;
+    return <span className="text-xs text-slate-500 dark:text-slate-400">{t('card.noExpiry')}</span>;
   }
   const expiry = new Date(expiryDate);
   const expired = isPast(expiry);
@@ -132,8 +133,8 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
           </p>
           {license.requiresSeparateLogbook && (
             <div className="mt-2">
-              <span className="badge-info text-[10px]">YES</span>
-              <span className="ml-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <span className="badge-neutral">
+                <BookOpen className="w-3 h-3 mr-1" aria-hidden="true" />
                 {t('card.separateLogbook')}
               </span>
             </div>
@@ -192,7 +193,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
             </div>
 
             {ratingsLoading ? (
-              <p className="text-xs text-slate-400 dark:text-slate-500">{t('common:loading')}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">{t('common:loading')}</p>
             ) : classRatings && classRatings.length > 0 ? (
               <ul className="divide-y divide-slate-200 dark:divide-slate-700 rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
                 {/* Header row (desktop only) */}
@@ -232,29 +233,29 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                           {t(`classTypeLabels.${rating.classType}`, { defaultValue: rating.classType })}
                         </span>
                         <span className="text-slate-600 dark:text-slate-300">
-                          <span className="sm:hidden text-xs text-slate-400 mr-1">{t('card.issued')}:</span>
+                          <span className="sm:hidden text-xs text-slate-500 dark:text-slate-400 mr-1">{t('card.issued')}:</span>
                           {fmtDate(rating.issueDate)}
                         </span>
                         <span>
-                          <span className="sm:hidden text-xs text-slate-400 mr-1">{t('classRatingFields.expiryDate')}:</span>
+                          <span className="sm:hidden text-xs text-slate-500 dark:text-slate-400 mr-1">{t('classRatingFields.expiryDate')}:</span>
                           <ExpiryBadge expiryDate={rating.expiryDate} />
                         </span>
                         <div className="flex items-center gap-1 justify-end col-span-2 sm:col-span-1">
                           <button
                             onClick={() => startEditRating(rating)}
-                            className="min-w-[32px] min-h-[32px] flex items-center justify-center text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors text-xs"
+                            className="btn-ghost btn-sm min-w-[44px] min-h-[44px] px-0 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400"
                             title={t('card.editRating')}
                             aria-label={t('card.editRating')}
                           >
-                            ✏
+                            <Pencil className="w-4 h-4" aria-hidden="true" />
                           </button>
                           <button
                             onClick={() => handleDeleteRating(rating.id)}
-                            className="min-w-[32px] min-h-[32px] flex items-center justify-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors text-xs font-bold leading-none"
+                            className="btn-ghost btn-sm min-w-[44px] min-h-[44px] px-0 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400"
                             title={t('card.removeRating')}
                             aria-label={t('card.removeRating')}
                           >
-                            ✕
+                            <Trash2 className="w-4 h-4" aria-hidden="true" />
                           </button>
                         </div>
                       </div>
@@ -263,7 +264,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-slate-400 dark:text-slate-500 italic">{t('card.noClassRatings')}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 italic">{t('card.noClassRatings')}</p>
             )}
 
             {/* Add Rating */}

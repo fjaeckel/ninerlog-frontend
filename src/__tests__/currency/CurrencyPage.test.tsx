@@ -180,7 +180,8 @@ describe('CurrencyPage', () => {
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: undefined, isLoading: true, error: null } as any);
 
     renderWithProviders(<CurrencyPage />);
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    // The shared loading skeleton, not a bespoke "Loading..." line
+    expect(screen.getByRole('status', { name: /loading/i })).toBeInTheDocument();
   });
 
   it('counts alerts from both ratings and credentials', () => {

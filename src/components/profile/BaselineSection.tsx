@@ -164,7 +164,7 @@ export function BaselineSection() {
       </p>
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">{t('baseline.loading')}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t('baseline.loading')}</p>
       ) : (
         <>
           {hasBaseline && !showForm && (
