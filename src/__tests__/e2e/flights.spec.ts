@@ -38,7 +38,7 @@ test.describe('Flights', () => {
   test('should create a flight via the form', async ({ page }) => {
     await seedAircraft(page, auth.accessToken, { registration: 'D-FLT2' });
     await page.getByRole('link', { name: 'Flights' }).first().click();
-    await page.getByRole('button', { name: '+ Log Flight' }).click();
+    await page.getByRole('button', { name: 'Log Flight' }).click();
     await expect(page.getByText('Log New Flight')).toBeVisible();
 
     await page.locator('#date').fill('2025-07-01');

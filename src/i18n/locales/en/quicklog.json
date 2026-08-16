@@ -3,7 +3,7 @@
   "subtitle": "Tap to capture block times live — the flight log is created when you go on blocks",
   "aircraft": "Aircraft",
   "selectAircraft": "Select aircraft…",
-  "addNewAircraft": "+ Add new aircraft…",
+  "addNewAircraft": "+ Add new aircraft",
   "selectAircraftFirst": "Select an aircraft to start",
   "quickAddTitle": "Add a new aircraft to your fleet",
   "registrationPlaceholder": "Registration (e.g. D-EFGH)",

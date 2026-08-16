@@ -84,8 +84,8 @@ export default function ResetPasswordPage() {
           <div className="inline-flex items-center justify-center mb-3">
             <LogoMark size={64} className="drop-shadow-md" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-gradient-brand">{APP_NAME}</h1>
-          <p className="mt-3 text-lg font-semibold text-slate-800 dark:text-slate-100">{t('auth:resetPassword.title')}</p>
+          <p className="text-3xl font-bold tracking-tight text-gradient-brand">{APP_NAME}</p>
+          <h1 className="mt-3 text-lg font-semibold text-slate-800 dark:text-slate-100">{t('auth:resetPassword.title')}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t('auth:resetPassword.description')}
           </p>
