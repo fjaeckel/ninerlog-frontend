@@ -120,11 +120,11 @@ export default function CredentialsPage() {
               <div key={cred.id} className="card">
                 <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
                   {/* Identity */}
-                  <div className="lg:w-80 lg:shrink-0">
+                  <div className="lg:w-60 lg:shrink-0">
                     <div className="flex items-start gap-3 flex-wrap">
                       <div className="min-w-0">
                         <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
-                          {t(`types.${cred.credentialType}`, { defaultValue: cred.credentialType })}
+                          {t(`types.${cred.credentialType}`, { defaultValue: cred.credentialType.replace(/_/g, ' ') })}
                         </h3>
                         {cred.credentialNumber && (
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">

@@ -117,6 +117,30 @@
   },
   "landingsOf": "{{current}} / {{required}} landings",
   "customCurrency": {
-    "builderTitle": "Custom currency builder"
+    "builderTitle": "Custom currency builder",
+    "title": "Custom currency",
+    "build": "Build a rule",
+    "emptyTitle": "Build your own currency rules",
+    "emptyHint": "Combine flights, aircraft and requirements into rules we track for you — and share them.",
+    "deleteTitle": "Delete this rule?",
+    "deleteDescription": "“{{name}}” will be permanently removed. This cannot be undone."
+  },
+  "dayLabel": "Day",
+  "nightLabel": "Night",
+  "nightNotApplicable": "Night passenger currency does not apply to this licence.",
+  "issuedLabel": "Issued: {{date}}",
+  "issuingAuthorityLabel": "Issued by: {{authority}}",
+  "credentialDescriptions": {
+    "EASA_CLASS1_MEDICAL": "EASA Class 1 Medical — valid for 12 months (6 months for single-pilot CAT passenger operations after age 40, and for all holders after age 60)",
+    "EASA_CLASS2_MEDICAL": "EASA Class 2 Medical — valid for 60 months if issued before age 40, 24 months after age 40",
+    "EASA_LAPL_MEDICAL": "EASA LAPL Medical — valid for 60 months if issued before age 40, 24 months after age 40",
+    "FAA_CLASS1_MEDICAL": "FAA Class 1 Medical — valid for 12 months (6 months after age 40)",
+    "FAA_CLASS2_MEDICAL": "FAA Class 2 Medical — valid for 12 months (24 months if under 40)",
+    "FAA_CLASS3_MEDICAL": "FAA Class 3 Medical — valid for 60 months (24 months after age 40)",
+    "LANG_ICAO_LEVEL4": "ICAO Language Proficiency Level 4 — revalidation every 3 years",
+    "LANG_ICAO_LEVEL5": "ICAO Language Proficiency Level 5 — revalidation every 6 years",
+    "LANG_ICAO_LEVEL6": "ICAO Language Proficiency Level 6 — no revalidation required (expert)",
+    "SEC_CLEARANCE_ZUP": "German ZÜP security clearance — validity varies by issuing authority",
+    "SEC_CLEARANCE_ZUBB": "German ZÜBB security clearance — typically valid for 5 years"
   }
 }

@@ -132,7 +132,7 @@ export default function DashboardPage() {
                       <TimerReset className="w-4 h-4 shrink-0" aria-hidden="true" />
                     )}
                     <span className="truncate">
-                      <strong>{t(`credentials:types.${cred.credentialType}`, { defaultValue: cred.credentialType })}</strong>
+                      <strong>{t(`credentials:types.${cred.credentialType}`, { defaultValue: cred.credentialType.replace(/_/g, ' ') })}</strong>
                       {' '}{isExpired ? t('dashboard:credentialAlert.expired', { days: Math.abs(days) }) : t('dashboard:credentialAlert.expiresSoon', { days })}
                     </span>
                   </span>

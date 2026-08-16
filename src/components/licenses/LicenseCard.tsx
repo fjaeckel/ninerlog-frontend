@@ -121,7 +121,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
     <div className="card transition-shadow hover:shadow-md">
       <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
         {/* Identity */}
-        <div className="lg:w-72 lg:shrink-0">
+        <div className="lg:w-52 lg:shrink-0">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="badge-info font-semibold">{license.licenseType}</span>
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">

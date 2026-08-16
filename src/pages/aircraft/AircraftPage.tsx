@@ -103,7 +103,7 @@ export default function AircraftPage() {
             <div key={ac.id} className="card">
               <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
                 {/* Identity */}
-                <div className="lg:w-72 lg:shrink-0">
+                <div className="lg:w-52 lg:shrink-0">
                   <div className="flex items-center gap-3 flex-wrap">
                     <h3 className="text-lg font-semibold font-mono tracking-tight text-slate-800 dark:text-slate-100">
                       {ac.registration}

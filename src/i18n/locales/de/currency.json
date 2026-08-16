@@ -117,6 +117,30 @@
   },
   "landingsOf": "{{current}} / {{required}} Landungen",
   "customCurrency": {
-    "builderTitle": "Baukasten für eigene Regeln"
+    "builderTitle": "Baukasten für eigene Regeln",
+    "title": "Eigene Regeln",
+    "build": "Regel erstellen",
+    "emptyTitle": "Erstellen Sie eigene Currency-Regeln",
+    "emptyHint": "Kombinieren Sie Flüge, Luftfahrzeuge und Anforderungen zu Regeln, die wir für Sie verfolgen — und teilen Sie sie.",
+    "deleteTitle": "Diese Regel löschen?",
+    "deleteDescription": "„{{name}}“ wird dauerhaft entfernt. Das lässt sich nicht rückgängig machen."
+  },
+  "dayLabel": "Tag",
+  "nightLabel": "Nacht",
+  "nightNotApplicable": "Die Nacht-Passagierberechtigung gilt für diese Lizenz nicht.",
+  "issuedLabel": "Ausgestellt: {{date}}",
+  "issuingAuthorityLabel": "Ausgestellt von: {{authority}}",
+  "credentialDescriptions": {
+    "EASA_CLASS1_MEDICAL": "EASA Klasse 1 Tauglichkeit — 12 Monate gültig (6 Monate bei gewerblicher Passagierbeförderung im Einpilotenbetrieb ab 40 Jahren sowie für alle Inhaber ab 60 Jahren)",
+    "EASA_CLASS2_MEDICAL": "EASA Klasse 2 Tauglichkeit — 60 Monate gültig bei Ausstellung vor dem 40. Lebensjahr, danach 24 Monate",
+    "EASA_LAPL_MEDICAL": "EASA LAPL Tauglichkeit — 60 Monate gültig bei Ausstellung vor dem 40. Lebensjahr, danach 24 Monate",
+    "FAA_CLASS1_MEDICAL": "FAA Klasse 1 Tauglichkeit — 12 Monate gültig (6 Monate ab 40 Jahren)",
+    "FAA_CLASS2_MEDICAL": "FAA Klasse 2 Tauglichkeit — 12 Monate gültig (24 Monate unter 40 Jahren)",
+    "FAA_CLASS3_MEDICAL": "FAA Klasse 3 Tauglichkeit — 60 Monate gültig (24 Monate ab 40 Jahren)",
+    "LANG_ICAO_LEVEL4": "ICAO Sprachprüfung Level 4 — Verlängerung alle 3 Jahre",
+    "LANG_ICAO_LEVEL5": "ICAO Sprachprüfung Level 5 — Verlängerung alle 6 Jahre",
+    "LANG_ICAO_LEVEL6": "ICAO Sprachprüfung Level 6 — keine Verlängerung erforderlich (Expert)",
+    "SEC_CLEARANCE_ZUP": "Deutsche ZÜP — Gültigkeit je nach ausstellender Behörde",
+    "SEC_CLEARANCE_ZUBB": "Deutsche ZÜBB — üblicherweise 5 Jahre gültig"
   }
 }

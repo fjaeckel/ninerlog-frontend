@@ -141,9 +141,10 @@ describe('CurrencyPage', () => {
 
     renderWithProviders(<CurrencyPage />);
     expect(screen.getByText('Credentials')).toBeInTheDocument();
-    expect(screen.getByText('EASA CLASS2 MEDICAL')).toBeInTheDocument();
+    expect(screen.getByText('EASA Class 2 Medical')).toBeInTheDocument();
     expect(screen.getByText('Expiring Soon')).toBeInTheDocument();
-    expect(screen.getByText(/EASA Class 2 Medical/)).toBeInTheDocument();
+    // The regulatory note, not a second copy of the credential's own name
+    expect(screen.getByText(/valid for 60 months/i)).toBeInTheDocument();
   });
 
   it('shows valid badge for non-expiring credential', () => {

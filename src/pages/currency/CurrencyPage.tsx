@@ -29,19 +29,6 @@ const CLASS_TYPE_LABELS: Record<string, string> = {
   TMG: 'TMG', IR: 'Instrument Rating', OTHER: 'Other',
 };
 
-const CREDENTIAL_DESCRIPTIONS: Record<string, string> = {
-  EASA_CLASS1_MEDICAL: 'EASA Class 1 Medical — valid for 12 months (6 months for single-pilot CAT passenger operations after age 40, and for all holders after age 60)',
-  EASA_CLASS2_MEDICAL: 'EASA Class 2 Medical — valid for 60 months if issued before age 40, 24 months after age 40',
-  EASA_LAPL_MEDICAL: 'EASA LAPL Medical — valid for 60 months if issued before age 40, 24 months after age 40',
-  FAA_CLASS1_MEDICAL: 'FAA Class 1 Medical — valid for 12 months (6 months after age 40)',
-  FAA_CLASS2_MEDICAL: 'FAA Class 2 Medical — valid for 12 months (24 months if under 40)',
-  FAA_CLASS3_MEDICAL: 'FAA Class 3 Medical — valid for 60 months (24 months after age 40)',
-  LANGUAGE_PROFICIENCY_ICAO_4: 'ICAO Language Proficiency Level 4 — revalidation every 3 years',
-  LANGUAGE_PROFICIENCY_ICAO_5: 'ICAO Language Proficiency Level 5 — revalidation every 6 years',
-  LANGUAGE_PROFICIENCY_ICAO_6: 'ICAO Language Proficiency Level 6 — no revalidation required (expert)',
-  SECURITY_CLEARANCE_ZUP: 'German ZÜP Security Clearance — validity varies by issuing authority',
-  SECURITY_CLEARANCE_ZUBB: 'German ZüBB Security Clearance — typically valid for 5 years',
-};
 
 export default function CurrencyPage() {
   const { data: currencyStatus, isLoading: currencyLoading } = useAllCurrencyStatus();
@@ -63,7 +50,7 @@ export default function CurrencyPage() {
   const { data: licenses } = useLicenses();
   const { data: aircraftStats } = useAircraftStats();
   const [expandedLicenses, setExpandedLicenses] = useState<Record<string, boolean>>({});
-  const { t } = useTranslation('currency');
+  const { t } = useTranslation(['currency', 'credentials', 'common']);
   const { fmtDate } = useFormatPrefs();
 
   // Informational 90-day recency rows: models first, then registrations.
@@ -142,7 +129,7 @@ export default function CurrencyPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="section-title flex items-center gap-2">
               <Wand2 className="w-5 h-5 text-violet-500" />
-              {t('customCurrency.title', { defaultValue: 'Custom currency' })}
+              {t('customCurrency.title')}
             </h2>
             <Link
               to="/currency/builder"
@@ -150,7 +137,7 @@ export default function CurrencyPage() {
               data-testid="open-currency-builder"
             >
               <Plus className="w-4 h-4" />
-              {t('customCurrency.build', { defaultValue: 'Build a rule' })}
+              {t('customCurrency.build')}
             </Link>
           </div>
           {customRules && customRules.length > 0 ? (
@@ -175,12 +162,10 @@ export default function CurrencyPage() {
             >
               <Wand2 className="w-6 h-6 mx-auto text-violet-400 mb-2" />
               <p className="text-slate-600 dark:text-slate-300 text-sm font-medium">
-                {t('customCurrency.emptyTitle', { defaultValue: 'Build your own currency rules' })}
+                {t('customCurrency.emptyTitle')}
               </p>
               <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
-                {t('customCurrency.emptyHint', {
-                  defaultValue: 'Combine flights, aircraft and requirements into rules we track for you — and share them.',
-                })}
+                {t('customCurrency.emptyHint')}
               </p>
             </Link>
           )}
@@ -313,7 +298,7 @@ export default function CurrencyPage() {
                     <div className="flex justify-between items-center text-xs">
                       <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
                         <RequirementIcon met={dayOk} />
-                        {t('common:day')}
+                        {t('dayLabel')}
                       </span>
                       <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
                         {t('landingsOf', { current: pax.dayLandings, required: pax.dayRequired })}
@@ -332,7 +317,7 @@ export default function CurrencyPage() {
                     <div className="flex justify-between items-center text-xs">
                       <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
                         <RequirementIcon met={nightOk} />
-                        {t('common:night')}
+                        {t('nightLabel')}
                       </span>
                       <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
                         {t('landingsOf', { current: pax.nightLandings, required: pax.nightRequired })}
@@ -451,14 +436,18 @@ export default function CurrencyPage() {
                   ? { text: t('status.expiring'), cls: 'badge-expiring' }
                   : { text: t('status.valid'), cls: 'badge-current' };
 
-              const description = CREDENTIAL_DESCRIPTIONS[cred.credentialType] || cred.credentialType.replace(/_/g, ' ');
+              // No description for this type? Render nothing rather than
+              // echoing the credential's own name back at the reader.
+              const description = t(`credentialDescriptions.${cred.credentialType}`, { defaultValue: '' });
 
               return (
                 <div key={cred.id} className={`card border-l-4 ${statusColor}`} data-testid={`credential-${cred.id}`}>
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100">
-                        {cred.credentialType.replace(/_/g, ' ')}
+                        {t(`credentials:types.${cred.credentialType}`, {
+                          defaultValue: cred.credentialType.replace(/_/g, ' '),
+                        })}
                       </h3>
                       {cred.credentialNumber && (
                         <p className="text-xs text-slate-500 dark:text-slate-400">{cred.credentialNumber}</p>
@@ -470,8 +459,10 @@ export default function CurrencyPage() {
                   </div>
 
                   <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                    {cred.issuingAuthority && <p>{t('issuingAuthority')}: {cred.issuingAuthority}</p>}
-                    <p>{t('issued')}: {cred.issueDate}</p>
+                    {cred.issuingAuthority && (
+                      <p>{t('issuingAuthorityLabel', { authority: cred.issuingAuthority })}</p>
+                    )}
+                    <p>{t('issuedLabel', { date: fmtDate(cred.issueDate) })}</p>
                     {cred.expiryDate && (
                       <p>
                         {t('expiresLabel', { date: fmtDate(cred.expiryDate) })}
@@ -484,9 +475,9 @@ export default function CurrencyPage() {
                     )}
                   </div>
 
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">
-                    {description}
-                  </p>
+                  {description && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 italic">{description}</p>
+                  )}
                 </div>
               );
             })}
@@ -506,12 +497,9 @@ export default function CurrencyPage() {
 
       <ConfirmDialog
         open={!!deleteRule}
-        title={t('customCurrency.deleteTitle', { defaultValue: 'Delete this rule?' })}
-        description={t('customCurrency.deleteDescription', {
-          defaultValue: `“${deleteRule?.name ?? ''}” will be permanently removed. This cannot be undone.`,
-          name: deleteRule?.name ?? '',
-        })}
-        confirmLabel={t('common:delete', { defaultValue: 'Delete' })}
+        title={t('customCurrency.deleteTitle')}
+        description={t('customCurrency.deleteDescription', { name: deleteRule?.name ?? '' })}
+        confirmLabel={t('common:delete')}
         isLoading={deleteCustom.isPending}
         onCancel={() => setDeleteRuleId(null)}
         onConfirm={async () => {
