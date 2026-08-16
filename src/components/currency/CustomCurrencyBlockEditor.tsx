@@ -61,9 +61,9 @@ function Block({ icon, title, accent, children, onAdd, addLabel }: BlockProps) {
 function RowControls({ onUp, onDown, onRemove }: { onUp: () => void; onDown: () => void; onRemove: () => void }) {
   return (
     <div className="flex items-center gap-0.5 shrink-0">
-      <button type="button" onClick={onUp} className="btn-ghost p-1" aria-label="Move up"><ChevronUp className="w-3.5 h-3.5" /></button>
-      <button type="button" onClick={onDown} className="btn-ghost p-1" aria-label="Move down"><ChevronDown className="w-3.5 h-3.5" /></button>
-      <button type="button" onClick={onRemove} className="btn-ghost p-1 text-red-600 dark:text-red-400" aria-label="Remove"><Trash2 className="w-3.5 h-3.5" /></button>
+      <button type="button" onClick={onUp} className="btn-ghost btn-sm px-0 min-w-11" aria-label="Move up"><ChevronUp className="w-3.5 h-3.5" /></button>
+      <button type="button" onClick={onDown} className="btn-ghost btn-sm px-0 min-w-11" aria-label="Move down"><ChevronDown className="w-3.5 h-3.5" /></button>
+      <button type="button" onClick={onRemove} className="btn-ghost btn-sm px-0 min-w-11 text-red-600 dark:text-red-400" aria-label="Remove"><Trash2 className="w-3.5 h-3.5" /></button>
     </div>
   );
 }

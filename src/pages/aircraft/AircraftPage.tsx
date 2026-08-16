@@ -44,7 +44,7 @@ export default function AircraftPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper>
+      <PageWrapper maxWidth="list">
         <SkeletonList rows={3} />
       </PageWrapper>
     );
@@ -52,14 +52,14 @@ export default function AircraftPage() {
 
   if (error) {
     return (
-      <PageWrapper>
+      <PageWrapper maxWidth="list">
         <ErrorState title={t('errorTitle')} message={t('errorMessage')} />
       </PageWrapper>
     );
   }
 
   return (
-    <PageWrapper>
+    <PageWrapper maxWidth="list">
       <PageHeader
         title={t('title')}
         subtitle={t('subtitle')}
@@ -279,13 +279,13 @@ export default function AircraftPage() {
                 <div className="flex lg:flex-col gap-2 lg:w-28 lg:shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-700">
                   <button
                     onClick={() => { setEditingId(ac.id); setShowForm(true); }}
-                    className="btn-ghost btn-sm flex-1"
+                    className="btn-ghost btn-sm flex-1 lg:w-full lg:flex-none"
                   >
                     {t('edit')}
                   </button>
                   <button
                     onClick={() => handleDelete(ac.id)}
-                    className="btn-ghost btn-sm flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    className="btn-ghost btn-sm flex-1 lg:w-full lg:flex-none text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     {t('delete')}
                   </button>

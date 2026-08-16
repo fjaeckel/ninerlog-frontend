@@ -305,7 +305,7 @@ function LocalLogin() {
       <div className="text-right">
         <Link
           to="/reset-password"
-          className="text-sm text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
+          className="inline-flex items-center min-h-11 text-sm text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
         >
           {t('auth:login.forgotPassword')}
         </Link>
@@ -341,7 +341,7 @@ function LocalLogin() {
         {t('auth:login.noAccount')}{' '}
         <Link
           to="/register"
-          className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          className="link"
         >
           {t('auth:login.createOne')}
         </Link>

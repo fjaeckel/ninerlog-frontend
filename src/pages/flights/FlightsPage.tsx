@@ -336,7 +336,7 @@ export default function FlightsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper maxWidth="wide">
+      <PageWrapper maxWidth="list">
         <SkeletonList rows={5} />
       </PageWrapper>
     );
@@ -351,7 +351,7 @@ export default function FlightsPage() {
 
   if (error && !searchError) {
     return (
-      <PageWrapper maxWidth="wide">
+      <PageWrapper maxWidth="list">
         <ErrorState title={t('flights:errorTitle')} message={t('flights:errorDescription')} />
       </PageWrapper>
     );
@@ -373,7 +373,7 @@ export default function FlightsPage() {
     (columns.remarksRevealClass ? 1 : 0);
 
   return (
-    <PageWrapper maxWidth="wide">
+    <PageWrapper maxWidth="list">
       <PageHeader
         title={t('flights:pageTitle')}
         subtitle={pagination ? t('flights:flightsTotal', { count: pagination.total }) : undefined}

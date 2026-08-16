@@ -40,10 +40,24 @@ Scope it to what you touched — the full run is ~35 screens × 2 themes:
 
 ```bash
 npm run shots -- after flights flights-modal empty-flights
-npm run shots -- after --mobile          # 390×844, the mobile-first check
+npm run shots -- after --mobile          # 390×844 with touch emulated
+npm run shots -- after --mobile --fold   # just the first screen, chrome in place
 npm run shots -- after --theme=dark      # one theme
 npm run shots -- --help                  # list every target
 ```
+
+**Measure as well as look.** `--audit` walks the same targets and reports what
+the eye misses — horizontal scroll, targets under the minimum for the input
+device (44px touch, 24px pointer), text below 11px, and how much of the column
+each page uses:
+
+```bash
+npm run shots -- --audit            # desktop
+npm run shots -- --audit --mobile   # touch thresholds
+```
+
+A list page that does not report `[100% of column]` is leaving desktop width on
+the table.
 
 Output lands in `.screenshots/<label>/` — gitignored, wiped at the start of each run for that label.
 
@@ -51,11 +65,12 @@ If you changed the tree before capturing `before`, get it back with `git stash` 
 
 ## What the harness is
 
-`scripts/screenshots/` — three files, no API and no backend needed:
+`scripts/screenshots/` — four files, no API and no backend needed:
 
 | File | Holds |
 |---|---|
 | `capture.mjs` | CLI, dev-server bootstrap, browser, the capture itself |
+| `audit.mjs` | the measurements behind `--audit` |
 | `targets.mjs` | the list of screens, and how to reach each one |
 | `fixtures.mjs` | the API responses, keyed by path |
 
@@ -67,10 +82,10 @@ Look for the things only a picture shows:
 
 - **Both themes.** Light-only classes look fine until the dark shot. Every light class needs its `dark:` counterpart.
 - **Empty and error states**, not just the happy path — `empty-*` and `error-*` targets exist for this.
-- **The page column.** Does it match its neighbours? Content is 960px, dashboard 1280px, forms 640px.
+- **The page column.** A list page fills it; only prose (960px) and forms (640px) are bound narrower. Check `--audit`'s `[% of column]`.
 - **Icons.** lucide, one size per role. An emoji in a shot is a finding.
 - **Raw keys.** `nightNotApplicable` or `MEDICAL_CLASS_2` on screen means a missing translation or an untranslated enum.
-- **Mobile.** `--mobile` for anything touching layout; the app is mobile-first and the bottom nav eats 56px.
+- **Mobile.** `--mobile` for anything touching layout; the app is mobile-first and the bottom nav eats 56px. Note that a full-page capture paints fixed chrome once, at the top — so the header and bottom nav land mid-image. `--fold` is the one that shows them where they really sit.
 
 A shot that prints `⚠` in the run output hit a page error — that is a bug in the change, not in the harness.
 

@@ -60,7 +60,7 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? t('dashboard:greeting.morning') : hour < 18 ? t('dashboard:greeting.afternoon') : t('dashboard:greeting.evening');
 
   return (
-    <PageWrapper maxWidth="dashboard">
+    <PageWrapper maxWidth="list">
       {/* Hero greeting */}
       <div className="hero-greeting mb-6">
         <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -122,7 +122,7 @@ export default function DashboardPage() {
                   onClick={() => navigate('/credentials')}
                 >
                   <span
-                    className={`inline-flex items-center gap-2 min-w-0 ${
+                    className={`inline-flex items-start gap-2 min-w-0 text-left ${
                       isExpired ? 'text-red-800 dark:text-red-300' : 'text-amber-800 dark:text-amber-300'
                     }`}
                   >
@@ -131,7 +131,7 @@ export default function DashboardPage() {
                     ) : (
                       <TimerReset className="w-4 h-4 shrink-0" aria-hidden="true" />
                     )}
-                    <span className="truncate">
+                    <span className="min-w-0">
                       <strong>{t(`credentials:types.${cred.credentialType}`, { defaultValue: cred.credentialType.replace(/_/g, ' ') })}</strong>
                       {' '}{isExpired ? t('dashboard:credentialAlert.expired', { days: Math.abs(days) }) : t('dashboard:credentialAlert.expiresSoon', { days })}
                     </span>
@@ -226,7 +226,7 @@ export default function DashboardPage() {
                     style={{ height: minutes > 0 ? `${Math.max(pct, 4)}%` : '2px' }}
                     title={`${label}: ${fmtDuration(minutes)} · ${m.flights ?? 0} ${t('common:flights')}`}
                   />
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{label}</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500 truncate">{label}</span>
                 </div>
               );
             })}

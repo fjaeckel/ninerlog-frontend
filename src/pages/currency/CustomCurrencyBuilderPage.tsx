@@ -215,7 +215,7 @@ export default function CustomCurrencyBuilderPage() {
   const canSave = !!current.input && !current.error;
 
   return (
-    <PageWrapper maxWidth="dashboard" className="space-y-4">
+    <PageWrapper maxWidth="list" className="space-y-4">
       <div className="flex items-center gap-3">
         <Link to="/currency" className="btn-ghost btn-sm" data-testid="back-to-currency">
           <ArrowLeft className="w-4 h-4" aria-hidden="true" />
@@ -330,11 +330,11 @@ export default function CustomCurrencyBuilderPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 {/* Mode toggle */}
-                <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5" role="tablist" aria-label="Editor mode">
+                <div className="segmented" role="tablist" aria-label={t('customCurrency.editorMode')}>
                   <button
                     type="button"
                     onClick={() => switchMode('blocks')}
-                    className={`text-xs px-2.5 py-1 rounded-md inline-flex items-center gap-1.5 ${mode === 'blocks' ? 'bg-sky-500 text-white' : 'text-slate-600 dark:text-slate-300'}`}
+                    className="segment"
                     data-testid="mode-blocks"
                     aria-selected={mode === 'blocks'}
                     role="tab"
@@ -344,7 +344,7 @@ export default function CustomCurrencyBuilderPage() {
                   <button
                     type="button"
                     onClick={() => switchMode('yaml')}
-                    className={`text-xs px-2.5 py-1 rounded-md inline-flex items-center gap-1.5 ${mode === 'yaml' ? 'bg-sky-500 text-white' : 'text-slate-600 dark:text-slate-300'}`}
+                    className="segment"
                     data-testid="mode-yaml"
                     aria-selected={mode === 'yaml'}
                     role="tab"

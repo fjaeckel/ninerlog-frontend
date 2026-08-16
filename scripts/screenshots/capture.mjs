@@ -7,7 +7,9 @@
  *   npm run shots -- before                    every target, light + dark
  *   npm run shots -- after flights aircraft    only those targets
  *   npm run shots -- after --mobile            iPhone-sized viewport
+ *   npm run shots -- after --mobile --fold     just the first screen, chrome in place
  *   npm run shots -- after --theme=dark        one theme
+ *   npm run shots -- --audit [--mobile]        measure instead of capture
  *
  * Output goes to `.screenshots/<label>/<target>.<theme>.png` (gitignored).
  * Capture `before` on the current main, make the change, capture `after`, and
@@ -24,14 +26,18 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { user, bodyFor } from './fixtures.mjs';
 import { TARGETS, FAILING_PATHS, EMPTY_BODIES } from './targets.mjs';
+import { collectReport, formatReport, TARGET_MIN } from './audit.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
 const BASE_URL = process.env.SHOT_BASE_URL || 'http://localhost:5173';
 
+// `hasTouch`/`isMobile` are what make `(pointer: coarse)` and `(hover: none)`
+// match — without them a "mobile" capture is just a narrow desktop, and every
+// touch-only rule in the stylesheet is silently skipped.
 const VIEWPORTS = {
-  desktop: { width: 1440, height: 1100 },
-  mobile: { width: 390, height: 844 },
+  desktop: { viewport: { width: 1440, height: 1100 }, hasTouch: false, isMobile: false },
+  mobile: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true },
 };
 
 // ── CLI ──────────────────────────────────────────────────────────────────────
@@ -43,15 +49,25 @@ const flagValue = (name) => {
 };
 const positional = argv.filter((a) => !a.startsWith('--'));
 
-const label = positional[0] || 'current';
-const wanted = positional.slice(1);
+const label = auditOnlyArg(positional) ? 'audit' : positional[0] || 'current';
+const wanted = auditOnlyArg(positional) ? positional : positional.slice(1);
+function auditOnlyArg(list) {
+  return argv.includes('--audit') && list.every((name) => TARGETS.some((t) => t.name === name));
+}
 const themes = (flagValue('theme') || 'light,dark').split(',');
-const viewport = flags.has('--mobile') ? VIEWPORTS.mobile : VIEWPORTS.desktop;
+const device = flags.has('--mobile') ? VIEWPORTS.mobile : VIEWPORTS.desktop;
+const viewport = device.viewport;
+// A full-page capture paints `position: fixed` chrome once, at the scroll
+// position it had — so the header and the mobile bottom nav land in the middle
+// of a tall screenshot. `--fold` captures the viewport instead, which is the
+// only way to review the chrome where it actually sits.
+const foldOnly = flags.has('--fold');
+const auditOnly = flags.has('--audit');
 const outDir = join(ROOT, '.screenshots', label);
 
 if (flags.has('--help')) {
   console.log(
-    'Usage: npm run shots -- <label> [target...] [--theme=light,dark] [--mobile]\n\n' +
+    'Usage: npm run shots -- <label> [target...] [--theme=light,dark] [--mobile] [--fold]\n\n' +
       'Targets:\n  ' +
       TARGETS.map((t) => t.name).join('\n  ')
   );
@@ -127,7 +143,7 @@ async function launchBrowser() {
 // ── Capture ──────────────────────────────────────────────────────────────────
 async function shoot(browser, target, theme) {
   const context = await browser.newContext({
-    viewport,
+    ...device,
     deviceScaleFactor: 2,
     colorScheme: theme,
     locale: 'en-GB',
@@ -190,12 +206,22 @@ async function shoot(browser, target, theme) {
     }
   }
 
+  if (auditOnly) {
+    const min = device.hasTouch ? TARGET_MIN.touch : TARGET_MIN.pointer;
+    const report = await page.evaluate(collectReport, min);
+    const { text, clean } = formatReport(target.name, report, { mobile: flags.has('--mobile') });
+    console.log(text);
+    await context.close();
+    return clean ? [] : problems;
+  }
+
   // Freeze animation so two captures of the same screen are byte-comparable.
   await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' });
   await page.waitForTimeout(250);
 
   mkdirSync(outDir, { recursive: true });
-  await page.screenshot({ path: join(outDir, `${target.name}.${theme}.png`), fullPage: true });
+  const suffix = foldOnly ? `${theme}.fold` : theme;
+  await page.screenshot({ path: join(outDir, `${target.name}.${suffix}.png`), fullPage: !foldOnly });
   await context.close();
   return problems;
 }
@@ -206,20 +232,26 @@ let failures = 0;
 try {
   devServer = await startDevServer();
   const browser = await launchBrowser();
-  rmSync(outDir, { recursive: true, force: true });
+  if (!auditOnly) rmSync(outDir, { recursive: true, force: true });
 
   for (const target of selected) {
-    for (const theme of themes) {
+    for (const theme of auditOnly ? ['light'] : themes) {
       const problems = await shoot(browser, target, theme);
-      const status = problems.length ? `⚠ ${problems[0]}` : 'ok';
-      process.stdout.write(`  ${target.name}.${theme}  ${status}\n`);
+      if (!auditOnly) {
+        const status = problems.length ? `⚠ ${problems[0]}` : 'ok';
+        process.stdout.write(`  ${target.name}.${theme}  ${status}\n`);
+      }
       if (problems.length) failures++;
     }
   }
 
   await browser.close();
-  console.log(`\n${selected.length * themes.length} shots → .screenshots/${label}/`);
-  if (failures) console.log(`${failures} shot(s) reported a page error — check them before shipping.`);
+  if (auditOnly) {
+    console.log(`\n${selected.length} screens audited at ${viewport.width}×${viewport.height}.`);
+  } else {
+    console.log(`\n${selected.length * themes.length} shots → .screenshots/${label}/`);
+    if (failures) console.log(`${failures} shot(s) reported a page error — check them before shipping.`);
+  }
 } finally {
   devServer?.kill();
 }

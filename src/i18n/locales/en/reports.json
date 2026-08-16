@@ -205,7 +205,8 @@
     "flightCount_one": "{{count}} flight",
     "flightCount_other": "{{count}} flights",
     "failedToLoad": "Failed to load map data",
-    "failedToLoadMessage": "An error occurred while loading your flight routes. Please try again."
+    "failedToLoadMessage": "An error occurred while loading your flight routes. Please try again.",
+    "viewMode": "Map view"
   },
   "export": {
     "title": "Export",

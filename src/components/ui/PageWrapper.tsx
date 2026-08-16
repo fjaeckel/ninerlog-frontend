@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../lib/cn';
 
 interface PageWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
-  maxWidth?: 'form' | 'content' | 'dashboard' | 'wide';
+  maxWidth?: 'form' | 'content' | 'list';
   className?: string;
   children: React.ReactNode;
 }
@@ -11,16 +11,26 @@ interface PageWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
  * The page column.
  *
  * Widths come from the design-system tokens, not from ad-hoc `max-w-*`
- * classes, so two list pages never sit at different widths. Horizontal
- * padding belongs to the app shell (`<main>`), which is why there is none
- * here — adding `px-4` on a page double-pads it on phones.
+ * classes, so two pages of the same kind never sit at different widths.
+ * Horizontal padding belongs to the app shell (`<main>`), which is why there
+ * is none here — adding `px-4` on a page double-pads it on phones.
+ *
+ * There are two shapes, and which one a page gets follows from what is on it:
+ *
+ * - **Reading and entering** — prose, wizards, forms. Bound by the measure a
+ *   line of text can be read at, not by the window.
+ * - **Scanning records** — logbook tables, fleet lists, dashboards, charts.
+ *   These are read by comparing rows and columns, so every pixel of a wide
+ *   monitor is a pixel the reader does not have to scroll or truncate. They
+ *   fill the column.
  */
 const maxWidthMap = {
+  /** A single column of fields. */
   form: 'max-w-[640px]',
+  /** Prose and step-by-step flows — capped at a comfortable measure. */
   content: 'max-w-[960px]',
-  dashboard: 'max-w-[1280px]',
-  /** Data-dense tables that genuinely need the extra room on large screens. */
-  wide: 'max-w-[960px] xl:max-w-[1600px]',
+  /** Tables, record lists, dashboards — the full width of the shell. */
+  list: 'max-w-none',
 } as const;
 
 export function PageWrapper({ maxWidth = 'content', className, children, ...rest }: PageWrapperProps) {

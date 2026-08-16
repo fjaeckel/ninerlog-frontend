@@ -34,7 +34,7 @@ export default function FlightDetailPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper role="status" aria-label={t('detail.loadingFlightDetails')}>
+      <PageWrapper maxWidth="list" role="status" aria-label={t('detail.loadingFlightDetails')}>
         <div className="animate-pulse space-y-6">
           <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
           <div className="h-8 w-64 bg-slate-200 dark:bg-slate-700 rounded" />
@@ -53,7 +53,7 @@ export default function FlightDetailPage() {
 
   if (error || !flight) {
     return (
-      <PageWrapper>
+      <PageWrapper maxWidth="list">
         <ErrorState
           title={t('detail.flightNotFound')}
           message={t('detail.flightNotFoundMessage')}
@@ -148,7 +148,7 @@ export default function FlightDetailPage() {
   ].filter((flag) => flag.on);
 
   return (
-    <PageWrapper maxWidth="wide">
+    <PageWrapper maxWidth="list">
       <button
         onClick={() => navigate(flightsListPath)}
         className="mb-3 inline-flex min-h-[44px] items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"

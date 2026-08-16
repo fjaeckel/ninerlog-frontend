@@ -43,7 +43,7 @@ export default function LicensesPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper>
+      <PageWrapper maxWidth="list">
         <SkeletonList rows={3} />
       </PageWrapper>
     );
@@ -51,14 +51,14 @@ export default function LicensesPage() {
 
   if (error) {
     return (
-      <PageWrapper>
+      <PageWrapper maxWidth="list">
         <ErrorState title={t('error')} message={t('errorLoading')} />
       </PageWrapper>
     );
   }
 
   return (
-    <PageWrapper>
+    <PageWrapper maxWidth="list">
       <PageHeader
         title={t('title')}
         titleAdornment={<HelpLink topic="licenses" />}

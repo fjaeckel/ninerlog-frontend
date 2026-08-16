@@ -107,7 +107,7 @@ export default function CurrencyPage() {
   const isLoading = currencyLoading || credentialsLoading;
 
   return (
-    <PageWrapper>
+    <PageWrapper maxWidth="list">
       <PageHeader
         title={t('title')}
         subtitle={t('subtitle')}

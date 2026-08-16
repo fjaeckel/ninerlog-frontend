@@ -159,7 +159,7 @@ export default function FlightSearchBar({ value, onChange, error }: FlightSearch
           )}
           <button
             onClick={() => setShowHelp((s) => !s)}
-            className={`min-w-[40px] min-h-[44px] flex items-center justify-center transition-colors ${
+            className={`min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors ${
               showHelp ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
             }`}
             aria-label={t('flights:searchHelpToggle')}

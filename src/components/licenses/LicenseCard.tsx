@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Pencil, Trash2 } from 'lucide-react';
+import { BookOpen, Pencil, Plus, Trash2 } from 'lucide-react';
 import { License } from '../../stores/licenseStore';
 import { isPast, differenceInDays } from 'date-fns';
 import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateClassRating } from '../../hooks/useClassRatings';
@@ -28,7 +28,7 @@ function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs">
         <span className="font-medium text-red-600 dark:text-red-400">{formatted}</span>
-        <span className="badge-expired text-[10px]">{t('card.expired')}</span>
+        <span className="badge-expired text-xs">{t('card.expired')}</span>
       </span>
     );
   }
@@ -36,7 +36,7 @@ function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs">
         <span className="font-medium text-amber-600 dark:text-amber-400">{formatted}</span>
-        <span className="badge-expiring text-[10px]">{t('card.expiresInDays', { days: daysLeft })}</span>
+        <span className="badge-expiring text-xs">{t('card.expiresInDays', { days: daysLeft })}</span>
       </span>
     );
   }
@@ -183,10 +183,8 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                 {t('classRatings')}
               </h4>
               {!showAddForm && (
-                <button
-                  onClick={() => setShowAddForm(true)}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                >
+                <button onClick={() => setShowAddForm(true)} className="btn-ghost btn-sm text-xs">
+                  <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                   {t('card.addRating')}
                 </button>
               )}
@@ -322,12 +320,12 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
 
         {/* Actions */}
         <div className="flex lg:flex-col gap-2 lg:w-28 lg:shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-700">
-          <button onClick={onEdit} className="btn-secondary btn-sm flex-1">
+          <button onClick={onEdit} className="btn-ghost btn-sm flex-1 lg:w-full lg:flex-none">
             {t('common:edit')}
           </button>
           <button
             onClick={onDelete}
-            className="btn-secondary btn-sm flex-1 hover:bg-red-50 hover:text-red-700 hover:border-red-200 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+            className="btn-ghost btn-sm flex-1 lg:w-full lg:flex-none text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
           >
             {t('common:delete')}
           </button>

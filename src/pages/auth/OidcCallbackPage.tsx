@@ -99,7 +99,7 @@ export default function OidcCallbackPage() {
               <p className="text-center text-sm">
                 <Link
                   to="/login"
-                  className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  className="link"
                 >
                   {t('auth:oidc.backToSignIn')}
                 </Link>

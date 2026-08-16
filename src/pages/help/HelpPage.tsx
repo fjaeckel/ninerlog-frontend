@@ -102,7 +102,7 @@ export default function HelpPage() {
   };
 
   return (
-    <PageWrapper maxWidth="dashboard" className="print:max-w-none print:py-0">
+    <PageWrapper maxWidth="content" className="print:max-w-none print:py-0">
       {/* Header — hidden on print */}
       <div className="mb-6 print:hidden">
         <div className="flex items-center justify-between gap-3">

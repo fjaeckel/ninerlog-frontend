@@ -72,7 +72,7 @@ export default function Layout() {
         role="banner"
       >
         <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <Link to="/dashboard" className="flex items-center gap-2.5 group" aria-label={APP_NAME}>
+          <Link to="/dashboard" className="flex items-center gap-2.5 min-h-11 group" aria-label={APP_NAME}>
             <LogoMark size={32} decorative className="drop-shadow-sm transition-transform group-hover:scale-[1.04] group-active:scale-95" />
             <span className="text-lg font-bold tracking-tight text-gradient-brand">{APP_NAME}</span>
           </Link>
@@ -82,7 +82,7 @@ export default function Layout() {
             title={t('nav:quickLog')}
             aria-label={t('nav:quickLog')}
             className={({ isActive }) =>
-              `lg:hidden inline-flex items-center justify-center w-9 h-9 rounded-full transition-colors tap-none ${
+              `lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-full transition-colors tap-none ${
                 isActive
                   ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/25 dark:text-blue-400'
                   : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'

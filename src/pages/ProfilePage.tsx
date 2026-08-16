@@ -307,7 +307,7 @@ export default function ProfilePage() {
                   type="checkbox"
                   checked={user?.recencyPerModel ?? true}
                   onChange={async (e) => { const value = e.target.checked; try { await updateProfile.mutateAsync({ recencyPerModel: value } as any); updateUser({ recencyPerModel: value }); } catch { /* ignore */ } }}
-                  className="mt-0.5 rounded border-slate-300 dark:border-slate-600"
+                  className="checkbox mt-0.5"
                   data-testid="recency-per-model-toggle"
                 />
                 <span className="text-sm">
@@ -320,7 +320,7 @@ export default function ProfilePage() {
                   type="checkbox"
                   checked={user?.recencyPerRegistration ?? false}
                   onChange={async (e) => { const value = e.target.checked; try { await updateProfile.mutateAsync({ recencyPerRegistration: value } as any); updateUser({ recencyPerRegistration: value }); } catch { /* ignore */ } }}
-                  className="mt-0.5 rounded border-slate-300 dark:border-slate-600"
+                  className="checkbox mt-0.5"
                   data-testid="recency-per-registration-toggle"
                 />
                 <span className="text-sm">
@@ -498,7 +498,7 @@ export default function ProfilePage() {
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('notifications.emailNotifications')}</span>
                     <p className="text-xs text-slate-500 dark:text-slate-400">{t('notifications.masterSwitch')}</p>
                   </div>
-                  <input type="checkbox" checked={notifPrefs.emailEnabled} onChange={(e) => updateNotifPrefs.mutate({ emailEnabled: e.target.checked })} className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                  <input type="checkbox" checked={notifPrefs.emailEnabled} onChange={(e) => updateNotifPrefs.mutate({ emailEnabled: e.target.checked })} className="checkbox" />
                 </label>
 
                 {/* Credentials Group */}
@@ -516,7 +516,7 @@ export default function ProfilePage() {
                           <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
                           <p className="text-xs text-slate-500 dark:text-slate-400">{desc}</p>
                         </div>
-                        <input type="checkbox" checked={notifPrefs.enabledCategories.includes(cat)} disabled={!notifPrefs.emailEnabled} onChange={(e) => { const cats = e.target.checked ? [...notifPrefs.enabledCategories, cat] : notifPrefs.enabledCategories.filter((c) => c !== cat); updateNotifPrefs.mutate({ enabledCategories: cats }); }} className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50" />
+                        <input type="checkbox" checked={notifPrefs.enabledCategories.includes(cat)} disabled={!notifPrefs.emailEnabled} onChange={(e) => { const cats = e.target.checked ? [...notifPrefs.enabledCategories, cat] : notifPrefs.enabledCategories.filter((c) => c !== cat); updateNotifPrefs.mutate({ enabledCategories: cats }); }} className="checkbox" />
                       </label>
                     ))}
                   </div>
@@ -539,7 +539,7 @@ export default function ProfilePage() {
                           <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
                           <p className="text-xs text-slate-500 dark:text-slate-400">{desc}</p>
                         </div>
-                        <input type="checkbox" checked={notifPrefs.enabledCategories.includes(cat)} disabled={!notifPrefs.emailEnabled} onChange={(e) => { const cats = e.target.checked ? [...notifPrefs.enabledCategories, cat] : notifPrefs.enabledCategories.filter((c) => c !== cat); updateNotifPrefs.mutate({ enabledCategories: cats }); }} className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50" />
+                        <input type="checkbox" checked={notifPrefs.enabledCategories.includes(cat)} disabled={!notifPrefs.emailEnabled} onChange={(e) => { const cats = e.target.checked ? [...notifPrefs.enabledCategories, cat] : notifPrefs.enabledCategories.filter((c) => c !== cat); updateNotifPrefs.mutate({ enabledCategories: cats }); }} className="checkbox" />
                       </label>
                     ))}
                   </div>

@@ -113,7 +113,7 @@ export default function PeoplePage() {
 
   if (isLoading) {
     return (
-      <PageWrapper>
+      <PageWrapper maxWidth="list">
         <SkeletonList rows={4} />
       </PageWrapper>
     );
@@ -121,14 +121,14 @@ export default function PeoplePage() {
 
   if (error) {
     return (
-      <PageWrapper>
+      <PageWrapper maxWidth="list">
         <ErrorState title={t('failedToLoad')} message={t('failedToLoadMessage')} />
       </PageWrapper>
     );
   }
 
   return (
-    <PageWrapper>
+    <PageWrapper maxWidth="list">
       <PageHeader
         title={t('title')}
         subtitle={t('subtitle')}

@@ -24,14 +24,14 @@ export default function AdminPage() {
 
   if (!user?.isAdmin) {
     return (
-      <PageWrapper maxWidth="dashboard">
+      <PageWrapper maxWidth="list">
         <EmptyState icon={Lock} title={t('admin.accessDenied')} description={t('admin.noPrivileges')} />
       </PageWrapper>
     );
   }
 
   return (
-    <PageWrapper maxWidth="dashboard">
+    <PageWrapper maxWidth="list">
       <PageHeader
         title={t('admin.title')}
         subtitle={t('admin.subtitle')}

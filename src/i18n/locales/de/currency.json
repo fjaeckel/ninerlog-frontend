@@ -123,7 +123,8 @@
     "emptyTitle": "Erstellen Sie eigene Currency-Regeln",
     "emptyHint": "Kombinieren Sie Flüge, Luftfahrzeuge und Anforderungen zu Regeln, die wir für Sie verfolgen — und teilen Sie sie.",
     "deleteTitle": "Diese Regel löschen?",
-    "deleteDescription": "„{{name}}“ wird dauerhaft entfernt. Das lässt sich nicht rückgängig machen."
+    "deleteDescription": "„{{name}}“ wird dauerhaft entfernt. Das lässt sich nicht rückgängig machen.",
+    "editorMode": "Editor-Modus"
   },
   "dayLabel": "Tag",
   "nightLabel": "Nacht",

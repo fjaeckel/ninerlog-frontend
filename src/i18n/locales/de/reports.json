@@ -205,7 +205,8 @@
     "flightCount_one": "{{count}} Flug",
     "flightCount_other": "{{count}} Flüge",
     "failedToLoad": "Kartendaten konnten nicht geladen werden",
-    "failedToLoadMessage": "Beim Laden Ihrer Flugrouten ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+    "failedToLoadMessage": "Beim Laden Ihrer Flugrouten ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+    "viewMode": "Kartenansicht"
   },
   "export": {
     "title": "Exportieren",

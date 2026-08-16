@@ -138,7 +138,7 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
               type="checkbox"
               checked={value === 'true'}
               onChange={(e) => onChange(field.name, e.target.checked ? 'true' : 'false')}
-              className="rounded"
+              className="checkbox"
             />
             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
               {field.label}
@@ -359,7 +359,7 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
           type="checkbox"
           checked={enabled}
           onChange={(e) => setEnabled(e.target.checked)}
-          className="rounded"
+          className="checkbox"
         />
         <span className="text-sm text-slate-700 dark:text-slate-300">{t('form.enabled')}</span>
       </label>

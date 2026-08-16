@@ -123,7 +123,8 @@
     "emptyTitle": "Build your own currency rules",
     "emptyHint": "Combine flights, aircraft and requirements into rules we track for you — and share them.",
     "deleteTitle": "Delete this rule?",
-    "deleteDescription": "“{{name}}” will be permanently removed. This cannot be undone."
+    "deleteDescription": "“{{name}}” will be permanently removed. This cannot be undone.",
+    "editorMode": "Editor mode"
   },
   "dayLabel": "Day",
   "nightLabel": "Night",

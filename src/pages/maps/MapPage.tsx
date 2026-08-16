@@ -34,7 +34,7 @@ export default function MapPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper maxWidth="dashboard">
+      <PageWrapper maxWidth="list">
         <SkeletonList rows={3} />
       </PageWrapper>
     );
@@ -42,7 +42,7 @@ export default function MapPage() {
 
   if (isError) {
     return (
-      <PageWrapper maxWidth="dashboard">
+      <PageWrapper maxWidth="list">
         <ErrorState title={t('map.failedToLoad')} message={t('map.failedToLoadMessage')} />
       </PageWrapper>
     );
@@ -72,7 +72,7 @@ export default function MapPage() {
   const maxFlights = Math.max(...stats.map((s) => s.totalFlights), 1);
 
   return (
-    <PageWrapper maxWidth="dashboard">
+    <PageWrapper maxWidth="list">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="page-title">{t('map.title')}</h1>
@@ -82,25 +82,11 @@ export default function MapPage() {
               : t('map.noRoutes')}
           </p>
         </div>
-        <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <button
-            onClick={() => setView('routes')}
-            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-              view === 'routes'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-            }`}
-          >
-            Routes
+        <div className="segmented" role="group" aria-label={t('map.viewMode')}>
+          <button onClick={() => setView('routes')} aria-pressed={view === 'routes'} className="segment">
+            {t('map.routes')}
           </button>
-          <button
-            onClick={() => setView('heatmap')}
-            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-              view === 'heatmap'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-            }`}
-          >
+          <button onClick={() => setView('heatmap')} aria-pressed={view === 'heatmap'} className="segment">
             {t('map.heatmap')}
           </button>
         </div>

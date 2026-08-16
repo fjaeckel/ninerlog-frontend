@@ -403,7 +403,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           <button
             type="button"
             onClick={handleAutoFill}
-            className="btn-primary btn-sm text-xs shrink-0"
+            className="btn-primary btn-sm text-xs shrink-0 min-w-11"
           >
             {t('form.fill')}
           </button>
@@ -877,7 +877,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         <button
           type="button"
           onClick={() => toggleSection('instrument')}
-          className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3 w-full text-left"
+          className="flex items-center gap-2 min-h-11 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-1 w-full text-left"
         >
           {expandedSections.instrument ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           {t('sections.instrument')}
@@ -994,7 +994,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               {...register('isIpc')}
               type="checkbox"
               id="isIpc"
-              className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+              className="checkbox"
             />
             {t('form.ipcLabel')}
           </label>
@@ -1007,7 +1007,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         <button
           type="button"
           onClick={() => toggleSection('training')}
-          className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3 w-full text-left"
+          className="flex items-center gap-2 min-h-11 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-1 w-full text-left"
         >
           {expandedSections.training ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           {t('sections.training')}
@@ -1072,21 +1072,21 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           )}
 
           <div className="grid grid-cols-2 gap-4 mt-4">
-            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+            <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
               <input
                 {...register('isFlightReview')}
                 type="checkbox"
                 id="isFlightReview"
-                className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+                className="checkbox"
               />
               {t('form.flightReviewLabel')}
             </label>
-            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+            <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
               <input
                 {...register('isProficiencyCheck')}
                 type="checkbox"
                 id="isProficiencyCheck"
-                className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+                className="checkbox"
               />
               {t('form.proficiencyCheckLabel')}
             </label>
