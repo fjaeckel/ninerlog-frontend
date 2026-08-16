@@ -327,7 +327,11 @@ export default function DashboardPage() {
                   <span className="font-medium font-mono text-slate-800 dark:text-slate-100 whitespace-nowrap">
                     {flight.arrivalIcao || '—'}
                   </span>
-                  <span className="ml-2 text-sm text-slate-500 dark:text-slate-400 truncate">{flight.aircraftReg}</span>
+                  {/* On a phone the row is route, time and date — a registration
+                      squeezed to "D-E…" tells the reader nothing. */}
+                  <span className="ml-2 hidden sm:inline text-sm font-mono text-slate-500 dark:text-slate-400 truncate">
+                    {flight.aircraftReg}
+                  </span>
                   {flight.signatureId && (
                     <ShieldCheck
                       className="w-3.5 h-3.5 text-green-600 dark:text-green-400 shrink-0"
