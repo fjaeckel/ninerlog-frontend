@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Users, Pencil, Trash2, Search } from 'lucide-react';
+import { Users, Pencil, Plus, Trash2, Search } from 'lucide-react';
 import { PageWrapper, PageHeader } from '../../components/ui';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
@@ -113,7 +113,7 @@ export default function PeoplePage() {
 
   if (isLoading) {
     return (
-      <PageWrapper>
+      <PageWrapper maxWidth="list">
         <SkeletonList rows={4} />
       </PageWrapper>
     );
@@ -121,20 +121,21 @@ export default function PeoplePage() {
 
   if (error) {
     return (
-      <PageWrapper>
+      <PageWrapper maxWidth="list">
         <ErrorState title={t('failedToLoad')} message={t('failedToLoadMessage')} />
       </PageWrapper>
     );
   }
 
   return (
-    <PageWrapper>
+    <PageWrapper maxWidth="list">
       <PageHeader
         title={t('title')}
         subtitle={t('subtitle')}
         action={
           <button onClick={openCreate} className="btn-primary whitespace-nowrap">
-            + {t('addPerson')}
+            <Plus className="w-4 h-4" aria-hidden="true" />
+            {t('addPerson')}
           </button>
         }
       />
@@ -188,7 +189,7 @@ export default function PeoplePage() {
 
       {(contacts?.length ?? 0) === 0 ? (
         <EmptyState
-          icon={<Users className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600" />}
+          icon={Users}
           title={t('empty.title')}
           description={t('empty.description')}
         />

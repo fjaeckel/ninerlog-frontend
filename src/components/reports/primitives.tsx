@@ -53,7 +53,7 @@ export function ReportCard<T>({ title, hint, children, className, table, action 
               aria-pressed={showTable}
               aria-controls={panelId}
               title={showTable ? t('view.showChart') : t('view.showTable')}
-              className="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-700 transition-colors"
+              className="inline-flex items-center justify-center w-11 h-11 -my-2 rounded-md text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 transition-colors"
             >
               {showTable ? <BarChart3 className="w-4 h-4" /> : <Table2 className="w-4 h-4" />}
               <span className="sr-only">{showTable ? t('view.showChart') : t('view.showTable')}</span>

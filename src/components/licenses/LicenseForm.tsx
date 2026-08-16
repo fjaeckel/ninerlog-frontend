@@ -215,7 +215,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
           {...register('requiresSeparateLogbook')}
           type="checkbox"
           id="requiresSeparateLogbook"
-          className="rounded border-slate-300 dark:border-slate-600"
+          className="checkbox"
         />
         <label htmlFor="requiresSeparateLogbook" className="text-sm text-slate-700 dark:text-slate-300">
           {t('form.requiresSeparateLogbook')}

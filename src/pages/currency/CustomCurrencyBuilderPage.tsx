@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft, Plus, Save, Trash2, Share2, Copy, Check, Play, AlertCircle, Download, X, Blocks, Code2,
 } from 'lucide-react';
@@ -11,6 +12,7 @@ import {
 import { ruleToYaml, yamlToInput, STARTER_YAML, YamlRuleError } from '../../lib/customCurrencyYaml';
 import { CustomCurrencyCard } from '../../components/currency/CustomCurrencyCard';
 import { CustomCurrencyBlockEditor } from '../../components/currency/CustomCurrencyBlockEditor';
+import { PageWrapper } from '../../components/ui/PageWrapper';
 import type {
   CustomCurrencyEvaluation, CustomRuleInput, CustomCurrencyRule,
 } from '../../types/customCurrency';
@@ -47,6 +49,7 @@ function parseShareToken(raw: string): string | null {
 }
 
 export default function CustomCurrencyBuilderPage() {
+  const { t } = useTranslation('currency');
   const [params, setParams] = useSearchParams();
   const shareParam = params.get('share');
   const ruleParam = params.get('rule');
@@ -212,12 +215,13 @@ export default function CustomCurrencyBuilderPage() {
   const canSave = !!current.input && !current.error;
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-4">
+    <PageWrapper maxWidth="list" className="space-y-4">
       <div className="flex items-center gap-3">
-        <Link to="/currency" className="btn-ghost inline-flex items-center gap-1.5 text-sm" data-testid="back-to-currency">
-          <ArrowLeft className="w-4 h-4" /> Currency
+        <Link to="/currency" className="btn-ghost btn-sm" data-testid="back-to-currency">
+          <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+          {t('title')}
         </Link>
-        <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Custom currency builder</h1>
+        <h1 className="page-title">{t('customCurrency.builderTitle')}</h1>
       </div>
 
       {/* Incoming share link */}
@@ -228,8 +232,8 @@ export default function CustomCurrencyBuilderPage() {
               <p className="font-semibold text-slate-800 dark:text-slate-100 inline-flex items-center gap-2">
                 <Download className="w-4 h-4" /> Someone shared a currency rule with you
               </p>
-              {sharedRule.isLoading && <p className="text-sm text-slate-500 mt-1">Loading…</p>}
-              {sharedRule.isError && <p className="text-sm text-red-600 mt-1">This share link is no longer valid.</p>}
+              {sharedRule.isLoading && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Loading…</p>}
+              {sharedRule.isError && <p className="text-sm text-red-600 dark:text-red-400 mt-1">This share link is no longer valid.</p>}
               {sharedRule.data && (
                 <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
                   {sharedRule.data.emoji} <strong>{sharedRule.data.name}</strong>
@@ -265,7 +269,7 @@ export default function CustomCurrencyBuilderPage() {
           </button>
 
           <div className="space-y-2">
-            {isLoading && <p className="text-sm text-slate-500">Loading your rules…</p>}
+            {isLoading && <p className="text-sm text-slate-500 dark:text-slate-400">Loading your rules…</p>}
             {rules && rules.length === 0 && (
               <p className="text-sm text-slate-500 dark:text-slate-400">No custom rules yet. Create one, or import a shared rule below.</p>
             )}
@@ -315,7 +319,7 @@ export default function CustomCurrencyBuilderPage() {
             >
               <Download className="w-4 h-4" /> Import
             </button>
-            {importRule.isError && <p className="text-xs text-red-600">{(importRule.error as Error).message}</p>}
+            {importRule.isError && <p className="text-xs text-red-600 dark:text-red-400">{(importRule.error as Error).message}</p>}
           </div>
         </aside>
 
@@ -326,11 +330,11 @@ export default function CustomCurrencyBuilderPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 {/* Mode toggle */}
-                <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 p-0.5" role="tablist" aria-label="Editor mode">
+                <div className="segmented" role="tablist" aria-label={t('customCurrency.editorMode')}>
                   <button
                     type="button"
                     onClick={() => switchMode('blocks')}
-                    className={`text-xs px-2.5 py-1 rounded-md inline-flex items-center gap-1.5 ${mode === 'blocks' ? 'bg-sky-500 text-white' : 'text-slate-600 dark:text-slate-300'}`}
+                    className="segment"
                     data-testid="mode-blocks"
                     aria-selected={mode === 'blocks'}
                     role="tab"
@@ -340,7 +344,7 @@ export default function CustomCurrencyBuilderPage() {
                   <button
                     type="button"
                     onClick={() => switchMode('yaml')}
-                    className={`text-xs px-2.5 py-1 rounded-md inline-flex items-center gap-1.5 ${mode === 'yaml' ? 'bg-sky-500 text-white' : 'text-slate-600 dark:text-slate-300'}`}
+                    className="segment"
                     data-testid="mode-yaml"
                     aria-selected={mode === 'yaml'}
                     role="tab"
@@ -348,11 +352,11 @@ export default function CustomCurrencyBuilderPage() {
                     <Code2 className="w-3.5 h-3.5" /> YAML
                   </button>
                 </div>
-                <span className="text-xs text-slate-400">{editingId ? 'Editing' : 'New'}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">{editingId ? 'Editing' : 'New'}</span>
               </div>
 
               {modeError && (
-                <p className="text-xs text-red-600 inline-flex items-start gap-1.5" data-testid="mode-error">
+                <p className="text-xs text-red-600 dark:text-red-400 inline-flex items-start gap-1.5" data-testid="mode-error">
                   <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {modeError}
                 </p>
               )}
@@ -371,7 +375,7 @@ export default function CustomCurrencyBuilderPage() {
               )}
 
               {current.error && (
-                <p className="text-xs text-red-600 inline-flex items-start gap-1.5" data-testid="rule-error">
+                <p className="text-xs text-red-600 dark:text-red-400 inline-flex items-start gap-1.5" data-testid="rule-error">
                   <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {current.error}
                 </p>
               )}
@@ -394,13 +398,13 @@ export default function CustomCurrencyBuilderPage() {
                     <button type="button" onClick={handleShareToggle} disabled={setShare.isPending} className="btn-ghost text-sm inline-flex items-center gap-1.5" data-testid="toggle-share">
                       <Share2 className="w-4 h-4" /> {currentRule?.rule.isShared ? 'Stop sharing' : 'Share'}
                     </button>
-                    <button type="button" onClick={handleDelete} disabled={deleteRule.isPending} className="btn-ghost text-sm text-red-600 inline-flex items-center gap-1.5" data-testid="delete-rule">
+                    <button type="button" onClick={handleDelete} disabled={deleteRule.isPending} className="btn-ghost text-sm text-red-600 dark:text-red-400 inline-flex items-center gap-1.5" data-testid="delete-rule">
                       <Trash2 className="w-4 h-4" /> Delete
                     </button>
                   </>
                 )}
               </div>
-              {saveError && <p className="text-xs text-red-600" data-testid="save-error">{saveError}</p>}
+              {saveError && <p className="text-xs text-red-600 dark:text-red-400" data-testid="save-error">{saveError}</p>}
 
               {shareLink && currentRule?.rule.isShared && (
                 <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2 flex items-center gap-2" data-testid="share-link-box">
@@ -429,15 +433,15 @@ export default function CustomCurrencyBuilderPage() {
                     }}
                   />
                 ) : (
-                  <p className="text-xs text-slate-400">{preview.isPending ? 'Evaluating against your flights…' : 'Preview updates as you edit.'}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{preview.isPending ? 'Evaluating against your flights…' : 'Preview updates as you edit.'}</p>
                 )
               ) : (
-                <p className="text-sm text-slate-400">Fix the rule to see a preview.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Fix the rule to see a preview.</p>
               )}
             </div>
           </div>
         </section>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

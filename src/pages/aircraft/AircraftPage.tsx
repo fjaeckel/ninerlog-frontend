@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PlaneTakeoff, Plus } from 'lucide-react';
 import { useAircraft, useAircraftStats, useDeleteAircraft } from '../../hooks/useAircraft';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useRecencyPrefs } from '../../hooks/useRecencyPrefs';
 import { recencyLevel, RECENCY_DOT_CLASSES, RECENCY_REQUIRED_LANDINGS } from '../../lib/recency';
 import AircraftForm from '../../components/aircraft/AircraftForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { SkeletonGrid } from '../../components/ui/Skeleton';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { FormModal } from '../../components/ui/FormModal';
+import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
+import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import HelpLink from '../../components/ui/HelpLink';
 
@@ -40,85 +44,54 @@ export default function AircraftPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl py-6">
-        <SkeletonGrid count={4} />
-      </div>
+      <PageWrapper maxWidth="list">
+        <SkeletonList rows={3} />
+      </PageWrapper>
     );
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-7xl py-6">
-        <ErrorState
-          title={t('errorTitle')}
-          message={t('errorMessage')}
-        />
-      </div>
+      <PageWrapper maxWidth="list">
+        <ErrorState title={t('errorTitle')} message={t('errorMessage')} />
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl py-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <div>
-          <h1 className="page-title">{t('title')}</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-            {t('subtitle')}
-            <HelpLink topic="aircraft" />
-          </p>
-        </div>
-        <button
-          onClick={() => { setEditingId(null); setShowForm(true); }}
-          className="btn-primary self-start sm:self-auto"
-        >
-          + {t('addAircraft')}
-        </button>
-      </div>
+    <PageWrapper maxWidth="list">
+      <PageHeader
+        title={t('title')}
+        subtitle={t('subtitle')}
+        titleAdornment={<HelpLink topic="aircraft" />}
+        action={
+          <button
+            onClick={() => { setEditingId(null); setShowForm(true); }}
+            className="btn-primary whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" aria-hidden="true" />
+            {t('addAircraft')}
+          </button>
+        }
+      />
 
       {/* Form Modal */}
-      {showForm && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[1020]"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="aircraft-form-title"
-        >
-          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2
-                  id="aircraft-form-title"
-                  className="text-xl font-semibold text-slate-800 dark:text-slate-100"
-                >
-                  {editingId ? t('editAircraft') : t('addAircraft')}
-                </h2>
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                  aria-label={t('close')}
-                >
-                  ✕
-                </button>
-              </div>
-              <AircraftForm
-                aircraftId={editingId}
-                onClose={() => setShowForm(false)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <FormModal
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        title={editingId ? t('editAircraft') : t('addAircraft')}
+        size="md"
+      >
+        <AircraftForm aircraftId={editingId} onClose={() => setShowForm(false)} />
+      </FormModal>
 
       {/* Aircraft List */}
       {!aircraft || aircraft.length === 0 ? (
-        <div className="card text-center py-12">
-          <p className="text-slate-500 dark:text-slate-400 mb-4">
-            {t('noAircraft')}
-          </p>
-          <button onClick={() => setShowForm(true)} className="btn-primary">
-            {t('addFirst')}
-          </button>
-        </div>
+        <EmptyState
+          icon={PlaneTakeoff}
+          title={t('noAircraft')}
+          action={{ label: t('addFirst'), onClick: () => setShowForm(true) }}
+        />
       ) : (
         <div className="flex flex-col gap-4">
           {aircraft.map((ac) => {
@@ -130,18 +103,12 @@ export default function AircraftPage() {
             <div key={ac.id} className="card">
               <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
                 {/* Identity */}
-                <div className="lg:w-72 lg:shrink-0">
+                <div className="lg:w-52 lg:shrink-0">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
+                    <h3 className="text-lg font-semibold font-mono tracking-tight text-slate-800 dark:text-slate-100">
                       {ac.registration}
                     </h3>
-                    <span
-                      className={`badge text-xs ${
-                        ac.isActive
-                          ? 'badge-current'
-                          : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-                      }`}
-                    >
+                    <span className={ac.isActive ? 'badge-current' : 'badge-neutral'}>
                       {ac.isActive ? t('active') : t('inactive')}
                     </span>
                   </div>
@@ -312,13 +279,13 @@ export default function AircraftPage() {
                 <div className="flex lg:flex-col gap-2 lg:w-28 lg:shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-700">
                   <button
                     onClick={() => { setEditingId(ac.id); setShowForm(true); }}
-                    className="btn-ghost btn-sm flex-1"
+                    className="btn-ghost btn-sm flex-1 lg:w-full lg:flex-none"
                   >
                     {t('edit')}
                   </button>
                   <button
                     onClick={() => handleDelete(ac.id)}
-                    className="btn-ghost btn-sm flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    className="btn-ghost btn-sm flex-1 lg:w-full lg:flex-none text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     {t('delete')}
                   </button>
@@ -341,6 +308,6 @@ export default function AircraftPage() {
         variant="danger"
         isLoading={deleteAircraft.isPending}
       />
-    </div>
+    </PageWrapper>
   );
 }

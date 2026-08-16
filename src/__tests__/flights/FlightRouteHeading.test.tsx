@@ -64,15 +64,16 @@ describe('FlightRouteHeading', () => {
     expect(screen.getByText('Meadow strip near Kassel')).toBeInTheDocument();
     const arrival = screen.getByText('North field, Bad Hersfeld-Johannesberg');
     // The arrow stays with the arrival so it cannot be stranded on its own line
-    expect(arrival.parentElement).toHaveTextContent('→ North field, Bad Hersfeld-Johannesberg');
+    expect(arrival.parentElement?.querySelector('svg')).toBeInTheDocument();
+    expect(arrival.parentElement).toHaveTextContent('North field, Bad Hersfeld-Johannesberg');
     expect(arrival.parentElement).not.toHaveTextContent('Meadow strip near Kassel');
   });
 
   it('renders as a heading when the page needs one', () => {
     render(<FlightRouteHeading as="h1" size="page" departure={parts('EDDF')} arrival={parts('EDDH')} />);
 
-    // The gap between the codes is layout, not a space character
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('EDDF→EDDH');
+    // The gap between the codes is layout, not a space character; the arrow is an icon
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('EDDFEDDH');
   });
 
   it('falls back to a dash for a missing location', () => {

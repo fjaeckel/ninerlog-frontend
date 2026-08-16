@@ -56,7 +56,7 @@
     "issued": "Ausgestellt",
     "separateLogbook": "Separates Flugbuch",
     "noClassRatings": "Keine Klassenberechtigungen",
-    "addRating": "+ Berechtigung hinzufügen",
+    "addRating": "Berechtigung hinzufügen",
     "classType": "Klassentyp",
     "expiryDateOptional": "Ablaufdatum (optional)",
     "failedToAdd": "Klassenberechtigung konnte nicht hinzugefügt werden.",

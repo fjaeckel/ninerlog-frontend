@@ -31,18 +31,18 @@ describe('ExportPage', () => {
   it('renders JSON backup card', () => {
     renderWithProviders(<ExportPage />);
     expect(screen.getByText('Full Data Backup')).toBeInTheDocument();
-    expect(screen.getByText('Download JSON Backup')).toBeInTheDocument();
+    expect(screen.getByText('Download JSON backup')).toBeInTheDocument();
   });
 
   it('renders import link card', () => {
     renderWithProviders(<ExportPage />);
     expect(screen.getByText('Import Flights')).toBeInTheDocument();
-    expect(screen.getByText('Go to Import →')).toBeInTheDocument();
+    expect(screen.getByText('Go to import')).toBeInTheDocument();
   });
 
   it('renders about section with format descriptions', () => {
     renderWithProviders(<ExportPage />);
-    expect(screen.getByText('About Exports')).toBeInTheDocument();
+    expect(screen.getByText('About exports')).toBeInTheDocument();
     expect(screen.getByText(/Your data is yours/)).toBeInTheDocument();
   });
 
@@ -78,7 +78,7 @@ describe('ExportPage', () => {
     global.URL.revokeObjectURL = vi.fn();
 
     renderWithProviders(<ExportPage />);
-    await user.click(screen.getByText('Download JSON Backup'));
+    await user.click(screen.getByText('Download JSON backup'));
 
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining('/exports/json'),
@@ -99,7 +99,7 @@ describe('ExportPage', () => {
     renderWithProviders(<ExportPage />);
     await user.selectOptions(screen.getByLabelText('Page layout'), 'single');
     await user.type(screen.getByLabelText('Rows per page'), '20');
-    await user.click(screen.getByText('Download PDF Logbook'));
+    await user.click(screen.getByText('Download PDF logbook'));
 
     const url = mockFetch.mock.calls[0][0] as string;
     expect(url).toContain('/exports/pdf');

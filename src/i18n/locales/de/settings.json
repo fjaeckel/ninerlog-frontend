@@ -226,5 +226,12 @@
       "notes": "Notizen",
       "notesPlaceholder": "z.B. aus Papierlogbuch 1998–2010"
     }
+  },
+  "theme": {
+    "label": "Erscheinungsbild",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "System",
+    "change": "Design: {{theme}}. Zum Wechseln auswählen."
   }
 }

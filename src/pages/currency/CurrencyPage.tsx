@@ -13,10 +13,13 @@ import { recencyLevel, RECENCY_BADGE_CLASSES, RECENCY_REQUIRED_LANDINGS } from '
 import { CurrencyCard } from '../../components/currency/CurrencyCard';
 import { CustomCurrencyCard } from '../../components/currency/CustomCurrencyCard';
 import { CurrencyExpiryBanner } from '../../components/currency/CurrencyExpiryBanner';
-import { ChevronDown, ChevronRight, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
+import { AlertTriangle, Check, ChevronDown, ChevronRight, Plane, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
 import { isPast, differenceInDays } from 'date-fns';
 import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
 import HelpLink from '../../components/ui/HelpLink';
+import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
+import { RequirementIcon } from '../../components/ui/RequirementIcon';
+import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
 const CLASS_TYPE_LABELS: Record<string, string> = {
@@ -26,19 +29,6 @@ const CLASS_TYPE_LABELS: Record<string, string> = {
   TMG: 'TMG', IR: 'Instrument Rating', OTHER: 'Other',
 };
 
-const CREDENTIAL_DESCRIPTIONS: Record<string, string> = {
-  EASA_CLASS1_MEDICAL: 'EASA Class 1 Medical — valid for 12 months (6 months for single-pilot CAT passenger operations after age 40, and for all holders after age 60)',
-  EASA_CLASS2_MEDICAL: 'EASA Class 2 Medical — valid for 60 months if issued before age 40, 24 months after age 40',
-  EASA_LAPL_MEDICAL: 'EASA LAPL Medical — valid for 60 months if issued before age 40, 24 months after age 40',
-  FAA_CLASS1_MEDICAL: 'FAA Class 1 Medical — valid for 12 months (6 months after age 40)',
-  FAA_CLASS2_MEDICAL: 'FAA Class 2 Medical — valid for 12 months (24 months if under 40)',
-  FAA_CLASS3_MEDICAL: 'FAA Class 3 Medical — valid for 60 months (24 months after age 40)',
-  LANGUAGE_PROFICIENCY_ICAO_4: 'ICAO Language Proficiency Level 4 — revalidation every 3 years',
-  LANGUAGE_PROFICIENCY_ICAO_5: 'ICAO Language Proficiency Level 5 — revalidation every 6 years',
-  LANGUAGE_PROFICIENCY_ICAO_6: 'ICAO Language Proficiency Level 6 — no revalidation required (expert)',
-  SECURITY_CLEARANCE_ZUP: 'German ZÜP Security Clearance — validity varies by issuing authority',
-  SECURITY_CLEARANCE_ZUBB: 'German ZüBB Security Clearance — typically valid for 5 years',
-};
 
 export default function CurrencyPage() {
   const { data: currencyStatus, isLoading: currencyLoading } = useAllCurrencyStatus();
@@ -60,7 +50,7 @@ export default function CurrencyPage() {
   const { data: licenses } = useLicenses();
   const { data: aircraftStats } = useAircraftStats();
   const [expandedLicenses, setExpandedLicenses] = useState<Record<string, boolean>>({});
-  const { t } = useTranslation('currency');
+  const { t } = useTranslation(['currency', 'credentials', 'common']);
   const { fmtDate } = useFormatPrefs();
 
   // Informational 90-day recency rows: models first, then registrations.
@@ -117,29 +107,17 @@ export default function CurrencyPage() {
   const isLoading = currencyLoading || credentialsLoading;
 
   return (
-    <div className="mx-auto max-w-[960px] py-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="page-title flex items-center gap-2">
-            {totalAlerts > 0 ? <ShieldAlert className="w-6 h-6 text-amber-500" /> : <ShieldCheck className="w-6 h-6 text-green-500" />}
-            {t('title')}
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-            {t('subtitle')}
-            <HelpLink topic="currency" />
-          </p>
-        </div>
-        {totalAlerts > 0 && (
-          <span className="badge-expiring">
-            {t('alerts', { count: totalAlerts })}
-          </span>
-        )}
-      </div>
+    <PageWrapper maxWidth="list">
+      <PageHeader
+        title={t('title')}
+        subtitle={t('subtitle')}
+        icon={totalAlerts > 0 ? ShieldAlert : ShieldCheck}
+        iconClassName={totalAlerts > 0 ? 'text-amber-500' : 'text-green-500'}
+        titleAdornment={<HelpLink topic="currency" />}
+        action={totalAlerts > 0 ? <span className="badge-expiring">{t('alerts', { count: totalAlerts })}</span> : undefined}
+      />
 
-      {isLoading && (
-        <div className="text-center py-12 text-slate-400 dark:text-slate-500">{t('loading')}</div>
-      )}
+      {isLoading && <SkeletonList rows={3} />}
 
       {!isLoading && currencyStatus && (
         <CurrencyExpiryBanner ratings={currencyStatus.ratings} flightReview={currencyStatus.flightReview} />
@@ -151,7 +129,7 @@ export default function CurrencyPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="section-title flex items-center gap-2">
               <Wand2 className="w-5 h-5 text-violet-500" />
-              {t('customCurrency.title', { defaultValue: 'Custom currency' })}
+              {t('customCurrency.title')}
             </h2>
             <Link
               to="/currency/builder"
@@ -159,7 +137,7 @@ export default function CurrencyPage() {
               data-testid="open-currency-builder"
             >
               <Plus className="w-4 h-4" />
-              {t('customCurrency.build', { defaultValue: 'Build a rule' })}
+              {t('customCurrency.build')}
             </Link>
           </div>
           {customRules && customRules.length > 0 ? (
@@ -184,12 +162,10 @@ export default function CurrencyPage() {
             >
               <Wand2 className="w-6 h-6 mx-auto text-violet-400 mb-2" />
               <p className="text-slate-600 dark:text-slate-300 text-sm font-medium">
-                {t('customCurrency.emptyTitle', { defaultValue: 'Build your own currency rules' })}
+                {t('customCurrency.emptyTitle')}
               </p>
               <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
-                {t('customCurrency.emptyHint', {
-                  defaultValue: 'Combine flights, aircraft and requirements into rules we track for you — and share them.',
-                })}
+                {t('customCurrency.emptyHint')}
               </p>
             </Link>
           )}
@@ -212,8 +188,9 @@ export default function CurrencyPage() {
               data-testid="flight-review-card"
             >
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100">
-                  ✈️ {t('flightReview')}
+                <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100 inline-flex items-center gap-1.5">
+                  <Plane className="w-4 h-4 text-slate-500 dark:text-slate-400 dark:text-slate-500" aria-hidden="true" />
+                  {t('flightReview')}
                 </h3>
                 <span className={
                   currencyStatus.flightReview.status === 'current' ? 'badge-current' :
@@ -225,9 +202,10 @@ export default function CurrencyPage() {
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-300">{currencyStatus.flightReview.message}</p>
               {currencyStatus.flightReview.lastCompleted && (
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                  Last completed: {currencyStatus.flightReview.lastCompleted}
-                  {currencyStatus.flightReview.expiresOn && ` · Expires: ${currencyStatus.flightReview.expiresOn}`}
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {t('lastCompleted', { date: fmtDate(currencyStatus.flightReview.lastCompleted) })}
+                  {currencyStatus.flightReview.expiresOn &&
+                    ` · ${t('expiresOn', { date: fmtDate(currencyStatus.flightReview.expiresOn) })}`}
                 </p>
               )}
             </div>
@@ -253,7 +231,7 @@ export default function CurrencyPage() {
                   onClick={() => toggleLicense(licenseId)}
                   className="w-full flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
                 >
-                  {isExpanded ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
+                  {isExpanded ? <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                   <span className="font-semibold text-slate-800 dark:text-slate-100 flex-1">
                     {license ? `${license.regulatoryAuthority} ${license.licenseType}` : ratings[0]?.regulatoryAuthority || 'License'}
                     {license?.licenseNumber && <span className="text-sm font-normal text-slate-500 dark:text-slate-400 ml-2">({license.licenseNumber})</span>}
@@ -318,11 +296,12 @@ export default function CurrencyPage() {
                   {/* Day currency bar */}
                   <div className="space-y-1 mb-1">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
-                        {dayOk ? '✓' : '○'} Day
+                      <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
+                        <RequirementIcon met={dayOk} />
+                        {t('dayLabel')}
                       </span>
-                      <span className="text-slate-500 dark:text-slate-400">
-                        {pax.dayLandings} / {pax.dayRequired} landings
+                      <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
+                        {t('landingsOf', { current: pax.dayLandings, required: pax.dayRequired })}
                       </span>
                     </div>
                     <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -336,11 +315,12 @@ export default function CurrencyPage() {
                   {hasNight && (
                   <div className="space-y-1">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
-                        {nightOk ? '✓' : '○'} Night
+                      <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
+                        <RequirementIcon met={nightOk} />
+                        {t('nightLabel')}
                       </span>
-                      <span className="text-slate-500 dark:text-slate-400">
-                        {pax.nightLandings} / {pax.nightRequired} landings
+                      <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
+                        {t('landingsOf', { current: pax.nightLandings, required: pax.nightRequired })}
                       </span>
                     </div>
                     <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -359,10 +339,15 @@ export default function CurrencyPage() {
                   {/* Passenger privilege badge (LAPL, SPL, UL) */}
                   {pax.passengerPrivilege && (
                     <div
-                      className={`mt-2 px-2 py-1 rounded text-xs ${pax.passengerPrivilege.eligible ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'}`}
+                      className={`mt-2 px-2 py-1 rounded inline-flex items-start gap-1.5 text-xs ${pax.passengerPrivilege.eligible ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'}`}
                       data-testid="passenger-privilege-badge"
                     >
-                      {pax.passengerPrivilege.eligible ? '✓' : '⚠'} {pax.passengerPrivilege.message}
+                      {pax.passengerPrivilege.eligible ? (
+                        <Check className="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden="true" />
+                      ) : (
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden="true" />
+                      )}
+                      {pax.passengerPrivilege.message}
                     </div>
                   )}
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">
@@ -451,14 +436,18 @@ export default function CurrencyPage() {
                   ? { text: t('status.expiring'), cls: 'badge-expiring' }
                   : { text: t('status.valid'), cls: 'badge-current' };
 
-              const description = CREDENTIAL_DESCRIPTIONS[cred.credentialType] || cred.credentialType.replace(/_/g, ' ');
+              // No description for this type? Render nothing rather than
+              // echoing the credential's own name back at the reader.
+              const description = t(`credentialDescriptions.${cred.credentialType}`, { defaultValue: '' });
 
               return (
                 <div key={cred.id} className={`card border-l-4 ${statusColor}`} data-testid={`credential-${cred.id}`}>
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100">
-                        {cred.credentialType.replace(/_/g, ' ')}
+                        {t(`credentials:types.${cred.credentialType}`, {
+                          defaultValue: cred.credentialType.replace(/_/g, ' '),
+                        })}
                       </h3>
                       {cred.credentialNumber && (
                         <p className="text-xs text-slate-500 dark:text-slate-400">{cred.credentialNumber}</p>
@@ -470,8 +459,10 @@ export default function CurrencyPage() {
                   </div>
 
                   <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                    {cred.issuingAuthority && <p>{t('issuingAuthority')}: {cred.issuingAuthority}</p>}
-                    <p>{t('issued')}: {cred.issueDate}</p>
+                    {cred.issuingAuthority && (
+                      <p>{t('issuingAuthorityLabel', { authority: cred.issuingAuthority })}</p>
+                    )}
+                    <p>{t('issuedLabel', { date: fmtDate(cred.issueDate) })}</p>
                     {cred.expiryDate && (
                       <p>
                         {t('expiresLabel', { date: fmtDate(cred.expiryDate) })}
@@ -484,9 +475,9 @@ export default function CurrencyPage() {
                     )}
                   </div>
 
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">
-                    {description}
-                  </p>
+                  {description && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 italic">{description}</p>
+                  )}
                 </div>
               );
             })}
@@ -506,12 +497,9 @@ export default function CurrencyPage() {
 
       <ConfirmDialog
         open={!!deleteRule}
-        title={t('customCurrency.deleteTitle', { defaultValue: 'Delete this rule?' })}
-        description={t('customCurrency.deleteDescription', {
-          defaultValue: `“${deleteRule?.name ?? ''}” will be permanently removed. This cannot be undone.`,
-          name: deleteRule?.name ?? '',
-        })}
-        confirmLabel={t('common:delete', { defaultValue: 'Delete' })}
+        title={t('customCurrency.deleteTitle')}
+        description={t('customCurrency.deleteDescription', { name: deleteRule?.name ?? '' })}
+        confirmLabel={t('common:delete')}
         isLoading={deleteCustom.isPending}
         onCancel={() => setDeleteRuleId(null)}
         onConfirm={async () => {
@@ -519,6 +507,6 @@ export default function CurrencyPage() {
           setDeleteRuleId(null);
         }}
       />
-    </div>
+    </PageWrapper>
   );
 }

@@ -193,7 +193,7 @@ describe('DashboardPage Currency Integration', () => {
     renderWithProviders(<DashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/EASA CLASS2 MEDICAL/i)).toBeInTheDocument();
+      expect(screen.getByText(/EASA Class 2 Medical/i)).toBeInTheDocument();
       expect(screen.getByText(/expires in \d+ days/i)).toBeInTheDocument();
     });
   });

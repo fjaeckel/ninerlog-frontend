@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import { ArrowLeft, KeyRound } from 'lucide-react';
 import { useAuthProviders, useLogin, useResendVerification } from '../../hooks/useAuth';
 import { useLogin2FA } from '../../hooks/useTwoFactor';
 import { useLoginWithPasskey, passkeysSupported } from '../../hooks/usePasskeys';
@@ -185,7 +186,7 @@ function LocalLogin() {
     // 2FA Code Entry
     <div className="card p-6 space-y-5">
       <div className="text-center">
-        <span className="text-3xl">🔐</span>
+        <KeyRound className="w-8 h-8 mx-auto text-blue-600 dark:text-blue-400" strokeWidth={1.5} aria-hidden="true" />
         <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mt-2">{t('auth:twoFactor.title')}</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           {t('auth:twoFactor.enterCode')}
@@ -226,9 +227,10 @@ function LocalLogin() {
 
       <button
         onClick={() => { setTwoFactorToken(null); setTwoFACode(''); setError(null); }}
-        className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 w-full text-center"
+        className="btn-ghost btn-sm w-full text-slate-500 dark:text-slate-400"
       >
-        ← {t('auth:twoFactor.backToLogin')}
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+        {t('auth:twoFactor.backToLogin')}
       </button>
     </div>
   ) : (
@@ -303,7 +305,7 @@ function LocalLogin() {
       <div className="text-right">
         <Link
           to="/reset-password"
-          className="text-sm text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
+          className="inline-flex items-center min-h-11 text-sm text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
         >
           {t('auth:login.forgotPassword')}
         </Link>
@@ -319,7 +321,7 @@ function LocalLogin() {
 
       {passkeyAvailable && (
         <>
-          <div className="flex items-center gap-3 text-xs text-slate-400">
+          <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
             <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
             <span>{t('auth:login.or')}</span>
             <span className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
@@ -339,7 +341,7 @@ function LocalLogin() {
         {t('auth:login.noAccount')}{' '}
         <Link
           to="/register"
-          className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          className="link"
         >
           {t('auth:login.createOne')}
         </Link>

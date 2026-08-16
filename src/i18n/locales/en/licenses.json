@@ -56,7 +56,7 @@
     "issued": "Issued",
     "separateLogbook": "Separate Logbook",
     "noClassRatings": "No class ratings",
-    "addRating": "+ Add Rating",
+    "addRating": "Add Rating",
     "classType": "Class Type",
     "expiryDateOptional": "Expiry Date (optional)",
     "failedToAdd": "Failed to add class rating.",

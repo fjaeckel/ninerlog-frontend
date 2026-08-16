@@ -58,5 +58,15 @@
       "partial": "Partial",
       "failed": "Failed"
     }
+  },
+  "done": "Done",
+  "partialImport": "Partially imported",
+  "startOver": "Start over",
+  "foreFlightDetected": "ForeFlight format detected — mappings pre-filled",
+  "summary": {
+    "imported": "Imported",
+    "contacts": "Contacts",
+    "skipped": "Skipped",
+    "errors": "Errors"
   }
 }

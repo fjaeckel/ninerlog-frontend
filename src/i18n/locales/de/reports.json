@@ -203,7 +203,10 @@
     "statistics": "Flugplatz-Statistiken",
     "noRoutes": "Noch keine Flugrouten vorhanden.",
     "flightCount_one": "{{count}} Flug",
-    "flightCount_other": "{{count}} Flüge"
+    "flightCount_other": "{{count}} Flüge",
+    "failedToLoad": "Kartendaten konnten nicht geladen werden",
+    "failedToLoadMessage": "Beim Laden Ihrer Flugrouten ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+    "viewMode": "Kartenansicht"
   },
   "export": {
     "title": "Exportieren",
@@ -211,7 +214,7 @@
     "easaLogbook": "EASA-Flugbuch (AMC1 FCL.050)",
     "faaLogbook": "FAA-Flugbuch",
     "summaryReport": "Zusammenfassungsbericht",
-    "standardCsv": "Standard-CSV",
+    "standardCsv": "Standard-CSV (ForeFlight-kompatibel)",
     "download": "Herunterladen",
     "downloading": "Wird heruntergeladen...",
     "preview": "Spaltenvorschau",
@@ -224,6 +227,30 @@
     "layoutSpread": "Doppelseite (beidseitiger Druck)",
     "layoutSingle": "Einzelseite (alle Spalten auf einer Seite)",
     "rowsPerPage": "Zeilen pro Seite",
-    "rowsPerPageAuto": "Zeilen pro Seite (automatisch)"
+    "rowsPerPageAuto": "Zeilen pro Seite (automatisch)",
+    "subtitle": "Laden Sie Ihre Flugdaten in verschiedenen Formaten herunter",
+    "failed": "Export fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "csvTitle": "Flugbuch-CSV",
+    "csvDescription": "Exportiert alle Flüge als CSV-Datei. Wählen Sie das Spaltenformat Ihrer Behörde.",
+    "downloadCsv": "CSV herunterladen",
+    "jsonBackup": "Vollständige Datensicherung",
+    "jsonDescription": "Exportiert alles — Flüge, Luftfahrzeuge, Lizenzen, Klassenberechtigungen und Nachweise als JSON-Sicherung.",
+    "downloadJson": "JSON-Sicherung herunterladen",
+    "pdfTitle": "PDF-Flugbuch",
+    "pdfDescription": "Erzeugt ein formatiertes PDF-Flugbuch. Ausdrucken, unterschreiben und als Papierflugbuch führen.",
+    "downloadPdf": "PDF-Flugbuch herunterladen",
+    "importTitle": "Flüge importieren",
+    "importDescription": "Importiert Flüge aus ForeFlight, CSV-Dateien oder anderen Flugbuch-Exporten. Format und Spaltenzuordnung werden erkannt.",
+    "goToImport": "Zum Import",
+    "aboutTitle": "Über Exporte",
+    "aboutItems": [
+      "CSV Standard — ForeFlight-kompatibel mit allen Flugfeldern. Öffnet in Excel, Google Sheets oder jeder Tabellenkalkulation.",
+      "CSV EASA — Spaltenlayout nach AMC1 FCL.050 (24 Spalten: SP-SE/ME, Multi-Pilot, PIC-Name, Kopilot, Fluglehrer, FSTD).",
+      "CSV FAA — Standard-Flugbuchspalten nach ASA/Jeppesen mit Dezimalstunden.",
+      "PDF EASA — Vollständig AMC1-FCL.050-konformes Flugbuch mit SP-SE/ME-Aufteilung, FSTD-Sessions und Seitensummen.",
+      "PDF FAA — Standardlayout nach ASA/Jeppesen mit Anflügen, Holdings und IPC-/Flight-Review-Markierungen.",
+      "JSON-Sicherung — Vollständige Momentaufnahme inklusive Flotte, Lizenzen mit Klassenberechtigungen und Nachweisen.",
+      "Ihre Daten gehören Ihnen — jederzeit exportierbar, ohne Einschränkungen und ohne Gebühren."
+    ]
   }
 }

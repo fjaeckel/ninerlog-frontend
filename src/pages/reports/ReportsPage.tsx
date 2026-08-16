@@ -34,6 +34,7 @@ import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { exportAnalyticsToCSV, exportAnalyticsToPDF } from '../../lib/exportReports';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
+import { PageWrapper } from '../../components/ui/PageWrapper';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { useChartTheme } from '../../components/reports/chartTheme';
 import { SectionNav, ReportSectionBlock, type ReportSection } from '../../components/reports/SectionNav';
@@ -77,20 +78,17 @@ export default function ReportsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[1280px] py-6">
+      <PageWrapper maxWidth="list">
         <SkeletonList rows={4} />
-      </div>
+      </PageWrapper>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="mx-auto max-w-[1280px] py-6">
-        <ErrorState
-          title={t('failedToLoad')}
-          message={t('failedToLoadMessage')}
-        />
-      </div>
+      <PageWrapper maxWidth="list">
+        <ErrorState title={t('failedToLoad')} message={t('failedToLoadMessage')} />
+      </PageWrapper>
     );
   }
 
@@ -112,7 +110,7 @@ export default function ReportsPage() {
       });
 
   return (
-    <div className="mx-auto max-w-[1280px] py-6">
+    <PageWrapper maxWidth="list">
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
@@ -120,22 +118,9 @@ export default function ReportsPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{rangeLabel}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div
-            className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
-            role="group"
-            aria-label={t('timeRange')}
-          >
+          <div className="segmented" role="group" aria-label={t('timeRange')}>
             {ANALYTICS_RANGES.map((m) => (
-              <button
-                key={m}
-                onClick={() => setMonths(m)}
-                aria-pressed={months === m}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                  months === m
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-                }`}
-              >
+              <button key={m} onClick={() => setMonths(m)} aria-pressed={months === m} className="segment">
                 {m === 0 ? t('allTime') : t('range.months', { count: m })}
               </button>
             ))}
@@ -159,7 +144,7 @@ export default function ReportsPage() {
 
       {empty ? (
         <EmptyState
-          icon={<BarChart3 className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600" />}
+          icon={BarChart3}
           title={t('empty.title')}
           description={t('empty.description')}
         />
@@ -753,7 +738,7 @@ export default function ReportsPage() {
           </div>
         </>
       )}
-    </div>
+    </PageWrapper>
   );
 }
 

@@ -151,7 +151,7 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
           {columns.function && (
             <span
               className={cn(
-                'shrink-0 rounded px-1 text-[10px] font-bold uppercase',
+                'shrink-0 rounded px-1 text-xs font-bold uppercase',
                 flight.isPic
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
                   : flight.isDual
@@ -188,7 +188,7 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
         <dl className="flex divide-x divide-slate-100 dark:divide-slate-700/60">
           {cells.map((cell) => (
             <div key={cell.key} className="min-w-0 flex-1 px-1 py-1.5 text-center">
-              <dt className="truncate text-[10px] font-medium uppercase leading-tight tracking-wider text-slate-400 dark:text-slate-500">
+              <dt className="truncate text-xs font-medium uppercase leading-tight tracking-wider text-slate-400 dark:text-slate-500">
                 {cell.label}
               </dt>
               <dd

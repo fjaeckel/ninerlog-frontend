@@ -4,7 +4,7 @@
     "afternoon": "Guten Tag",
     "evening": "Guten Abend"
   },
-  "logFlight": "+ Flug eintragen",
+  "logFlight": "Flug eintragen",
   "flightCurrency": "Flug-Gültigkeit",
   "credentialAlert": {
     "expired": "vor {{days}} Tagen abgelaufen",

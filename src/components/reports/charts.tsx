@@ -266,14 +266,14 @@ export function PatternChart({
           <CartesianGrid stroke={theme.grid} strokeWidth={1} vertical={false} />
           <XAxis
             dataKey="tick"
-            tick={{ fontSize: 10, fill: theme.tick }}
+            tick={{ fontSize: 11, fill: theme.tick }}
             tickLine={false}
             axisLine={{ stroke: theme.axis }}
             interval={0}
             minTickGap={0}
           />
           <YAxis
-            tick={{ fontSize: 10, fill: theme.tick }}
+            tick={{ fontSize: 11, fill: theme.tick }}
             tickLine={false}
             axisLine={false}
             width={30}

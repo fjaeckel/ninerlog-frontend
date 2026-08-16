@@ -65,7 +65,7 @@ export function FlightColumnsSection() {
         checked={prefs.columns.includes(column.key)}
         onChange={() => toggle(column.key)}
         disabled={updateProfile.isPending}
-        className="rounded border-slate-300 dark:border-slate-600"
+        className="checkbox"
         data-testid={`flight-column-${column.key}`}
       />
       <span className="text-sm text-slate-700 dark:text-slate-300">

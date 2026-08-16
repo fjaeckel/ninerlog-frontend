@@ -1,24 +1,32 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FileText, Plus } from 'lucide-react';
 import { useCredentials, useDeleteCredential } from '../../hooks/useCredentials';
 import CredentialForm from '../../components/credentials/CredentialForm';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { SkeletonGrid } from '../../components/ui/Skeleton';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { FormModal } from '../../components/ui/FormModal';
+import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
+import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import HelpLink from '../../components/ui/HelpLink';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { DocumentFileStrip } from '../../components/documents/DocumentFileStrip';
 
-function getExpiryStatus(expiryDate: string | null | undefined): { label: string; class: string } {
-  if (!expiryDate) return { label: 'No expiry', class: 'badge-current' };
-  const expiry = new Date(expiryDate);
-  const now = new Date();
-  const daysLeft = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+type ExpiryStatus = { key: 'noExpiry' | 'expired' | 'expiringInDays' | 'valid'; days: number; class: string };
 
-  if (daysLeft < 0) return { label: 'EXPIRED', class: 'badge-expired' };
-  if (daysLeft <= 30) return { label: `${daysLeft}d left`, class: 'badge-expiring' };
-  if (daysLeft <= 90) return { label: `${daysLeft}d left`, class: 'badge-expiring' };
-  return { label: 'Valid', class: 'badge-current' };
+/**
+ * Status of a credential's expiry. Returns a key rather than a label so the
+ * badge reads in the user's language — and in one casing, instead of the
+ * mixed "EXPIRED" / "Valid" the labels used to be written in.
+ */
+function getExpiryStatus(expiryDate: string | null | undefined): ExpiryStatus {
+  if (!expiryDate) return { key: 'noExpiry', days: 0, class: 'badge-neutral' };
+  const daysLeft = Math.ceil((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+
+  if (daysLeft < 0) return { key: 'expired', days: daysLeft, class: 'badge-expired' };
+  if (daysLeft <= 90) return { key: 'expiringInDays', days: daysLeft, class: 'badge-expiring' };
+  return { key: 'valid', days: daysLeft, class: 'badge-current' };
 }
 
 export default function CredentialsPage() {
@@ -43,60 +51,46 @@ export default function CredentialsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl py-6">
-        <SkeletonGrid count={4} />
-      </div>
+      <PageWrapper maxWidth="list">
+        <SkeletonList rows={3} />
+      </PageWrapper>
     );
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-7xl py-6">
-        <ErrorState
-          title="Failed to load credentials"
-          message="An error occurred while loading your credentials. Please try again."
-        />
-      </div>
+      <PageWrapper maxWidth="list">
+        <ErrorState title={t('errorTitle')} message={t('errorMessage')} />
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl py-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <div>
-          <h1 className="page-title">{t('title')}</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-            {t('subtitle')}
-            <HelpLink topic="credentials" />
-          </p>
-        </div>
-        <button onClick={() => { setEditingId(null); setShowForm(true); }} className="btn-primary self-start sm:self-auto">
-          {t('addCredential')}
-        </button>
-      </div>
+    <PageWrapper maxWidth="list">
+      <PageHeader
+        title={t('title')}
+        subtitle={t('subtitle')}
+        titleAdornment={<HelpLink topic="credentials" />}
+        action={
+          <button
+            onClick={() => { setEditingId(null); setShowForm(true); }}
+            className="btn-primary whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" aria-hidden="true" />
+            {t('addCredential')}
+          </button>
+        }
+      />
 
       {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[1020]" role="dialog" aria-modal="true" aria-labelledby="credential-form-title">
-          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 id="credential-form-title" className="text-xl font-semibold text-slate-800 dark:text-slate-100">
-                  {editingId ? t('editCredential') : t('addCredential')}
-                </h2>
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
-              </div>
-              <CredentialForm credentialId={editingId} onClose={() => setShowForm(false)} />
-            </div>
-          </div>
-        </div>
-      )}
+      <FormModal
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        title={editingId ? t('editCredential') : t('addCredential')}
+        size="md"
+      >
+        <CredentialForm credentialId={editingId} onClose={() => setShowForm(false)} />
+      </FormModal>
 
       {/* Delete Confirm Dialog */}
       <ConfirmDialog
@@ -112,12 +106,12 @@ export default function CredentialsPage() {
 
       {/* Credentials List */}
       {!credentials || credentials.length === 0 ? (
-        <div className="card text-center py-12">
-          <p className="text-slate-500 dark:text-slate-400 mb-4">{t('noCredentials')}</p>
-          <button onClick={() => setShowForm(true)} className="btn-primary">
-            {t('addFirst')}
-          </button>
-        </div>
+        <EmptyState
+          icon={FileText}
+          title={t('noCredentials')}
+          description={t('addFirst')}
+          action={{ label: t('addCredential'), onClick: () => setShowForm(true) }}
+        />
       ) : (
         <div className="flex flex-col gap-4">
           {credentials.map((cred) => {
@@ -126,11 +120,11 @@ export default function CredentialsPage() {
               <div key={cred.id} className="card">
                 <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
                   {/* Identity */}
-                  <div className="lg:w-80 lg:shrink-0">
+                  <div className="lg:w-60 lg:shrink-0">
                     <div className="flex items-start gap-3 flex-wrap">
                       <div className="min-w-0">
                         <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
-                          {t(`types.${cred.credentialType}`, { defaultValue: cred.credentialType })}
+                          {t(`types.${cred.credentialType}`, { defaultValue: cred.credentialType.replace(/_/g, ' ') })}
                         </h3>
                         {cred.credentialNumber && (
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
@@ -138,8 +132,8 @@ export default function CredentialsPage() {
                           </p>
                         )}
                       </div>
-                      <span className={`badge text-xs ${status.class}`}>
-                        {status.label}
+                      <span className={status.class}>
+                        {t(`status.${status.key}`, { days: Math.abs(status.days) })}
                       </span>
                     </div>
                     <DocumentFileStrip subject="credential" subjectId={cred.id} />
@@ -187,13 +181,13 @@ export default function CredentialsPage() {
                   <div className="flex lg:flex-col gap-2 lg:w-28 lg:shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-700">
                     <button
                       onClick={() => { setEditingId(cred.id); setShowForm(true); }}
-                      className="btn-ghost btn-sm flex-1"
+                      className="btn-ghost btn-sm flex-1 lg:w-full lg:flex-none"
                     >
                       {t('edit')}
                     </button>
                     <button
                       onClick={() => handleDelete(cred.id)}
-                      className="btn-ghost btn-sm flex-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      className="btn-ghost btn-sm flex-1 lg:w-full lg:flex-none text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
                       {t('delete')}
                     </button>
@@ -204,6 +198,6 @@ export default function CredentialsPage() {
           })}
         </div>
       )}
-    </div>
+    </PageWrapper>
   );
 }

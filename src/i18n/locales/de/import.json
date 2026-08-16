@@ -58,5 +58,15 @@
       "partial": "Teilweise",
       "failed": "Fehlgeschlagen"
     }
+  },
+  "done": "Fertig",
+  "partialImport": "Teilweise importiert",
+  "startOver": "Neu beginnen",
+  "foreFlightDetected": "ForeFlight-Format erkannt — Zuordnung vorausgefüllt",
+  "summary": {
+    "imported": "Importiert",
+    "contacts": "Kontakte",
+    "skipped": "Übersprungen",
+    "errors": "Fehler"
   }
 }

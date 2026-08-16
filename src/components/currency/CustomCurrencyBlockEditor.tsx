@@ -61,9 +61,9 @@ function Block({ icon, title, accent, children, onAdd, addLabel }: BlockProps) {
 function RowControls({ onUp, onDown, onRemove }: { onUp: () => void; onDown: () => void; onRemove: () => void }) {
   return (
     <div className="flex items-center gap-0.5 shrink-0">
-      <button type="button" onClick={onUp} className="btn-ghost p-1" aria-label="Move up"><ChevronUp className="w-3.5 h-3.5" /></button>
-      <button type="button" onClick={onDown} className="btn-ghost p-1" aria-label="Move down"><ChevronDown className="w-3.5 h-3.5" /></button>
-      <button type="button" onClick={onRemove} className="btn-ghost p-1 text-red-600" aria-label="Remove"><Trash2 className="w-3.5 h-3.5" /></button>
+      <button type="button" onClick={onUp} className="btn-ghost btn-sm px-0 min-w-11" aria-label="Move up"><ChevronUp className="w-3.5 h-3.5" /></button>
+      <button type="button" onClick={onDown} className="btn-ghost btn-sm px-0 min-w-11" aria-label="Move down"><ChevronDown className="w-3.5 h-3.5" /></button>
+      <button type="button" onClick={onRemove} className="btn-ghost btn-sm px-0 min-w-11 text-red-600 dark:text-red-400" aria-label="Remove"><Trash2 className="w-3.5 h-3.5" /></button>
     </div>
   );
 }
@@ -159,7 +159,7 @@ export function CustomCurrencyBlockEditor({ value, onChange }: Props) {
   return (
     <div className="space-y-3" data-testid="block-editor">
       {/* Metadata */}
-      <Block icon={<Info className="w-3.5 h-3.5 text-slate-500" />} title="About this rule" accent="border-slate-200 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-800/40">
+      <Block icon={<Info className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />} title="About this rule" accent="border-slate-200 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-800/40">
         <div className="flex gap-2">
           <input
             className="input text-sm w-16 text-center"
@@ -213,7 +213,7 @@ export function CustomCurrencyBlockEditor({ value, onChange }: Props) {
 
       {/* Filters */}
       <Block icon={<Filter className="w-3.5 h-3.5 text-violet-500" />} title="Only these flights" accent="border-violet-200 bg-violet-50/60 dark:border-violet-800/50 dark:bg-violet-900/15" onAdd={addFilter} addLabel="Add filter">
-        {filters.length === 0 && <p className="text-xs text-slate-400">No filters — every flight counts. Add one to narrow it down.</p>}
+        {filters.length === 0 && <p className="text-xs text-slate-500 dark:text-slate-400">No filters — every flight counts. Add one to narrow it down.</p>}
         <div className="space-y-2">
           {filters.map((f, i) => {
             const meta = fieldMeta(f.field);

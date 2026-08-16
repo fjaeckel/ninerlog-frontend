@@ -226,5 +226,12 @@
       "notes": "Notes",
       "notesPlaceholder": "e.g. From paper logbook 1998-2010"
     }
+  },
+  "theme": {
+    "label": "Appearance",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "change": "Theme: {{theme}}. Select to change."
   }
 }

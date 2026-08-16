@@ -70,10 +70,9 @@ export function SectionNav({ sections }: { sections: ReportSection[] }) {
               aria-selected={active === s.id}
               onClick={() => jump(s.id)}
               className={cn(
-                'px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors tap-none',
-                active === s.id
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-700/60'
+                'segment rounded-md whitespace-nowrap tap-none',
+                // Sits on the glass strip, not on a bordered group.
+                active !== s.id && 'bg-transparent dark:bg-transparent'
               )}
             >
               {s.label}

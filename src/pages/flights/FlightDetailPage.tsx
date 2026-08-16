@@ -7,6 +7,8 @@ import FlightForm from '../../components/flights/FlightForm';
 import FlightRouteCard from '../../components/flights/FlightRouteCard';
 import FlightRouteHeading from '../../components/flights/FlightRouteHeading';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { FormModal } from '../../components/ui/FormModal';
+import { PageWrapper } from '../../components/ui/PageWrapper';
 import { SignatureSection } from '../../components/flights/SignatureSection';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
@@ -32,7 +34,7 @@ export default function FlightDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-[960px] mx-auto px-4 py-8" role="status" aria-label={t('detail.loadingFlightDetails')}>
+      <PageWrapper maxWidth="list" role="status" aria-label={t('detail.loadingFlightDetails')}>
         <div className="animate-pulse space-y-6">
           <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
           <div className="h-8 w-64 bg-slate-200 dark:bg-slate-700 rounded" />
@@ -45,19 +47,19 @@ export default function FlightDetailPage() {
           </div>
         </div>
         <span className="sr-only">{t('detail.loadingFlightDetails')}</span>
-      </div>
+      </PageWrapper>
     );
   }
 
   if (error || !flight) {
     return (
-      <div className="max-w-[960px] mx-auto px-4 py-8">
+      <PageWrapper maxWidth="list">
         <ErrorState
           title={t('detail.flightNotFound')}
           message={t('detail.flightNotFoundMessage')}
           onRetry={() => navigate(flightsListPath)}
         />
-      </div>
+      </PageWrapper>
     );
   }
 
@@ -146,7 +148,7 @@ export default function FlightDetailPage() {
   ].filter((flag) => flag.on);
 
   return (
-    <div className="max-w-[960px] xl:max-w-[1400px] mx-auto px-4 py-6 sm:py-8">
+    <PageWrapper maxWidth="list">
       <button
         onClick={() => navigate(flightsListPath)}
         className="mb-3 inline-flex min-h-[44px] items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
@@ -244,25 +246,14 @@ export default function FlightDetailPage() {
       />
 
       {/* Edit Form Modal */}
-      {showEditForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-[1020]" role="dialog" aria-modal="true" aria-labelledby="edit-flight-title">
-          <div className="bg-white dark:bg-slate-800 w-full sm:rounded-xl sm:max-w-2xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-4 sm:p-6">
-              <div className="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-slate-800 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 -mt-4 sm:-mt-6 pt-4 sm:pt-6 border-b border-slate-100 dark:border-slate-700 sm:border-0">
-                <h2 id="edit-flight-title" className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">{t('editFlight')}</h2>
-                <button
-                  onClick={() => setShowEditForm(false)}
-                  className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 text-2xl min-w-[44px] min-h-[44px] flex items-center justify-center"
-                  aria-label={t('detail.close')}
-                >
-                  ×
-                </button>
-              </div>
-              <FlightForm flightId={flight.id} onClose={() => setShowEditForm(false)} />
-            </div>
-          </div>
-        </div>
-      )}
+      <FormModal
+        open={showEditForm}
+        onClose={() => setShowEditForm(false)}
+        title={t('editFlight')}
+        size="xl"
+      >
+        <FlightForm flightId={flight.id} onClose={() => setShowEditForm(false)} />
+      </FormModal>
 
       {/* Flight Details.
 
@@ -429,7 +420,7 @@ export default function FlightDetailPage() {
         {flight.updatedAt !== flight.createdAt &&
           ` · ${t('detail.updated', { date: fmtDateTime(flight.updatedAt) })}`}
       </div>
-    </div>
+    </PageWrapper>
   );
 }
 
