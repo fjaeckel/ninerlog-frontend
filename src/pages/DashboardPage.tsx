@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, ArrowRight, Clock, Plane, ArrowDownToLine, BadgeCheck, ShieldCheck, TimerReset } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Clock, Plane, Plus, ArrowDownToLine, BadgeCheck, ShieldCheck, TimerReset } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useFlights } from '../hooks/useFlights';
 import { useMyStatistics } from '../hooks/useStatistics';
@@ -76,6 +76,7 @@ export default function DashboardPage() {
             onClick={() => navigate('/flights', { state: { openForm: true } })}
             className="hidden sm:inline-flex items-center justify-center gap-2 h-11 px-5 rounded-md bg-white text-blue-700 font-semibold shadow-sm hover:bg-blue-50 active:scale-[0.98] transition-all"
           >
+            <Plus className="w-4 h-4" aria-hidden="true" />
             {t('dashboard:logFlight')}
           </button>
         </div>
