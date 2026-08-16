@@ -1,0 +1,83 @@
+/**
+ * The screens the harness knows how to reach.
+ *
+ * A target is `{ name, path }` plus, optionally:
+ *   act(page)  an interaction to run before the shot (open a modal, switch tab)
+ *   empty      serve empty collections, to capture the empty state
+ *   fail       serve 500s for the page's own list, to capture the error state
+ *   anonymous  do not seed a session — for the public/auth routes
+ *
+ * Add a target whenever you add a screen. A screen with no target here is a
+ * screen nobody can review before it ships.
+ */
+export const TARGETS = [
+  { name: 'dashboard', path: '/dashboard' },
+  { name: 'flights', path: '/flights' },
+  {
+    name: 'flights-modal',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight/i }).first().click();
+      await page.waitForTimeout(600);
+    },
+  },
+  { name: 'flight-detail', path: '/flights/f1' },
+  { name: 'aircraft', path: '/aircraft' },
+  {
+    name: 'aircraft-modal',
+    path: '/aircraft',
+    act: async (page) => {
+      await page.getByRole('button', { name: /add aircraft/i }).first().click();
+      await page.waitForTimeout(600);
+    },
+  },
+  { name: 'licenses', path: '/licenses' },
+  { name: 'credentials', path: '/credentials' },
+  { name: 'currency', path: '/currency' },
+  { name: 'currency-builder', path: '/currency/builder' },
+  { name: 'people', path: '/people' },
+  { name: 'quicklog', path: '/quicklog' },
+  { name: 'reports', path: '/reports' },
+  { name: 'map', path: '/map' },
+  { name: 'export', path: '/export' },
+  { name: 'import', path: '/import' },
+  { name: 'help', path: '/help' },
+  { name: 'profile', path: '/profile' },
+  { name: 'admin', path: '/admin' },
+  {
+    name: 'admin-users',
+    path: '/admin',
+    act: async (page) => {
+      await page.getByRole('button', { name: /^users$/i }).first().click();
+      await page.waitForTimeout(500);
+    },
+  },
+
+  // Empty states — the first thing a new pilot sees.
+  { name: 'empty-flights', path: '/flights', empty: true },
+  { name: 'empty-aircraft', path: '/aircraft', empty: true },
+  { name: 'empty-licenses', path: '/licenses', empty: true },
+  { name: 'empty-credentials', path: '/credentials', empty: true },
+
+  // Error states — reached by failing the page's own list request.
+  { name: 'error-flights', path: '/flights', fail: true },
+  { name: 'error-licenses', path: '/licenses', fail: true },
+
+  // Public routes.
+  { name: 'auth-login', path: '/login', anonymous: true },
+  { name: 'auth-register', path: '/register', anonymous: true },
+  { name: 'auth-reset', path: '/reset-password', anonymous: true },
+  { name: 'auth-new-password', path: '/new-password?token=demo-token', anonymous: true },
+];
+
+/** Paths whose list request is failed for a `fail` target. */
+export const FAILING_PATHS = ['/flights', '/licenses', '/aircraft', '/credentials'];
+
+/** Bodies served in place of the real collections for an `empty` target. */
+export const EMPTY_BODIES = {
+  '/flights': { data: [], pagination: { page: 1, pageSize: 25, total: 0, totalPages: 0 } },
+  '/aircraft': { data: [], pagination: { page: 1, pageSize: 100, total: 0, totalPages: 0 } },
+  '/licenses': [],
+  '/credentials': [],
+  '/contacts': [],
+};

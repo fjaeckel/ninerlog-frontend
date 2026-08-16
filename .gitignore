@@ -9,3 +9,6 @@ test-results/
 playwright-report/
 coverage/
 .lighthouseci/
+
+# Screenshot harness output (scripts/screenshots)
+.screenshots/
