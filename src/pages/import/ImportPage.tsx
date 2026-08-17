@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUploadImport, usePreviewImport, useConfirmImport, useRestoreJSON, useImportHistory } from '../../hooks/useImport';
-import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportJSONResult } from '../../hooks/useImport';
+import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportJSONResult, ImportField } from '../../hooks/useImport';
 import HelpLink from '../../components/ui/HelpLink';
 import { FileDropzone } from '../../components/ui/FileDropzone';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
@@ -30,6 +30,7 @@ const IMPORT_FIELDS = [
   { value: 'simulatedInstrumentTime', label: 'Simulated Instrument Time' },
   { value: 'landingsDay', label: 'Day Landings' },
   { value: 'landingsNight', label: 'Night Landings' },
+  { value: 'landingsTotal', label: 'Total Landings' },
   { value: 'holds', label: 'Holds' },
   { value: 'approachesCount', label: 'Approaches' },
   { value: 'isIpc', label: 'IPC' },
@@ -45,7 +46,20 @@ const IMPORT_FIELDS = [
   { value: 'person4', label: 'Person 4' },
   { value: 'person5', label: 'Person 5' },
   { value: 'person6', label: 'Person 6' },
-];
+] as const satisfies readonly { value: ImportField; label: string }[];
+
+// Compile-time guard: every ImportField the API can suggest must have an option
+// here, or the mapping <select> renders a value it has no <option> for — the row
+// then displays the wrong field and silently changes it the moment the pilot
+// touches that dropdown. `landingsTotal` shipped missing exactly that way.
+//
+// This list and the API enum are two sources of truth for one thing, which is
+// the same shape of drift that made every hand-written import template wrong.
+// The type error is the cheapest place to catch it: adding a field to the spec
+// now breaks `npm run type-check` until an option exists for it.
+type UncoveredImportField = Exclude<ImportField, (typeof IMPORT_FIELDS)[number]['value']>;
+type AssertNoUncoveredImportFields<T extends never> = T;
+export type _ImportFieldsAreExhaustive = AssertNoUncoveredImportFields<UncoveredImportField>;
 
 type Step = 'upload' | 'mapping' | 'preview' | 'result';
 type Mode = 'csv' | 'json';

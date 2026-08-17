@@ -11,6 +11,7 @@ type ImportColumnMapping = components['schemas']['ImportColumnMapping'];
 type ImportJSONResult = components['schemas']['ImportJSONResult'];
 type PaginatedImports = components['schemas']['PaginatedImports'];
 type ImportTemplate = components['schemas']['ImportTemplate'];
+type ImportField = components['schemas']['ImportField'];
 type ImportTemplateList = components['schemas']['ImportTemplateList'];
 
 export type {
@@ -21,6 +22,7 @@ export type {
   ImportJSONResult,
   PaginatedImports,
   ImportTemplate,
+  ImportField,
 };
 
 import { API_BASE_URL } from '../lib/config';
