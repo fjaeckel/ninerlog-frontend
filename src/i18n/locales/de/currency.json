@@ -1,17 +1,17 @@
 {
-  "title": "Gültigkeit & Recency",
-  "subtitle": "Ihre Flug-Recency und Gültigkeitsstatus",
+  "title": "Recency & Gültigkeit",
+  "subtitle": "Deine Recency und die Gültigkeit deiner Nachweise im Blick.",
   "loading": "Laden...",
   "alerts_one": "{{count}} Warnung",
   "alerts_other": "{{count}} Warnungen",
   "ratingCurrency": "Berechtigungs- & Lizenz-Gültigkeit",
-  "passengerCurrency": "Passagier-Gültigkeit",
-  "passengerCurrencyDesc": "Erforderliche Landungen, um Passagiere mitnehmen zu dürfen. Alleinflug ist auch ohne Passagier-Gültigkeit möglich.",
+  "passengerCurrency": "Passagier-Recency",
+  "passengerCurrencyDesc": "Landungen, die du für die Passagiermitnahme brauchst. Ohne Passagiere darfst du weiterhin fliegen.",
   "aircraftRecency": {
-    "title": "90-Tage-Übung nach Muster & Kennzeichen",
-    "description": "Informativer Vertrautheitsindikator: {{required}} Starts und Landungen als steuernder Pilot (pilot flying) in den letzten 90 Tagen, angelehnt an EASA FCL.060(b). Landungen zählen, wenn Sie selbst gesteuert haben (auch mit Fluglehrer) — nicht nur solo. Die regulatorische Passagier-Gültigkeit oben wird je Klasse/Muster bewertet.",
-    "aircraft": "Flugzeug",
-    "landings90": "Landungen / 90 T.",
+    "title": "90-Tage-Recency nach Muster & Kennzeichen",
+    "description": "Informativer Vertrautheitsindikator: {{required}} Starts und Landungen als steuernder Pilot (pilot flying) in den letzten 90 Tagen, angelehnt an EASA FCL.060(b). Landungen zählen, wenn du selbst gesteuert hast (auch mit Fluglehrer) — nicht nur solo. Die regulatorische Passagier-Recency oben wird je Klasse/Muster bewertet.",
+    "aircraft": "Luftfahrzeug",
+    "landings90": "Landungen / 90 Tage",
     "status": "Status",
     "lastFlown": "Zuletzt geflogen",
     "currentUntil": "Gültig bis",
@@ -20,14 +20,14 @@
       "registration": "Kennzeichen"
     },
     "level": {
-      "current": "Aktuell",
+      "current": "Genug Übung",
       "low": "Wenig Übung",
       "none": "Nicht geflogen"
     }
   },
   "flightReview": "Flugüberprüfung",
-  "noRatings": "Keine Klassenberechtigungen gefunden. Fügen Sie eine Lizenz mit Klassenberechtigungen hinzu.",
-  "noCredentials": "Keine Nachweise gefunden. Fügen Sie Medicals und Zertifikate hinzu.",
+  "noRatings": "Keine Klassenberechtigungen gefunden. Füge eine Lizenz mit Klassenberechtigungen hinzu.",
+  "noCredentials": "Keine Nachweise gefunden. Füge Medicals und Zeugnisse hinzu.",
   "credentials": "Nachweise",
   "status": {
     "current": "Gültig",
@@ -50,12 +50,12 @@
   "met": "Erfüllt",
   "notMet": "Nicht erfüllt",
   "progress": "Fortschritt",
-  "launchMethod": "Startart-Gültigkeit",
+  "launchMethod": "Startart-Recency",
   "nightPrivilege": "Nachtflugberechtigung",
   "noNightPrivilege": "Keine Nachtflugberechtigung für diesen Lizenztyp",
   "passengerPrivilege": "Passagierberechtigung",
-  "tier1Description": "Bestimmt, ob Sie in dieser Klasse überhaupt fliegen dürfen.",
-  "tier2Description": "Bestimmt, ob Sie Passagiere mitnehmen dürfen. Alleinflug ist auch ohne Passagier-Gültigkeit möglich.",
+  "tier1Description": "Bestimmt, ob du in dieser Klasse überhaupt fliegen darfst.",
+  "tier2Description": "Bestimmt, ob du Passagiere mitnehmen darfst. Ohne Passagiere darfst du weiterhin fliegen.",
   "flightReviewRequired": "Flugüberprüfung erforderlich",
   "lastCompleted": "Zuletzt absolviert: {{date}}",
   "viewDetails": "Details anzeigen",
@@ -71,7 +71,7 @@
     "OTHER": "Sonstige"
   },
   "expiresLabel": "Gültig bis: {{date}}",
-  "windowOpensLabel": "Erfahrungs-Zeitfenster öffnet am {{date}}",
+  "windowOpensLabel": "Erfahrungszeitraum beginnt am {{date}}",
   "windowClosedHint": "Kürzlich verlängert — Flüge vor diesem Datum zählen nicht für die nächste Verlängerung.",
   "launchesCount": "{{current}} / {{required}} Starts",
   "expiryBanner": {
@@ -83,20 +83,20 @@
     "showLess": "Weniger anzeigen",
     "nextSteps": {
       "training_flight": {
-        "expiring": "Absolvieren Sie die erforderlichen Flugstunden, Landungen und die Auffrischungsschulung mit einem Fluglehrer vor dem Ablaufdatum, um ohne Überprüfung zu verlängern.",
-        "expired": "Kontaktieren Sie einen Fluglehrer oder eine ATO — für die Wiederinkraftsetzung sind jetzt Auffrischungsschulung und eine Befähigungsüberprüfung durch einen Prüfer erforderlich."
+        "expiring": "Fliege die erforderlichen Stunden und Landungen und absolviere die Auffrischungsschulung mit einem Fluglehrer vor dem Ablaufdatum — dann verlängert sich die Berechtigung ohne Überprüfung.",
+        "expired": "Wende dich an einen Fluglehrer oder eine ATO — für die Erneuerung sind jetzt Auffrischungsschulung und eine Befähigungsüberprüfung durch einen Prüfer erforderlich."
       },
       "proficiency_check": {
-        "expiring": "Vereinbaren Sie vor dem Ablaufdatum eine Befähigungsüberprüfung mit einem Prüfer.",
-        "expired": "Vereinbaren Sie eine Befähigungsüberprüfung (bzw. IPC) mit einem Prüfer oder Fluglehrer zur Wiederinkraftsetzung. Zusätzlich kann Auffrischungsschulung erforderlich sein."
+        "expiring": "Vereinbare vor dem Ablaufdatum eine Befähigungsüberprüfung mit einem Prüfer.",
+        "expired": "Vereinbare eine Befähigungsüberprüfung (bzw. IPC) mit einem Prüfer oder Fluglehrer zur Erneuerung. Zusätzlich kann Auffrischungsschulung erforderlich sein."
       },
       "flight_review": {
-        "expiring": "Vereinbaren Sie rechtzeitig eine Flugüberprüfung (1h Theorie + 1h Flug) mit einem Fluglehrer.",
-        "expired": "Ihre Flugüberprüfung ist überfällig — vereinbaren Sie eine mit einem Fluglehrer, bevor Sie als PIC fliegen."
+        "expiring": "Vereinbare rechtzeitig eine Flugüberprüfung (1 h Theorie + 1 h Flug) mit einem Fluglehrer.",
+        "expired": "Deine Flugüberprüfung ist überfällig — vereinbare eine mit einem Fluglehrer, bevor du als PIC fliegst."
       },
       "generic": {
-        "expiring": "Erfüllen Sie die unten aufgeführten Anforderungen vor dem Ablaufdatum.",
-        "expired": "Dies ist abgelaufen — prüfen Sie die Anforderungen unten oder kontaktieren Sie Ihren Fluglehrer/Prüfer zur Verlängerung."
+        "expiring": "Erfülle die unten aufgeführten Anforderungen vor dem Ablaufdatum.",
+        "expired": "Das ist abgelaufen — prüfe die Anforderungen unten oder wende dich zur Erneuerung an deinen Fluglehrer bzw. Prüfer."
       }
     }
   },
@@ -107,9 +107,9 @@
     "easa_lapl": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer in den letzten 24 Monaten (EASA FCL.140.A)",
     "easa_spl": "Erfordert 5h PIC-Flugzeit + 15 Starts + 2 Übungsflüge mit Fluglehrer in den letzten 24 Monaten (EASA FCL.140.S)",
     "easa_spl_tmg": "Erfordert 12h Flugzeit + 12 Starts & Landungen auf TMG in den letzten 24 Monaten (EASA FCL.140.S(b)(2))",
-    "easa_pax": "3 Starts & Landungen (Tag) und 1 Start & Landung bei Nacht in gleicher Muster/Klasse in den vorangegangenen 90 Tagen für Passagiermitnahme; die Nachtanforderung entfällt bei gültiger IR-Berechtigung (EASA FCL.060(b))",
-    "faa_pax_day_night": "3 Starts & Landungen in 90 Tagen für Tag-Passagiergültigkeit; 3 Voll-Stop-Nachtlandungen in 90 Tagen für Nacht-Passagiergültigkeit (14 CFR 61.57(a)/(b))",
-    "faa_ir": "Erfordert 6 Instrumentenanflüge + Warteverfahren innerhalb der vorangegangenen 6 Kalendermonate (14 CFR 61.57(c))",
+    "easa_pax": "3 Starts & Landungen (Tag) und 1 Start & Landung bei Nacht auf demselben Muster bzw. in derselben Klasse in den vorangegangenen 90 Tagen für die Passagiermitnahme; die Nachtanforderung entfällt bei gültiger IR (EASA FCL.060(b))",
+    "faa_pax_day_night": "3 Starts & Landungen in 90 Tagen für die Passagiermitnahme am Tag; 3 Starts & Landungen bei Nacht mit vollständigem Stillstand (full stop) in 90 Tagen für die Passagiermitnahme bei Nacht (14 CFR 61.57(a)/(b))",
+    "faa_ir": "Erfordert 6 Instrumentenanflüge + Holdings innerhalb der vorangegangenen 6 Kalendermonate (14 CFR 61.57(c))",
     "faa_glider": "Erfordert 3 Starts & Landungen in den vorangegangenen 90 Tagen (14 CFR 61.57(a))",
     "faa_flight_review": "Flugüberprüfung alle 24 Kalendermonate erforderlich (14 CFR 61.56)",
     "ul_luftpersv": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer in 24 Monaten (LuftPersV §45)",
@@ -120,8 +120,8 @@
     "builderTitle": "Baukasten für eigene Regeln",
     "title": "Eigene Regeln",
     "build": "Regel erstellen",
-    "emptyTitle": "Erstellen Sie eigene Currency-Regeln",
-    "emptyHint": "Kombinieren Sie Flüge, Luftfahrzeuge und Anforderungen zu Regeln, die wir für Sie verfolgen — und teilen Sie sie.",
+    "emptyTitle": "Eigene Recency-Regeln bauen",
+    "emptyHint": "Kombiniere Flüge, Luftfahrzeuge und Anforderungen zu Regeln, die wir für dich verfolgen — und teile sie.",
     "deleteTitle": "Diese Regel löschen?",
     "deleteDescription": "„{{name}}“ wird dauerhaft entfernt. Das lässt sich nicht rückgängig machen.",
     "editorMode": "Editor-Modus"
@@ -132,16 +132,19 @@
   "issuedLabel": "Ausgestellt: {{date}}",
   "issuingAuthorityLabel": "Ausgestellt von: {{authority}}",
   "credentialDescriptions": {
-    "EASA_CLASS1_MEDICAL": "EASA Klasse 1 Tauglichkeit — 12 Monate gültig (6 Monate bei gewerblicher Passagierbeförderung im Einpilotenbetrieb ab 40 Jahren sowie für alle Inhaber ab 60 Jahren)",
-    "EASA_CLASS2_MEDICAL": "EASA Klasse 2 Tauglichkeit — 60 Monate gültig bei Ausstellung vor dem 40. Lebensjahr, danach 24 Monate",
-    "EASA_LAPL_MEDICAL": "EASA LAPL Tauglichkeit — 60 Monate gültig bei Ausstellung vor dem 40. Lebensjahr, danach 24 Monate",
-    "FAA_CLASS1_MEDICAL": "FAA Klasse 1 Tauglichkeit — 12 Monate gültig (6 Monate ab 40 Jahren)",
-    "FAA_CLASS2_MEDICAL": "FAA Klasse 2 Tauglichkeit — 12 Monate gültig (24 Monate unter 40 Jahren)",
-    "FAA_CLASS3_MEDICAL": "FAA Klasse 3 Tauglichkeit — 60 Monate gültig (24 Monate ab 40 Jahren)",
-    "LANG_ICAO_LEVEL4": "ICAO Sprachprüfung Level 4 — Verlängerung alle 3 Jahre",
-    "LANG_ICAO_LEVEL5": "ICAO Sprachprüfung Level 5 — Verlängerung alle 6 Jahre",
-    "LANG_ICAO_LEVEL6": "ICAO Sprachprüfung Level 6 — keine Verlängerung erforderlich (Expert)",
+    "EASA_CLASS1_MEDICAL": "EASA Medical Klasse 1 — 12 Monate gültig (6 Monate bei gewerblicher Passagierbeförderung im Einpilotenbetrieb ab 40 Jahren sowie für alle Inhaber ab 60 Jahren)",
+    "EASA_CLASS2_MEDICAL": "EASA Medical Klasse 2 — 60 Monate gültig bei Ausstellung vor dem 40. Lebensjahr, danach 24 Monate",
+    "EASA_LAPL_MEDICAL": "EASA LAPL Medical — 60 Monate gültig bei Ausstellung vor dem 40. Lebensjahr, danach 24 Monate",
+    "FAA_CLASS1_MEDICAL": "FAA Medical Klasse 1 — 12 Monate gültig (6 Monate ab 40 Jahren)",
+    "FAA_CLASS2_MEDICAL": "FAA Medical Klasse 2 — 12 Monate gültig (24 Monate unter 40 Jahren)",
+    "FAA_CLASS3_MEDICAL": "FAA Medical Klasse 3 — 60 Monate gültig (24 Monate ab 40 Jahren)",
+    "LANG_ICAO_LEVEL4": "ICAO Sprachkenntnisse Level 4 — Verlängerung alle 3 Jahre",
+    "LANG_ICAO_LEVEL5": "ICAO Sprachkenntnisse Level 5 — Verlängerung alle 6 Jahre",
+    "LANG_ICAO_LEVEL6": "ICAO Sprachkenntnisse Level 6 — keine Verlängerung erforderlich (Expert)",
     "SEC_CLEARANCE_ZUP": "Deutsche ZÜP — Gültigkeit je nach ausstellender Behörde",
-    "SEC_CLEARANCE_ZUBB": "Deutsche ZÜBB — üblicherweise 5 Jahre gültig"
-  }
+    "SEC_CLEARANCE_ZUBB": "Deutsche ZUBB — üblicherweise 5 Jahre gültig"
+  },
+  "ratingCount_one": "{{count}} Berechtigung",
+  "ratingCount_other": "{{count}} Berechtigungen",
+  "licenseFallback": "Lizenz"
 }

@@ -20,8 +20,8 @@
         "body": "Das ist deine Startseite. Sobald du Flüge erfasst, siehst du hier auf einen Blick deine Summen, deine Gültigkeit und die letzten Flüge."
       },
       "aircraft": {
-        "title": "Flugzeuge hinzufügen",
-        "body": "Lege zuerst die Flugzeuge an, die du fliegst. Kennzeichen, Muster und Klasse werden bei jedem Flug wiederverwendet – du gibst sie nur einmal ein."
+        "title": "Luftfahrzeuge hinzufügen",
+        "body": "Lege zuerst die Luftfahrzeuge an, die du fliegst. Kennzeichen, Muster und Klasse werden bei jedem Flug wiederverwendet – du gibst sie nur einmal ein."
       },
       "licenses": {
         "title": "Lizenzen hinzufügen",
@@ -33,7 +33,7 @@
       },
       "addFlight": {
         "title": "Flug erfassen",
-        "body": "Das ist der schnellste Weg, einen Flug zu erfassen. Flugzeug wählen, Off-Block- und On-Block-Zeit, Flugplätze und Landungen eintragen – fertig."
+        "body": "Das ist der schnellste Weg, einen Flug zu erfassen. Luftfahrzeug wählen, Off-Block- und On-Block-Zeit, Flugplätze und Landungen eintragen – fertig."
       },
       "flights": {
         "title": "Deine Flüge finden",
@@ -45,7 +45,7 @@
       },
       "finish": {
         "title": "Du bist startklar! ✈️",
-        "body": "Das war die Tour. Am besten legst du jetzt ein Flugzeug an und erfasst deinen ersten Flug. Die Tour findest du jederzeit erneut in der Hilfe."
+        "body": "Das war die Tour. Am besten legst du jetzt ein Luftfahrzeug an und erfasst deinen ersten Flug. Die Tour findest du jederzeit erneut in der Hilfe."
       }
     }
   }

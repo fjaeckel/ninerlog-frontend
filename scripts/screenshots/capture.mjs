@@ -31,6 +31,9 @@ import { collectReport, formatReport, TARGET_MIN } from './audit.mjs';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
 const BASE_URL = process.env.SHOT_BASE_URL || 'http://localhost:5173';
+// The UI language the shots are taken in. Pinned to English so captures are
+// comparable across runs; set SHOT_LANG=de to review the German locale.
+const LANG = process.env.SHOT_LANG || 'en';
 
 // `hasTouch`/`isMobile` are what make `(pointer: coarse)` and `(hover: none)`
 // match — without them a "mobile" capture is just a narrow desktop, and every
@@ -146,22 +149,23 @@ async function shoot(browser, target, theme) {
     ...device,
     deviceScaleFactor: 2,
     colorScheme: theme,
-    locale: 'en-GB',
-    // The app pins the clock nowhere, but the fixtures do — keeping the
-    // browser's locale fixed is what stops date formats drifting per machine.
+    // Native date/time inputs render in the *browser's* locale, not the app's,
+    // so this has to follow SHOT_LANG or a German capture shows US date pickers.
+    // Still fixed per language, which is what stops formats drifting per machine.
+    locale: LANG === 'de' ? 'de-DE' : 'en-GB',
     timezoneId: 'Europe/Berlin',
   });
 
   await context.addInitScript(
-    ([auth, onboarding, themeName, anonymous]) => {
+    ([auth, onboarding, themeName, anonymous, lang]) => {
       if (!anonymous) {
         localStorage.setItem('auth-storage', auth);
         localStorage.setItem('ninerlog-onboarding', onboarding);
       }
       localStorage.setItem('ninerlog-theme', JSON.stringify({ state: { theme: themeName }, version: 0 }));
-      localStorage.setItem('i18nextLng', 'en');
+      localStorage.setItem('ninerlog-language', lang);
     },
-    [authStorage, onboardingStorage, theme, !!target.anonymous]
+    [authStorage, onboardingStorage, theme, !!target.anonymous, LANG]
   );
 
   await context.route('**/api/v1/**', async (route) => {

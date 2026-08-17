@@ -17,7 +17,7 @@ export const TARGETS = [
     name: 'flights-modal',
     path: '/flights',
     act: async (page) => {
-      await page.getByRole('button', { name: /log flight/i }).first().click();
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
       await page.waitForTimeout(600);
     },
   },
@@ -27,7 +27,7 @@ export const TARGETS = [
     name: 'aircraft-modal',
     path: '/aircraft',
     act: async (page) => {
-      await page.getByRole('button', { name: /add aircraft/i }).first().click();
+      await page.getByRole('button', { name: /add aircraft|luftfahrzeug hinzufügen/i }).first().click();
       await page.waitForTimeout(600);
     },
   },
@@ -48,7 +48,7 @@ export const TARGETS = [
     name: 'admin-users',
     path: '/admin',
     act: async (page) => {
-      await page.getByRole('button', { name: /^users$/i }).first().click();
+      await page.getByRole('button', { name: /^(users|benutzer)$/i }).first().click();
       await page.waitForTimeout(500);
     },
   },
