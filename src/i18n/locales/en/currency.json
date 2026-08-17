@@ -143,5 +143,8 @@
     "LANG_ICAO_LEVEL6": "ICAO Language Proficiency Level 6 — no revalidation required (expert)",
     "SEC_CLEARANCE_ZUP": "German ZÜP security clearance — validity varies by issuing authority",
     "SEC_CLEARANCE_ZUBB": "German ZÜBB security clearance — typically valid for 5 years"
-  }
+  },
+  "ratingCount_one": "{{count}} rating",
+  "ratingCount_other": "{{count}} ratings",
+  "licenseFallback": "License"
 }

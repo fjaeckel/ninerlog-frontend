@@ -71,7 +71,8 @@
     "isFlightReview": "Flight Review",
     "isIpc": "IPC",
     "isProficiencyCheck": "Proficiency Check",
-    "function": "Function (PIC / Dual / SIC)"
+    "function": "Function (PIC / Dual / SIC)",
+    "instructorComments": "Instructor Comments"
   },
   "launchMethods": {
     "winch": "Winch",

@@ -233,10 +233,10 @@ export default function CurrencyPage() {
                 >
                   {isExpanded ? <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                   <span className="font-semibold text-slate-800 dark:text-slate-100 flex-1">
-                    {license ? `${license.regulatoryAuthority} ${license.licenseType}` : ratings[0]?.regulatoryAuthority || 'License'}
+                    {license ? `${license.regulatoryAuthority} ${license.licenseType}` : ratings[0]?.regulatoryAuthority || t('licenseFallback')}
                     {license?.licenseNumber && <span className="text-sm font-normal text-slate-500 dark:text-slate-400 ml-2">({license.licenseNumber})</span>}
                   </span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{ratings.length} rating{ratings.length !== 1 ? 's' : ''}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('ratingCount', { count: ratings.length })}</span>
                   {hasAlert && <span className="w-2 h-2 rounded-full bg-amber-500" />}
                 </button>
 

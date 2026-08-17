@@ -280,5 +280,8 @@
     "title": "Something went wrong",
     "message": "We could not load this. Please try again.",
     "retry": "Try again"
-  }
+  },
+  "actions": "Actions",
+  "done": "Done",
+  "notes": "Notes"
 }

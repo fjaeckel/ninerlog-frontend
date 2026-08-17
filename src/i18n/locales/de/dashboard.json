@@ -5,7 +5,7 @@
     "evening": "Guten Abend"
   },
   "logFlight": "Flug eintragen",
-  "flightCurrency": "Flug-Gültigkeit",
+  "flightCurrency": "Recency",
   "credentialAlert": {
     "expired": "vor {{days}} Tagen abgelaufen",
     "expiresSoon": "läuft in {{days}} Tagen ab"
@@ -19,17 +19,17 @@
     "night": "Nacht"
   },
   "blockTimeBreakdown": "Blockzeit-Aufteilung",
-  "baselineApplied": "Inklusive {{hours}}h aus deinem Anfangsbestand (Stand {{date}}).",
+  "baselineApplied": "Inklusive {{hours}} h aus deinem Übertrag (Stand {{date}}).",
   "breakdownLabels": {
     "pic": "PIC",
-    "dual": "Dual",
+    "dual": "Doppelsteuer",
     "solo": "Solo",
     "crossCountry": "Überlandflug",
     "night": "Nacht",
     "ifr": "IFR"
   },
-  "timeByClass": "Zeit nach Flugzeugklasse",
-  "timeByModel": "Zeit nach Flugzeugmuster",
+  "timeByClass": "Zeit nach Klasse",
+  "timeByModel": "Zeit nach Muster",
   "modelRecencyTitle_one": "{{count}} Landung in den letzten 90 Tagen",
   "modelRecencyTitle_other": "{{count}} Landungen in den letzten 90 Tagen",
   "classLabels": {
@@ -45,7 +45,7 @@
   "recentFlights": "Letzte Flüge",
   "noFlights": "Noch keine Flüge eingetragen",
   "logFirstFlight": "Ersten Flug eintragen",
-  "startJourney": "Beginnen Sie Ihr digitales Flugbuch mit dem Eintrag Ihres ersten Fluges.",
+  "startJourney": "Beginne dein digitales Flugbuch mit dem Eintrag deines ersten Fluges.",
   "monthlyActivity": "Monatliche Aktivität",
   "monthlyActivityLabel": "Flugstunden pro Monat in den letzten 12 Monaten"
 }

@@ -32,7 +32,8 @@
     "isActive": "Active",
     "homeAirfield": "Home Airfield",
     "defaultDepartureIcao": "Default departure airfield",
-    "defaultArrivalIcao": "Default arrival airfield"
+    "defaultArrivalIcao": "Default arrival airfield",
+    "notes": "Notes"
   },
   "stats": {
     "totalTime": "Total Time",
