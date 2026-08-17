@@ -234,7 +234,7 @@ export default function ImportPage() {
                   : 'text-slate-400 dark:text-slate-500'
               }`}
             >
-              {i + 1}. {s === 'upload' ? t('uploadCsv', 'Upload') : s === 'mapping' ? t('mapColumns', 'Map Columns') : s === 'preview' ? t('preview') : t('done', 'Done')}
+              {i + 1}. {s === 'upload' ? t('uploadCsv', 'Upload') : s === 'mapping' ? t('stepMapColumns', 'Map Columns') : s === 'preview' ? t('preview') : t('done', 'Done')}
             </span>
           </div>
         ))}

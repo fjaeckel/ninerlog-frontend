@@ -52,27 +52,31 @@ export default function SupportedLogbooks() {
         )}
       </p>
 
-      <div className="flex flex-wrap gap-2" role="list">
+      {/* The list semantics live on the ul/li, not on the buttons. An earlier
+          version put role="listitem" on the button itself, which overrides the
+          implicit button role: assistive technology announced each logbook as a
+          list item rather than something you can press. */}
+      <ul className="flex flex-wrap gap-2 list-none p-0 m-0">
         {templates.map((tpl) => {
           const isSelected = tpl.id === selectedId;
           return (
-            <button
-              key={tpl.id}
-              type="button"
-              role="listitem"
-              aria-expanded={isSelected}
-              onClick={() => setSelectedId(isSelected ? null : tpl.id)}
-              className={`px-3 py-2 min-h-[44px] rounded-full border text-sm font-medium transition-colors ${
-                isSelected
-                  ? 'border-blue-600 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
-                  : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800'
-              }`}
-            >
-              {tpl.name}
-            </button>
+            <li key={tpl.id}>
+              <button
+                type="button"
+                aria-expanded={isSelected}
+                onClick={() => setSelectedId(isSelected ? null : tpl.id)}
+                className={`px-3 py-2 min-h-[44px] rounded-full border text-sm font-medium transition-colors ${
+                  isSelected
+                    ? 'border-blue-600 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
+                    : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800'
+                }`}
+              >
+                {tpl.name}
+              </button>
+            </li>
           );
         })}
-      </div>
+      </ul>
 
       {selected && <LogbookExportSteps template={selected} />}
     </div>

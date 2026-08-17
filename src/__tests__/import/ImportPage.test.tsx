@@ -192,6 +192,17 @@ describe('ImportPage', () => {
     expect(screen.queryByText(/Download the CSV of all flights/i)).not.toBeInTheDocument();
   });
 
+  // The chips must stay real buttons. An earlier version set role="listitem" on
+  // them, which overrides the implicit button role — assistive technology
+  // announced each logbook as a list item rather than something pressable, and
+  // it was only noticed when a browser driver could not find them by role.
+  it('exposes each logbook as a button inside a list', () => {
+    renderWithProviders(<ImportPage />);
+    expect(screen.getByRole('button', { name: 'MyFlightbook' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ForeFlight' })).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem').length).toBeGreaterThanOrEqual(2);
+  });
+
   it('does not show the best-effort caveat for an exact template', () => {
     renderWithProviders(<ImportPage />);
     fireEvent.click(screen.getByText('ForeFlight'));

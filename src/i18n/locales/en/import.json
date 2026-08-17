@@ -9,6 +9,7 @@
   "unsupportedFileType": "Unsupported file: {{name}}. Expected {{accept}}.",
   "columnMapping": "Column Mapping",
   "mapColumns": "Map your CSV columns to NinerLog fields",
+  "stepMapColumns": "Map Columns",
   "sourceColumn": "Source Column",
   "targetField": "Target Field",
   "skip": "Skip",

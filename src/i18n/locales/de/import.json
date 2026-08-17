@@ -9,6 +9,7 @@
   "unsupportedFileType": "Nicht unterstützte Datei: {{name}}. Erwartet: {{accept}}.",
   "columnMapping": "Spaltenzuordnung",
   "mapColumns": "Ordnen Sie Ihre CSV-Spalten den NinerLog-Feldern zu",
+  "stepMapColumns": "Spalten zuordnen",
   "sourceColumn": "Quellspalte",
   "targetField": "Zielfeld",
   "skip": "Überspringen",
