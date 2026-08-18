@@ -1,8 +1,7 @@
 /**
- * Informational 90-day landing recency, styled after EASA FCL.060(b) day
- * recency (3 landings in the preceding 90 days). This is a familiarity
- * indicator per aircraft type/registration — the regulatory per-class
- * evaluation lives in the currency engine.
+ * Informational 90-day landing recency (3 landings in the preceding 90 days)
+ * per aircraft type/registration; the regulatory per-class evaluation lives
+ * in the currency engine.
  */
 
 export const RECENCY_REQUIRED_LANDINGS = 3;

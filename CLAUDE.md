@@ -45,6 +45,7 @@ Push gate: `npx vitest run && npm run type-check && npm run lint`, plus e2e when
 | New route/page | skill `add-page` |
 | Admin console — stat tiles, config rows, maintenance actions, tabs | skill `admin-surface` |
 | Writing or running tests | skill `testing` |
+| Writing or editing any code comment | skill `terse-comments` |
 | Deep architecture reference | `docs/DEVELOPER_GUIDE.md` |
 
 Root `IMPLEMENTATION.md` and root `TESTING.md` are stale (React 18, axios, Tailwind 3) — ignore them; `docs/TESTING.md` is current except that it wrongly describes E2E as MSW-mocked.

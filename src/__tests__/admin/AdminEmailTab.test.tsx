@@ -6,9 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AdminPage from '../../pages/admin/AdminPage';
 import { useAuthStore } from '../../stores/authStore';
 
-// openapi-fetch captures globalThis.fetch when the client is constructed at
-// module load, so spying on fetch afterwards never intercepts anything. Mock
-// the client itself, as the hook tests do.
+// Mock the client itself, as the hook tests do.
 let routes: Record<string, unknown> = {};
 
 const respond = (path: string) => {
@@ -128,8 +126,7 @@ describe('AdminPage — email deliverability', () => {
     expect(screen.getByText('dead@example.com')).toBeInTheDocument();
     expect(screen.getByText(/Hard bounce \(550\)/)).toBeInTheDocument();
 
-    // A server error must read differently from a bounce — one condemns an
-    // address, the other does not.
+    // Server-error styling differs from bounce styling.
     expect(screen.getByText(/Server error \(535\)/)).toBeInTheDocument();
   });
 
@@ -285,9 +282,7 @@ describe('AdminPage — unverified account lifecycle', () => {
         cloudBackupsConfigured: false,
         cloudBackupProviders: [],
         authMode: 'oidc',
-        // SMTP is configured and mail works — the mode alone forbids reaping,
-        // because here "unverified" describes a live account the provider did
-        // not vouch for, not an abandoned signup.
+        // SMTP configured and mail working; the mode alone forbids reaping.
         unverifiedCleanupEnabled: false,
         unverifiedCleanupDisabledReason: 'oidc_mode',
       },
@@ -299,7 +294,7 @@ describe('AdminPage — unverified account lifecycle', () => {
 
     expect(await screen.findByRole('button', { name: /run sweep/i })).toBeDisabled();
     expect(screen.getByText(/cannot be switched on in SSO mode/i)).toBeInTheDocument();
-    // The irreversible-deletion warning belongs only where deletion can happen.
+    // No irreversible-deletion warning here.
     expect(screen.queryByText(/irreversible/i)).not.toBeInTheDocument();
   });
 

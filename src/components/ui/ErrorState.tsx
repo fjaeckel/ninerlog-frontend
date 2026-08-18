@@ -10,10 +10,7 @@ interface ErrorStateProps {
   className?: string;
 }
 
-/**
- * The "we could not load this" panel. Mirrors EmptyState's proportions so a
- * failed load and an empty list occupy the same shape on the page.
- */
+/** The "we could not load this" panel. Mirrors EmptyState's proportions. */
 export function ErrorState({ title, message, onRetry, retryLabel, className }: ErrorStateProps) {
   const { t } = useTranslation('common');
 

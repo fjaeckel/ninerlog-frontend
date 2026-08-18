@@ -1,9 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { httpStatusOf, HTTP_STATUS_KEY } from '../../api/client';
 
-// Mirrors retryTransientOnly in src/main.tsx. Kept in step with it by the
-// assertions below; the policy itself is trivial enough that duplicating it
-// here is cheaper than exporting the query client's internals.
+// Mirrors retryTransientOnly in src/main.tsx; keep the two in step.
 function retryTransientOnly(failureCount: number, error: unknown): boolean {
   const status = httpStatusOf(error);
   if (status !== undefined && status >= 400 && status < 500) return false;
@@ -31,8 +29,7 @@ describe('httpStatusOf', () => {
 
 describe('retry policy', () => {
   it('never retries a rate-limited request', () => {
-    // The regression this exists to prevent: retrying a 429 doubled the
-    // traffic that caused the 429 in the first place.
+    // A 429 is never retried.
     expect(retryTransientOnly(0, withStatus(429, { error: 'Too many requests' }))).toBe(false);
   });
 

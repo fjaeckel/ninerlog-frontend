@@ -8,21 +8,10 @@ interface PageWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * The page column.
- *
- * Widths come from the design-system tokens, not from ad-hoc `max-w-*`
- * classes, so two pages of the same kind never sit at different widths.
- * Horizontal padding belongs to the app shell (`<main>`), which is why there
- * is none here — adding `px-4` on a page double-pads it on phones.
- *
- * There are two shapes, and which one a page gets follows from what is on it:
- *
- * - **Reading and entering** — prose, wizards, forms. Bound by the measure a
- *   line of text can be read at, not by the window.
- * - **Scanning records** — logbook tables, fleet lists, dashboards, charts.
- *   These are read by comparing rows and columns, so every pixel of a wide
- *   monitor is a pixel the reader does not have to scroll or truncate. They
- *   fill the column.
+ * The page column. Widths come from the design-system tokens; horizontal
+ * padding belongs to the app shell (`<main>`). Two shapes: reading/entering
+ * pages (prose, wizards, forms) are capped at a text measure; record-scanning
+ * pages (tables, lists, dashboards) fill the column.
  */
 const maxWidthMap = {
   /** A single column of fields. */

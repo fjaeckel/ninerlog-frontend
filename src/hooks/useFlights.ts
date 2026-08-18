@@ -9,24 +9,10 @@ type FlightUpdate = components['schemas']['FlightUpdate'];
 type PaginatedFlights = components['schemas']['PaginatedFlights'];
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
 
-/**
- * How long a flights page stays fresh.
- *
- * The global default is `staleTime: 0`, which combined with `refetchOnMount`
- * and `refetchOnWindowFocus` meant this query re-ran on every tab refocus and
- * every back-navigation from a flight's detail page. For a free-text search
- * that is the most expensive read in the app, charged against its own rate
- * limit — three refocuses measurably cost three extra searches. The same
- * applied to the `pageSize: 1` probe Layout issues on every page of the app.
- *
- * A window of freshness is safe here because it does not delay the user's own
- * edits: every flight mutation calls `invalidateFlightDependentQueries`, and
- * invalidation overrides `staleTime`. What it defers is picking up a change
- * made in *another* tab or by another device, which is worth up to this long.
- */
+/** How long a flights page stays fresh. */
 export const FLIGHTS_STALE_TIME_MS = 30_000;
 
-// Get paginated list of flights
+// Paginated list of flights.
 export const useFlights = (params?: ListFlightsParams, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['flights', params],
@@ -44,15 +30,8 @@ export const useFlights = (params?: ListFlightsParams, options?: { enabled?: boo
 };
 
 /**
- * The same list, page after page, for the phone's endless scroll.
- *
- * A separate query from `useFlights` rather than a replacement: a table is
- * read a page at a time and a scrolling list is not, and the two want their
- * pages cached differently. Only one of them runs at a time — the flights page
- * enables whichever the viewport calls for — so this costs no extra requests.
- *
- * `page` is left out of the caller's params on purpose: the pages are this
- * query's business, and passing one in would make the same list cache twice.
+ * Infinite-scroll variant of `useFlights`. `page` is excluded from the
+ * caller's params; this query manages pages itself.
  */
 export const useInfiniteFlights = (
   params?: Omit<ListFlightsParams, 'page'>,

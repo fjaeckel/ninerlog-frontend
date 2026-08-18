@@ -15,26 +15,14 @@ interface DocumentFileThumbProps {
 }
 
 /**
- * One stored file.
- *
- * For an image, the bytes come from an authenticated request, so there is no
- * URL that can go straight into `src` — the hook fetches the blob with the
- * bearer token and hands over an object URL, which means every thumbnail has a
- * real loading and failure state rather than the browser's broken-image icon.
- *
- * A PDF gets an icon tile instead, and no blob is fetched at all. That is not
- * only because we cannot render a page without a PDF renderer: the server
- * serves PDFs as `Content-Disposition: attachment` precisely so untrusted
- * document bytes never render inside this origin, and quietly pulling them
- * into a blob URL here would walk straight back around that. Downloading is
- * `DocumentFileDownloadButton`'s job, and it is an explicit user action.
+ * One stored file: images render from an authenticated object URL with
+ * loading and failure states; PDFs get an icon tile and no blob fetch.
  */
 export function DocumentFileThumb({ subject, subjectId, file, full = false, size = 'md', onClick }: DocumentFileThumbProps) {
   const { t } = useTranslation('documents');
   const isImage = isImageFile(file);
 
-  // Only images are fetched. The hook is disabled for anything else, so a PDF
-  // costs no request and no bandwidth until the user asks for it.
+  // Only images are fetched; the hook is disabled for anything else.
   const { data: url, isLoading, isError } = useDocumentFileUrl(
     subject,
     subjectId,

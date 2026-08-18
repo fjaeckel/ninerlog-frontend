@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /**
  * Screenshot harness — renders the real app against fixture data and captures
- * every screen in light and dark, so a UI change can be reviewed as it looks
- * rather than as it diffs.
+ * every screen in light and dark.
  *
  *   npm run shots -- before                    every target, light + dark
  *   npm run shots -- after flights aircraft    only those targets
@@ -31,13 +30,10 @@ import { collectReport, formatReport, TARGET_MIN } from './audit.mjs';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
 const BASE_URL = process.env.SHOT_BASE_URL || 'http://localhost:5173';
-// The UI language the shots are taken in. Pinned to English so captures are
-// comparable across runs; set SHOT_LANG=de to review the German locale.
+// UI language for the shots; set SHOT_LANG=de to review the German locale.
 const LANG = process.env.SHOT_LANG || 'en';
 
-// `hasTouch`/`isMobile` are what make `(pointer: coarse)` and `(hover: none)`
-// match — without them a "mobile" capture is just a narrow desktop, and every
-// touch-only rule in the stylesheet is silently skipped.
+// hasTouch/isMobile make `(pointer: coarse)` and `(hover: none)` match.
 const VIEWPORTS = {
   desktop: { viewport: { width: 1440, height: 1100 }, hasTouch: false, isMobile: false },
   mobile: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true },
@@ -60,10 +56,8 @@ function auditOnlyArg(list) {
 const themes = (flagValue('theme') || 'light,dark').split(',');
 const device = flags.has('--mobile') ? VIEWPORTS.mobile : VIEWPORTS.desktop;
 const viewport = device.viewport;
-// A full-page capture paints `position: fixed` chrome once, at the scroll
-// position it had — so the header and the mobile bottom nav land in the middle
-// of a tall screenshot. `--fold` captures the viewport instead, which is the
-// only way to review the chrome where it actually sits.
+// `--fold` captures the viewport instead of the full page, keeping fixed
+// chrome where it sits.
 const foldOnly = flags.has('--fold');
 const auditOnly = flags.has('--audit');
 const outDir = join(ROOT, '.screenshots', label);
@@ -96,8 +90,7 @@ const authStorage = JSON.stringify({
   },
   version: 0,
 });
-// The welcome tour is auto-started for users with no flights; mark it seen so
-// it never lands on top of the screen being captured.
+// Mark the welcome tour seen.
 const onboardingStorage = JSON.stringify({ state: { completedUserIds: [user.id] }, version: 0 });
 
 // ── Dev server ───────────────────────────────────────────────────────────────
@@ -123,11 +116,7 @@ async function startDevServer() {
   throw new Error(`dev server did not come up at ${BASE_URL} within 60s`);
 }
 
-/**
- * Playwright's bundled Chromium, or the one the environment provides.
- * Some sandboxes ship a browser at a fixed path with a build number that does
- * not match the installed Playwright, which makes the default launch fail.
- */
+/** Playwright's bundled Chromium, or the one the environment provides. */
 async function launchBrowser() {
   const explicit = process.env.SHOT_CHROMIUM;
   if (explicit) return chromium.launch({ executablePath: explicit });

@@ -31,7 +31,7 @@ function reportWebVital(metric: Metric) {
       navigationType: metric.navigationType,
     });
 
-    // Use sendBeacon for reliability during page unload
+    // sendBeacon when available.
     if (navigator.sendBeacon) {
       navigator.sendBeacon(analyticsUrl, body);
     }

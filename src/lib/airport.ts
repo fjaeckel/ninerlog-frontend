@@ -1,14 +1,7 @@
 /**
- * Normalizes a departure/arrival location value.
- *
- * Airport/arrival fields accept either a real ICAO code (which the backend
- * resolves to coordinates for the map and distance calculations) or free text
- * for off-airport sites that helicopter and glider pilots operate from
- * ("Meadow strip", "North field", ...).
- *
- * Values that look like a code — up to 4 alphanumeric characters — are
- * upper-cased so ICAO codes stay canonical. Anything longer or containing
- * spaces/punctuation is treated as a place name and its casing is preserved.
+ * Normalizes a departure/arrival location value: code-like values (up to 4
+ * alphanumeric characters) are upper-cased; free-text site names keep their
+ * casing.
  */
 export function normalizeLocation(value: string): string {
   const trimmed = value.trim();
@@ -16,13 +9,8 @@ export function normalizeLocation(value: string): string {
 }
 
 /**
- * Formats a stored location for display, using the airport name the API
- * resolved for it.
- *
- * Only the location itself is stored on a flight; the name is resolved per
- * request from the backend's airport database and is null whenever the value
- * does not match a known airport — an off-airport site, or a code the database
- * does not carry. In that case the raw stored value is shown unchanged.
+ * Formats a stored location for display as "Name (CODE)", falling back to the
+ * raw stored value when no airport name resolved.
  */
 export function formatAirportLabel(
   location: string | null | undefined,
@@ -43,26 +31,17 @@ export interface AirportParts {
 }
 
 /**
- * Shortens a free-text site name to something that still names the place.
- *
- * Off-airport locations are written the way a pilot would say them — "Meadow
- * strip near Kassel", "North field, Bad Hersfeld-Johannesberg" — and a list row
- * has nowhere near that much width. Clipping the string mid-word leaves
- * "Mead…", which identifies nothing, so this cuts where the meaning is: the
- * part before the comma is the site itself and the rest is the town it is near,
- * and anything still too long gives up whole words rather than half of one.
- *
- * The full value stays available in a `title` and on the detail page.
+ * Shortens a free-text site name: keeps the part before the first comma, then
+ * as many whole words as fit in `maxChars`.
  */
 export function abbreviateSiteName(name: string, maxChars = 14): string {
-  // A leading separator would otherwise make the first fragment empty and
-  // abbreviate the name down to punctuation.
+  // Strip a leading separator.
   const trimmed = name.trim().replace(/^[\s,;·–-]+/, '');
   const head = trimmed.split(',')[0].trim();
   const base = head.length >= 3 ? head : trimmed;
   if (base.length <= maxChars) return base;
 
-  // As many whole words as fit — "Meadow strip", not "Meadow stri".
+  // As many whole words as fit.
   let kept = '';
   for (const word of base.split(/\s+/)) {
     const next = kept ? `${kept} ${word}` : word;
@@ -74,11 +53,8 @@ export function abbreviateSiteName(name: string, maxChars = 14): string {
 }
 
 /**
- * Splits a stored location into a code and a name so a layout can give each its
- * own typography instead of squeezing "Name (CODE)" into a single string.
- *
- * Free-text off-airport sites have no code — the stored value *is* the name, so
- * it is returned as `name` and `code` stays null.
+ * Splits a stored location into code and name. Free-text sites return the
+ * stored value as `name` with `code` null.
  */
 export function splitAirportLabel(
   location: string | null | undefined,
@@ -92,7 +68,6 @@ export function splitAirportLabel(
   if (/^[a-z0-9]{1,4}$/i.test(value)) {
     return { code: value.toUpperCase(), name: resolvedName };
   }
-  // A location the database could still resolve keeps its name; otherwise the
-  // free-text value itself is all we have to show.
+  // Resolved name when available, else the free-text value.
   return resolvedName ? { code: null, name: resolvedName } : { code: null, name: value };
 }

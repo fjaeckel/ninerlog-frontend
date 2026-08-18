@@ -93,13 +93,11 @@ export default function ReportsPage() {
   }
 
   const { totals, records } = data;
-  // Totals carry the initial-hours snapshot, so a logbook with nothing logged
-  // but hours carried forward is not empty — the pilot has experience to show.
+  // Totals carry the initial-hours snapshot.
   const empty = totals.totalFlights === 0 && totals.totalMinutes === 0;
 
-  // Role composition is charted per year. It is folded from `monthly` rather
-  // than `yearly` because only the monthly series carries the SIC split, and
-  // both series cover exactly the same timeframe.
+  // Role composition per year, folded from the monthly series (it carries
+  // the SIC split).
   const roleByYear = foldRoleByYear(data);
 
   const rangeLabel = data.range.allTime
@@ -152,8 +150,7 @@ export default function ReportsPage() {
         <>
           <SectionNav sections={sections} />
 
-          {/* Refetching holds the previous render at reduced opacity instead of
-              collapsing the page back into skeletons. */}
+          {/* Previous render at reduced opacity while refetching */}
           <div className={isFetching ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
             {/* ── Overview ── */}
             <ReportSectionBlock id="overview" title={t('sections.overview')} description={t('sections.overviewHint')}>
@@ -170,8 +167,7 @@ export default function ReportsPage() {
                       {t('hero.acrossFlights', { count: totals.totalFlights })}
                       {totals.firstFlightDate && ` · ${t('hero.since', { date: fmtDate(totals.firstFlightDate) })}`}
                     </p>
-                    {/* Prior experience that was never entered as flights. It
-                        only reaches the totals, so say so where they are shown. */}
+                    {/* Initial-hours snapshot note */}
                     {data.baseline && (
                       <p className="text-xs text-blue-100/80 mt-1">
                         {t('hero.includesBaseline', {
@@ -784,10 +780,7 @@ function flightRefLabel(ref: AnalyticsFlightRef, fmtDate: (d: string) => string)
   return [fmtDate(ref.date), ref.aircraftReg, route].filter(Boolean).join(' · ');
 }
 
-/**
- * Groups the monthly series into calendar years. Used for the role stack,
- * which needs the SIC split that the yearly series does not carry.
- */
+/** Groups the monthly series into calendar years. */
 function foldRoleByYear(data: FlightAnalytics) {
   const byYear = new Map<string, { year: string; picMinutes: number; sicMinutes: number; dualMinutes: number }>();
   for (const m of data.monthly) {
@@ -810,7 +803,7 @@ function countryName(code: string, locale: string) {
 }
 
 function dayName(isoDow: number, locale: string) {
-  // 2024-01-01 was a Monday, so ISO day 1..7 maps onto that week directly.
+  // ISO day 1..7 mapped onto the week of 2024-01-01, a Monday.
   const date = new Date(Date.UTC(2024, 0, isoDow));
   return date.toLocaleDateString(locale, { weekday: 'short' });
 }

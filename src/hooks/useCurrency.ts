@@ -7,7 +7,7 @@ import { API_BASE_URL as API_BASE } from '../lib/config';
 
 type Currency = components['schemas']['Currency'];
 
-// Get currency status for a specific license (legacy per-license endpoint)
+// Currency status for one license.
 export const useLicenseCurrency = (licenseId: string) => {
   return useQuery({
     queryKey: ['currency', licenseId],
@@ -22,7 +22,7 @@ export const useLicenseCurrency = (licenseId: string) => {
   });
 };
 
-// Get currency status for ALL class ratings across all licenses
+// Currency status for all class ratings across all licenses.
 export const useAllCurrencyStatus = () => {
   const { accessToken } = useAuthStore();
 

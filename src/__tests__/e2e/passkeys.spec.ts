@@ -34,10 +34,7 @@ async function installVirtualAuthenticator(page: Page): Promise<VirtualAuth> {
 
 test.describe('Passkeys (WebAuthn)', () => {
   test.beforeEach(async ({ request, page, browserName }) => {
-    // The virtual authenticator is installed over the Chrome DevTools
-    // Protocol, which only Chromium-family browsers speak. WebKit and Firefox
-    // have no equivalent, so the ceremony cannot be driven there at all —
-    // passkey support in those browsers has to be verified manually.
+    // Virtual authenticator needs the Chrome DevTools Protocol; Chromium only.
     test.skip(
       browserName !== 'chromium',
       `WebAuthn e2e needs the CDP virtual authenticator (Chromium-only); ${browserName} cannot run it`,
@@ -47,13 +44,8 @@ test.describe('Passkeys (WebAuthn)', () => {
     const probe = await request.post('/api/v1/auth/webauthn/login/options', { data: {} });
     test.skip(probe.status() === 503, 'WebAuthn is not configured on the API server');
 
-    // Skip if the browser does not expose window.PublicKeyCredential.
-    // The docker e2e dev server runs over plain http:// on a non-loopback
-    // hostname, which is not a secure context, so PublicKeyCredential is
-    // undefined and the WebAuthn flow cannot be exercised end-to-end.
-    // Tracked in https://github.com/fjaeckel/ninerlog-frontend/issues/46
-    // (enable HTTPS on the e2e dev server). Production / localhost / HTTPS
-    // origins always expose PublicKeyCredential.
+    // Skip when window.PublicKeyCredential is missing (non-secure context on
+    // the e2e dev server — https://github.com/fjaeckel/ninerlog-frontend/issues/46).
     await page.goto('/login');
     const hasWebAuthn = await page.evaluate(() => typeof (window as any).PublicKeyCredential === 'function');
     test.skip(
@@ -132,16 +124,8 @@ test.describe('Passkeys (WebAuthn)', () => {
     await context.clearCookies();
     await page.evaluate(() => localStorage.clear());
 
-    // Step 4 — fill email so the server can advertise a credential, then
-    // click the passkey button.
-    //
-    // The login page starts a conditional (autofill) ceremony on mount, and a
-    // virtual authenticator with automaticPresenceSimulation answers it with no
-    // user gesture at all — the pilot would be signed in and redirected before
-    // #email could be filled. A real platform authenticator does not do that;
-    // conditional UI waits for the user to pick a credential. So silence the
-    // authenticator while the page mounts, then re-arm it for the explicit
-    // button press that is actually under test.
+    // Step 4 — fill email, then click the passkey button. The authenticator
+    // is silenced while the page mounts and re-armed for the explicit press.
     const setPresence = (enabled: boolean) =>
       auth.cdp.send('WebAuthn.setAutomaticPresenceSimulation', {
         authenticatorId: auth.authenticatorId,

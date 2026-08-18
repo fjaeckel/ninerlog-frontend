@@ -12,11 +12,7 @@ import {
 export interface TourStep {
   /** Stable id, also used to look up i18n strings under `tour.steps.<id>`. */
   id: string;
-  /**
-   * Ordered list of `data-tour` anchor keys. The first one whose element is
-   * actually visible wins, which lets a single step target the desktop sidebar
-   * item or fall back to the mobile "More" menu button.
-   */
+  /** Ordered list of `data-tour` anchor keys; the first visible one wins. */
   targets?: string[];
   /** Decorative icon shown in the tooltip header. */
   icon?: ReactNode;
@@ -25,9 +21,8 @@ export interface TourStep {
 const ICON = 'w-5 h-5';
 
 /**
- * The first-login walkthrough. Steps are intentionally ordered to mirror the
- * journey of a brand-new pilot: set up aircraft + licenses, then log and find
- * flights, then keep an eye on currency.
+ * The first-login walkthrough: set up aircraft + licenses, log and find
+ * flights, keep an eye on currency.
  */
 export const tourSteps: TourStep[] = [
   { id: 'welcome' },

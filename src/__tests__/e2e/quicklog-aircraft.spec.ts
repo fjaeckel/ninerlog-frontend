@@ -27,9 +27,7 @@ test.describe('QuickLog aircraft selection', () => {
 
   test('should quick-add a new aircraft via the dropdown "Add new aircraft" option', async ({ page }) => {
     await page.goto('/quicklog');
-    // Let the lazy route mount before driving the select. Without this the
-    // chunk load, the aircraft query and the option list all have to land
-    // inside the action's own wait, which a slower engine can overrun.
+    // Let the lazy route mount before driving the select.
     await expect(page.getByRole('heading', { name: 'Quick Log' })).toBeVisible({ timeout: 15000 });
 
     const select = page.locator('#quicklog-aircraft');
@@ -38,7 +36,7 @@ test.describe('QuickLog aircraft selection', () => {
 
     await expect(page.getByText('Add a new aircraft to your fleet')).toBeVisible();
 
-    // Quick-add is the only place free-text keyboard entry is required
+    // Free-text keyboard entry into the quick-add box.
     await page.getByPlaceholder('Registration (e.g. D-EFGH)').fill('D-EVER');
     await page.getByPlaceholder('Type (e.g. C172)').fill('C172');
     await page.getByPlaceholder('Make (e.g. Cessna)').fill('Cessna');
@@ -54,9 +52,7 @@ test.describe('QuickLog aircraft selection', () => {
   test('should let the pilot cancel out of quick-add back to the dropdown', async ({ page }) => {
     await seedAircraft(page, auth.accessToken, { registration: 'D-CNCL', type: 'PA28' });
     await page.goto('/quicklog');
-    // Let the lazy route mount before driving the select. Without this the
-    // chunk load, the aircraft query and the option list all have to land
-    // inside the action's own wait, which a slower engine can overrun.
+    // Let the lazy route mount before driving the select.
     await expect(page.getByRole('heading', { name: 'Quick Log' })).toBeVisible({ timeout: 15000 });
 
     const select = page.locator('#quicklog-aircraft');
@@ -74,9 +70,7 @@ test.describe('QuickLog aircraft selection', () => {
 
   test('should surface a 409 conflict when another device just added the same tail number', async ({ page }) => {
     await page.goto('/quicklog');
-    // Let the lazy route mount before driving the select. Without this the
-    // chunk load, the aircraft query and the option list all have to land
-    // inside the action's own wait, which a slower engine can overrun.
+    // Let the lazy route mount before driving the select.
     await expect(page.getByRole('heading', { name: 'Quick Log' })).toBeVisible({ timeout: 15000 });
 
     const select = page.locator('#quicklog-aircraft');
@@ -88,8 +82,7 @@ test.describe('QuickLog aircraft selection', () => {
     await page.getByPlaceholder('Make (e.g. Cessna)').fill('Cessna');
     await page.getByPlaceholder('Model (e.g. 172 Skyhawk)').fill('172 Skyhawk');
 
-    // A second device (or tab) registers the same tail number first — the
-    // client's aircraft list is now stale relative to the server.
+    // A second device registers the same tail number first.
     await seedAircraft(page, auth.accessToken, { registration: 'D-RACE', type: 'C172' });
 
     await page.getByRole('button', { name: 'Save Aircraft' }).click();

@@ -66,8 +66,7 @@ describe('DocumentFileGallery', () => {
     } as never);
   });
 
-  // The kill switch has to reach the UI: an operator who turned the feature
-  // off should not see an upload control that can only produce a 403.
+  // Feature off: no upload control rendered.
   it('renders nothing when the server has the feature switched off', () => {
     mockFeature({ enabled: false });
     const { container } = renderGallery();
@@ -99,8 +98,7 @@ describe('DocumentFileGallery', () => {
     await waitFor(() => expect(mockUpload.mutateAsync).toHaveBeenCalledWith({ file }));
   });
 
-  // Both limits are advertised by GET /features. Checking them here means an
-  // obviously doomed 5 MB upload is not sent just to be refused.
+  // Files over the limits advertised by GET /features are rejected locally.
   it('rejects an oversized file without sending it', async () => {
     const user = userEvent.setup();
     renderGallery();
@@ -113,9 +111,7 @@ describe('DocumentFileGallery', () => {
     expect(mockUpload.mutateAsync).not.toHaveBeenCalled();
   });
 
-  // The input's `accept` filter is a hint the OS picker is free to ignore, so
-  // the check has to exist in JS too. fireEvent bypasses the filter the way a
-  // picker that ignored it would.
+  // fireEvent bypasses the input's `accept` filter, exercising the JS check.
   it('rejects an unsupported format without sending it', async () => {
     renderGallery();
     const input = screen.getByTestId('document-file-input');
@@ -150,9 +146,7 @@ describe('DocumentFileGallery', () => {
   });
 
 
-  // A PDF is served by the API as an attachment specifically so untrusted
-  // document bytes never render in this origin. The client must honour that:
-  // no blob fetch, no preview, download only.
+  // A PDF: no blob fetch, no preview, download only.
   describe('PDFs', () => {
     it('shows an icon tile and never fetches the bytes', () => {
       const blobUrl = vi.spyOn(documentFileHooks, 'useDocumentFileUrl');
@@ -161,8 +155,7 @@ describe('DocumentFileGallery', () => {
 
       expect(screen.getByTestId('document-file-icon')).toBeInTheDocument();
       expect(screen.queryByRole('img')).not.toBeInTheDocument();
-      // The hook is still called (hooks must be unconditional) but disabled by
-      // being handed a null id, so no request goes out.
+      // Hook called with a null id: disabled, no request.
       expect(blobUrl).toHaveBeenCalledWith('license', 'lic-1', null);
     });
 
@@ -172,7 +165,7 @@ describe('DocumentFileGallery', () => {
       renderGallery();
 
       expect(screen.queryByRole('button', { name: /view full size/i })).not.toBeInTheDocument();
-      // The download control is the way out instead.
+      // Download control rendered instead.
       await user.click(screen.getByRole('button', { name: /download file/i }));
       await waitFor(() => expect(mockDownload.mutate).toHaveBeenCalled());
     });

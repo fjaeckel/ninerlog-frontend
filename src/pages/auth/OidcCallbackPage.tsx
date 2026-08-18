@@ -7,7 +7,7 @@ import { LogoMark } from '../../components/ui/Logo';
 
 type Status = 'exchanging' | 'error';
 
-/** Coarse error codes the API appends as ?oidc_error=… — detail stays in the server log. */
+/** Coarse error codes the API appends as ?oidc_error=…; detail stays in the server log. */
 const KNOWN_ERRORS = [
   'provider_error',
   'provider_unavailable',
@@ -29,8 +29,7 @@ export default function OidcCallbackPage() {
   const navigate = useNavigate();
   const exchange = useExchangeOidcCode();
   const ranRef = useRef(false);
-  // Capture params once: the URL is scrubbed immediately below, and the
-  // handoff code must never be retried from a stale query string.
+  // Capture params once; the URL is scrubbed immediately below.
   const [code] = useState(() => params.get('oidc_code'));
   const [errorCode] = useState(() => params.get('oidc_error'));
   const [status, setStatus] = useState<Status>(code ? 'exchanging' : 'error');
@@ -39,8 +38,7 @@ export default function OidcCallbackPage() {
     if (ranRef.current) return;
     ranRef.current = true;
 
-    // Scrub the single-use code (or error) from the address bar and history so
-    // a reload or back-navigation never replays it.
+    // Scrub the single-use code (or error) from the address bar and history.
     window.history.replaceState(null, '', '/auth/callback');
 
     if (!code) {

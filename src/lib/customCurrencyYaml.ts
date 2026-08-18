@@ -3,10 +3,9 @@ import type { CustomRuleInput, CustomCurrencyRuleBody } from '../types/customCur
 
 /**
  * Conversion between the YAML a pilot authors and the CustomRuleInput the API
- * expects. The authored document is flat and friendly: metadata (name, emoji,
- * description) sits alongside the rule body (window, filters, requirements). A
- * shared rule round-trips through the same format, so a link recipient sees the
- * exact YAML the author wrote.
+ * expects. The authored document is flat: metadata (name, emoji, description)
+ * alongside the rule body (window, filters, requirements). Shared rules
+ * round-trip through the same format.
  */
 
 export const STARTER_YAML = `# Give your rule a name and (optionally) an emoji.
@@ -43,8 +42,8 @@ interface ParsedDoc {
 }
 
 /** Parse authored YAML into a CustomRuleInput. Throws YamlRuleError with a
- *  human-readable message on malformed input. Full semantic validation is left
- *  to the API; this only guards obvious shape errors so the editor can react. */
+ *  human-readable message on malformed input. Guards shape errors only;
+ *  semantic validation is the API's. */
 export function yamlToInput(text: string): CustomRuleInput {
   let doc: ParsedDoc;
   try {

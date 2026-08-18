@@ -31,10 +31,7 @@ export const useAircraft = () => {
   });
 };
 
-/**
- * Per-registration and per-type flight statistics, keyed uppercased so
- * lookups are robust against case differences between fleet and flights.
- */
+/** Per-registration and per-type flight statistics, keyed uppercased. */
 export const useAircraftStats = () => {
   return useQuery({
     queryKey: ['aircraft', 'stats'],

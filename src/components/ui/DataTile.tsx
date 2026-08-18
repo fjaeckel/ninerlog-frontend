@@ -15,15 +15,7 @@ export interface DataTileProps {
   className?: string;
 }
 
-/**
- * One field of a record, boxed.
- *
- * A label/value row works on a wide screen and falls apart on a phone: the
- * label eats the line and the value is squeezed against the right edge. A tile
- * gives each field its own box with the label on top, so a grid of them stays
- * readable at any width and long labels wrap instead of stealing the value's
- * room.
- */
+/** One field of a record, boxed: label on top, value below. */
 export function DataTile({ label, value, hint, icon, emphasis, mono, className }: DataTileProps) {
   return (
     <div

@@ -55,12 +55,7 @@ describe('useDocumentFilesFeature', () => {
     expect(result.current.enabled).toBe(false);
   });
 
-  // The regression this guards against: a server whose /features payload does
-  // not carry the key this client was generated against. Reading through the
-  // missing key threw during render, which took down every page that mounts a
-  // gallery or strip — the licence and credential lists rendered nothing at
-  // all, not merely without an upload button. Degrading to "off" keeps a
-  // version skew to the feature it describes.
+  // A /features payload missing the documentFiles key degrades to "off".
   it('reads as disabled when the server omits the key entirely', async () => {
     GET.mockResolvedValue({ data: { somethingElse: { enabled: true } }, error: undefined });
 

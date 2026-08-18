@@ -7,13 +7,8 @@ const fmt = (m: number) => formatDuration(m, 'hm');
 const nm = (v: number) => Math.round(v).toString();
 
 /**
- * Quotes a CSV field and neutralises spreadsheet formula injection.
- *
- * Logbook data is user-supplied (aircraft registrations, airport names,
- * instructor and crew names, remarks), so a value starting with =, +, - or @
- * would be evaluated as a formula when the export is opened in Excel or
- * Sheets. Prefixing with a single quote keeps the text intact while forcing
- * it to be read as a literal.
+ * Quotes a CSV field and neutralises spreadsheet formula injection: values
+ * starting with =, +, - or @ are prefixed with a single quote.
  */
 function csvField(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return '';
@@ -42,19 +37,15 @@ function rangeLabel(a: FlightAnalytics): string {
   return `${a.range.from ?? ''} to ${a.range.to ?? ''}`;
 }
 
-/**
- * Notes the initial-hours snapshot folded into the totals, so an exported
- * report explains why its totals exceed the flights it lists.
- */
+/** Notes the initial-hours snapshot folded into the totals. */
 function baselineLabel(a: FlightAnalytics): string | null {
   if (!a.baseline) return null;
   return `${fmt(a.baseline.totalMinutes)} carried forward as of ${a.baseline.baselineDate}`;
 }
 
 /**
- * Exports every section of the report as one multi-block CSV. Each block is
- * a titled table separated by a blank line — the shape spreadsheet users
- * expect from a report export, and stable enough to diff between runs.
+ * Exports every section of the report as one multi-block CSV: titled tables
+ * separated by blank lines.
  */
 export function exportAnalyticsToCSV(a: FlightAnalytics) {
   const lines: string[] = [];
@@ -218,11 +209,7 @@ function esc(v: unknown): string {
     .replace(/"/g, '&quot;');
 }
 
-/**
- * Opens a print-ready summary in a new window. Deliberately a single
- * portrait page of the numbers that matter — the charts are on screen; the
- * printed artefact is the record.
- */
+/** Opens a print-ready one-page summary in a new window. */
 export function exportAnalyticsToPDF(a: FlightAnalytics, dateFormatPref: DateFormatPref = 'DD.MM.YYYY') {
   const t = a.totals;
   const r = a.records;

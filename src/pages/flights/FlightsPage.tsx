@@ -31,17 +31,15 @@ const SORT_FIELDS: SortField[] = ['date', 'totalTime', 'createdAt'];
 /** A run of consecutive cards sharing a heading in the mobile list. */
 interface FlightGroup {
   key: string;
-  /** Null when the list is not in date order and a month heading would lie. */
+  /** Null when the list is not in date order. */
   label: string | null;
   flights: Flight[];
   totalMinutes: number;
 }
 
 /**
- * Splits the page's flights into the months they were flown in.
- *
- * Only meaningful while the list is sorted by date — under any other sort the
- * months interleave, so the whole page becomes one unlabelled group instead.
+ * Splits the page's flights into the months they were flown in. Under any
+ * sort other than date, the whole page becomes one unlabelled group.
  */
 function groupFlightsByMonth(flights: Flight[], locale: string, byMonth: boolean): FlightGroup[] {
   const groups: FlightGroup[] = [];
@@ -58,10 +56,7 @@ function groupFlightsByMonth(flights: Flight[], locale: string, byMonth: boolean
   return groups;
 }
 
-/**
- * Whether neither end of a route resolved to a code — two free-text sites have
- * to share the column, so each is abbreviated harder.
- */
+/** Whether neither end of a route resolved to a code. */
 function routeIsFreeText(flight: Flight): boolean {
   return (
     !splitAirportLabel(flight.departureIcao, flight.departureAirportName).code &&
@@ -70,11 +65,7 @@ function routeIsFreeText(flight: Flight): boolean {
 }
 
 /**
- * One end of a route in the table.
- *
- * The table has one column for the whole route, and an off-airport site written
- * out in full ("North field, Bad Hersfeld-Johannesberg") stretches it until the
- * time columns fall off the right-hand edge. A code is shown as it is; a name is
+ * One end of a route in the table. A code is shown as-is; a name is
  * abbreviated, with the full value in a title.
  */
 function RouteEnd({ part, both }: { part: AirportParts; both: boolean }) {
@@ -87,12 +78,7 @@ function RouteEnd({ part, both }: { part: AirportParts; both: boolean }) {
   );
 }
 
-/**
- * The list params without the page.
- *
- * The scrolling query owns its own pages; passing one in would cache the same
- * list once per page the reader happens to have arrived on.
- */
+/** The list params without the page; the scrolling query owns its own pages. */
 function infiniteParamsOf(params: ListFlightsParams): Omit<ListFlightsParams, 'page'> {
   const rest = { ...params };
   delete rest.page;
@@ -110,9 +96,7 @@ function monthLabel(month: string, locale: string): string {
 
 export default function FlightsPage() {
   const { t, i18n } = useTranslation(['flights', 'common']);
-  // `lg` is where the table takes over from the card list. Deciding it here
-  // rather than in CSS means only one of the two queries runs: rendering both
-  // views and hiding one would fetch the same flights twice.
+  // At `lg` the table takes over from the card list; only one query runs.
   const isWide = useMediaQuery('(min-width: 1024px)');
   const { fmtDate, fmtDuration } = useFormatPrefs();
   const columnPrefs = useFlightColumnPrefs();
@@ -120,8 +104,7 @@ export default function FlightsPage() {
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
 
-  // Search, filters, sort and page live in the URL query string so they
-  // survive a trip to a flight's detail page and back (and stay shareable).
+  // Search, filters, sort and page live in the URL query string.
   const [searchParams, setSearchParams] = useSearchParams();
   const param = useCallback((key: string) => searchParams.get(key) ?? '', [searchParams]);
 
@@ -140,9 +123,7 @@ export default function FlightsPage() {
   const functionFilter: '' | 'pic' | 'dual' = functionParam === 'pic' || functionParam === 'dual' ? functionParam : '';
   const logbookLicenseId = param('logbook');
 
-  // Replace rather than push: filtering is not a navigation step the user
-  // wants to walk back through, but the current filters must be part of the
-  // history entry so the browser (and the detail page's back link) restore them.
+  // Replace rather than push, keeping the filters in the history entry.
   const updateParams = useCallback(
     (updates: Record<string, string>, { keepPage = false }: { keepPage?: boolean } = {}) => {
       setSearchParams(
@@ -166,21 +147,20 @@ export default function FlightsPage() {
     return !!state?.openForm;
   });
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
-  // Filters restored from the URL start expanded, so they are not applied invisibly.
+  // Filters restored from the URL start expanded.
   const [showFilters, setShowFilters] = useState(
     () => !!(startDate || endDate || aircraftReg || departureIcao || arrivalIcao || functionFilter)
   );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  // The search input keeps its own state so typing stays responsive; the URL
-  // is only written after the debounce.
+  // The search input keeps its own state; the URL is written after the debounce.
   const [search, setSearch] = useState(searchQuery);
   const syncedQuery = useRef(searchQuery);
 
   const { data: licenses } = useLicenses();
   const separateLogbookLicenses = licenses?.filter((l) => l.requiresSeparateLogbook) || [];
 
-  // Query changed outside the input (back/forward, clear all) — adopt it.
+  // Adopt a query changed outside the input (back/forward, clear all).
   useEffect(() => {
     if (searchQuery !== syncedQuery.current) {
       syncedQuery.current = searchQuery;
@@ -188,10 +168,8 @@ export default function FlightsPage() {
     }
   }, [searchQuery]);
 
-  // Debounce search input into the URL. Half-finished queries never leave the
-  // browser: the search language is structured, so "from:" or a trailing "AND"
-  // cannot match anything, and spending a request (and rate-limit budget) on
-  // one only makes the finished query more likely to be refused.
+  // Debounce search input into the URL; half-finished queries never leave
+  // the browser.
   useEffect(() => {
     if (search === syncedQuery.current) return;
     if (!isSearchWorthSending(search)) return;
@@ -202,7 +180,7 @@ export default function FlightsPage() {
     return () => clearTimeout(timer);
   }, [search, updateParams]);
 
-  // Open form modal when navigated with state.openForm (e.g. from bottom nav + button)
+  // Open the form modal when navigated with state.openForm.
   const locationState = location.state as Record<string, unknown> | null;
   const shouldOpenForm = !!locationState?.openForm;
   const [prevShouldOpen, setPrevShouldOpen] = useState(shouldOpenForm);
@@ -214,7 +192,7 @@ export default function FlightsPage() {
   }
   useEffect(() => {
     if (shouldOpenForm) {
-      // Clear the state so refreshing doesn't re-open (keeping the active filters)
+      // Clear the state, keeping the active filters.
       navigate(`${location.pathname}${location.search}`, { replace: true, state: {} });
     }
   }, [shouldOpenForm, location.pathname, location.search, navigate]);
@@ -251,15 +229,13 @@ export default function FlightsPage() {
     });
   }, [updateParams, setSearch]);
 
-  // The table reads a page at a time; the card list scrolls and never goes
-  // back to page one. Exactly one of these is enabled.
+  // Exactly one of these is enabled: paged table or scrolling card list.
   const paged = useFlights(params, { enabled: isWide });
   const infinite = useInfiniteFlights(infiniteParamsOf(params), { enabled: !isWide });
 
   const isLoading = isWide ? paged.isLoading : infinite.isLoading;
-  // A page that fails halfway down the list must not throw away the flights
-  // already read — only a first load with nothing to show is a page error.
-  // A later failure is reported at the foot, where it happened.
+  // Only a first load with nothing to show is a page error; a later failure
+  // is reported at the foot.
   const error = isWide ? paged.error : infinite.data ? null : infinite.error;
   const data = paged.data;
 
@@ -267,27 +243,21 @@ export default function FlightsPage() {
     () => (isWide ? data?.data || [] : infinite.data?.pages.flatMap((p) => p.data) || []),
     [isWide, data, infinite.data]
   );
-  // Optional table columns — which ones the user wants (or, in automatic mode,
-  // which ones the flights on this page justify), and how many of them the
-  // table's own width can take.
+  // Optional table columns for this page.
   const columns = useMemo(() => selectFlightColumns(flights, columnPrefs), [flights, columnPrefs]);
-  // One set of time columns for every card on the page — see
-  // `selectFlightCardColumns`.
+  // One set of time columns for every card on the page.
   const cardColumns = useMemo(
     () => selectFlightCardColumns(flights, columnPrefs),
     [flights, columnPrefs]
   );
-  // Month headings for the mobile card list — a logbook reads by month, and the
-  // running total per month is the number pilots actually look for.
+  // Month headings with running totals for the mobile card list.
   const monthGroups = useMemo(
     () => groupFlightsByMonth(flights, i18n.language, sortBy === 'date'),
     [flights, i18n.language, sortBy]
   );
 
-  // Endless scroll: the next page is pulled when the foot of the list comes
-  // into view, a screen early so the seam is rarely visible. The button under
-  // it is not a fallback for show — it is how this works without a pointer
-  // that scrolls, and how it works when the observer never fires.
+  // Endless scroll: the next page is pulled a screen before the foot of the
+  // list; the button covers pointerless input and a never-firing observer.
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = infinite;
   useEffect(() => {

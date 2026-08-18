@@ -109,7 +109,6 @@ export interface Flight {
   landingsDay: number;
   landingsNight: number;
   remarks: string | null;
-  // New fields
   instructorName: string | null;
   instructorComments: string | null;
   sicTime: number;

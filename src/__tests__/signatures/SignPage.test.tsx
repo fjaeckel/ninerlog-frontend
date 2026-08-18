@@ -31,9 +31,7 @@ const mockFlightInfo = {
 describe('SignPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // happy-dom's <canvas> has no real 2D rendering backend, so
-    // toDataURL() doesn't produce a genuine base64 PNG. Stub it so the
-    // submit-flow tests can exercise the real success path.
+    // Stub toDataURL; happy-dom's <canvas> has no 2D backend.
     vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,aGVsbG8=');
   });
 

@@ -26,8 +26,7 @@ function OidcLogin({ providerName, authorizeUrl }: { providerName: string; autho
 
   const handleSignIn = () => {
     setRedirecting(true);
-    // Must be a top-level navigation, not fetch: the API sets the state cookie
-    // and answers with a redirect to the identity provider.
+    // Top-level navigation, not fetch.
     window.location.assign(authorizeUrl);
   };
 
@@ -57,8 +56,7 @@ function LocalLogin() {
   const login = useLogin();
   const login2FA = useLogin2FA();
   const passkeyLogin = useLoginWithPasskey();
-  // Separate mutation instance so the conditional/autofill ceremony's pending
-  // state never drives the explicit "Sign in with passkey" button.
+  // Separate mutation instance for the conditional/autofill ceremony.
   const passkeyConditional = useLoginWithPasskey();
   const passkeyAvailable = passkeysSupported();
   const { setAuth } = useAuthStore();
@@ -84,7 +82,6 @@ function LocalLogin() {
       setResentNotice(false);
       const result = await login.mutateAsync(data);
 
-      // Check if 2FA is required
       if ((result as any).requiresTwoFactor) {
         setTwoFactorToken((result as any).twoFactorToken);
         return;
@@ -115,7 +112,7 @@ function LocalLogin() {
     try {
       await resendVerification.mutateAsync(unverifiedEmail);
     } catch {
-      // ignore — endpoint always 204
+      // ignore
     }
     setResentNotice(true);
   };
@@ -146,12 +143,12 @@ function LocalLogin() {
       await passkeyLogin.mutateAsync({});
       navigate('/dashboard');
     } catch (err) {
-      // Surface a generic message — most failures are user cancellation.
+      // Generic message.
       const msg = (err as { error?: string; message?: string })?.error
         ?? (err as { message?: string })?.message
         ?? '';
       if (msg.toLowerCase().includes('not allowed') || msg.toLowerCase().includes('aborted')) {
-        // user cancelled — stay silent
+        // user cancelled
         return;
       }
       setError(t('auth:login.passkeyFailed'));
@@ -164,10 +161,7 @@ function LocalLogin() {
     let cancelled = false;
     (async () => {
       try {
-        // Only attempt conditional mediation if the browser actually supports
-        // it. Otherwise startAuthentication() will hang indefinitely waiting
-        // for an autofill suggestion that can never be produced, leaving the
-        // mutation in a permanent "pending" state.
+        // Conditional mediation only on browsers that support it.
         const PKC = (window as unknown as { PublicKeyCredential?: { isConditionalMediationAvailable?: () => Promise<boolean> } }).PublicKeyCredential;
         if (!PKC?.isConditionalMediationAvailable) return;
         const supported = await PKC.isConditionalMediationAvailable();
@@ -175,7 +169,7 @@ function LocalLogin() {
         await passkeyConditional.mutateAsync({ conditional: true });
         if (!cancelled) navigate('/dashboard');
       } catch {
-        // Conditional UI may simply be unavailable — silently ignore.
+        // ignore
       }
     })();
     return () => { cancelled = true; };
@@ -354,9 +348,7 @@ export default function LoginPage() {
   const { t } = useTranslation('auth');
   const providers = useAuthProviders();
 
-  // OIDC servers must never flash the password form, so wait for the probe.
-  // If the probe itself fails, fall back to the local form rather than locking
-  // everyone out over a transient error — local mode is the default.
+  // Wait for the provider probe; on probe failure fall back to the local form.
   const oidc =
     providers.data?.mode === 'oidc' &&
     providers.data.oidc.enabled &&
@@ -366,7 +358,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-900 px-4 py-10">
-      {/* Aviation atmosphere — subtle radial brand glow, hidden in reduced-motion is fine because static */}
+      {/* Subtle radial brand glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"

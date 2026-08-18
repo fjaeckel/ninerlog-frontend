@@ -1,28 +1,25 @@
 /**
- * Layout audit — the checks a screenshot makes you notice, done by measurement.
- *
- * Run over the same targets as the capture, at the same viewports:
+ * Layout audit — measured checks over the same targets and viewports as the
+ * capture:
  *
  *   npm run shots -- --audit             desktop
  *   npm run shots -- --audit --mobile    390×844
  *
- * It reports four things per screen:
+ * Reports four things per screen:
  *
- *   H-SCROLL       the page scrolls sideways — always a bug
+ *   H-SCROLL       the page scrolls sideways
  *   small targets  interactive elements under the minimum for the input
  *                  device — 44×44 for a finger, 24×24 (WCAG 2.2 AA) for a
- *                  pointer, because the 44px figure is a touch figure
- *   tiny text      text below 11px, which stops being legible on a phone
- *   width          how much of the available column a page actually uses;
- *                  a list page leaving room on a desktop is wasting it
+ *                  pointer
+ *   tiny text      text below 11px
+ *   width          how much of the available column a page uses
  *
- * Findings are reported, not enforced — some are deliberate (the sr-only skip
- * link measures 1×1 until focused). Read them, then decide.
+ * Findings are reported, not enforced.
  */
 
 /**
- * Runs inside the page. Returns plain data, so it must not close over anything
- * — `min` is passed in because the threshold differs by input device.
+ * Runs inside the page; returns plain data and closes over nothing. `min` is
+ * the per-device target threshold.
  */
 export function collectReport(min) {
   const out = { overflowX: 0, smallTargets: [], tinyText: [], widthUsed: 0 };
@@ -39,15 +36,13 @@ export function collectReport(min) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) continue;
     if (el.closest('[aria-hidden="true"]')) continue;
-    // A visually-hidden skip link is 1×1 until it takes focus, at which point
-    // it is full size — not a real miss.
+    // A visually-hidden skip link measures 1×1 until focused.
     if (el.className && String(el.className).includes('sr-only')) continue;
     const display = getComputedStyle(el).display;
     const inlineText = el.tagName === 'A' && display.startsWith('inline');
     // An inline link is as wide as its text; only its height is a design choice.
     if (inlineText ? r.height >= min : r.width >= min && r.height >= min) continue;
-    // A checkbox inside its own label is tapped through the label, so the
-    // label's box is the target that matters.
+    // A checkbox inside its own label: measure the label's box.
     const wrapper = el.closest('label');
     if (wrapper) {
       const w = wrapper.getBoundingClientRect();

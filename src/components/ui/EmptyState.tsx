@@ -14,13 +14,7 @@ interface EmptyStateProps {
   className?: string;
 }
 
-/**
- * The "nothing here yet" panel.
- *
- * Takes a lucide icon rather than arbitrary content so every empty state in
- * the app shares one icon size, weight and colour — pages used to pass either
- * an emoji or a differently-sized icon element, and no two matched.
- */
+/** The "nothing here yet" panel. Takes a lucide icon, not arbitrary content. */
 export function EmptyState({ icon: Icon, title, description, action, className }: EmptyStateProps) {
   return (
     <div className={cn('card text-center py-12', className)}>

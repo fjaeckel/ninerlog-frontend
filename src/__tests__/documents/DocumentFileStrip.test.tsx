@@ -53,8 +53,7 @@ describe('DocumentFileStrip', () => {
     } as never);
   });
 
-  // The whole point of this component: photos were previously invisible from
-  // the list, so a card with photos must now say so.
+  // A card with photos shows the strip.
   it('shows a thumbnail on a document that has photos', () => {
     renderStrip();
     expect(screen.getByRole('img')).toBeInTheDocument();
@@ -80,8 +79,7 @@ describe('DocumentFileStrip', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  // Each visible thumbnail is its own authenticated request, and this renders
-  // once per card — so the strip must not fan out with the photo count.
+  // Thumbnail requests are capped, independent of the photo count.
   it('caps the thumbnails and counts the rest', () => {
     mockFiles([aFile('a'), aFile('b'), aFile('c'), aFile('d')]);
     renderStrip();
@@ -107,8 +105,7 @@ describe('DocumentFileStrip', () => {
   });
 
 
-  // A PDF on a card shows an icon, costs no request, and is not clickable —
-  // downloading belongs in the edit form, not on a list row.
+  // A PDF on a card shows an icon, costs no request, and is not clickable.
   it('shows a PDF as an icon tile with no preview and no fetch', () => {
     const blobUrl = vi.spyOn(documentFileHooks, 'useDocumentFileUrl');
     mockFiles([aFile('a', 'Scan', 'application/pdf')]);
@@ -142,8 +139,7 @@ describe('DocumentFileStrip', () => {
     expect(screen.getByRole('heading', { name: 'Front page' })).toBeInTheDocument();
   });
 
-  // It is a read-only peek — uploading and deleting stay in the edit form, so
-  // no destructive control may appear on a list card.
+  // No destructive control on a list card.
   it('offers no upload or delete control', () => {
     mockFiles([aFile('a')]);
     renderStrip();

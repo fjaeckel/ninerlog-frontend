@@ -2,13 +2,10 @@ import { afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// Initialize i18n for tests — loads all locale files so t() calls return English strings
+// Initialize i18n for tests; t() returns English strings.
 import '../i18n';
 
-// Node.js 25+ ships a built-in globalThis.localStorage that is non-functional
-// without the --localstorage-file flag. Happy-dom reuses this broken object
-// instead of providing its own. Zustand's persist middleware then fails with
-// "storage.setItem is not a function". Provide a working in-memory fallback.
+// In-memory localStorage replacing Node 25+'s non-functional built-in.
 if (typeof globalThis.localStorage?.setItem !== 'function') {
   const store = new Map<string, string>();
   const storage = {
@@ -22,7 +19,6 @@ if (typeof globalThis.localStorage?.setItem !== 'function') {
   globalThis.localStorage = storage as unknown as Storage;
 }
 
-// Cleanup after each test
 afterEach(() => {
   cleanup();
 });

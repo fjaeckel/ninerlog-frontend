@@ -3,10 +3,9 @@
  * DEV-ONLY preview entry — NOT part of the app build.
  *
  * Renders the real flights list and flight detail pages against seeded query
- * data, so the mobile design can be checked in a browser (and at a phone
- * width) without a backend. Reachable at /preview-flights.html on the dev
- * server. Anything not seeded below — signatures, licenses — falls back to the
- * page's own empty/error state, which is also worth looking at.
+ * data, without a backend. Reachable at /preview-flights.html on the dev
+ * server. Anything not seeded below — signatures, licenses — falls back to
+ * the page's own empty/error state.
  */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -29,15 +28,12 @@ const queryClient = new QueryClient({
   },
 });
 
-// Same key shape the pages build, so the seeded data is served straight away.
+// Same key shape the pages build.
 queryClient.setQueryData(['flights', { page: 1, pageSize: 20, sortBy: 'date', sortOrder: 'desc' }], {
   data: flights,
   pagination: { page: 1, pageSize: 20, total: flights.length, totalPages: 1 },
 });
-// The phone list scrolls instead of paging, so it reads a different key.
-// Two pages already loaded, as if the reader had scrolled through the first —
-// there is no backend here to serve a third, and asking for one would only
-// exercise the failure path.
+// Infinite-scroll key, seeded with two pages already loaded.
 const half = Math.ceil(flights.length / 2);
 queryClient.setQueryData(['flights', 'infinite', { pageSize: 20, sortBy: 'date', sortOrder: 'desc' }], {
   pages: [
@@ -60,7 +56,7 @@ function Preview() {
       <div className="surface-glass fixed inset-x-0 top-0 z-[1010] flex h-14 items-center gap-4 border-b px-4">
         <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Flights — preview</span>
       </div>
-      {/* Out of the layout's way, so it never covers what is being reviewed */}
+      {/* Preview controls, fixed outside the layout */}
       <div data-preview-controls className="fixed bottom-4 right-4 z-[1030] flex items-end gap-3 rounded-xl border border-slate-200 bg-white/90 p-3 shadow-lg backdrop-blur dark:border-slate-700 dark:bg-slate-800/90">
         <LanguageSwitcher />
         <ThemeSwitcher variant="full" />

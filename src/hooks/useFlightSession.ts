@@ -37,7 +37,6 @@ export const useCurrentFlightSession = () => {
       if (error) throw error;
       return data ?? null;
     },
-    // Keep the elapsed-time view honest when the page stays open in the cockpit
     refetchInterval: 60_000,
     refetchOnWindowFocus: true,
   });
@@ -47,8 +46,7 @@ export const useRecordFlightSessionEvent = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (event: FlightSessionEvent): Promise<RecordEventResult> => {
-      // Stamp the tap instant client-side so a queued/slow request still
-      // records the true time, not the time the request finally lands.
+      // Tap instant, stamped client-side.
       const stamped: FlightSessionEvent = {
         occurredAt: new Date().toISOString(),
         ...event,
@@ -60,7 +58,7 @@ export const useRecordFlightSessionEvent = () => {
           body: stamped,
         });
       } catch {
-        // Network failure (offline at the ramp) — queue for later replay.
+        // Network failure: queue for later replay.
         enqueueQuickLogEvent(stamped);
         return { session: null, queued: true };
       }
@@ -73,7 +71,7 @@ export const useRecordFlightSessionEvent = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['flightSession'] });
-      // Completion creates a flight — refresh the logbook views.
+      // Completion creates a flight.
       if (data.session?.status === 'completed') {
         queryClient.invalidateQueries({ queryKey: ['flights'] });
       }
@@ -89,7 +87,7 @@ export const useDiscardFlightSession = () => {
       if (error && response?.status !== 404) throw error;
     },
     onSuccess: () => {
-      // Drop any queued taps too — they belong to the discarded session.
+      // Drop queued taps.
       saveQuickLogQueue([]);
       queryClient.invalidateQueries({ queryKey: ['flightSession'] });
     },
@@ -97,10 +95,8 @@ export const useDiscardFlightSession = () => {
 };
 
 /**
- * Replays offline-queued taps in order. Events the server rejects (4xx) are
- * dropped — the session view afterwards shows the pilot what actually stuck,
- * and re-tapping is always safe. Stops at the first network failure and
- * keeps the remainder queued.
+ * Replays offline-queued taps in order. Server-rejected (4xx) events are
+ * dropped. Stops at the first network failure and keeps the remainder queued.
  */
 export async function flushQuickLogQueue(): Promise<number> {
   const queue = loadQuickLogQueue();
@@ -112,7 +108,7 @@ export async function flushQuickLogQueue(): Promise<number> {
       await apiClient.POST('/flight-sessions/current/events', { body: event });
       sent++;
     } catch {
-      break; // still offline — retry the rest on the next flush
+      break; // still offline
     }
   }
   saveQuickLogQueue(queue.slice(sent));
@@ -120,12 +116,8 @@ export async function flushQuickLogQueue(): Promise<number> {
 }
 
 /**
- * Flushes the offline queue on mount, whenever the connection returns, and
- * whenever the app comes back to the foreground. The 'online' event never
- * fires on iOS Safari/PWA when the tab was suspended rather than actually
- * offline, so the visibility listener is what catches "pilot reopens the
- * app back in coverage" on iPhone — there's no Background Sync API there
- * to do it for us while the app is closed.
+ * Flushes the offline queue on mount, when the connection returns, and when
+ * the app comes back to the foreground.
  */
 export function useQuickLogQueueSync() {
   const queryClient = useQueryClient();

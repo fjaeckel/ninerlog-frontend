@@ -2,11 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { createTestUser, injectAuth, seedFlight, seedAircraft, type AuthContext } from './helpers';
 
 /**
- * The flights page keeps both layouts in the DOM and picks between them with
- * CSS alone — the card list is `lg:hidden`, the table `hidden lg:block`. Text
- * locators do not filter on visibility, so an unscoped `getByText('EDDF')`
- * matches the code twice and trips strict mode. Desktop projects run wide
- * enough that the table is the visible one, so assert against it by name.
+ * Both flight-list layouts stay in the DOM (card list `lg:hidden`, table
+ * `hidden lg:block`); desktop projects assert against the table by name.
  */
 const flightTable = (page: Page) => page.getByRole('table', { name: 'Flight Log' });
 
@@ -55,9 +52,7 @@ test.describe('Flights', () => {
   });
 
   test('should search flights', async ({ page }) => {
-    // Seeds its own flight rather than leaning on the one the create-flight
-    // test logs: an ordering dependency between tests turns one real failure
-    // into two, and hides which of them actually broke.
+    // Seeds its own flight.
     await seedAircraft(page, auth.accessToken, { registration: 'D-FLT4' });
     await seedFlight(page, auth.accessToken, { aircraftReg: 'D-FLT4', departureIcao: 'EGLL', arrivalIcao: 'EGKK' });
     await page.getByRole('link', { name: 'Flights' }).first().click();
@@ -79,8 +74,7 @@ test.describe('Flights', () => {
     const table = flightTable(page);
     await expect(table.getByText('LFPG')).toBeVisible({ timeout: 10000 });
 
-    // Only the table carries row-level actions — the card list sends the pilot
-    // to the detail page to edit or delete, so the row must be found there.
+    // Row-level actions exist only in the table.
     const row = table.getByRole('row').filter({ hasText: 'LFPG' });
     await row.getByRole('button', { name: /delete/i }).click();
 

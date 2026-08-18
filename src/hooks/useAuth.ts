@@ -4,7 +4,7 @@ import { apiClient } from '../api/client';
 import i18n from '../i18n';
 import type { components, operations } from '../api/schema';
 
-// Extract request body types from operations (they're inline, not in components)
+// Request body types extracted from operations.
 type RegisterRequest = operations['registerUser']['requestBody']['content']['application/json'] & {
   /** Preferred interface language, inferred from the browser at signup. */
   preferredLocale?: components['schemas']['User']['preferredLocale'];
@@ -17,8 +17,7 @@ export type AuthProviders = components['schemas']['AuthProviders'];
 
 /**
  * Unauthenticated capability probe: which sign-in methods this server offers.
- * The server runs in exactly one mode (`local` or `oidc`) for its whole
- * lifetime, so the result is cached for the session.
+ * Cached for the session.
  */
 export const useAuthProviders = () =>
   useQuery({
@@ -87,7 +86,7 @@ export const useLogin = () => {
       return data;
     },
     onSuccess: (data) => {
-      // Skip setAuth if 2FA is required — handled by LoginPage
+      // No setAuth while 2FA is pending.
       if (data.requiresTwoFactor) return;
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);
       if (data.user?.preferredLocale && data.user.preferredLocale !== i18n.language) {
@@ -122,20 +121,16 @@ export const useLogout = () => {
 
   return useMutation({
     mutationFn: async () => {
-      // Revoke the refresh token server-side. Clearing local state alone left
-      // the token valid in the database for its full lifetime, so a retained
-      // copy could resurrect the session after the user had logged out.
+      // Revoke the refresh token server-side.
       const refreshToken = useAuthStore.getState().refreshToken;
       if (!refreshToken) return;
       try {
         await apiClient.POST('/auth/logout', { body: { refreshToken } });
       } catch {
-        // Best effort: never trap the user in a signed-in UI because the
-        // revocation call failed. Local state is cleared regardless below.
+        // Best effort.
       }
     },
-    // onSettled rather than onSuccess so local state is cleared even if the
-    // request throws.
+    // Clears local state even when the request throws.
     onSettled: () => {
       clearAuth();
     },

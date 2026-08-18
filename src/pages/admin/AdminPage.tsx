@@ -438,9 +438,8 @@ function AuditLogTab() {
   );
 }
 
-// Delivery statuses, ordered so the ones an operator must act on read first.
-// Only `hard_bounce` and `invalid_address` stop mail to an address; the rest
-// are informational, and colouring them alike would hide that difference.
+// Delivery statuses, actionable ones first. Only `hard_bounce` and
+// `invalid_address` stop mail to an address.
 const DELIVERY_STATUS_TONE: Record<string, string> = {
   delivered: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   hard_bounce: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
@@ -700,9 +699,7 @@ function ConfigTab() {
 
   const rows: { label: string; value: React.ReactNode }[] = [
     {
-      // Reported before everything else: the auth mode decides how accounts are
-      // created at all, and switches other rows off (unverified cleanup never
-      // runs under SSO).
+      // Auth mode first.
       label: t('admin.config.authMode'),
       value: data.authMode === undefined
         ? <span className="text-slate-500 dark:text-slate-400">{'—'}</span>
@@ -748,8 +745,7 @@ function ConfigTab() {
         : <span className="text-slate-500 dark:text-slate-400">{t('admin.config.cloudBackupProvidersNone')}</span>,
     },
     {
-      // Off is a deliberate deployment choice here, not a misconfiguration, so
-      // it renders muted rather than amber.
+      // Off renders muted, not amber.
       label: t('admin.config.documentFiles'),
       value: data.documentFilesEnabled === undefined
         ? <span className="text-slate-500 dark:text-slate-400">{'—'}</span>

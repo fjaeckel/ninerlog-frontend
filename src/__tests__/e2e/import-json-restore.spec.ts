@@ -3,16 +3,11 @@ import { createTestUser, injectAuth, apiCall, type AuthContext } from './helpers
 
 // Full end-to-end JSON backup/restore through the UI:
 //
-//   1. User A (seeded via API) populates an account with a small but
-//      non-trivial profile.
-//   2. User A's account is exported to JSON via the API (we don't drive the
-//      Export page UI here; that's covered elsewhere).
+//   1. User A (seeded via API) populates an account.
+//   2. User A's account is exported to JSON via the API.
 //   3. User B is created fresh, logged in, and visits /import.
-//   4. The user clicks the "Restore JSON Backup" tab, uploads the backup
-//      file, and sees the success summary card.
-//   5. The /flights and /aircraft API endpoints for user B are then asserted
-//      to reflect the restored data — proving the UI flow really wires up to
-//      the backend.
+//   4. The "Restore JSON Backup" tab: upload the file, see the summary card.
+//   5. User B's /flights and /aircraft reflect the restored data.
 
 test.describe('Import page — JSON restore', () => {
   test('user can restore a JSON backup through the UI', async ({ page, request }) => {
@@ -113,8 +108,7 @@ test.describe('Import page — JSON restore', () => {
     // Success card appears with counts.
     await expect(page.getByRole('heading', { name: 'Backup restored' })).toBeVisible({ timeout: 15000 });
     await expect(page.getByText('Aircraft imported')).toBeVisible();
-    // Scope the "Flights" label lookup to the main content area to avoid
-    // matching the nav link of the same name.
+    // "Flights" label inside <main> only.
     await expect(page.locator('#main-content').getByText('Flights', { exact: true })).toBeVisible();
 
     // ----- 5. Verify the destination account really got the data -----

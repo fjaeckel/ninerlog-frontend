@@ -1,15 +1,7 @@
 /**
- * Structured application logger for the browser.
- *
- * In production every entry is emitted as a single JSON line, mirroring the
- * shape of the nginx access log and the Go API's slog output ({time, level,
- * logger, msg, ...context}). That keeps browser logs — surfaced via the iOS
- * Web Inspector or piped out of a wrapping WebView — parseable with the same
- * tooling as the rest of the stack. In development entries stay human-readable
- * so the DevTools console remains easy to scan.
- *
- * This module is the one sanctioned place that touches `console` directly;
- * everything else goes through a scoped logger from `createLogger`.
+ * Structured application logger for the browser. Production emits one JSON
+ * line per entry ({time, level, logger, msg, ...context}); development emits
+ * human-readable lines. The one place that touches `console` directly.
  */
 import { APP_ENV } from './config';
 
@@ -26,8 +18,7 @@ export interface Logger {
 
 const isProd = APP_ENV === 'production';
 
-// Route each level to the matching console method so DevTools keeps its
-// severity styling and level filtering (and stack capture on error).
+// Route each level to the matching console method.
 const consoleFor: Record<LogLevel, (...args: unknown[]) => void> = {
   debug: console.debug.bind(console),
   info: console.info.bind(console),
@@ -35,8 +26,7 @@ const consoleFor: Record<LogLevel, (...args: unknown[]) => void> = {
   error: console.error.bind(console),
 };
 
-// Errors don't survive JSON.stringify (their fields are non-enumerable), so
-// unpack any Error in the context into a plain, serializable object.
+// Unpack Error values in the context into plain serializable objects.
 function normalizeContext(context?: LogContext): LogContext {
   if (!context) return {};
   const out: LogContext = {};
@@ -71,7 +61,7 @@ function emit(level: LogLevel, scope: string, msg: string, context?: LogContext)
 
 /**
  * Create a logger bound to a `scope` (component or module name), recorded as
- * the `logger` field on every entry for filtering and correlation.
+ * the `logger` field on every entry.
  */
 export function createLogger(scope: string): Logger {
   return {

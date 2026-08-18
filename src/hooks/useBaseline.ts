@@ -18,7 +18,6 @@ export const useMyBaseline = () => {
       if (error) throw error;
       return (data as FlightBaseline) ?? null;
     },
-    // Snapshots change rarely; cache for the session.
     staleTime: 5 * 60 * 1000,
   });
 };
@@ -36,7 +35,6 @@ export const useUpsertBaseline = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: BASELINE_QUERY_KEY });
-      // Statistics now include / exclude the baseline contribution.
       queryClient.invalidateQueries({ queryKey: ['my-statistics'] });
     },
   });

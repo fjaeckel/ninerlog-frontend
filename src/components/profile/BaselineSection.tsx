@@ -10,9 +10,7 @@ import {
 import { DurationInput } from '../flights/DurationInput';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
-// Form state. Durations are stored as integer minutes (matching API storage and
-// the rest of the app); landings/flight counts as strings so the input can be
-// cleared while typing.
+// Form state: durations as integer minutes, landings/flight counts as strings.
 type FormState = {
   baselineDate: string;
   totalFlights: string;

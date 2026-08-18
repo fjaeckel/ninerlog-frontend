@@ -1,13 +1,7 @@
 /**
- * Fixture data for the screenshot harness.
- *
- * These stand in for the API so every screen renders with representative
- * content — a logbook with flights in it, a rating that is about to lapse, a
- * credential that has already expired. Shapes follow `src/api/schema.ts`; when
- * an endpoint changes there, change it here too or the screen renders empty.
- *
- * The clock is pinned so a capture taken today matches one taken next month:
- * every date is derived from TODAY rather than from `new Date()`.
+ * Fixture data for the screenshot harness, standing in for the API. Shapes
+ * follow `src/api/schema.ts`; when an endpoint changes there, change it here
+ * too. The clock is pinned: every date derives from TODAY, not `new Date()`.
  */
 
 const TODAY = new Date('2026-08-16T10:00:00Z');
@@ -378,8 +372,8 @@ const ROUTES = {
 };
 
 /**
- * The body to serve for an API path, or null when nothing matches — the
- * harness still answers 200 so a screen never hangs on a pending query.
+ * The body to serve for an API path, or null when nothing matches (still
+ * answered 200).
  */
 export function bodyFor(pathname) {
   const path = pathname.replace(/^.*\/api\/v1/, '');

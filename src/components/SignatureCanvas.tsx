@@ -6,9 +6,8 @@ export interface SignatureCanvasHandle {
   /**
    * Returns the drawn signature as raw base64 PNG (no
    * "data:image/png;base64," prefix), or null if nothing has been drawn.
-   * If `stampText` is given, it's rendered into the bottom-right corner of
-   * the exported image (e.g. the instructor's certificate number) — it is
-   * NOT shown on the live pad, only baked into the saved artifact.
+   * `stampText` is rendered into the bottom-right corner of the exported
+   * image only, not on the live pad.
    */
   toBase64Png: (stampText?: string) => string | null;
   clear: () => void;
@@ -23,8 +22,7 @@ interface SignatureCanvasProps {
 
 /**
  * A pointer-events-based signature pad. Always renders black ink on a white
- * background regardless of the app's theme — signatures are meant to look
- * the same on screen, in exports, and in print, like a paper logbook.
+ * background regardless of the app's theme.
  */
 export const SignatureCanvas = forwardRef<SignatureCanvasHandle, SignatureCanvasProps>(
   ({ className, onChange }, ref) => {
@@ -50,18 +48,9 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle, SignatureCanvas
       ctx.strokeStyle = '#111827';
     };
 
-    // Size the backing store for the device pixel ratio so strokes stay
-    // crisp, while the CSS size is driven by the responsive container.
-    //
-    // Once the user has drawn anything, this deliberately becomes a no-op:
-    // resizing recreates the canvas's backing store (wiping its pixels),
-    // and a container can legitimately report a new size mid-signature
-    // (e.g. a dialog settling its layout, a virtual keyboard opening on
-    // mobile). Restoring the old content across that reset previously went
-    // through an async `Image` round-trip drawn onto an *already
-    // dpr-scaled* context — a double-scale bug that could silently corrupt
-    // or blank out the captured signature. Simplest robust fix: the pad
-    // locks its size at the first stroke.
+    // Sizes the backing store for the device pixel ratio; the CSS size is
+    // driven by the responsive container. No-op once the user has drawn
+    // anything — the pad locks its size at the first stroke.
     const resizeCanvas = useCallback(() => {
       if (hasInkRef.current) return;
       const canvas = canvasRef.current;
@@ -73,9 +62,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle, SignatureCanvas
       const width = Math.max(Math.round(rect.width), 1);
       const height = 200;
 
-      // ResizeObserver fires once immediately on observe() and then again
-      // on any real change — skip re-applying an identical size so we
-      // don't reset context state (stroke style etc.) for no reason.
+      // Skip re-applying an identical size.
       if (sizeRef.current && sizeRef.current.width === width && sizeRef.current.height === height) {
         return;
       }
@@ -149,8 +136,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle, SignatureCanvas
       hasInkRef.current = false;
       setHasInk(false);
       onChange?.(false);
-      // Now that the pad is empty again, let it track the container's
-      // current size in case it changed while locked during drawing.
+      // Pad is empty again: track the container's current size.
       resizeCanvas();
     }, [getContext, onChange, resizeCanvas]);
 
@@ -168,9 +154,8 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle, SignatureCanvas
             stamped.height = canvas.height;
             const sctx = stamped.getContext('2d');
             if (sctx) {
-              // Raw pixel-for-pixel copy first (identity transform), then
-              // switch to CSS-pixel coordinates for the text so its size
-              // matches what applyPenStyle/getPoint use elsewhere.
+              // Pixel-for-pixel copy (identity transform), then CSS-pixel
+              // coordinates for the text.
               sctx.drawImage(canvas, 0, 0);
               const dpr = window.devicePixelRatio || 1;
               sctx.scale(dpr, dpr);
