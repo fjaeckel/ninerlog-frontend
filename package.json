@@ -79,7 +79,7 @@
     "msw": "^2.15.0",
     "openapi-typescript": "^7.13.0",
     "prettier": "^3.9.6",
-    "rollup-plugin-visualizer": "^7.0.1",
+    "rollup-plugin-visualizer": "^7.1.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "typescript-7": "npm:typescript@^7.0.2",
