@@ -35,8 +35,7 @@ export const exportFlightsPDF = (
   if (logbookLicenseId) params.set('logbookLicenseId', logbookLicenseId);
   if (format) params.set('format', format);
   if (pageSize) params.set('page_size', pageSize);
-  // Layout and row density only apply to the logbook layouts; the summary
-  // format ignores both server-side, so don't send them.
+  // Layout and row density: logbook layouts only.
   if (layout && format !== 'summary') params.set('layout', layout);
   if (rowsPerPage && format !== 'summary') params.set('rows_per_page', String(rowsPerPage));
   const query = params.toString() ? `?${params.toString()}` : '';

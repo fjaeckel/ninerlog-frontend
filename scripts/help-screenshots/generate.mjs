@@ -1,10 +1,10 @@
 /**
  * Generates real, annotated screenshots of the running app for the Help
- * Base (src/pages/help/figures.tsx), replacing the old hand-drawn SVG
- * mockups. For each figure: fakes an authenticated session + realistic API
- * data via network interception, navigates to the real page, locates the
- * real element(s) to highlight, bakes a "click here" ring/cursor/step-badge
- * overlay onto the page, and screenshots the viewport — in both themes.
+ * Base (src/pages/help/figures.tsx). For each figure: fakes an authenticated
+ * session + realistic API data via network interception, navigates to the
+ * real page, locates the element(s) to highlight, bakes a "click here"
+ * ring/cursor/step-badge overlay onto the page, and screenshots the viewport
+ * — in both themes.
  *
  * Usage:
  *   npm run dev                              # in one terminal

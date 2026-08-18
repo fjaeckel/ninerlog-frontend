@@ -13,29 +13,14 @@ import { DocumentFileThumb } from './DocumentFileThumb';
 interface DocumentFileStripProps {
   subject: DocumentSubject;
   subjectId: string;
-  /**
-   * How many thumbnails to render before collapsing the rest into a counter.
-   *
-   * Deliberately small. Each visible thumbnail is its own authenticated
-   * request, and a list page renders one strip per card — so this multiplies
-   * by the number of licences or credentials the pilot holds. Two is enough
-   * to say "there are photos here" without turning a list into a download.
-   */
+  /** How many thumbnails to render before collapsing the rest into a counter. */
   max?: number;
 }
 
 /**
  * A read-only peek at a document's photos, for the licence and credential
- * cards.
- *
- * Uploading, captioning and deleting stay in the edit form — this exists only
- * so the photos are *discoverable* from the list, which they previously were
- * not: a pilot had to open Edit and scroll to find out whether a document had
- * any. Clicking a thumbnail opens the same full-size preview the gallery uses.
- *
- * Renders nothing when the server has the feature switched off, and nothing
- * when the document has no photos — an empty strip on every card would be
- * noise on an account that never uploads any.
+ * cards. Clicking a thumbnail opens the gallery's full-size preview.
+ * Renders nothing when the feature is off or the document has no photos.
  */
 export function DocumentFileStrip({ subject, subjectId, max = 2 }: DocumentFileStripProps) {
   const { t } = useTranslation('documents');

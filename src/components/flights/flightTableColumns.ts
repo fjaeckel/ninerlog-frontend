@@ -7,18 +7,9 @@ export type FlightColumnKey = components['schemas']['FlightListColumn'];
 
 /**
  * Reveal tiers for the optional flight table columns, narrowest first.
- *
- * These are container queries, not viewport queries: the table measures the
- * width it actually got (sidebar, page padding and browser zoom included), so a
- * wide desktop shows more of the logbook without the user opening each flight.
- * The class strings must stay literal for the Tailwind scanner to emit them.
- *
- * There is one tier per time column plus one for remarks, so even a user who
- * asks for every time column has a width at which each of them appears.
- *
- * The thresholds are measured against the table the columns actually build: a
- * tier that fires before its column fits puts the table into a horizontal
- * scroll, which is the thing the tiers exist to avoid.
+ * Container queries, not viewport queries. The class strings must stay
+ * literal for the Tailwind scanner to emit them. One tier per time column
+ * plus one for remarks.
  */
 const REVEAL_TIERS = [
   'hidden @min-[1020px]:table-cell',
@@ -37,10 +28,6 @@ const REVEAL_TIERS = [
 /**
  * Reveal tiers for the remarks column, indexed by how many time columns are
  * already showing.
- *
- * Remarks needs its own ladder because it is roughly three times the width of a
- * time column: borrowing the next time tier let it appear at a width where it
- * did not fit, which is exactly the horizontal scroll these tiers prevent.
  */
 const REMARKS_TIERS = [
   'hidden @min-[1180px]:table-cell',
@@ -56,11 +43,7 @@ const REMARKS_TIERS = [
   'hidden @min-[2100px]:table-cell',
 ] as const;
 
-/**
- * How many time columns automatic mode may claim. Deliberately far below the
- * number of tiers: nobody asked for these columns, so they should not push
- * remarks off the widest screens.
- */
+/** How many time columns automatic mode may claim. */
 const AUTO_MAX_TIME_COLUMNS = 4;
 
 interface FlightColumnDef {
@@ -95,14 +78,11 @@ const minutesColumn = (
 });
 
 /**
- * Every column a user can switch on or off, in display order. Date, route,
- * aircraft and total time are the identity of a logbook row and are always
- * shown, so they are not in here.
- *
- * For the time columns the order is also the priority order: the first ones
- * get the narrowest reveal tiers and so are the last to disappear. Keep it in
- * sync with `models.FlightListColumns` and the `FlightListColumn` enum in the
- * API's OpenAPI spec.
+ * Every column a user can switch on or off, in display order — which for time
+ * columns is also the reveal-priority order. Date, route, aircraft and total
+ * time are always shown and are not in here. Keep in sync with
+ * `models.FlightListColumns` and the `FlightListColumn` enum in the API's
+ * OpenAPI spec.
  */
 export const FLIGHT_COLUMNS: FlightColumnDef[] = [
   {
@@ -175,9 +155,7 @@ export const DEFAULT_FLIGHT_COLUMN_PREFS: FlightColumnPrefs = { mode: 'auto', co
 
 /**
  * What a first switch to custom mode starts from: the columns automatic mode
- * always shows, plus the time columns a well-filled logbook would already be
- * showing under the automatic cap. Starting from an empty table would just
- * make the user rebuild what they had.
+ * always shows, plus the first time columns under the automatic cap.
  */
 export const DEFAULT_CUSTOM_COLUMNS: FlightColumnKey[] = [
   'offOnBlock',
@@ -190,14 +168,7 @@ export const DEFAULT_CUSTOM_COLUMNS: FlightColumnKey[] = [
   'remarks',
 ];
 
-/**
- * Time columns a phone card can show, in the order they earn one of its slots.
- *
- * Not the table's order: a card has three slots, and PIC and dual time would
- * take two of them on nearly every page while only restating the function badge
- * already in the card's header. Night and IFR lead because they are what a
- * pilot scans a logbook for.
- */
+/** Time columns a phone card can show, in the order they earn one of its slots. */
 const CARD_TIME_PRIORITY: FlightColumnKey[] = [
   'nightTime',
   'ifrTime',
@@ -224,30 +195,15 @@ export interface FlightCardColumns {
   /** The PIC/DUAL/SIC badge in the row header. */
   function: boolean;
   landings: boolean;
-  /**
-   * Whether the landings column splits day from night. Decided for the page,
-   * not the flight: one card heading itself differently from the rest is the
-   * same wobble the time columns would have.
-   */
+  /** Whether the landings column splits day from night. Decided per page. */
   landingsSplit: boolean;
   time: FlightCardColumn[];
 }
 
 /**
- * Decides which time columns the cards on a page of flights get.
- *
- * Chosen once for the page rather than per card: a card that picked its own
- * columns would give every entry a different set of headings at a different
- * width, and a list of those does not read as a list. So the page asks the same
- * question the table does — does any flight here use this column — and every
- * card answers it in the same columns, showing a dash where a flight logged
- * none of it.
- *
- * Custom mode hands over to the user's own column list, in their order, for the
- * same reason it does in the table: a column they asked for is worth a slot
- * even on a page where it stays empty. The fixed columns answer to the setting
- * too — switching one off in Settings has to switch it off on a phone, or the
- * setting is only telling half the truth.
+ * Decides which time columns the cards on a page of flights get — once for
+ * the page, not per card. Automatic mode shows columns any flight on the page
+ * uses; custom mode uses the user's own column list in their order.
  */
 export function selectFlightCardColumns(
   flights: Flight[],
@@ -257,7 +213,6 @@ export function selectFlightCardColumns(
   const isTime = (key: FlightColumnKey) => byKey.get(key)?.kind === 'time';
   const custom = prefs.mode === 'custom';
   const selected = new Set(prefs.columns);
-  // Same question the table asks of its fixed columns.
   const shows = (key: FlightColumnKey) => (custom ? selected.has(key) : AUTO_ALWAYS_ON.includes(key));
 
   const order = custom
@@ -277,17 +232,10 @@ export function selectFlightCardColumns(
 }
 
 /**
- * Decides which optional columns a page of flights gets.
- *
- * In automatic mode a column is only worth the width if at least one flight on
- * the page has a value for it, so a VFR-only pilot never gets an empty IFR
- * column and a student never gets an empty PIC column.
- *
- * In custom mode the user's list wins as-is — an IFR column they asked for is
- * shown even on a page where every flight was VFR, because the emptiness is
- * itself the information they wanted. Width still has the last word: the time
- * columns reveal progressively, in the user's priority order, so the table
- * never has to scroll sideways on a phone to show what fits on a desktop.
+ * Decides which optional columns a page of flights gets. Automatic mode shows
+ * a column when at least one flight on the page has a value for it; custom
+ * mode uses the user's list as-is. Time columns still reveal progressively
+ * with width.
  */
 export function selectFlightColumns(
   flights: Flight[],

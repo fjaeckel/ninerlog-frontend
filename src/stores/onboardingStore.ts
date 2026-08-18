@@ -3,14 +3,13 @@ import { persist } from 'zustand/middleware';
 
 interface OnboardingState {
   /**
-   * IDs of users who have already completed or skipped the welcome tour on this
-   * device. Persisted so the tour only auto-starts once — on a user's first
-   * login — and never nags them again afterwards.
+   * IDs of users who have completed or skipped the welcome tour on this
+   * device. Persisted.
    */
   completedUserIds: string[];
   /** Whether the guided tour overlay is currently visible. Not persisted. */
   isOpen: boolean;
-  /** Open the tour (used for first-login auto-start and manual replays). */
+  /** Open the tour. */
   open: () => void;
   /** Close the tour without marking it complete (e.g. on logout). */
   close: () => void;
@@ -18,7 +17,7 @@ interface OnboardingState {
   complete: (userId: string) => void;
   /** Whether a given user has already finished or skipped the tour. */
   hasCompleted: (userId: string) => boolean;
-  /** Clear the completion flag for a user so the tour can be replayed. */
+  /** Clear the completion flag for a user. */
   reset: (userId: string) => void;
 }
 
@@ -44,7 +43,7 @@ export const useOnboardingStore = create<OnboardingState>()(
     }),
     {
       name: 'ninerlog-onboarding',
-      // Only the completion flags need to survive reloads; isOpen is transient.
+      // Persist only the completion flags; isOpen is transient.
       partialize: (state) => ({ completedUserIds: state.completedUserIds }),
     }
   )

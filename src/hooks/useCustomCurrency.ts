@@ -12,8 +12,7 @@ import type {
 
 const BASE = `${API_BASE}/custom-currency`;
 
-/** authedFetch performs a JSON request with the bearer token and surfaces the
- *  API's error message (used for validation feedback in the builder). */
+/** JSON request with the bearer token; throws the API's error message. */
 async function authedFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const { accessToken } = useAuthStore.getState();
   const res = await fetch(`${BASE}${path}`, {

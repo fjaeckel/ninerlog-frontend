@@ -8,8 +8,7 @@ export type TrendMonth = NonNullable<FlightTrends['trends']>[number];
 
 /**
  * Lightweight monthly activity series (hours + flights per month).
- * Key lives under ['trends'] so flight mutations invalidate it via
- * FLIGHT_DEPENDENT_QUERY_KEYS.
+ * Keyed under ['trends'], part of FLIGHT_DEPENDENT_QUERY_KEYS.
  */
 export const useTrends = (months = 12) => {
   return useQuery({
@@ -24,10 +23,7 @@ export const useTrends = (months = 12) => {
   });
 };
 
-/**
- * Fills the last `months` calendar months with zero rows so gaps between
- * active months render as empty bars instead of disappearing.
- */
+/** Fills the last `months` calendar months with zero rows. */
 export function fillTrendMonths(trends: TrendMonth[] | undefined, months: number): TrendMonth[] {
   const byMonth = new Map((trends ?? []).map((t) => [t.month, t]));
   const out: TrendMonth[] = [];

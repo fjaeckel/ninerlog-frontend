@@ -41,10 +41,7 @@ function monthLabel(month: string) {
   return label;
 }
 
-/**
- * Thins x-axis ticks so labels never collide. Recharts' own `interval`
- * heuristic overlaps once the series passes roughly two years of months.
- */
+/** Thins x-axis ticks so labels never collide. */
 function tickInterval(count: number, target = 12) {
   return Math.max(0, Math.ceil(count / target) - 1);
 }
@@ -54,10 +51,7 @@ interface ChartProps {
   fmtDuration: (minutes: number) => string;
 }
 
-/**
- * Career hours — a single series, so no legend: the card title names it.
- * Area fill is a 10% wash under a 2px line.
- */
+/** Career hours — a single series, no legend. Area fill is a 10% wash under a 2px line. */
 export function CumulativeHoursChart({
   data,
   theme,
@@ -114,7 +108,7 @@ export function CumulativeHoursChart({
   );
 }
 
-/** Block hours per month. One series, one hue — length is the encoding. */
+/** Block hours per month. One series, one hue. */
 export function MonthlyHoursChart({
   data,
   theme,
@@ -162,10 +156,8 @@ export function MonthlyHoursChart({
 }
 
 /**
- * Role split per year. PIC / SIC / Dual received is a true part-to-whole
- * under EASA — every flight is logged as exactly one of the three — so a
- * stack is honest here. The 2px stroke in the surface colour is the gap that
- * separates segments; it is not a border.
+ * Role split per year, stacked. The 2px surface-colour stroke is the gap
+ * separating segments.
  */
 export function RoleCompositionChart({
   data,
@@ -233,8 +225,7 @@ export function RoleCompositionChart({
 
 /**
  * Fixed-axis histogram (day of week, hour of day, month of year, flight
- * length). One hue; the busiest bucket is emphasised so the eye lands on the
- * point of the chart without adding a second colour meaning.
+ * length). One hue; the busiest bucket is emphasised.
  */
 export function PatternChart({
   data,
@@ -286,9 +277,7 @@ export function PatternChart({
               valueKey === 'flights' ? t('flights') : t('chart.blockTime'),
             ]}
           />
-          {/* Emphasis, not a second colour: every bar is the accent hue and
-              the busiest bucket is the only one at full strength, so the eye
-              lands on the peak while the whole distribution stays legible. */}
+          {/* Busiest bucket at full strength, the rest dimmed */}
           <Bar dataKey={valueKey} radius={BAR_RADIUS} maxBarSize={BAR_MAX} fill={theme.accent}>
             {rows.map((row) => (
               <Cell key={row.key} fillOpacity={row[valueKey] === peak ? 1 : 0.45} />

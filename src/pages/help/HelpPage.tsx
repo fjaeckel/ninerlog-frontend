@@ -50,7 +50,7 @@ export default function HelpPage() {
   const [searchParams] = useSearchParams();
   const topicFromUrl = searchParams.get('topic');
 
-  // Build sections array dynamically with translated labels and content
+  // Sections with translated labels and content.
   const sections = useMemo(() => helpSectionIds.map((id) => ({
     id,
     label: t(sectionLabelKeys[id]),
@@ -63,7 +63,7 @@ export default function HelpPage() {
   });
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Sync topic from URL — derive directly instead of setState in effect
+  // Topic derived from the URL.
   const resolvedActive = (topicFromUrl && helpSectionIds.includes(topicFromUrl as HelpSectionId))
     ? topicFromUrl
     : active;
@@ -88,7 +88,7 @@ export default function HelpPage() {
     );
   }, [searchQuery, sections]);
 
-  // Highlight matching text in search results (show snippet around match)
+  // Snippet around the match, with the match highlighted.
   const getSnippet = (content: string, query: string): string => {
     const lower = content.toLowerCase();
     const idx = lower.indexOf(query.toLowerCase());
@@ -192,8 +192,7 @@ export default function HelpPage() {
               <article className="prose prose-slate dark:prose-invert prose-sm sm:prose-base max-w-none prose-headings:scroll-mt-20 prose-h1:text-2xl prose-h2:text-xl prose-h2:border-b prose-h2:border-slate-200 prose-h2:dark:border-slate-700 prose-h2:pb-2 prose-table:text-sm prose-th:bg-slate-50 prose-th:dark:bg-slate-800 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-blockquote:border-blue-300 prose-blockquote:dark:border-blue-700 prose-blockquote:bg-blue-50/50 prose-blockquote:dark:bg-blue-900/10 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg print:prose-base">
                 <Markdown
                   remarkPlugins={[remarkGfm]}
-                  // Preserve our custom `figure:` image scheme, which the
-                  // default sanitizer would otherwise strip to an empty URL.
+                  // Preserve the custom `figure:` image scheme.
                   urlTransform={(url) => (url.startsWith('figure:') ? url : defaultUrlTransform(url))}
                   components={{
                     img: ({ src, alt }) => {

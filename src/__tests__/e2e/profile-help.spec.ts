@@ -46,7 +46,7 @@ test.describe('Profile Page', () => {
     await page.locator('#currentPassword').fill('TestPassword123!');
     await page.locator('#newPassword').fill('TestPassword123!');
     await page.locator('#confirmPassword').fill('TestPassword123!');
-    // Verify the form fields are filled (changing to same password won't break login)
+    // Verify the form fields are filled.
     await expect(page.locator('#currentPassword')).toHaveValue('TestPassword123!');
   });
 
@@ -91,7 +91,7 @@ test.describe('Time Display Preference', () => {
     const user = await apiCall(page, 'GET', '/users/me', undefined, auth.accessToken);
     expect(user.timeDisplayFormat).toBe('decimal');
 
-    // Switch back to hm so other tests don't break
+    // Switch back to hm.
     await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
       select.selectOption('hm'),
@@ -100,7 +100,7 @@ test.describe('Time Display Preference', () => {
   });
 
   test('should display flight times in selected format on dashboard', async ({ page }) => {
-    // Seed a flight so we have some data to display
+    // Seed a flight.
     await seedFlight(page, auth.accessToken, {
       date: '2026-04-01',
       offBlockTime: '08:00:00',
@@ -125,9 +125,8 @@ test.describe('Time Display Preference', () => {
     await page.getByRole('link', { name: 'Dashboard' }).first().click();
     await expect(page).toHaveURL(/\/dashboard/);
     await expect(page.getByText('Dashboard').first()).toBeVisible({ timeout: 10000 });
-    // Match "1.5h" in stat-card / flight-row content. Exclude <option> elements
-    // (the profile page's "Dot (1.5h)" decimal-separator option matches /1\.5/
-    // even when hidden inside a closed <select>).
+    // Match "1.5h" in stat-card / flight-row content, excluding <option>
+    // elements.
     await expect(
       page.locator('main :text-matches("1\\.5h?"):not(option)').first(),
     ).toBeVisible({ timeout: 5000 });
@@ -199,7 +198,7 @@ test.describe('Help Page', () => {
   test('should display help page', async ({ page }) => {
     await page.getByRole('link', { name: 'Help' }).first().click();
     await expect(page).toHaveURL('/help');
-    // The heading, not the phrase — body copy on the page mentions it too.
+    // The heading, not the phrase.
     await expect(page.getByRole('heading', { name: 'Help Base' })).toBeVisible({ timeout: 10000 });
   });
 

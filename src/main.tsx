@@ -10,15 +10,8 @@ import { initWebVitals } from './lib/web-vitals';
 import { httpStatusOf } from './api/client';
 
 /**
- * Retry transient failures once, never client errors.
- *
- * A blanket `retry: 1` retried 4xx too, which is useless for most of them and
- * actively harmful for 429: a rate-limited request immediately issued a second
- * identical request, so crossing a rate limit doubled the traffic that caused
- * it. Flight search felt especially broken because of it — see
- * ../ninerlog-api/docs/metrics/dashboards/ninerlog-ratelimits.json.
- *
- * Network failures surface with no status at all, so those still get a retry.
+ * Retry transient failures once, never client errors. Network failures
+ * surface with no status and still get a retry.
  */
 function retryTransientOnly(failureCount: number, error: unknown): boolean {
   const status = httpStatusOf(error);

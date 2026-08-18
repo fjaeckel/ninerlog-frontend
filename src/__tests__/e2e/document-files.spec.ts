@@ -1,10 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { createTestUser, injectAuth, seedCredential, seedLicense, type AuthContext } from './helpers';
 
-/**
- * A real 1×1 PNG. The API decodes every upload and refuses anything that only
- * claims to be an image, so a fixture of arbitrary bytes would be rejected.
- */
+/** A real 1×1 PNG; the API decodes every upload. */
 const PNG_1x1 = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
   'base64'
@@ -37,12 +34,8 @@ test.describe('Document files', () => {
     await seedCredential(page, auth.accessToken, { issuingAuthority: 'Photo AME' });
     await openCredentialEditForm(page, 'Photo AME');
 
-    // Scope to the edit modal. The card behind it now carries a thumbnail
-    // strip of its own, so once a file exists the page holds *two* controls
-    // labelled "View full size: <filename>" — one on the card, one in this
-    // gallery. An unscoped locator is a strict-mode violation, and `.first()`
-    // would silently assert against whichever happened to render first. This
-    // test is about the gallery in the form.
+    // Scoped to the edit modal; the card behind it carries its own
+    // "View full size" control.
     const gallery = page.getByRole('dialog');
 
     await expect(gallery.getByRole('heading', { name: 'Files' })).toBeVisible();
@@ -54,8 +47,7 @@ test.describe('Document files', () => {
       buffer: PNG_1x1,
     });
 
-    // The bytes come back over an authenticated request and are rendered from
-    // a blob URL — an <img> that resolved means the whole round trip worked.
+    // A resolved <img> means the authenticated blob round trip worked.
     await expect(gallery.getByRole('button', { name: /view full size/i })).toBeVisible({ timeout: 10000 });
     await expect(gallery.getByText('1 of 5')).toBeVisible();
 
@@ -84,8 +76,7 @@ test.describe('Document files', () => {
     await seedCredential(page, auth.accessToken, { issuingAuthority: 'PDF AME' });
     await openCredentialEditForm(page, 'PDF AME');
 
-    // A minimal but structurally real PDF — signature plus %%EOF trailer, which
-    // is exactly what the API checks.
+    // A minimal but structurally real PDF: signature plus %%EOF trailer.
     const pdf = Buffer.from(
       '%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n'
     );
@@ -93,8 +84,7 @@ test.describe('Document files', () => {
       name: 'medical.pdf', mimeType: 'application/pdf', buffer: pdf,
     });
 
-    // Shown as an icon tile: the API serves PDFs as an attachment so their
-    // bytes never render in this origin, and the client honours that.
+    // Shown as an icon tile; no inline render.
     const gallery = page.getByRole('dialog');
     await expect(gallery.getByTestId('document-file-icon')).toBeVisible({ timeout: 10000 });
     await expect(gallery.getByText('1 of 5')).toBeVisible();

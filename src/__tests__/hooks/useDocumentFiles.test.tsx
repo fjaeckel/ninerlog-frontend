@@ -69,9 +69,7 @@ describe('useDocumentFiles', () => {
     expect(GET).not.toHaveBeenCalled();
   });
 
-  // The upload has to go through apiClient rather than a bare fetch, so it
-  // inherits the auth header and the 401-refresh retry. Handing it a FormData
-  // body is what lets openapi-fetch set the multipart boundary itself.
+  // Upload goes through apiClient with a FormData body.
   it('uploads as multipart form data through the shared client', async () => {
     const { result } = renderHook(() => useUploadDocumentFile('license', 'lic-1'), {
       wrapper: wrap(makeClient()),
@@ -149,8 +147,7 @@ describe('useDocumentFileUrl', () => {
     GET.mockResolvedValue({ data: new Blob(['x']), error: undefined });
   });
 
-  // There is no unauthenticated image URL, so the bytes must be fetched with
-  // the bearer token and turned into a blob URL — a plain <img src> would 401.
+  // Bytes fetched with the bearer token and turned into a blob URL.
   it('fetches the bytes as a blob and exposes an object URL', async () => {
     const { result } = renderHook(() => useDocumentFileUrl('license', 'lic-1', 'img-1'), {
       wrapper: wrap(makeClient()),

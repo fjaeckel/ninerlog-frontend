@@ -45,10 +45,7 @@ const pageOf = (flights: Flight[], page: number, totalPages: number) => ({
   pagination: { page, pageSize: 20, total: totalPages * 20, totalPages },
 });
 
-/**
- * jsdom reports a 1024px-wide window, so `(min-width: 1024px)` matches and the
- * page takes its desktop branch by default. A phone has to be asked for.
- */
+/** Selects the phone branch; jsdom's 1024px window defaults to desktop. */
 function setViewport(wide: boolean) {
   vi.stubGlobal('matchMedia', (query: string) => ({
     matches: wide,

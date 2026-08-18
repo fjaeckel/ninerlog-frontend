@@ -9,14 +9,8 @@ import { randomUUID } from 'node:crypto';
  */
 
 /**
- * A registration address no other test will pick.
- *
- * The counter alone is not enough: Playwright runs each worker in its own
- * process, so every worker starts back at zero. Two workers registering in the
- * same millisecond then build the same address and the second one gets a 409
- * from the API. The random suffix is what actually makes this unique across
- * processes; the timestamp and counter stay because they make a leftover row
- * in the test database traceable back to a run.
+ * A registration address no other test will pick: random suffix for
+ * cross-process uniqueness, timestamp and counter for traceability.
  */
 let userCounter = 0;
 export function uniqueEmail(): string {
@@ -36,10 +30,7 @@ function buildOnboardingStorage(userId: string): string {
 
 async function dismissOnboardingTourIfPresent(page: Page): Promise<void> {
   const dialog = page.locator('[role="dialog"][aria-label="Welcome tour"]');
-  // The tour mounts a moment after the dashboard paints, so an instantaneous
-  // isVisible() check loses the race on a slower engine: it reports "no tour",
-  // the helper returns, and the backdrop then appears and swallows the caller's
-  // next click. Give it a bounded window to show up instead.
+  // Give the tour a bounded window to appear.
   const appeared = await dialog
     .waitFor({ state: 'visible', timeout: 3000 })
     .then(() => true)
@@ -54,13 +45,11 @@ async function dismissOnboardingTourIfPresent(page: Page): Promise<void> {
   }
 
   await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {
-    // If a localized label prevents matching, don't fail the whole test here.
+    // Best effort.
   });
 }
 
-// MailPit base URL — reachable from inside the e2e network as `mailpit-test`,
-// or via localhost when developers run Playwright outside Docker. The
-// PLAYWRIGHT_MAILPIT_URL env var lets CI override this without code changes.
+// MailPit base URL; PLAYWRIGHT_MAILPIT_URL overrides.
 const MAILPIT_URL = process.env.PLAYWRIGHT_MAILPIT_URL || 'http://mailpit-test:8025';
 
 /**
@@ -75,10 +64,8 @@ async function fetchVerificationToken(
   let lastErr = '';
   while (Date.now() < deadline) {
     try {
-      // The query intentionally omits the `to:` prefix. For security (CWE-640),
-      // the API delivers the recipient via the SMTP envelope only and omits the
-      // `To:` header, so MailPit records the recipient as Bcc. A bare-address
-      // query matches the message regardless of which header it lands in.
+      // Bare-address query, matching the message in any header (MailPit
+      // records the recipient as Bcc).
       const search = await request.get(
         `${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(email)}`,
       );
@@ -166,8 +153,8 @@ export async function registerAndLogin(page: Page): Promise<AuthContext> {
   await page.locator('#confirmPassword').fill(TEST_PASSWORD);
   await page.getByRole('button', { name: /create account/i }).click();
 
-  // After successful registration the UI now displays the
-  // "Check your email" view — login is blocked until verification.
+  // Registration shows the "Check your email" view; login is blocked until
+  // verification.
   await expect(page.getByTestId('check-email-view')).toBeVisible({ timeout: 15000 });
 
   // Pull the verification token from MailPit and visit /verify-email,
@@ -186,10 +173,7 @@ export async function registerAndLogin(page: Page): Promise<AuthContext> {
   const accessToken = loginData.accessToken || '';
   const userId = loginData.user?.id || '';
 
-  // Order matters. The storage write only suppresses the tour on *later* page
-  // loads, so it has to happen first; dismissing afterwards then clears the
-  // instance already mounted on this page. Done the other way round, a tour
-  // that mounts late survives both steps.
+  // Storage write first, then dismiss the instance already mounted.
   await page.evaluate((onboardingJson: string) => {
     localStorage.setItem('ninerlog-onboarding', onboardingJson);
   }, buildOnboardingStorage(userId));

@@ -39,11 +39,8 @@ const LEVEL_STYLES: Record<
 
 /**
  * Live feedback on a password being chosen: a three-step red/amber/green bar
- * plus the individual rules, so a user who is stuck can see exactly which one
- * they are failing. Colour is never the only signal — the level is spelled out
- * and every rule carries the app's shared met / not-met marker.
- *
- * Renders nothing for an empty field, so an untouched form stays quiet.
+ * plus the individual rules, each with the shared met / not-met marker.
+ * Renders nothing for an empty field.
  */
 export function PasswordStrengthMeter({
   password,

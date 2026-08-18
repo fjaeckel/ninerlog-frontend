@@ -6,9 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AdminPage from '../../pages/admin/AdminPage';
 import { useAuthStore } from '../../stores/authStore';
 
-// openapi-fetch captures globalThis.fetch when the client is constructed at
-// module load, so spying on fetch afterwards never intercepts anything. Mock
-// the client itself, as the hook tests do.
+// Mock the client itself, as the hook tests do.
 let routes: Record<string, unknown> = {};
 
 const respond = (path: string) => {
@@ -80,9 +78,7 @@ const openConfigTab = async () => {
   await user.click(screen.getAllByRole('button', { name: /config/i })[0]);
 };
 
-// Config rows are label/value pairs, and values repeat across rows ("Disabled"
-// is also how the unverified-account sweep reports itself), so assertions are
-// scoped to the row rather than the page.
+// Assertions scoped to the row, not the page.
 const rowFor = (label: string) => {
   const cell = screen.getByText(label);
   const row = cell.parentElement;
@@ -140,8 +136,7 @@ describe('AdminPage — runtime configuration', () => {
     await openConfigTab();
 
     expect(await screen.findByText('Local accounts')).toBeInTheDocument();
-    // The issuer row stays, showing an em dash — a vanished row would read as
-    // "this deployment has no such setting".
+    // The issuer row stays, showing an em dash.
     expect(rowFor('OIDC issuer').getByText('—')).toBeInTheDocument();
     expect(rowFor('Reference files').getByText('Disabled')).toBeInTheDocument();
   });

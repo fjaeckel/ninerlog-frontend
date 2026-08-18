@@ -15,12 +15,7 @@ interface TimeEntry {
 
 /**
  * Aircraft and route summary of a flight, laid out as a departure → arrival
- * timeline.
- *
- * Airport names run long ("Jena-Schöngleina Airfield") and a label/value row
- * has nowhere to put them on a phone. Here the code, the name and the times get
- * their own lines under a shared marker, so a name simply wraps into the width
- * it has instead of colliding with its label.
+ * timeline. Code, name and times get their own lines under a shared marker.
  */
 export default function FlightRouteCard({ flight }: { flight: Flight }) {
   const { t } = useTranslation('flights');
@@ -151,7 +146,7 @@ function RouteStop({
 }) {
   return (
     <li className="grid grid-cols-[1.25rem_1fr] gap-x-3">
-      {/* Marker column — the connector stretches to the next stop's marker */}
+      {/* Marker column with connector */}
       <div className="flex flex-col items-center" aria-hidden="true">
         <span className="flex w-5 h-5 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
           <Icon className="w-3 h-3" />

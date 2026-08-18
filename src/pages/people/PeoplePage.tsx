@@ -25,9 +25,7 @@ const EMPTY_FORM: ContactFormData = { name: '', email: '', phone: '', notes: '' 
 
 /**
  * People — the pilot's address book. Contacts are auto-created from crew
- * names typed into the flight form and by CSV imports; this page is where
- * they are curated: fix a typo'd name, attach an email or phone number,
- * or remove someone who never belonged in the log.
+ * names in the flight form and CSV imports, and curated here.
  */
 export default function PeoplePage() {
   const { t } = useTranslation('people');

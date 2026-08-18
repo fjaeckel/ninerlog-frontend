@@ -15,11 +15,7 @@ import { DocumentFileStrip } from '../../components/documents/DocumentFileStrip'
 
 type ExpiryStatus = { key: 'noExpiry' | 'expired' | 'expiringInDays' | 'valid'; days: number; class: string };
 
-/**
- * Status of a credential's expiry. Returns a key rather than a label so the
- * badge reads in the user's language — and in one casing, instead of the
- * mixed "EXPIRED" / "Valid" the labels used to be written in.
- */
+/** Status of a credential's expiry, as a translation key. */
 function getExpiryStatus(expiryDate: string | null | undefined): ExpiryStatus {
   if (!expiryDate) return { key: 'noExpiry', days: 0, class: 'badge-neutral' };
   const daysLeft = Math.ceil((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));

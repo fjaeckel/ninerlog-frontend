@@ -3,20 +3,12 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 /**
- * Cross-browser capability matrix.
- *
- * Unlike the rest of the e2e suite this spec needs **no API** — it loads the
- * app shell and probes the browser features NinerLog actually depends on, so
- * it can answer "what breaks in which browser" on its own.
- *
- * Each probe points at the source that relies on it. Probes marked
- * `required: true` fail the run when unsupported; the rest are reported into
- * the matrix but tolerated, either because the code already has a fallback or
- * because the capability is gated on a secure context the e2e stack does not
- * provide.
- *
- * Results are written to test-results/browser-compat/<project>.json and
- * merged into a table by scripts/run-cross-browser-e2e.sh.
+ * Cross-browser capability matrix. Needs no API — loads the app shell and
+ * probes the browser features NinerLog depends on. Each probe points at the
+ * source that relies on it; probes marked `required: true` fail the run when
+ * unsupported, the rest are reported into the matrix and tolerated. Results
+ * go to test-results/browser-compat/<project>.json, merged by
+ * scripts/run-cross-browser-e2e.sh.
  */
 
 interface Probe {
@@ -94,8 +86,7 @@ test.describe('Browser capability matrix', () => {
         }
       };
 
-      // FlightCard builds `${date}T00:00:00` so the weekday renders in local
-      // time rather than shifting a day in negative UTC offsets.
+      // FlightCard builds `${date}T00:00:00`; the weekday renders in local time.
       const localMidnightParse = () => {
         const d = new Date('2026-01-15T00:00:00');
         return !Number.isNaN(d.getTime()) && d.getDate() === 15 && d.getHours() === 0;
@@ -157,7 +148,7 @@ test.describe('Browser capability matrix', () => {
 
     const unsupported = rows.filter((r) => !r.supported);
     if (unsupported.length) {
-      // Surfaces in the `list` reporter so a CLI run shows the gaps inline.
+      // Surfaces in the `list` reporter.
       console.log(
         `\n[${testInfo.project.name}] unsupported: ` +
           unsupported.map((r) => `${r.id}${r.required ? ' (REQUIRED)' : ''}`).join(', '),

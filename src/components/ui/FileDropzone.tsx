@@ -19,9 +19,9 @@ interface FileDropzoneProps {
 }
 
 /**
- * Returns true when `file` satisfies an `accept` string. Mirrors the browser's own
- * matching: extensions (`.csv`), exact MIME types (`text/csv`) and wildcards (`text/*`).
- * A drop bypasses the file picker's filtering, so we have to redo it here.
+ * Returns true when `file` satisfies an `accept` string. Mirrors the
+ * browser's own matching: extensions (`.csv`), exact MIME types (`text/csv`)
+ * and wildcards (`text/*`).
  */
 function matchesAccept(file: File, accept?: string): boolean {
   if (!accept) return true;
@@ -54,12 +54,10 @@ export function FileDropzone({
 }: FileDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  // dragenter/dragleave also fire for descendants, so track nesting depth instead
-  // of clearing the highlight on the first dragleave.
+  // Nesting depth across descendant dragenter/dragleave pairs.
   const dragDepth = useRef(0);
 
-  // While a dropzone is on screen, a near-miss drop should do nothing rather than
-  // make the browser navigate away from the app to render the dropped file.
+  // Swallow near-miss drops anywhere on the page.
   useEffect(() => {
     const swallow = (e: DragEvent) => e.preventDefault();
     document.addEventListener('dragover', swallow);
@@ -97,7 +95,7 @@ export function FileDropzone({
 
   const handleDragOver = (e: React.DragEvent) => {
     if (disabled || !hasFiles(e)) return;
-    // Required for the drop event to fire at all.
+    // preventDefault enables the drop event.
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
   };
@@ -120,12 +118,11 @@ export function FileDropzone({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) handleFile(file);
-    // Reset so re-picking the same file after an error still fires `change`.
+    // Reset so re-picking the same file fires `change`.
     e.target.value = '';
   };
 
-  // Pointer shortcut: clicking anywhere in the zone opens the picker, unless the
-  // click landed on a control that handles it itself.
+  // Clicking anywhere in the zone opens the picker, except on controls.
   const handleClick = (e: React.MouseEvent) => {
     if (disabled) return;
     if ((e.target as HTMLElement).closest('button, a, input, select, textarea, label')) return;

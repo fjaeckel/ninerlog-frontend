@@ -126,14 +126,7 @@ describe('SignatureSection', () => {
   });
 
   it('renders a working signature image under React.StrictMode (regression: must not revoke the shared blob URL on the mount/cleanup/remount cycle)', () => {
-    // StrictMode intentionally mounts -> cleans up -> remounts every
-    // component once in development, specifically to surface exactly this
-    // bug class: a `useEffect` cleanup that revokes/frees a resource whose
-    // real lifetime is owned elsewhere (here, the React Query cache for
-    // useFlightSignatureImageUrl) gets called after the *first* simulated
-    // unmount, but the *second* mount reuses the same cached blob URL
-    // string — which is now dead, so the <img> renders broken. This is
-    // invisible in a plain (non-strict) render, which is why it shipped.
+    // Under StrictMode's mount → cleanup → remount, the image still renders.
     const revokeSpy = vi.spyOn(URL, 'revokeObjectURL');
     const signedFlight: Flight = { ...baseFlight, signatureId: 'sig-3' };
     mockSignatureHooks([

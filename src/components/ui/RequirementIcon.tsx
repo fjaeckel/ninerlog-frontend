@@ -6,14 +6,7 @@ interface RequirementIconProps {
   className?: string;
 }
 
-/**
- * The met / not-met marker in front of a requirement.
- *
- * One marker for the whole app: currency requirements, launch methods,
- * passenger currency and password rules each used to draw their own — ✓/○ in
- * one place, ✓/✗ in another, at whatever size the surrounding text happened
- * to be.
- */
+/** The met / not-met marker in front of a requirement, shared app-wide. */
 export function RequirementIcon({ met, className }: RequirementIconProps) {
   const Icon = met ? Check : Circle;
   return (

@@ -13,9 +13,8 @@ interface DialogProps {
 
 /**
  * Generic accessible modal for non-destructive content (forms, capture
- * flows, informational panels). Modeled on ConfirmDialog's focus-trap /
- * Escape / aria-modal handling, but hosts arbitrary children instead of a
- * fixed confirm/cancel button pair.
+ * flows, informational panels): focus trap, Escape-to-close, aria-modal,
+ * arbitrary children.
  */
 export function Dialog({
   open,
@@ -97,8 +96,7 @@ export function Dialog({
                 </p>
               )}
             </div>
-            {/* Renders inline, so an untyped button would submit a
-                surrounding <form> when the dialog is opened from one. */}
+            {/* type="button": never submits a surrounding <form> */}
             <button
               type="button"
               onClick={onClose}

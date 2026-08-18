@@ -21,8 +21,7 @@ export default function FlightDetailPage() {
   const { flightId } = useParams<{ flightId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  // The list passes its query string along so going back keeps the search,
-  // filters, sort and page the user came from.
+  // The list's query string, passed back on return navigation.
   const listSearch = (location.state as { listSearch?: string } | null)?.listSearch ?? '';
   const flightsListPath = `/flights${listSearch}`;
   const { t } = useTranslation('flights');
@@ -66,8 +65,7 @@ export default function FlightDetailPage() {
   const totalLandings = flight.allLandings;
   const totalTakeoffs = flight.takeoffsDay + flight.takeoffsNight;
 
-  // Airport names are resolved by the API and are null for off-airport sites,
-  // in which case the raw stored location is shown.
+  // Airport names resolved by the API; null falls back to the stored location.
   const departureLabel = formatAirportLabel(flight.departureIcao, flight.departureAirportName);
   const arrivalLabel = formatAirportLabel(flight.arrivalIcao, flight.arrivalAirportName);
   const departure = splitAirportLabel(flight.departureIcao, flight.departureAirportName);
@@ -106,8 +104,7 @@ export default function FlightDetailPage() {
     navigate(flightsListPath);
   };
 
-  // Only the times this flight actually logged get a tile — a grid of zeros
-  // says nothing and buries the two or three figures that matter.
+  // Only the times this flight actually logged get a tile.
   const timeTiles = [
     { key: 'pic', label: t('fields.picTime'), minutes: flight.picTime },
     { key: 'dual', label: t('detail.dualTime'), minutes: flight.dualTime },
@@ -157,8 +154,7 @@ export default function FlightDetailPage() {
         {t('detail.backToFlights')}
       </button>
 
-      {/* Hero — the same header the list card uses, at page scale: route, when,
-          in what, as what, and the block time it all adds up to. */}
+      {/* Hero — the list card's header at page scale */}
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
         <div className="flex items-start gap-3 border-l-4 border-blue-600 bg-slate-50 px-4 py-3 dark:border-blue-500 dark:bg-slate-700/40">
           <div className="min-w-0 flex-1">
@@ -255,17 +251,8 @@ export default function FlightDetailPage() {
         <FlightForm flightId={flight.id} onClose={() => setShowEditForm(false)} />
       </FormModal>
 
-      {/* Flight Details.
-
-          Columns rather than a grid: the panels are independent and wildly
-          different heights, and grid rows stretch every panel to match its
-          tallest neighbour — which is what turned "Takeoffs & Landings" into a
-          mostly empty box. Multi-column flow packs them by height instead, so
-          the whole flight fits on one screen with no dead space in it.
-
-          Each panel carries `break-inside-avoid` so a column break cannot cut
-          a card in half, and its own bottom margin — column flow has no gap
-          between items the way a grid does. */}
+      {/* Flight details — multi-column flow; each panel carries
+          break-inside-avoid and its own bottom margin */}
       <div className="columns-1 gap-4 md:columns-2 xl:columns-3">
         {/* Aircraft & Route */}
         <div className="mb-4 break-inside-avoid">
@@ -425,10 +412,8 @@ export default function FlightDetailPage() {
 }
 
 /**
- * A free-text field, boxed like the tiles beside it.
- *
- * Renders nothing when the flight has no such text, so the card only ever
- * shows what was written.
+ * A free-text field, boxed like the tiles beside it. Renders nothing when
+ * the flight has no such text.
  */
 function TextBlock({ label, value }: { label: string; value?: string | null }): ReactNode {
   if (!value) return null;

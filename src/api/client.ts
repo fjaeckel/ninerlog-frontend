@@ -6,12 +6,11 @@ import type { paths } from './schema';
 import { useAuthStore } from '../stores/authStore';
 import { API_BASE_URL } from '../lib/config';
 
-// Create typed client
 export const apiClient = createClient<paths>({
   baseUrl: API_BASE_URL,
 });
 
-// Track whether a refresh is already in progress to avoid concurrent refreshes
+// In-flight token refresh, shared by concurrent callers.
 let refreshPromise: Promise<boolean> | null = null;
 
 async function refreshAccessToken(): Promise<boolean> {
@@ -42,13 +41,12 @@ async function refreshAccessToken(): Promise<boolean> {
   }
 }
 
-// Add auth token interceptor
+// Auth middleware: attach token, refresh-and-retry on 401.
 apiClient.use({
   async onRequest({ request }) {
-    // Wait for the in-flight bootstrap refresh (if any) so the very first wave
-    // of requests after a cold launch carries a valid Authorization header.
+    // Wait for the in-flight bootstrap refresh, if any.
     if (bootstrapPromise) {
-      try { await bootstrapPromise; } catch { /* ignore — onResponse will handle 401 */ }
+      try { await bootstrapPromise; } catch { /* ignore */ }
     }
     const token = useAuthStore.getState().accessToken;
     if (token) {
@@ -57,7 +55,6 @@ apiClient.use({
     return request;
   },
   async onResponse({ response, request }) {
-    // Handle 401 by refreshing the token AND retrying the original request once
     if (response.status !== 401) return response;
 
     const url = request.url || '';
@@ -67,18 +64,13 @@ apiClient.use({
       url.includes('/auth/register') ||
       url.includes('/auth/refresh') ||
       url.includes('/auth/password-reset') ||
-      // OIDC endpoints are pre-login: a 401 from the exchange means the
-      // handoff code expired or was replayed — refreshing cannot help and
-      // redirecting would hide the error the callback page needs to show.
       url.includes('/auth/oidc/') ||
       url.includes('/auth/providers') ||
-      // Defense-in-depth: the public /sign/{token} endpoints never require
-      // auth and the backend never emits 401 from them, but an anonymous
-      // instructor has no refresh token — never redirect them to /login.
+      // Public signing endpoints.
       url.includes('/sign/');
     if (isAuthEndpoint) return response;
 
-    // Avoid infinite loops: only retry once per request
+    // Retry at most once per request.
     if ((request as Request & { __retried?: boolean }).__retried) return response;
 
     if (!refreshPromise) {
@@ -113,24 +105,14 @@ export const HTTP_STATUS_KEY = 'httpStatus';
 /** An API error body carrying the HTTP status that produced it. */
 export type ApiErrorBody = Record<string, unknown> & { httpStatus?: number };
 
-/**
- * Reads the HTTP status off a thrown API error, when it has one.
- *
- * Hooks throw openapi-fetch's parsed error *body*, which on its own says
- * nothing about the status that produced it — a 429 and a 500 are
- * indistinguishable to any caller. The middleware below stamps the status onto
- * that body so retry policy can tell "the server is struggling, try again"
- * apart from "the server said no, asking again will not help".
- */
+/** Reads the HTTP status off a thrown API error, when it has one. */
 export function httpStatusOf(error: unknown): number | undefined {
   if (typeof error !== 'object' || error === null) return undefined;
   const status = (error as ApiErrorBody)[HTTP_STATUS_KEY];
   return typeof status === 'number' ? status : undefined;
 }
 
-// Stamp the HTTP status onto error bodies. Registered as its own middleware so
-// it applies to whatever response the auth middleware above settles on,
-// regardless of the order openapi-fetch runs them in.
+// Stamp the HTTP status onto error bodies.
 apiClient.use({
   async onResponse({ response }) {
     if (response.ok) return response;
@@ -139,12 +121,11 @@ apiClient.use({
     try {
       body = await response.clone().json();
     } catch {
-      // Not JSON — an nginx error page, a gateway timeout, an empty body.
+      // Non-JSON body.
       body = undefined;
     }
 
-    // Only augment plain JSON objects. Rewriting an array or a bare string
-    // would change the shape hooks already destructure.
+    // Augment plain JSON objects only.
     const augmented =
       typeof body === 'object' && body !== null && !Array.isArray(body)
         ? { ...(body as Record<string, unknown>), [HTTP_STATUS_KEY]: response.status }
@@ -185,12 +166,12 @@ function scheduleTokenRefresh() {
     }
     const success = await refreshPromise;
     if (success) {
-      scheduleTokenRefresh(); // Schedule next refresh
+      scheduleTokenRefresh();
     }
   }, refreshIn);
 }
 
-// Subscribe to auth store changes to start/stop the refresh timer
+// Start/stop the refresh timer on auth store changes.
 useAuthStore.subscribe((state, prevState) => {
   if (state.tokenExpiresAt !== prevState.tokenExpiresAt) {
     if (state.tokenExpiresAt && state.refreshToken) {
@@ -202,25 +183,19 @@ useAuthStore.subscribe((state, prevState) => {
   }
 });
 
-// Start timer if there's already an active session (e.g. after page reload — tokens
-// won't be in store after reload since they're memory-only, but this handles the
-// case where the store is populated before the subscription fires)
+// Start the timer for an already-active session.
 scheduleTokenRefresh();
 
 // ── Bootstrap refresh on app start ──
-// Resolves once the session is "ready" (either we have a fresh access token or
-// we've decided we don't). All API requests await this on first call, so the
-// initial wave never goes out unauthenticated when the PWA cold-launches from
-// the iOS / Android home screen.
+// Resolves once the session is ready; all API requests await it on first call.
 export let bootstrapPromise: Promise<boolean> | null = null;
 
 function bootstrap(): Promise<boolean> {
   const { refreshToken, accessToken, tokenExpiresAt, isAuthenticated } = useAuthStore.getState();
   if (!isAuthenticated || !refreshToken) return Promise.resolve(false);
 
-  // If the persisted access token is still valid, use it as-is.
-  // The proactive timer will refresh it before expiry.
-  const skewMs = 30_000; // refresh slightly early to avoid clock-skew 401s
+  // Persisted access token still valid: use it as-is.
+  const skewMs = 30_000; // refresh this long before expiry
   if (accessToken && tokenExpiresAt && tokenExpiresAt - Date.now() > skewMs) {
     scheduleTokenRefresh();
     return Promise.resolve(true);
@@ -233,12 +208,11 @@ function bootstrap(): Promise<boolean> {
 }
 
 bootstrapPromise = bootstrap().finally(() => {
-  // Keep awaitable but allow GC of result; subsequent awaits resolve immediately.
+  // No-op; keeps bootstrapPromise awaitable.
 });
 
 // ── Resume on visibility / online ──
-// When the user re-opens the installed PWA from the home screen, refresh the
-// token if it's stale so the first interaction never sees a 401.
+// Refreshes a stale token when the app returns to the foreground.
 if (typeof window !== 'undefined') {
   const refreshIfStale = () => {
     const { isAuthenticated, refreshToken, tokenExpiresAt } = useAuthStore.getState();
@@ -256,5 +230,4 @@ if (typeof window !== 'undefined') {
   window.addEventListener('pageshow', refreshIfStale); // bfcache / iOS swipe-back
 }
 
-// Export types for convenience
 export type * from './schema';

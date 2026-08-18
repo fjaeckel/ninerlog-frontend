@@ -23,12 +23,8 @@ interface FormModalProps {
 
 /**
  * The shell every content/form modal shares: scrim, panel, sticky header with
- * a close button, Escape-to-close and a focus trap.
- *
- * Each page used to hand-roll this, which is how the app ended up with three
- * different close glyphs, two different mobile behaviours and panels that
- * could not be dismissed with the keyboard. Use `ConfirmDialog` instead when
- * the modal is a destructive yes/no question.
+ * a close button, Escape-to-close and a focus trap. Use `ConfirmDialog` for
+ * destructive yes/no questions.
  */
 export function FormModal({ open, onClose, title, size = 'md', children, className }: FormModalProps) {
   const { t } = useTranslation('common');
@@ -100,8 +96,7 @@ export function FormModal({ open, onClose, title, size = 'md', children, classNa
             <h2 id={titleId} className="section-title truncate">
               {title}
             </h2>
-            {/* type="button" is load-bearing: the modal renders inline, so an
-                untyped button submits a surrounding <form> when opened from one. */}
+            {/* type="button": never submits a surrounding <form> */}
             <button
               type="button"
               onClick={onClose}

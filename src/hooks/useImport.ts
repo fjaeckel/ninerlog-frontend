@@ -110,19 +110,14 @@ export const useConfirmImport = () => {
 
 /**
  * Restore a NinerLog JSON backup (as produced by `GET /exports/json`).
- *
- * The endpoint is additive: it never deletes or modifies existing data, and
- * skips aircraft whose registration already exists for the user. After a
- * successful restore we invalidate every query that depends on the flight
- * log, plus the aircraft/licenses/credentials lists since those were all
- * potentially repopulated.
+ * Additive: never deletes or modifies existing data; skips aircraft whose
+ * registration already exists for the user.
  */
 export const useRestoreJSON = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (file: File): Promise<ImportJSONResult> => {
-      // Read the file as text first so we can reject obviously-broken JSON
-      // before paying the cost of a network round-trip.
+      // Reject broken JSON before the network round-trip.
       const text = await file.text();
       let parsed: unknown;
       try {

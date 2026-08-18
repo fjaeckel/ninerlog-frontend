@@ -1,25 +1,10 @@
 /**
- * Theme-aware help illustrations.
- *
- * Each figure is a real, annotated screenshot of the running app — not a
- * mockup — captured by scripts/help-screenshots/generate.mjs (Playwright
- * drives the real UI against realistic mock data, then bakes a "click here"
- * ring/cursor/step-badge overlay onto the page before saving the PNG). One
- * light and one dark variant lives in public/help/<id>-<theme>.png; this
- * component just picks the file matching the app's *actual* theme toggle
- * (`useTheme().resolvedTheme`), not just the OS `prefers-color-scheme`. That
- * means a user who forces light mode while their OS is dark still sees the
- * light screenshot, and vice-versa.
- *
- * Figures are referenced from the markdown help content with a custom image
- * source, e.g. `![Where to click](figure:add-flight)`. The `HelpFigure`
- * renderer (wired into react-markdown in HelpPage) looks the id up below and
- * renders the matching image with the alt text as a caption. Unknown ids
- * render nothing so content never shows a broken image.
- *
- * To regenerate a screenshot after a UI change: `npm run dev` in one
- * terminal, then `node scripts/help-screenshots/generate.mjs [figure-id...]`
- * in another.
+ * Theme-aware help illustrations: annotated screenshots captured by
+ * scripts/help-screenshots/generate.mjs, one light and one dark variant in
+ * public/help/<id>-<theme>.png, picked by `useTheme().resolvedTheme`.
+ * Referenced from markdown help content as `![alt](figure:<id>)`; unknown
+ * ids render nothing. Regenerate: `npm run dev`, then
+ * `node scripts/help-screenshots/generate.mjs [figure-id...]`.
  */
 import { useTheme } from '../../hooks/useTheme';
 
@@ -44,9 +29,8 @@ const FIGURE_IDS = [
 const FIGURE_ID_SET = new Set(FIGURE_IDS);
 
 /**
- * Renders a help figure by id inside a captioned frame. Built entirely from
- * inline elements (`span`) so it is valid where react-markdown places images
- * (inside a `<p>`). Returns `null` for unknown ids.
+ * Renders a help figure by id inside a captioned frame, built entirely from
+ * inline elements (`span`). Returns `null` for unknown ids.
  */
 export function HelpFigure({ id, caption }: { id: string; caption?: string }) {
   const { resolvedTheme } = useTheme();

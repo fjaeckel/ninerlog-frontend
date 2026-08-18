@@ -4,10 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/cn';
 
 /**
- * A contextual link into the help topic for the surrounding screen.
- *
- * Sits inline next to a page title, so it carries its own 44px hit area
- * (`before:` overlay) rather than growing the line it sits on.
+ * A contextual link into the help topic for the surrounding screen, with its
+ * own 44px hit area (`before:` overlay).
  */
 export default function HelpLink({
   topic,
@@ -26,8 +24,7 @@ export default function HelpLink({
       className={cn(
         'inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400',
         'hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-md',
-        // 44px tall for a finger, with the extra height pulled back out so the
-        // title row it sits in does not grow.
+        // 44px hit area, extra height pulled back out of the line.
         'min-h-11 min-w-11 justify-center -my-3 px-1',
         className
       )}

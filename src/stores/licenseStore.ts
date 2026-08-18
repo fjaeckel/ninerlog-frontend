@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import type { License } from '../types/api';
 
-// Re-export for backward compatibility
 export type { License };
 
 interface LicenseState {

@@ -33,8 +33,7 @@ export default function ProfilePage() {
     await logout.mutateAsync();
     navigate('/login');
   };
-  // Re-syncs the auth store from GET /users/me, so a profile changed
-  // server-side (admin edit, OIDC re-sync) shows up without re-logging-in.
+  // Re-syncs the auth store from GET /users/me.
   useCurrentUser();
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
@@ -47,9 +46,8 @@ export default function ProfilePage() {
   const verify2FA = useVerify2FA();
   const disable2FA = useDisable2FA();
 
-  // In OIDC mode the identity provider owns credentials and identity: name and
-  // email are re-synced from the ID token on every login, and password, TOTP
-  // and passkey management are disabled server-side (the endpoints answer 503).
+  // OIDC mode: name/email re-sync from the ID token; password, TOTP and
+  // passkey management are disabled server-side (503).
   const authProviders = useAuthProviders();
   const oidcMode = authProviders.data?.mode === 'oidc';
 
@@ -130,8 +128,7 @@ export default function ProfilePage() {
       setPasswordMessage(t('changePassword.noMatch'));
       return;
     }
-    // Same policy the API enforces — reject here so the user gets the specific
-    // reason instead of a generic 400.
+    // Same policy the API enforces.
     const issue = passwordIssue(newPassword);
     if (issue) {
       setPasswordMessage(

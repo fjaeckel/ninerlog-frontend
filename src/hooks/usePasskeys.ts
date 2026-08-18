@@ -38,7 +38,6 @@ export const useRegisterPasskey = () => {
       // 1. Ask the server for the creation options
       const { data: options, error } = await apiClient.POST(
         '/auth/webauthn/register/options',
-        // openapi-fetch requires a body even when there isn't one in the spec
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         { body: undefined as any }
       );

@@ -7,8 +7,7 @@
  *   fail       serve 500s for the page's own list, to capture the error state
  *   anonymous  do not seed a session — for the public/auth routes
  *
- * Add a target whenever you add a screen. A screen with no target here is a
- * screen nobody can review before it ships.
+ * Add a target whenever you add a screen.
  */
 export const TARGETS = [
   { name: 'dashboard', path: '/dashboard' },
@@ -53,7 +52,7 @@ export const TARGETS = [
     },
   },
 
-  // Empty states — the first thing a new pilot sees.
+  // Empty states.
   { name: 'empty-flights', path: '/flights', empty: true },
   { name: 'empty-aircraft', path: '/aircraft', empty: true },
   { name: 'empty-licenses', path: '/licenses', empty: true },

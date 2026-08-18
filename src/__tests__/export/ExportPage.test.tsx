@@ -48,7 +48,7 @@ describe('ExportPage', () => {
 
   it('CSV export button triggers download', async () => {
     const user = userEvent.setup();
-    // Mock fetch to avoid actual network call
+    // Mock fetch.
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       blob: () => Promise.resolve(new Blob(['test'], { type: 'text/csv' })),
@@ -60,7 +60,7 @@ describe('ExportPage', () => {
     renderWithProviders(<ExportPage />);
     await user.click(screen.getByText('Download CSV'));
 
-    // The fetch should have been called with the export URL
+    // fetch called with the export URL.
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining('/exports/csv'),
       expect.any(Object)

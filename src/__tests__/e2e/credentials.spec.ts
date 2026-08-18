@@ -21,9 +21,7 @@ test.describe('Credentials', () => {
   test('should display seeded credential', async ({ page }) => {
     await seedCredential(page, auth.accessToken, { credentialNumber: 'DSP-001' });
     await page.getByRole('link', { name: 'Credentials' }).first().click();
-    // Reload to get fresh data since the page may have cached empty state.
-    // Wait for the client-side navigation to land first — reloading mid-flight
-    // aborts it, which WebKit surfaces as "Frame load interrupted".
+    // Wait for the navigation to land, then reload for fresh data.
     await expect(page).toHaveURL('/credentials');
     await page.reload();
     await expect(page.getByText('EASA Class 2 Medical')).toBeVisible({ timeout: 10000 });

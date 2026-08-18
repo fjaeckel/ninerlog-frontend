@@ -43,9 +43,8 @@ const empty: FlightAnalytics = {
   byCategory: [], byAirport: [], byCountry: [], byRoute: [], byInstructor: [],
   byCrew: [], approachTypes: [], dayOfWeek: [], hourOfDay: [], monthOfYear: [],
   durationBuckets: [],
-  // The API omits absent record fields rather than sending null (every
-  // optional field is `omitempty`), so an empty logbook is modelled with the
-  // keys left undefined.
+  // Empty logbook modelled with keys left undefined, matching the API's
+  // omitted absent fields.
   records: {
     longestFlight: undefined, longestDistanceFlight: undefined, busiestDay: null,
     busiestDayFlights: 0, busiestMonth: null, busiestMonthMinutes: 0,
@@ -106,8 +105,7 @@ describe('exportAnalyticsToCSV', () => {
   });
 
   it('neutralises spreadsheet formula injection in user-supplied text', () => {
-    // Names, registrations and remarks come from the user, so a leading =, +,
-    // - or @ would otherwise be evaluated as a formula by Excel or Sheets.
+    // A leading =, +, - or @ is neutralised.
     exportAnalyticsToCSV({
       ...empty,
       byCrew: [

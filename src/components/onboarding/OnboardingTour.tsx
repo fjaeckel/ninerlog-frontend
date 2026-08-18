@@ -51,16 +51,15 @@ export function OnboardingTour() {
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === total - 1;
 
-  // Reset to the first step every time the tour (re)opens. Uses the
-  // adjust-state-during-render pattern rather than an effect.
+  // Reset to the first step every time the tour (re)opens; state adjusted
+  // during render.
   const [prevOpen, setPrevOpen] = useState(isOpen);
   if (isOpen !== prevOpen) {
     setPrevOpen(isOpen);
     if (isOpen) setStepIndex(0);
   }
 
-  // Track viewport breakpoint so we can switch between floating card (desktop)
-  // and bottom-sheet card (mobile).
+  // Viewport breakpoint: floating card (desktop) vs bottom sheet (mobile).
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const mq = window.matchMedia(DESKTOP_QUERY);
@@ -69,8 +68,8 @@ export function OnboardingTour() {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  // Recompute the spotlight position for the active step. Re-runs on resize and
-  // scroll so the highlight stays glued to its target.
+  // Recompute the spotlight position for the active step; re-runs on resize
+  // and scroll.
   const updateTarget = useCallback(() => {
     const match = resolveTarget(step?.targets);
     setTarget({ rect: match ? match.el.getBoundingClientRect() : null, key: match?.key ?? null });
@@ -78,8 +77,7 @@ export function OnboardingTour() {
 
   useLayoutEffect(() => {
     if (!isOpen) return;
-    // Defer the first measurement to the next frame so we never call setState
-    // synchronously inside the effect body, and to catch late layout shifts.
+    // First measurement deferred to the next frame.
     const raf = requestAnimationFrame(updateTarget);
     window.addEventListener('resize', updateTarget);
     window.addEventListener('scroll', updateTarget, true);
@@ -90,7 +88,7 @@ export function OnboardingTour() {
     };
   }, [isOpen, updateTarget]);
 
-  // Measure the card so we can keep it fully on-screen on desktop.
+  // Card measurement, for on-screen placement on desktop.
   useLayoutEffect(() => {
     const el = cardRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
@@ -148,8 +146,7 @@ export function OnboardingTour() {
     [finish, next, back, isFirst]
   );
 
-  // Move focus into the card on each step so keyboard + screen-reader users
-  // follow along.
+  // Move focus into the card on each step.
   useEffect(() => {
     if (!isOpen) return;
     const id = window.setTimeout(() => cardRef.current?.focus(), 50);
@@ -162,8 +159,7 @@ export function OnboardingTour() {
     const vh = window.innerHeight;
     const r = target.rect;
     const cardH = cardHeight || 260;
-    // Prefer the side of the target with the most room (sidebar lives left, so
-    // this resolves to "right" in the common case).
+    // Prefer the side of the target with the most room.
     let left = r.right + GAP;
     if (left + CARD_WIDTH > vw - GAP) left = r.left - GAP - CARD_WIDTH;
     if (left < GAP) left = Math.min(Math.max(GAP, r.left), vw - CARD_WIDTH - GAP);
@@ -211,8 +207,7 @@ export function OnboardingTour() {
       aria-label={t('tour.dialogLabel')}
       onKeyDown={onKeyDown}
     >
-      {/* Click-blocking backdrop. When no target is highlighted it also provides
-          the dimming; otherwise the spotlight's box-shadow does. */}
+      {/* Click-blocking backdrop; dims when no target is highlighted */}
       <div
         className={spotlight ? 'absolute inset-0' : 'absolute inset-0 bg-slate-950/70'}
         aria-hidden="true"
