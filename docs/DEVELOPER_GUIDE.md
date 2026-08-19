@@ -127,6 +127,30 @@ What belongs where:
 The `@` import alias maps to `src/`, so prefer `import { cn } from '@/lib/cn'`
 over deep relative paths in new code.
 
+### `public/.well-known/apple-app-site-association`
+
+The iOS client declares the associated domain `webcredentials:app.ninerlog.com`. Apple's CDN
+fetches this file over HTTPS and matches its `webcredentials.apps` entry against the app's
+`<TeamID>.<BundleID>`. Only when both sides agree does a password saved in the app bind to this
+**host** — shared with the web app in Safari, and offered by password managers under
+`app.ninerlog.com` — instead of being filed under the app's bundle identifier, where the hosted
+instance and every self-hosted one share one indistinguishable bucket.
+
+Three things are load-bearing:
+
+| Requirement | Where |
+|---|---|
+| The file ships verbatim in the bundle (JSON, no extension, no BOM). | `public/.well-known/`; `src/__tests__/wellKnown.test.ts` guards its shape, and the image build asserts it reached `dist/`. |
+| It is served as `application/json`. | `nginx.conf` and the TLS server block in `docker-entrypoint.sh`. Without the explicit type it inherits `default_type application/octet-stream` and the association fails. |
+| It is reachable at `https://<host>/.well-known/apple-app-site-association` — no redirect, no auth. | Deployment. |
+
+A self-hosted deployment serves the same file, where it does nothing: the association is
+symmetric and the iOS app names only `app.ninerlog.com`, because an associated domain can only
+name hosts compiled into a signed binary. Listing a host here does not associate it.
+
+Editing the app-ID list means republishing; Apple's CDN serves a cached copy for up to 24 hours,
+so a change is not immediate.
+
 ---
 
 ## 4. Application Bootstrap & Runtime Flow

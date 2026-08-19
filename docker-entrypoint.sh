@@ -99,6 +99,11 @@ server {
         add_header Cache-Control "public, immutable";
     }
 
+    # Apple app-site-association: extension-less JSON, served from the bundle.
+    location = /.well-known/apple-app-site-association {
+        default_type application/json;
+    }
+
     # Health check
     location /health {
         access_log off;
