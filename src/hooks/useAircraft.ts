@@ -18,16 +18,38 @@ export interface AircraftStatsData {
   byType: Map<string, AircraftTypeStats>;
 }
 
+/** Largest page the API serves; a fleet this size or smaller costs one request. */
+const AIRCRAFT_PAGE_SIZE = 500;
+
+/** Loop guard, far above any real fleet. */
+const AIRCRAFT_MAX_PAGES = 20;
+
+/** How long the fleet stays fresh. Mutations invalidate `['aircraft']` regardless. */
+export const AIRCRAFT_STALE_TIME_MS = 60_000;
+
+/**
+ * The user's complete fleet, ordered by registration. Pages through the API
+ * until every aircraft is retrieved, so callers that render or search the whole
+ * fleet — the aircraft list, the flight-form autocomplete — see all of it.
+ */
 export const useAircraft = () => {
   return useQuery({
     queryKey: ['aircraft'],
     queryFn: async (): Promise<Aircraft[]> => {
-      const { data, error } = await apiClient.GET('/aircraft', {
-        params: { query: { pageSize: 100 } },
-      });
-      if (error) throw error;
-      return (data as PaginatedAircraft)?.data ?? [];
+      const all: Aircraft[] = [];
+      for (let page = 1; page <= AIRCRAFT_MAX_PAGES; page++) {
+        const { data, error } = await apiClient.GET('/aircraft', {
+          params: { query: { page, pageSize: AIRCRAFT_PAGE_SIZE } },
+        });
+        if (error) throw error;
+        const paginated = data as PaginatedAircraft | undefined;
+        all.push(...(paginated?.data ?? []));
+        const pagination = paginated?.pagination;
+        if (!pagination || page >= pagination.totalPages) break;
+      }
+      return all;
     },
+    staleTime: AIRCRAFT_STALE_TIME_MS,
   });
 };
 
