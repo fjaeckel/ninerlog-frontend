@@ -308,7 +308,8 @@
       "commitsBehind_one": "{{count}} commit behind {{branch}}",
       "commitsBehind_other": "{{count}} commits behind {{branch}}",
       "stateOnBranch": "Current with {{branch}}",
-      "viewChanges": "View changes"
+      "viewChanges": "View changes",
+      "viewInAdmin": "Details in the admin console"
     }
   },
   "errorState": {
