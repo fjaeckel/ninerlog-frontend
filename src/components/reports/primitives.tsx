@@ -205,7 +205,7 @@ export function RankedBars({
   color,
   emptyLabel,
 }: {
-  rows: { key: string; label: string; subLabel?: string | null; value: number; formatted: string; meta?: string }[];
+  rows: { key: string; label: string; subLabel?: string | null; value: number; formatted: string; meta?: ReactNode }[];
   color: string;
   emptyLabel: string;
 }) {
