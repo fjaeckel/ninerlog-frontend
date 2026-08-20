@@ -248,7 +248,11 @@ export default function DashboardPage() {
                 <div key={cs.class} data-testid={`class-stat-${cs.class}`}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="font-medium text-slate-700 dark:text-slate-300">{classLabel}</span>
-                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{fmtDuration(cs.minutes)} · {cs.flights} {t('common:flights')} · {cs.landings} {t('common:ldg')}</span>
+                    {/* Landings lead; the flight count is desktop-only. */}
+                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums whitespace-nowrap">
+                      {fmtDuration(cs.minutes)} · {cs.landings} {t('common:ldg')}
+                      <span className="hidden sm:inline"> · {cs.flights} {t('common:flights')}</span>
+                    </span>
                   </div>
                   <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 dark:bg-blue-400 rounded-full" style={{ width: `${pct}%` }} />
@@ -280,11 +284,13 @@ export default function DashboardPage() {
                       )}
                       <span className="truncate">{ms.aircraftType}</span>
                     </span>
+                    {/* Landings lead; flight count and last flight are desktop-only. */}
                     <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums whitespace-nowrap">
-                      {fmtDuration(ms.totalMinutes)} · {ms.totalFlights} {t('common:flights')}
-                      {ms.lastFlightDate && (
-                        <span className="hidden sm:inline"> · {fmtDate(ms.lastFlightDate)}</span>
-                      )}
+                      {fmtDuration(ms.totalMinutes)} · {ms.landingsDay + ms.landingsNight} {t('common:ldg')}
+                      <span className="hidden sm:inline">
+                        {' '}· {ms.totalFlights} {t('common:flights')}
+                        {ms.lastFlightDate && ` · ${fmtDate(ms.lastFlightDate)}`}
+                      </span>
                     </span>
                   </div>
                   <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">

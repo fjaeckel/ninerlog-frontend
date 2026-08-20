@@ -14,6 +14,8 @@
   "flightsShort": "Flüge",
   "flightCount_one": "{{count}} Flug",
   "flightCount_other": "{{count}} Flüge",
+  "landingCount_one": "{{count}} Ldg",
+  "landingCount_other": "{{count}} Ldg",
   "airportCount_one": "{{count}} Flugplatz",
   "airportCount_other": "{{count}} Flugplätze",
   "failedToLoad": "Berichte konnten nicht geladen werden",

@@ -233,8 +233,9 @@ export default function ReportsPage() {
                     rows: data.monthly,
                     columns: [
                       { key: 'month', header: t('table.month'), numeric: false, render: (r) => r.month },
-                      { key: 'flights', header: t('flights'), render: (r) => r.flights },
                       { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+                      { key: 'ldg', header: t('table.landings'), render: (r) => r.landingsDay + r.landingsNight },
+                      { key: 'flights', header: t('flights'), render: (r) => r.flights },
                       { key: 'cum', header: t('table.career'), render: (r) => fmtDuration(r.cumulativeMinutes) },
                     ],
                   }}
@@ -254,9 +255,9 @@ export default function ReportsPage() {
                     rows: data.monthly,
                     columns: [
                       { key: 'month', header: t('table.month'), numeric: false, render: (r) => r.month },
-                      { key: 'flights', header: t('flights'), render: (r) => r.flights },
                       { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
                       { key: 'ldg', header: t('table.landings'), render: (r) => r.landingsDay + r.landingsNight },
+                      { key: 'flights', header: t('flights'), render: (r) => r.flights },
                     ],
                   }}
                 >
@@ -317,8 +318,9 @@ export default function ReportsPage() {
                     rows: data.yearly,
                     columns: [
                       { key: 'year', header: t('table.year'), numeric: false, render: (r) => r.year },
-                      { key: 'flights', header: t('flights'), render: (r) => r.flights },
                       { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+                      { key: 'ldg', header: t('table.landings'), render: (r) => r.landings },
+                      { key: 'flights', header: t('flights'), render: (r) => r.flights },
                       { key: 'pic', header: t('role.pic'), render: (r) => fmtDuration(r.picMinutes) },
                       { key: 'dual', header: t('role.dual'), render: (r) => fmtDuration(r.dualMinutes) },
                       { key: 'night', header: t('role.night'), render: (r) => fmtDuration(r.nightMinutes) },
@@ -397,7 +399,7 @@ export default function ReportsPage() {
                       subLabel: a.subLabel,
                       value: a.totalMinutes,
                       formatted: fmtDuration(a.totalMinutes),
-                      meta: t('flightCount', { count: a.flights }),
+                      meta: <BarMeta landings={a.landings} flights={a.flights} t={t} />,
                     }))}
                   />
                 </ReportCard>
@@ -416,7 +418,7 @@ export default function ReportsPage() {
                       subLabel: a.subLabel,
                       value: a.totalMinutes,
                       formatted: fmtDuration(a.totalMinutes),
-                      meta: t('flightCount', { count: a.flights }),
+                      meta: <BarMeta landings={a.landings} flights={a.flights} t={t} />,
                     }))}
                   />
                 </ReportCard>
@@ -436,7 +438,7 @@ export default function ReportsPage() {
                       label: t(`classLabels.${g.label}`, { defaultValue: g.label.replace(/_/g, ' ') }),
                       value: g.totalMinutes,
                       formatted: fmtDuration(g.totalMinutes),
-                      meta: t('flightCount', { count: g.flights }),
+                      meta: <BarMeta landings={g.landings} flights={g.flights} t={t} />,
                     }))}
                   />
                 </ReportCard>
@@ -454,7 +456,7 @@ export default function ReportsPage() {
                       label: t(`categoryLabels.${g.label}`, { defaultValue: g.label }),
                       value: g.totalMinutes,
                       formatted: fmtDuration(g.totalMinutes),
-                      meta: t('flightCount', { count: g.flights }),
+                      meta: <BarMeta landings={g.landings} flights={g.flights} t={t} />,
                     }))}
                   />
                 </ReportCard>
@@ -738,6 +740,16 @@ export default function ReportsPage() {
   );
 }
 
+/** Counts beside a ranked bar: landings always, the flight count from `sm` up. */
+function BarMeta({ landings, flights, t }: { landings: number; flights: number; t: Translate }) {
+  return (
+    <>
+      {t('landingCount', { count: landings })}
+      <span className="hidden sm:inline"> · {t('flightCount', { count: flights })}</span>
+    </>
+  );
+}
+
 /** A single personal best. Not a chart — the number is the whole story. */
 function RecordCard({
   icon,
@@ -829,12 +841,12 @@ function aircraftColumns(
 ): TableColumn<AnalyticsAircraftRow>[] {
   return [
     { key: 'label', header: t('table.aircraft'), numeric: false, render: (r) => r.label },
-    { key: 'flights', header: t('flights'), render: (r) => r.flights },
     { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+    { key: 'ldg', header: t('table.landings'), render: (r) => r.landings },
+    { key: 'flights', header: t('flights'), render: (r) => r.flights },
     { key: 'pic', header: t('role.pic'), render: (r) => fmtDuration(r.picMinutes) },
     { key: 'dual', header: t('role.dual'), render: (r) => fmtDuration(r.dualMinutes) },
     { key: 'night', header: t('role.night'), render: (r) => fmtDuration(r.nightMinutes) },
-    { key: 'ldg', header: t('table.landings'), render: (r) => r.landings },
     { key: 'dist', header: t('table.distance'), render: (r) => nm(r.distanceNm) },
     { key: 'last', header: t('table.lastFlight'), render: (r) => (r.lastFlightDate ? fmtDate(r.lastFlightDate) : '—') },
   ];
@@ -843,11 +855,11 @@ function aircraftColumns(
 function groupColumns(t: Translate, fmtDuration: (m: number) => string): TableColumn<AnalyticsGroupRow>[] {
   return [
     { key: 'label', header: t('table.group'), numeric: false, render: (r) => r.label.replace(/_/g, ' ') },
-    { key: 'flights', header: t('flights'), render: (r) => r.flights },
     { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
+    { key: 'ldg', header: t('table.landings'), render: (r) => r.landings },
+    { key: 'flights', header: t('flights'), render: (r) => r.flights },
     { key: 'pic', header: t('role.pic'), render: (r) => fmtDuration(r.picMinutes) },
     { key: 'dual', header: t('role.dual'), render: (r) => fmtDuration(r.dualMinutes) },
-    { key: 'ldg', header: t('table.landings'), render: (r) => r.landings },
   ];
 }
 
