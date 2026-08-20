@@ -1287,6 +1287,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/airports/pack": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the airport database pack
+         * @description The complete merged airport database (OurAirports + mwgg/Airports) as a
+         *     gzip-compressed JSON document for offline use by clients:
+         *
+         *     ```
+         *     {"etag": "…", "generatedAt": "…", "count": 29331, "airports": [Airport, …]}
+         *     ```
+         *
+         *     `airports` is sorted by ICAO code. `etag` identifies the dataset
+         *     content: it changes only when the merged data itself changes, not on
+         *     every periodic refresh. Clients should store the pack together with its
+         *     `etag` and re-download only when `GET /airports/pack/status` reports a
+         *     different one.
+         */
+        get: operations["getAirportPack"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/airports/pack/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get airport pack freshness
+         * @description Freshness metadata for `GET /airports/pack`, cheap enough to poll.
+         *     A client holding a pack with the same `etag` already has the latest
+         *     data and should skip the download.
+         */
+        get: operations["getAirportPackStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/reports/routes": {
         parameters: {
             query?: never;
@@ -1822,7 +1875,14 @@ export interface paths {
         put?: never;
         /**
          * Recalculate all flights
-         * @description Recalculates auto-computed fields (night time, distance, solo, cross-country, etc.) for all of the authenticated user's flights.
+         * @description Recalculates auto-computed fields (night time, distance, solo, cross-country, etc.)
+         *     for all of the authenticated user's flights.
+         *
+         *     Also rewrites aircraft registrations into the canonical notation of their state of
+         *     registry — inserting, moving or removing the nationality-mark hyphen, so `DEABC`
+         *     becomes `D-EABC` and `N-12345` becomes `N12345`. Both the fleet and the flights are
+         *     normalised; flights follow their aircraft automatically. Registrations whose
+         *     nationality mark is not recognised are left untouched.
          */
         post: operations["recalculateFlights"];
         delete?: never;
@@ -2052,6 +2112,34 @@ export interface paths {
          *     Requires admin privileges.
          */
         get: operations["getAdminStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Release update status for the deployed components
+         * @description Reports the version each NinerLog component is running against the newest
+         *     release published on GitHub. The API knows its own version from its build
+         *     stamp; the frontend supplies its own via `frontendVersion`.
+         *
+         *     Releases are looked up in the background at most once per interval and
+         *     cached, so this endpoint never blocks on GitHub. When the deployment has
+         *     opted out (`UPDATE_CHECK_ENABLED=false`) the response reports
+         *     `checkEnabled: false` and every component is `unknown`.
+         *     Requires admin privileges.
+         */
+        get: operations["getUpdateStatus"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2772,7 +2860,7 @@ export interface components {
              */
             userId: string;
             /**
-             * @description Aircraft registration/tail number
+             * @description Aircraft registration/tail number. Normalised on write into the canonical notation of its state of registry: the nationality mark is matched against the ICAO table and the hyphen inserted, moved or removed to suit (`deabc` and `DE-ABC` both become `D-EABC`; `N-12345` becomes `N12345`). A registration whose nationality mark is not recognised is stored uppercased and trimmed, but otherwise unchanged.
              * @example D-EFGH
              */
             registration: string;
@@ -2848,7 +2936,7 @@ export interface components {
         };
         AircraftCreate: {
             /**
-             * @description Aircraft registration/tail number
+             * @description Aircraft registration/tail number. Normalised on write into the canonical notation of its state of registry: the nationality mark is matched against the ICAO table and the hyphen inserted, moved or removed to suit (`deabc` and `DE-ABC` both become `D-EABC`; `N-12345` becomes `N12345`). A registration whose nationality mark is not recognised is stored uppercased and trimmed, but otherwise unchanged.
              * @example D-EFGH
              */
             registration: string;
@@ -4162,6 +4250,29 @@ export interface components {
              */
             country?: string;
         };
+        AirportPackStatus: {
+            /**
+             * @description Content identifier of the current pack (hex SHA-256 over the
+             *     airport data). Changes only when the merged dataset changes.
+             * @example 3f6b1c9a2d4e5f60
+             */
+            etag: string;
+            /**
+             * Format: date-time
+             * @description When the live airport snapshot was loaded from the upstream sources
+             */
+            generatedAt: string;
+            /**
+             * @description Number of airports in the pack
+             * @example 29331
+             */
+            count: number;
+            /**
+             * @description Size of the gzip-compressed pack in bytes
+             * @example 745211
+             */
+            sizeBytes: number;
+        };
         FlightRoute: {
             /** @example EDDF */
             departureIcao: string;
@@ -5034,6 +5145,18 @@ export interface components {
             createdAt?: string;
         };
         AdminConfig: {
+            /**
+             * @description Version this API binary was stamped with at build time, falling back to APP_VERSION. `dev` for an unstamped build.
+             * @example v1.3.4
+             */
+            appVersion?: string;
+            /** @description Whether the deployment checks GitHub for newer releases (UPDATE_CHECK_ENABLED) */
+            updateCheckEnabled?: boolean;
+            /**
+             * @description How often the release check runs. Absent when the check is disabled.
+             * @example 24h0m0s
+             */
+            updateCheckInterval?: string;
             /** @example go1.23.0 */
             goVersion: string;
             /**
@@ -5051,6 +5174,22 @@ export interface components {
              * @example 29331
              */
             airportDatabaseSize: number;
+            /**
+             * Format: date-time
+             * @description When the airport database was last loaded from the upstream sources; null when it never loaded
+             */
+            airportDatabaseUpdatedAt?: string | null;
+            /**
+             * @description Number of ICAO aircraft nationality marks in the vendored registration table
+             * @example 210
+             */
+            registrationPrefixCount: number;
+            /**
+             * Format: date
+             * @description When the vendored nationality mark table was last checked against ICAO's published nationality marks. The table is vendored rather than fetched, so this is the only signal that it may be stale.
+             * @example 2026-08-17
+             */
+            registrationPrefixesReviewed: string;
             /** @description Configured CORS allowed origins */
             corsOrigins: string[];
             /**
@@ -5115,6 +5254,75 @@ export interface components {
              *     ]
              */
             cloudBackupProviders: string[];
+        };
+        UpdateStatus: {
+            /** @description Whether this deployment checks for releases (UPDATE_CHECK_ENABLED) */
+            checkEnabled: boolean;
+            /** @description True when at least one component is behind its newest published release. False when every component is current, unknown, or the check is disabled. */
+            updateAvailable: boolean;
+            /**
+             * @description Branch a `latest` build's commit is compared against (UPDATE_CHECK_BRANCH)
+             * @example main
+             */
+            branch?: string;
+            /**
+             * Format: date-time
+             * @description When the release lookup last ran; null when it never has
+             */
+            lastCheckedAt?: string | null;
+            /**
+             * @description Coarse reason the last lookup failed, absent when it succeeded. `request` is a network or DNS failure, `status` a non-200 answer (rate limiting included), `decode` an unreadable body, `empty` a release without a tag.
+             * @enum {string}
+             */
+            lastError?: "request" | "status" | "decode" | "empty" | "error";
+            /** @description One entry per deployed component, in a stable order. */
+            components: components["schemas"]["UpdateComponent"][];
+        };
+        UpdateComponent: {
+            /**
+             * @description Component this entry describes
+             * @enum {string}
+             */
+            name: "api" | "frontend";
+            /**
+             * @description Version the component is running. Empty when the frontend did not report one; `dev` for a build that was never stamped.
+             * @example v1.3.4
+             */
+            currentVersion: string;
+            /**
+             * @description Newest release published for the component, absent until a lookup succeeds
+             * @example v1.3.5
+             */
+            latestVersion?: string;
+            /**
+             * @description Short commit the running image was built from, absent when the component reported none.
+             * @example 4f2c1ab
+             */
+            currentCommit?: string;
+            /**
+             * @description `unknown` means neither comparison could be made: no semantic version, no build commit, or nothing looked up yet.
+             * @enum {string}
+             */
+            state: "up_to_date" | "update_available" | "unknown";
+            /**
+             * @description How `state` was reached. `release` compares a semantic version against the newest published release; `commit` compares the build commit against the tracked branch, which is what an image running the `latest` tag gets. Absent when the state is `unknown`.
+             * @enum {string}
+             */
+            channel?: "release" | "commit";
+            /**
+             * @description Commits the tracked branch is ahead of this build. Present only on the `commit` channel.
+             * @example 7
+             */
+            behindBy?: number;
+            /** @description GitHub comparison between this build and the branch head. Present only on the `commit` channel. */
+            compareUrl?: string;
+            /** @description GitHub release page for the newest release */
+            releaseUrl?: string;
+            /**
+             * Format: date-time
+             * @description When the newest release was published
+             */
+            publishedAt?: string;
         };
         AdminUser: {
             /** Format: uuid */
@@ -8574,6 +8782,66 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
+    getAirportPack: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gzip-compressed airport pack */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/gzip": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description The airport database has not been loaded */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getAirportPackStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Airport pack metadata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AirportPackStatus"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description The airport database has not been loaded */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     getFlightRoutes: {
         parameters: {
             query?: never;
@@ -9275,6 +9543,10 @@ export interface operations {
                         errors?: number;
                         /** @description Total flights processed */
                         total?: number;
+                        /** @description Number of fleet entries rewritten into canonical registration notation */
+                        aircraftNormalized?: number;
+                        /** @description Number of fleet entries that could not be normalised because their canonical registration is already held by another aircraft in the same fleet (the same aircraft entered twice under different spellings). Both entries are left in place; merging them is a manual decision. */
+                        aircraftConflicts?: number;
                     };
                 };
             };
@@ -9579,6 +9851,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminStats"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    getUpdateStatus: {
+        parameters: {
+            query?: {
+                /** @description Version the calling frontend build was stamped with. */
+                frontendVersion?: string;
+                /** @description Commit the calling frontend image was built from. Used when the frontend runs an untagged build (the `latest` image), where there is no version to compare. */
+                frontendCommit?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Update status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdateStatus"];
                 };
             };
             401: components["responses"]["Unauthorized"];

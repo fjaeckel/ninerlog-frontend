@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
+import { APP_VERSION, APP_COMMIT } from '../version';
 import type { components } from '../api/schema';
 
 type AdminUser = components['schemas']['AdminUser'];
@@ -9,6 +10,8 @@ type AdminConfig = components['schemas']['AdminConfig'];
 type PaginatedAdminAuditLog = components['schemas']['PaginatedAdminAuditLog'];
 type EmailDeliveryEvent = components['schemas']['EmailDeliveryEvent'];
 type EmailSuppression = components['schemas']['EmailSuppression'];
+type UpdateStatus = components['schemas']['UpdateStatus'];
+type UpdateComponent = components['schemas']['UpdateComponent'];
 
 export type {
   AdminUser,
@@ -18,6 +21,8 @@ export type {
   PaginatedAdminAuditLog,
   EmailDeliveryEvent,
   EmailSuppression,
+  UpdateStatus,
+  UpdateComponent,
 };
 
 export const useAdminUsers = (page = 1, pageSize = 20, search?: string) => {
@@ -233,6 +238,32 @@ export const useCleanupUnverifiedAccounts = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'email'] });
+    },
+  });
+};
+
+export const useUpdateStatus = () => {
+  return useQuery({
+    queryKey: ['admin', 'update', APP_VERSION, APP_COMMIT],
+    queryFn: async (): Promise<UpdateStatus> => {
+      const { data, error } = await apiClient.GET('/admin/update', {
+        params: {
+          query: {
+            frontendVersion: APP_VERSION,
+            frontendCommit: APP_COMMIT || undefined,
+          },
+        },
+      });
+      if (error) throw error;
+      return data as UpdateStatus;
+    },
+    staleTime: 60 * 60 * 1000,
+    // Poll while a reported commit is still being compared.
+    refetchInterval: (query) => {
+      const status = query.state.data;
+      if (!status?.checkEnabled) return false;
+      const pending = (status.components ?? []).some((c) => c.state === 'unknown' && c.currentCommit);
+      return pending ? 5000 : false;
     },
   });
 };

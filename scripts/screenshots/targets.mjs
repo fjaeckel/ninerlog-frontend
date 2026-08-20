@@ -51,6 +51,14 @@ export const TARGETS = [
       await page.waitForTimeout(500);
     },
   },
+  {
+    name: 'admin-config',
+    path: '/admin',
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(config|konfiguration)$/i }).first().click();
+      await page.waitForTimeout(500);
+    },
+  },
 
   // Empty states.
   { name: 'empty-flights', path: '/flights', empty: true },

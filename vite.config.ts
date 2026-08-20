@@ -20,7 +20,23 @@ import path from 'path';
  */
 const e2eHttps = process.env.E2E_HTTPS === '1';
 
+/**
+ * Build identity stamped into the bundle and reported to GET /admin/update.
+ * The Docker build passes APP_VERSION from the image tag and APP_COMMIT from
+ * the commit it was built at. An unstamped build reports "dev" and no commit,
+ * which the API reports as an unknown version rather than comparing it.
+ *
+ * A `latest` image has no version to compare, so the commit is what the API
+ * measures against the tracked branch.
+ */
+const appVersion = process.env.APP_VERSION?.trim() || 'dev';
+const appCommit = process.env.APP_COMMIT?.trim() || '';
+
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+    __APP_COMMIT__: JSON.stringify(appCommit),
+  },
   plugins: [
     tailwindcss(),
     react(),

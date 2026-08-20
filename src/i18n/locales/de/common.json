@@ -231,7 +231,11 @@
       "unverifiedCleanupOn": "Erinnerung nach {{reminder}}, Löschung {{retention}} später",
       "unverifiedCleanupOff": "Deaktiviert",
       "emailSuppressed": "Gesperrte Adressen",
-      "unverifiedCleanupOffOidc": "Deaktiviert (Single Sign-on)"
+      "unverifiedCleanupOffOidc": "Deaktiviert (Single Sign-on)",
+      "appVersion": "App-Version",
+      "updateCheck": "Update-Prüfung",
+      "updateCheckOn": "Aktiviert (alle {{interval}})",
+      "updateCheckOnStartupOnly": "Aktiviert (nur beim Start)"
     },
     "announcements": {
       "createTitle": "Ankündigung erstellen",
@@ -276,6 +280,35 @@
         "server_error": "Serverfehler",
         "dry_run": "Nicht gesendet (kein SMTP)"
       }
+    },
+    "update": {
+      "title": "Updates",
+      "subtitle": "Hier laufende Versionen im Vergleich zur neuesten auf GitHub veröffentlichten Version. Ein Build ohne Versions-Tag wird stattdessen mit dem Branch {{branch}} verglichen.",
+      "subtitleDisabled": "Die Update-Prüfung ist abgeschaltet, daher liegen keine Versionsinformationen vor (UPDATE_CHECK_ENABLED).",
+      "loading": "Suche nach Updates...",
+      "available": "Ein Update ist verfügbar",
+      "availableHint": "Es wurde eine neuere NinerLog-Version veröffentlicht als die hier laufende.",
+      "componentApi": "API",
+      "componentFrontend": "Frontend",
+      "publishedOn": "veröffentlicht am {{date}}",
+      "releaseNotes": "Release Notes",
+      "upgradeCommand": "docker compose pull && docker compose up -d",
+      "stateUpToDate": "Aktuell",
+      "stateUpdateAvailable": "{{version}} verfügbar",
+      "stateUnknown": "Unbekannt",
+      "lastChecked": "Zuletzt geprüft",
+      "lastError": "Letzte Prüfung fehlgeschlagen",
+      "error": {
+        "request": "GitHub war nicht erreichbar",
+        "status": "GitHub hat die Anfrage abgelehnt",
+        "decode": "GitHub hat eine unlesbare Antwort geliefert",
+        "empty": "Die veröffentlichte Version trägt kein Versions-Tag",
+        "error": "Die Prüfung ist fehlgeschlagen"
+      },
+      "commitsBehind_one": "{{count}} Commit hinter {{branch}}",
+      "commitsBehind_other": "{{count}} Commits hinter {{branch}}",
+      "stateOnBranch": "Aktuell mit {{branch}}",
+      "viewChanges": "Änderungen ansehen"
     }
   },
   "errorState": {
