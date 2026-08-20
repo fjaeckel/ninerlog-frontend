@@ -53,6 +53,31 @@ const mockTemplates = [
     exportSteps: ['Sign in at myflightbook.com.', 'Download the CSV of all flights.'],
     autoDetected: true,
   },
+  // Two templates, one vendor site. Vereinsflieger ships a standard and an
+  // extended export that are not interchangeable, so both are listed — and both
+  // link to the same place.
+  {
+    id: 'VEREINSFLIEGER_CSV',
+    name: 'Vereinsflieger',
+    vendor: 'Vereinsflieger.de',
+    website: 'https://vereinsflieger.de',
+    description: 'Vereinsflieger club flight list, standard export.',
+    confidence: 'exact' as const,
+    regions: ['EASA' as const],
+    exportSteps: ['Sign in at vereinsflieger.de.', 'Open Flugbetrieb and filter to your flights.'],
+    autoDetected: true,
+  },
+  {
+    id: 'VEREINSFLIEGER_EXTENDED_CSV',
+    name: 'Vereinsflieger (extended export)',
+    vendor: 'Vereinsflieger.de',
+    website: 'https://vereinsflieger.de',
+    description: 'Vereinsflieger club flight list, extended export.',
+    confidence: 'exact' as const,
+    regions: ['EASA' as const],
+    exportSteps: ['Sign in at vereinsflieger.de.', 'Choose the extended CSV export.'],
+    autoDetected: true,
+  },
 ];
 
 describe('ImportPage', () => {
@@ -201,6 +226,22 @@ describe('ImportPage', () => {
     expect(screen.getByRole('button', { name: 'MyFlightbook' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ForeFlight' })).toBeInTheDocument();
     expect(screen.getAllByRole('listitem').length).toBeGreaterThanOrEqual(2);
+  });
+
+  // A vendor may ship more than one export, and the two are listed separately
+  // because they are not interchangeable. The link out of the panel goes to the
+  // vendor's site, which both share, so it names the site rather than the
+  // selected template — "Open Vereinsflieger (extended export)" would promise a
+  // page that does not exist.
+  it('labels the vendor link with its destination, not the template name', () => {
+    renderWithProviders(<ImportPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Vereinsflieger (extended export)' }));
+    expect(screen.getByText(/Exporting from Vereinsflieger \(extended export\)/i)).toBeInTheDocument();
+
+    const link = screen.getByRole('link', { name: /vereinsflieger\.de/i });
+    expect(link).toHaveAttribute('href', 'https://vereinsflieger.de');
+    expect(link).not.toHaveTextContent(/extended export/i);
   });
 
   it('does not show the best-effort caveat for an exact template', () => {

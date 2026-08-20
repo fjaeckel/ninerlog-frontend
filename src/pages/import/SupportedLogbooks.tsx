@@ -83,6 +83,20 @@ export default function SupportedLogbooks() {
   );
 }
 
+/**
+ * The link label names where it goes, not which template is selected. Two
+ * templates can share one vendor site — Vereinsflieger's standard and extended
+ * exports both point at vereinsflieger.de — and "Open Vereinsflieger (extended
+ * export)" would promise a page that does not exist.
+ */
+function siteLabel(website: string): string {
+  try {
+    return new URL(website).hostname.replace(/^www\./, '');
+  } catch {
+    return website;
+  }
+}
+
 function LogbookExportSteps({ template }: { template: ImportTemplate }) {
   const { t } = useTranslation('import');
 
@@ -136,7 +150,7 @@ function LogbookExportSteps({ template }: { template: ImportTemplate }) {
           rel="noopener noreferrer"
           className="inline-block mt-2 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
-          {t('vendorWebsite', 'Open {{name}} ↗', { name: template.name })}
+          {t('vendorWebsite', 'Open {{site}} ↗', { site: siteLabel(template.website) })}
         </a>
       )}
     </div>

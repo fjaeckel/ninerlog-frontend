@@ -48,7 +48,7 @@
   "exportFromTitle": "Export aus {{name}}",
   "manualMappingBadge": "Manuelle Zuordnung",
   "bestEffortNote": "Die Spaltennamen unterscheiden sich je nach Version dieser App. Was nicht automatisch erkannt wird, ordnen Sie im nächsten Schritt selbst zu — es wird nichts importiert, bevor Sie die Vorschau geprüft haben.",
-  "vendorWebsite": "{{name}} öffnen ↗",
+  "vendorWebsite": "{{site}} öffnen ↗",
   "formatDetected": "Format {{name}} erkannt — Zuordnungen vorausgefüllt",
   "formatNotDetected": "Format nicht erkannt — bitte jede Spalte unten prüfen",
   "startOver": "Neu beginnen",

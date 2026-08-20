@@ -4535,8 +4535,8 @@ export interface components {
          *     - CAPZLOG_CSV: capzlog.aero
          *     - FLYLOG_CSV: FLYLOG.io
          *     - WADER_CSV: Wader Pilot Logbook
-         *     - VEREINSFLIEGER_CSV: Vereinsflieger club flight list (German headers)
-         *     - MCC_PILOTLOG_CSV: mccPILOTLOG / CrewLounge PILOTLOG
+         *     - VEREINSFLIEGER_CSV: Vereinsflieger club flight list, standard export (German headers, airborne times only)
+         *     - VEREINSFLIEGER_EXTENDED_CSV: Vereinsflieger club flight list, extended export (adds off-block/on-block and block minutes)
          *     - SKYDEMON_CSV: SkyDemon logbook export
          *     - EASA_CSV: generic EASA AMC1 FCL.050 column layout
          *     - FAA_CSV: generic FAA/ASA column layout
@@ -4544,7 +4544,7 @@ export interface components {
          *     - XLSX: Microsoft Excel 2007+ workbook (Open XML)
          * @enum {string}
          */
-        ImportFormat: "CSV" | "FOREFLIGHT_CSV" | "NINERLOG_CSV" | "LOGTEN_CSV" | "MYFLIGHTBOOK_CSV" | "CAPZLOG_CSV" | "FLYLOG_CSV" | "WADER_CSV" | "VEREINSFLIEGER_CSV" | "MCC_PILOTLOG_CSV" | "SKYDEMON_CSV" | "EASA_CSV" | "FAA_CSV" | "XLS" | "XLSX";
+        ImportFormat: "CSV" | "FOREFLIGHT_CSV" | "NINERLOG_CSV" | "LOGTEN_CSV" | "MYFLIGHTBOOK_CSV" | "CAPZLOG_CSV" | "FLYLOG_CSV" | "WADER_CSV" | "VEREINSFLIEGER_CSV" | "VEREINSFLIEGER_EXTENDED_CSV" | "SKYDEMON_CSV" | "EASA_CSV" | "FAA_CSV" | "XLS" | "XLSX";
         /**
          * @description Target flight log field for column mapping.
          *

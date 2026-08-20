@@ -48,7 +48,7 @@
   "exportFromTitle": "Exporting from {{name}}",
   "manualMappingBadge": "Manual mapping",
   "bestEffortNote": "Column names vary between versions of this app. Anything not recognised automatically is left for you to map in the next step — nothing is imported before you have reviewed the preview.",
-  "vendorWebsite": "Open {{name}} ↗",
+  "vendorWebsite": "Open {{site}} ↗",
   "formatDetected": "{{name}} format detected — mappings pre-filled",
   "formatNotDetected": "Format not recognised — check each column below",
   "startOver": "Start Over",
