@@ -12,7 +12,12 @@ RUN npm ci
 # Copy source code (includes pre-generated API client in src/api/)
 COPY . .
 
-# Build the application
+# Build the application. VERSION and COMMIT are stamped into the bundle and
+# reported to GET /admin/update.
+ARG VERSION=dev
+ARG COMMIT=""
+ENV APP_VERSION=${VERSION}
+ENV APP_COMMIT=${COMMIT}
 RUN npm run build
 
 # public/.well-known/ reached the bundle.

@@ -177,6 +177,63 @@ export const adminStats = {
   cloudBackupDestinations: { total: 34, byProvider: { s3: 18, webdav: 9, dropbox: 7 } },
 };
 
+export const adminConfig = {
+  appVersion: 'v1.3.4',
+  goVersion: 'go1.26.7',
+  serverUptime: '12d 4h 18m',
+  migrationVersion: 41,
+  airportDatabaseSize: 29331,
+  airportDatabaseUpdatedAt: shift(-1),
+  registrationPrefixCount: 210,
+  registrationPrefixesReviewed: '2026-08-17',
+  corsOrigins: ['https://logbook.example.com'],
+  rateLimitAuth: '10 req/min',
+  rateLimitAdmin: '30 req/min',
+  smtpConfigured: true,
+  adminEmailConfigured: true,
+  cloudBackupsConfigured: true,
+  cloudBackupProviders: ['s3', 'sftp', 'webdav'],
+  documentFilesEnabled: true,
+  authMode: 'local',
+  unverifiedCleanupEnabled: true,
+  unverifiedReminderAfter: '24h0m0s',
+  unverifiedRetention: '720h0m0s',
+  emailSuppressedCount: 0,
+  updateCheckEnabled: true,
+  updateCheckInterval: '24h0m0s',
+};
+
+export const adminUpdate = {
+  checkEnabled: true,
+  updateAvailable: true,
+  branch: 'main',
+  lastCheckedAt: shift(-0.2),
+  components: [
+    {
+      name: 'api',
+      currentVersion: 'v1.3.4',
+      currentCommit: '4f2c1ab',
+      latestVersion: 'v1.3.5',
+      state: 'update_available',
+      channel: 'release',
+      releaseUrl: 'https://github.com/fjaeckel/ninerlog-api/releases/tag/v1.3.5',
+      publishedAt: shift(-2),
+    },
+    {
+      name: 'frontend',
+      currentVersion: 'latest',
+      currentCommit: 'a1b2c3d',
+      latestVersion: 'v1.3.2',
+      state: 'update_available',
+      channel: 'commit',
+      behindBy: 7,
+      compareUrl: 'https://github.com/fjaeckel/ninerlog-frontend/compare/a1b2c3d...main',
+      releaseUrl: 'https://github.com/fjaeckel/ninerlog-frontend/releases/tag/v1.3.2',
+      publishedAt: shift(-3),
+    },
+  ],
+};
+
 export const adminUsers = {
   data: [
     { id: 'u1', email: 'pilot@example.com', name: 'Alex Fischer', isAdmin: true, emailVerified: true, twoFactorEnabled: true, locked: false, disabled: false, flightCount: 66, aircraftCount: 3, createdAt: iso('2024-01-01'), lastLoginAt: iso('2026-08-15') },
@@ -382,7 +439,8 @@ const ROUTES = {
   '/admin/stats': adminStats,
   '/admin/users': adminUsers,
   '/admin/audit-log': EMPTY_PAGE,
-  '/admin/config': { registrationEnabled: true, smtpConfigured: true },
+  '/admin/config': adminConfig,
+  '/admin/update': adminUpdate,
   '/admin/email/deliveries': EMPTY_PAGE,
   '/admin/email/suppressions': EMPTY_PAGE,
   '/announcements': { announcements: [], hints: [] },

@@ -11,6 +11,7 @@ import {
   useEmailDeliveries, useEmailSuppressions, useLiftEmailSuppression, useCleanupUnverifiedAccounts,
   useTriggerNotifications,
 } from '../../hooks/useAdmin';
+import { UpdateBanner, UpdateStatusCard } from './UpdateStatus';
 import { useCreateAnnouncement, useDeleteAnnouncement, useAnnouncements } from '../../hooks/useAnnouncements';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import type { AdminUser } from '../../hooks/useAdmin';
@@ -38,6 +39,8 @@ export default function AdminPage() {
         icon={ShieldCheck}
         iconClassName="text-blue-600 dark:text-blue-400"
       />
+
+      <UpdateBanner />
 
       {/* Tabs — select on mobile, tabs on sm+ */}
       {(() => {
@@ -741,6 +744,12 @@ function ConfigTab() {
         ? <span className="font-mono text-xs break-all">{data.oidcIssuer}</span>
         : <span className="text-slate-500 dark:text-slate-400">{'—'}</span>,
     },
+    {
+      label: t('admin.config.appVersion'),
+      value: data.appVersion
+        ? <span className="font-mono text-xs">{data.appVersion}</span>
+        : <span className="text-slate-500 dark:text-slate-400">{'—'}</span>,
+    },
     { label: t('admin.config.goVersion'), value: data.goVersion },
     { label: t('admin.config.serverUptime'), value: data.serverUptime },
     { label: t('admin.config.migrationVersion'), value: data.migrationVersion },
@@ -808,21 +817,38 @@ function ConfigTab() {
           ? <span className="text-red-600 dark:text-red-400 font-medium">{data.emailSuppressedCount}</span>
           : <span className="text-green-600 dark:text-green-400 font-medium">0</span>,
     },
+    {
+      label: t('admin.config.updateCheck'),
+      value: data.updateCheckEnabled === undefined
+        ? <span className="text-slate-500 dark:text-slate-400">{'—'}</span>
+        : data.updateCheckEnabled
+          ? (
+            <span className="text-green-600 dark:text-green-400 font-medium">
+              {data.updateCheckInterval
+                ? t('admin.config.updateCheckOn', { interval: data.updateCheckInterval })
+                : t('admin.config.updateCheckOnStartupOnly')}
+            </span>
+          )
+          : <span className="text-slate-500 dark:text-slate-400">{t('admin.config.disabled')}</span>,
+    },
   ];
 
   return (
-    <div className="card">
-      <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">{t('admin.config.title')}</h3>
-      <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{t('admin.config.subtitle')}</p>
-      <div className="divide-y divide-slate-100 dark:divide-slate-800">
-        {rows.map((row) => (
-          <div key={row.label} className="flex justify-between items-center py-3">
-            <span className="text-sm text-slate-500 dark:text-slate-400">{row.label}</span>
-            <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{row.value}</span>
-          </div>
-        ))}
+    <>
+      <div className="card">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">{t('admin.config.title')}</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{t('admin.config.subtitle')}</p>
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          {rows.map((row) => (
+            <div key={row.label} className="flex justify-between items-center py-3">
+              <span className="text-sm text-slate-500 dark:text-slate-400">{row.label}</span>
+              <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{row.value}</span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+      <UpdateStatusCard />
+    </>
   );
 }
 

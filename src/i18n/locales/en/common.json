@@ -231,7 +231,11 @@
       "unverifiedCleanupOn": "Reminder after {{reminder}}, deleted {{retention}} later",
       "unverifiedCleanupOff": "Disabled",
       "emailSuppressed": "Suppressed addresses",
-      "unverifiedCleanupOffOidc": "Disabled (single sign-on)"
+      "unverifiedCleanupOffOidc": "Disabled (single sign-on)",
+      "appVersion": "App Version",
+      "updateCheck": "Update check",
+      "updateCheckOn": "Enabled (every {{interval}})",
+      "updateCheckOnStartupOnly": "Enabled (at startup only)"
     },
     "announcements": {
       "createTitle": "Create Announcement",
@@ -276,6 +280,35 @@
         "server_error": "Server error",
         "dry_run": "Not sent (no SMTP)"
       }
+    },
+    "update": {
+      "title": "Updates",
+      "subtitle": "Versions running here against the newest release published on GitHub. An untagged build is compared against the {{branch}} branch instead.",
+      "subtitleDisabled": "The update check is switched off, so no release information is available (UPDATE_CHECK_ENABLED).",
+      "loading": "Checking for updates...",
+      "available": "An update is available",
+      "availableHint": "A newer NinerLog release has been published than the one running here.",
+      "componentApi": "API",
+      "componentFrontend": "Frontend",
+      "publishedOn": "published {{date}}",
+      "releaseNotes": "Release notes",
+      "upgradeCommand": "docker compose pull && docker compose up -d",
+      "stateUpToDate": "Up to date",
+      "stateUpdateAvailable": "{{version}} available",
+      "stateUnknown": "Unknown",
+      "lastChecked": "Last checked",
+      "lastError": "Last check failed",
+      "error": {
+        "request": "GitHub could not be reached",
+        "status": "GitHub refused the request",
+        "decode": "GitHub returned an unreadable response",
+        "empty": "The published release carries no version tag",
+        "error": "The check failed"
+      },
+      "commitsBehind_one": "{{count}} commit behind {{branch}}",
+      "commitsBehind_other": "{{count}} commits behind {{branch}}",
+      "stateOnBranch": "Current with {{branch}}",
+      "viewChanges": "View changes"
     }
   },
   "errorState": {
