@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUploadImport, usePreviewImport, useConfirmImport, useRestoreJSON, useImportHistory } from '../../hooks/useImport';
-import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportJSONResult } from '../../hooks/useImport';
+import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportJSONResult, ImportField } from '../../hooks/useImport';
 import {
   AlertTriangle,
   ArrowRight,
@@ -16,6 +16,7 @@ import HelpLink from '../../components/ui/HelpLink';
 import { FileDropzone } from '../../components/ui/FileDropzone';
 import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import SupportedLogbooks from './SupportedLogbooks';
 
 const CSV_ACCEPT = '.csv,.txt';
 const JSON_ACCEPT = 'application/json,.json';
@@ -40,6 +41,7 @@ const IMPORT_FIELDS = [
   { value: 'simulatedInstrumentTime', label: 'Simulated Instrument Time' },
   { value: 'landingsDay', label: 'Day Landings' },
   { value: 'landingsNight', label: 'Night Landings' },
+  { value: 'landingsTotal', label: 'Total Landings' },
   { value: 'holds', label: 'Holds' },
   { value: 'approachesCount', label: 'Approaches' },
   { value: 'isIpc', label: 'IPC' },
@@ -55,7 +57,20 @@ const IMPORT_FIELDS = [
   { value: 'person4', label: 'Person 4' },
   { value: 'person5', label: 'Person 5' },
   { value: 'person6', label: 'Person 6' },
-];
+] as const satisfies readonly { value: ImportField; label: string }[];
+
+// Compile-time guard: every ImportField the API can suggest must have an option
+// here, or the mapping <select> renders a value it has no <option> for — the row
+// then displays the wrong field and silently changes it the moment the pilot
+// touches that dropdown. `landingsTotal` shipped missing exactly that way.
+//
+// This list and the API enum are two sources of truth for one thing, which is
+// the same shape of drift that made every hand-written import template wrong.
+// The type error is the cheapest place to catch it: adding a field to the spec
+// now breaks `npm run type-check` until an option exists for it.
+type UncoveredImportField = Exclude<ImportField, (typeof IMPORT_FIELDS)[number]['value']>;
+type AssertNoUncoveredImportFields<T extends never> = T;
+export type _ImportFieldsAreExhaustive = AssertNoUncoveredImportFields<UncoveredImportField>;
 
 type Step = 'upload' | 'mapping' | 'preview' | 'result';
 type Mode = 'csv' | 'json';
@@ -87,6 +102,14 @@ export default function ImportPage() {
       setError(err.message || 'Upload failed');
     }
   };
+
+  // Columns the file has that no mapping covers. Counted from the file's own
+  // column list rather than the mapping list, since a column with no entry at
+  // all and one explicitly set to "skip" are the same thing to the importer.
+  const unmappedColumnCount = (uploadData?.columns ?? []).filter((col) => {
+    const mapping = mappings.find((m) => m.sourceColumn === col);
+    return !mapping || mapping.targetField === 'ignore';
+  }).length;
 
   const updateMapping = (sourceColumn: string, targetField: string) => {
     setMappings((prev) => {
@@ -169,7 +192,7 @@ export default function ImportPage() {
     <PageWrapper>
       <PageHeader
         title={t('importFlights')}
-        subtitle={t('supportedFormats')}
+        subtitle={t('pageSubtitle')}
         titleAdornment={<HelpLink topic="import-export" />}
       />
 
@@ -222,7 +245,7 @@ export default function ImportPage() {
                   : 'text-slate-400 dark:text-slate-500'
               }`}
             >
-              {i + 1}. {s === 'upload' ? t('uploadCsv') : s === 'mapping' ? t('mapColumns') : s === 'preview' ? t('preview') : t('done', 'Done')}
+              {i + 1}. {s === 'upload' ? t('uploadCsv') : s === 'mapping' ? t('stepMapColumns') : s === 'preview' ? t('preview') : t('done')}
             </span>
           </div>
         ))}
@@ -319,21 +342,25 @@ export default function ImportPage() {
 
       {/* Step 1: Upload */}
       {mode === 'csv' && step === 'upload' && (
-        <FileDropzone
-          accept={CSV_ACCEPT}
-          disabled={upload.isPending}
-          onFileSelected={handleFileSelect}
-          onFileRejected={(file) => handleFileRejected(file, CSV_ACCEPT)}
-          buttonLabel={upload.isPending ? t('importing') : t('selectFile')}
-          hint={t('dropHintCsv')}
-          className="card text-center py-12"
-        >
-          <FolderOpen className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" strokeWidth={1.5} aria-hidden="true" />
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('uploadCsv')}</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-            {t('supportedFormats')}
-          </p>
-        </FileDropzone>
+        <div className="space-y-4">
+          <FileDropzone
+            accept={CSV_ACCEPT}
+            disabled={upload.isPending}
+            onFileSelected={handleFileSelect}
+            onFileRejected={(file) => handleFileRejected(file, CSV_ACCEPT)}
+            buttonLabel={upload.isPending ? t('importing') : t('selectFile')}
+            hint={t('dropHintCsv')}
+            className="card text-center py-12"
+          >
+            <FolderOpen className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" strokeWidth={1.5} aria-hidden="true" />
+            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('uploadCsv')}</h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+              {t('uploadCsvDescription')}
+            </p>
+          </FileDropzone>
+
+          <SupportedLogbooks />
+        </div>
       )}
 
       {/* Step 2: Column Mapping */}
@@ -344,12 +371,22 @@ export default function ImportPage() {
               <div>
                 <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t('columnMapping')}</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                  {uploadData.format === 'FOREFLIGHT_CSV' ? t('foreFlightDetected') : t('mapColumns')}
+                  {uploadData.detectedTemplate
+                    ? t('formatDetected', { name: uploadData.detectedTemplate.name })
+                    : t('formatNotDetected')}
                   {' · '}{t('rowsDetected', { count: uploadData.totalRows })}
                 </p>
               </div>
               <button onClick={handleReset} className="btn-ghost btn-sm min-h-[44px]">{t('startOver')}</button>
             </div>
+
+            {/* Unmapped columns are the reason an import loses data silently, so
+                say how many there are before the pilot scrolls a long list. */}
+            {unmappedColumnCount > 0 && (
+              <div className="mb-4 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300 text-sm">
+                {t('unmappedColumns', { count: unmappedColumnCount })}
+              </div>
+            )}
 
             <div className="space-y-2">
               {uploadData.columns.map((col) => {

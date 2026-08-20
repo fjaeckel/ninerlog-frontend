@@ -117,6 +117,8 @@
       "totalAircraft": "Luftfahrzeuge gesamt",
       "totalCredentials": "Nachweise gesamt",
       "totalImports": "Importe gesamt",
+      "importsByFormat": "Importe nach Quell-Flugbuch",
+      "importsByFormatNone": "Noch keine Importe.",
       "flightsThisMonth": "Flüge diesen Monat",
       "newUsersWeek": "Neue Benutzer (7T)",
       "lockedAccounts": "Gesperrte Konten",

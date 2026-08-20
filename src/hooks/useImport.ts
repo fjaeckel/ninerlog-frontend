@@ -10,6 +10,9 @@ type ImportResult = components['schemas']['ImportResult'];
 type ImportColumnMapping = components['schemas']['ImportColumnMapping'];
 type ImportJSONResult = components['schemas']['ImportJSONResult'];
 type PaginatedImports = components['schemas']['PaginatedImports'];
+type ImportTemplate = components['schemas']['ImportTemplate'];
+type ImportField = components['schemas']['ImportField'];
+type ImportTemplateList = components['schemas']['ImportTemplateList'];
 
 export type {
   ImportUploadResponse,
@@ -18,6 +21,8 @@ export type {
   ImportColumnMapping,
   ImportJSONResult,
   PaginatedImports,
+  ImportTemplate,
+  ImportField,
 };
 
 import { API_BASE_URL } from '../lib/config';
@@ -39,6 +44,28 @@ export const useImportHistory = (page = 1, pageSize = 10) => {
       return data as PaginatedImports;
     },
     placeholderData: keepPreviousData,
+  });
+};
+
+/**
+ * The catalogue of logbook formats the server can read, with per-source export
+ * instructions.
+ *
+ * It is static configuration, identical for every user and changing only on
+ * deploy, so it never goes stale within a session and is not worth refetching
+ * on focus or remount.
+ */
+export const useImportTemplates = () => {
+  return useQuery({
+    queryKey: ['import-templates'],
+    queryFn: async (): Promise<ImportTemplate[]> => {
+      const { data, error } = await apiClient.GET('/imports/templates');
+      if (error) throw error;
+      return (data as ImportTemplateList).templates;
+    },
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 };
 

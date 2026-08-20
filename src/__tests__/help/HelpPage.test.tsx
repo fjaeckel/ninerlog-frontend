@@ -95,7 +95,9 @@ describe('HelpPage', () => {
     const btn = buttons.find(b => b.textContent?.includes('Import'));
     await user.click(btn!);
 
-    expect(screen.getByText(/foreflight csv/i)).toBeInTheDocument();
+    // The topic leads with the table of logbooks NinerLog can import from.
+    expect(screen.getAllByText(/foreflight/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/myflightbook/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it('navigates to Credentials topic', async () => {

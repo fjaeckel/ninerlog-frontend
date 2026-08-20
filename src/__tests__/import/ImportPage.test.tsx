@@ -30,6 +30,56 @@ const mockLicense = {
   updatedAt: '2024-01-01T00:00:00Z',
 };
 
+const mockTemplates = [
+  {
+    id: 'FOREFLIGHT_CSV',
+    name: 'ForeFlight',
+    vendor: 'ForeFlight (Boeing)',
+    website: 'https://foreflight.com',
+    description: 'ForeFlight Logbook export.',
+    confidence: 'exact' as const,
+    regions: ['FAA' as const],
+    exportSteps: ['Open ForeFlight and go to Logbook.', 'Tap the gear icon, then Export Logbook.'],
+    autoDetected: true,
+  },
+  {
+    id: 'MYFLIGHTBOOK_CSV',
+    name: 'MyFlightbook',
+    vendor: 'MyFlightbook',
+    website: 'https://myflightbook.com',
+    description: 'MyFlightbook CSV export.',
+    confidence: 'best-effort' as const,
+    regions: ['FAA' as const],
+    exportSteps: ['Sign in at myflightbook.com.', 'Download the CSV of all flights.'],
+    autoDetected: true,
+  },
+  // Two templates, one vendor site. Vereinsflieger ships a standard and an
+  // extended export that are not interchangeable, so both are listed — and both
+  // link to the same place.
+  {
+    id: 'VEREINSFLIEGER_CSV',
+    name: 'Vereinsflieger',
+    vendor: 'Vereinsflieger.de',
+    website: 'https://vereinsflieger.de',
+    description: 'Vereinsflieger club flight list, standard export.',
+    confidence: 'exact' as const,
+    regions: ['EASA' as const],
+    exportSteps: ['Sign in at vereinsflieger.de.', 'Open Flugbetrieb and filter to your flights.'],
+    autoDetected: true,
+  },
+  {
+    id: 'VEREINSFLIEGER_EXTENDED_CSV',
+    name: 'Vereinsflieger (extended export)',
+    vendor: 'Vereinsflieger.de',
+    website: 'https://vereinsflieger.de',
+    description: 'Vereinsflieger club flight list, extended export.',
+    confidence: 'exact' as const,
+    regions: ['EASA' as const],
+    exportSteps: ['Sign in at vereinsflieger.de.', 'Choose the extended CSV export.'],
+    autoDetected: true,
+  },
+];
+
 describe('ImportPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,6 +94,9 @@ describe('ImportPage', () => {
     } as any);
     vi.spyOn(useImportHook, 'useConfirmImport').mockReturnValue({
       mutateAsync: vi.fn(), isPending: false,
+    } as any);
+    vi.spyOn(useImportHook, 'useImportTemplates').mockReturnValue({
+      data: mockTemplates, isLoading: false, isError: false,
     } as any);
   });
 
@@ -136,7 +189,111 @@ describe('ImportPage', () => {
   it('renders file format info', () => {
     renderWithProviders(<ImportPage />);
     expect(screen.getAllByText(/csv/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/supported formats/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/detected automatically/i).length).toBeGreaterThanOrEqual(1);
+  });
+
+  // The point of the picker is answering "how do I get my flights out of the
+  // app I use now?" — so the steps have to be reachable, not just the names.
+  it('lists the supported logbooks and reveals export steps on selection', () => {
+    renderWithProviders(<ImportPage />);
+
+    expect(screen.getByText('ForeFlight')).toBeInTheDocument();
+    expect(screen.getByText('MyFlightbook')).toBeInTheDocument();
+
+    // Steps stay collapsed until a logbook is picked.
+    expect(screen.queryByText(/Download the CSV of all flights/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('MyFlightbook'));
+
+    expect(screen.getByText(/Exporting from MyFlightbook/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sign in at myflightbook.com/i)).toBeInTheDocument();
+    expect(screen.getByText(/Download the CSV of all flights/i)).toBeInTheDocument();
+
+    // best-effort templates warn that column names vary.
+    expect(screen.getByText(/Column names vary/i)).toBeInTheDocument();
+
+    // Selecting again collapses it.
+    fireEvent.click(screen.getByText('MyFlightbook'));
+    expect(screen.queryByText(/Download the CSV of all flights/i)).not.toBeInTheDocument();
+  });
+
+  // The chips must stay real buttons. An earlier version set role="listitem" on
+  // them, which overrides the implicit button role — assistive technology
+  // announced each logbook as a list item rather than something pressable, and
+  // it was only noticed when a browser driver could not find them by role.
+  it('exposes each logbook as a button inside a list', () => {
+    renderWithProviders(<ImportPage />);
+    expect(screen.getByRole('button', { name: 'MyFlightbook' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ForeFlight' })).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem').length).toBeGreaterThanOrEqual(2);
+  });
+
+  // A vendor may ship more than one export, and the two are listed separately
+  // because they are not interchangeable. The link out of the panel goes to the
+  // vendor's site, which both share, so it names the site rather than the
+  // selected template — "Open Vereinsflieger (extended export)" would promise a
+  // page that does not exist.
+  it('labels the vendor link with its destination, not the template name', () => {
+    renderWithProviders(<ImportPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Vereinsflieger (extended export)' }));
+    expect(screen.getByText(/Exporting from Vereinsflieger \(extended export\)/i)).toBeInTheDocument();
+
+    const link = screen.getByRole('link', { name: /vereinsflieger\.de/i });
+    expect(link).toHaveAttribute('href', 'https://vereinsflieger.de');
+    expect(link).not.toHaveTextContent(/extended export/i);
+  });
+
+  it('does not show the best-effort caveat for an exact template', () => {
+    renderWithProviders(<ImportPage />);
+    fireEvent.click(screen.getByText('ForeFlight'));
+    expect(screen.getByText(/Exporting from ForeFlight/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Column names vary/i)).not.toBeInTheDocument();
+  });
+
+  // The catalogue is a convenience — a failed fetch must not block uploading.
+  it('still renders the uploader when the template catalogue fails to load', () => {
+    vi.spyOn(useImportHook, 'useImportTemplates').mockReturnValue({
+      data: undefined, isLoading: false, isError: true,
+    } as any);
+
+    renderWithProviders(<ImportPage />);
+
+    expect(screen.getByText('Import Flights')).toBeInTheDocument();
+    expect(screen.getAllByText(/detected automatically/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/Coming from another logbook/i)).not.toBeInTheDocument();
+  });
+
+  it('names the detected template on the mapping step', async () => {
+    const mockUpload = vi.fn().mockResolvedValue({
+      uploadToken: 'test-token',
+      format: 'MYFLIGHTBOOK_CSV',
+      columns: ['Date', 'Tail Number', 'Route', 'Hobbs Start'],
+      previewRows: [{ Date: '2026-03-07', 'Tail Number': 'N12345', Route: 'KSFO KOAK', 'Hobbs Start': '10.2' }],
+      totalRows: 1,
+      suggestedMappings: [
+        { sourceColumn: 'Date', targetField: 'date' },
+        { sourceColumn: 'Tail Number', targetField: 'aircraftReg' },
+        { sourceColumn: 'Route', targetField: 'route' },
+      ],
+      detectedTemplate: mockTemplates[1],
+    });
+    vi.spyOn(useImportHook, 'useUploadImport').mockReturnValue({
+      mutateAsync: mockUpload, isPending: false,
+    } as any);
+
+    const { container } = renderWithProviders(<ImportPage />);
+
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['Date,Tail Number\n'], 'myflightbook.csv', { type: 'text/csv' });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/MyFlightbook format detected/i)).toBeInTheDocument();
+    });
+
+    // "Hobbs Start" has no mapping, so the pilot is told a column will be skipped.
+    expect(screen.getByText(/1 column is not mapped/i)).toBeInTheDocument();
   });
 
   it('shows person fields in column mapping dropdowns', async () => {
