@@ -8,6 +8,7 @@ import { useHelpContent, helpSectionIds, type HelpSectionId } from './content';
 import { HelpFigure } from './figures';
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import { APP_NAME } from '../../lib/config';
+import { PageWrapper } from '../../components/ui/PageWrapper';
 
 const sectionIcons: Record<HelpSectionId, React.ReactNode> = {
   'getting-started': <BookOpen className="w-4 h-4" />,
@@ -49,7 +50,7 @@ export default function HelpPage() {
   const [searchParams] = useSearchParams();
   const topicFromUrl = searchParams.get('topic');
 
-  // Build sections array dynamically with translated labels and content
+  // Sections with translated labels and content.
   const sections = useMemo(() => helpSectionIds.map((id) => ({
     id,
     label: t(sectionLabelKeys[id]),
@@ -62,7 +63,7 @@ export default function HelpPage() {
   });
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Sync topic from URL — derive directly instead of setState in effect
+  // Topic derived from the URL.
   const resolvedActive = (topicFromUrl && helpSectionIds.includes(topicFromUrl as HelpSectionId))
     ? topicFromUrl
     : active;
@@ -87,7 +88,7 @@ export default function HelpPage() {
     );
   }, [searchQuery, sections]);
 
-  // Highlight matching text in search results (show snippet around match)
+  // Snippet around the match, with the match highlighted.
   const getSnippet = (content: string, query: string): string => {
     const lower = content.toLowerCase();
     const idx = lower.indexOf(query.toLowerCase());
@@ -101,12 +102,12 @@ export default function HelpPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[1100px] py-6 print:max-w-none print:py-0">
+    <PageWrapper maxWidth="content" className="print:max-w-none print:py-0">
       {/* Header — hidden on print */}
       <div className="mb-6 print:hidden">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <HelpCircle className="w-6 h-6 text-blue-600" />
+            <HelpCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
             <h1 className="page-title">{t('help.title')}</h1>
           </div>
           <button
@@ -124,7 +125,7 @@ export default function HelpPage() {
       {/* Search bar — hidden on print */}
       <div className="mb-4 print:hidden">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
           <input
             type="text"
             value={searchQuery}
@@ -134,7 +135,7 @@ export default function HelpPage() {
             aria-label={t('help.searchAriaLabel')}
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label={t('help.clearSearch')}>
+            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-600" aria-label={t('help.clearSearch')}>
               <X className="w-4 h-4" />
             </button>
           )}
@@ -144,9 +145,9 @@ export default function HelpPage() {
       {/* Search results */}
       {searchResults !== null ? (
         <div className="space-y-3 print:hidden">
-          <p className="text-sm text-slate-500">{t('help.resultCount', { count: searchResults.length, query: searchQuery })}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t('help.resultCount', { count: searchResults.length, query: searchQuery })}</p>
           {searchResults.length === 0 && (
-            <div className="card text-center py-8 text-slate-400">{t('help.noResults')}</div>
+            <div className="card text-center py-8 text-slate-500 dark:text-slate-400">{t('help.noResults')}</div>
           )}
           {searchResults.map((s) => (
             <button
@@ -191,8 +192,7 @@ export default function HelpPage() {
               <article className="prose prose-slate dark:prose-invert prose-sm sm:prose-base max-w-none prose-headings:scroll-mt-20 prose-h1:text-2xl prose-h2:text-xl prose-h2:border-b prose-h2:border-slate-200 prose-h2:dark:border-slate-700 prose-h2:pb-2 prose-table:text-sm prose-th:bg-slate-50 prose-th:dark:bg-slate-800 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2 prose-blockquote:border-blue-300 prose-blockquote:dark:border-blue-700 prose-blockquote:bg-blue-50/50 prose-blockquote:dark:bg-blue-900/10 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg print:prose-base">
                 <Markdown
                   remarkPlugins={[remarkGfm]}
-                  // Preserve our custom `figure:` image scheme, which the
-                  // default sanitizer would otherwise strip to an empty URL.
+                  // Preserve the custom `figure:` image scheme.
                   urlTransform={(url) => (url.startsWith('figure:') ? url : defaultUrlTransform(url))}
                   components={{
                     img: ({ src, alt }) => {
@@ -219,7 +219,7 @@ export default function HelpPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">{t('help.reportBug.title')}</h2>
-                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" aria-hidden="true" />
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" aria-hidden="true" />
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{t('help.reportBug.body')}</p>
                 <span className="inline-block mt-2 text-sm font-medium text-amber-700 dark:text-amber-300 group-hover:underline">{t('help.reportBug.cta')} →</span>
@@ -228,6 +228,6 @@ export default function HelpPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageWrapper>
   );
 }

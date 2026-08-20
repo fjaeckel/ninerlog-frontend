@@ -21,7 +21,7 @@ const SCHEDULES: BackupSchedule[] = ['manual', 'daily', 'weekly', 'monthly'];
 
 /**
  * Strips untouched fields and converts `bool`-typed values back into real
- * booleans — the API type-asserts them, so `"true"` (string) would be ignored.
+ * booleans.
  */
 function cleanValues(
   values: Record<string, string>,
@@ -127,9 +127,8 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
     onChange: (name: string, val: string) => void,
   ) => {
     if (field.type === 'bool') {
-      // Untouched checkboxes stay out of the submitted map so the provider's
-      // server-side default applies; once toggled, an explicit true/false is
-      // sent (cleanValues converts the string to a real boolean).
+      // Untouched checkboxes stay out of the submitted map; toggled ones send
+      // an explicit true/false.
       return (
         <div key={field.name}>
           <label htmlFor={`bf-${field.name}`} className="flex items-center gap-2 min-h-[44px]">
@@ -138,7 +137,7 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
               type="checkbox"
               checked={value === 'true'}
               onChange={(e) => onChange(field.name, e.target.checked ? 'true' : 'false')}
-              className="rounded"
+              className="checkbox"
             />
             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
               {field.label}
@@ -359,7 +358,7 @@ export default function BackupDestinationForm({ destination, onClose }: BackupDe
           type="checkbox"
           checked={enabled}
           onChange={(e) => setEnabled(e.target.checked)}
-          className="rounded"
+          className="checkbox"
         />
         <span className="text-sm text-slate-700 dark:text-slate-300">{t('form.enabled')}</span>
       </label>

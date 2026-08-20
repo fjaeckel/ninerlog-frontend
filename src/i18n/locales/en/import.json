@@ -51,7 +51,7 @@
   "vendorWebsite": "Open {{site}} ↗",
   "formatDetected": "{{name}} format detected — mappings pre-filled",
   "formatNotDetected": "Format not recognised — check each column below",
-  "startOver": "Start Over",
+  "startOver": "Start over",
   "unmappedColumns_one": "{{count}} column is not mapped and will be skipped.",
   "unmappedColumns_other": "{{count}} columns are not mapped and will be skipped.",
   "history": {
@@ -71,5 +71,14 @@
       "partial": "Partial",
       "failed": "Failed"
     }
+  },
+  "done": "Done",
+  "partialImport": "Partially imported",
+  "foreFlightDetected": "ForeFlight format detected — mappings pre-filled",
+  "summary": {
+    "imported": "Imported",
+    "contacts": "Contacts",
+    "skipped": "Skipped",
+    "errors": "Errors"
   }
 }

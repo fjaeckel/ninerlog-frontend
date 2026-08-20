@@ -9,7 +9,7 @@ export const apiClient = axios.create({
   },
 });
 
-// Add request interceptor to include auth token
+// Request interceptor: attach auth token.
 apiClient.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().accessToken;
@@ -21,7 +21,7 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Add response interceptor for error handling
+// Response interceptor: 401 handling.
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {

@@ -152,17 +152,14 @@ describe('selectFlightColumns — custom mode', () => {
   it('reveals the columns in priority order — the first pick survives narrowest', () => {
     const layout = selectFlightColumns([flight()], custom(['picTime', 'ifrTime']));
 
-    // The exact thresholds are calibrated against the rendered table and move
-    // with it; what must hold is that each column needs more width than the one
-    // before it.
+    // Each column needs more width than the one before it.
     expect(revealWidth(layout.time[0].revealClass)).toBeLessThan(revealWidth(layout.time[1].revealClass));
   });
 
   it('asks more width for remarks than for one more time column', () => {
     const layout = selectFlightColumns([flight({ remarks: 'Touch and go' })], custom(['picTime', 'ifrTime', 'remarks']));
 
-    // Remarks is roughly three time columns wide, so it cannot share their
-    // ladder without appearing at a width it does not fit in.
+    // Remarks has its own ladder.
     expect(revealWidth(layout.remarksRevealClass!)).toBeGreaterThan(revealWidth(layout.time[1].revealClass));
   });
 });

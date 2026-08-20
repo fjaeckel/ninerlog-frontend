@@ -173,14 +173,13 @@ describe('RegisterPage', () => {
   it('displays error message on registration failure', async () => {
     const user = userEvent.setup();
     
-    // Set up the mock to reject with an error
     const error = new Error('Registration failed');
     (error as any).response = { data: { message: 'Email already exists' } };
     mockRegister.mutateAsync.mockRejectedValueOnce(error);
     
     renderWithProviders(<RegisterPage />);
     
-    // Fill in all required fields (name is now required per OpenAPI spec)
+    // Fill in all required fields.
     const nameInput = screen.getByLabelText(/full name/i);
     const emailInput = screen.getByLabelText(/^email/i);
     const passwordInput = screen.getByLabelText(/^password/i);
@@ -191,11 +190,9 @@ describe('RegisterPage', () => {
     await user.type(passwordInput, 'Password1234!');
     await user.type(confirmPasswordInput, 'Password1234!');
     
-    // Submit the form
     const submitButton = screen.getByRole('button', { name: /create account/i });
     await user.click(submitButton);
     
-    // The error should appear after async mutation rejection
     await screen.findByText(/email already exists/i);
   });
 
@@ -240,9 +237,7 @@ describe('RegisterPage', () => {
       expect(screen.getByTestId('check-email-view')).toBeInTheDocument();
     });
 
-    // Unverified accounts are deleted after 30 days. Someone who is never told
-    // that has no way to act on it, so the deadline belongs on the one screen
-    // every new signup lands on.
+    // The unverified-account deletion deadline is shown on the signup screen.
     expect(screen.getByText(/deleted after 30 days/i)).toBeInTheDocument();
   });
 

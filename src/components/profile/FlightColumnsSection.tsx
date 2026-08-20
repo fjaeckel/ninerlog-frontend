@@ -13,10 +13,8 @@ const TIME_COLUMNS = FLIGHT_COLUMNS.filter((c) => c.kind === 'time');
 const OTHER_COLUMNS = FLIGHT_COLUMNS.filter((c) => c.kind === 'fixed');
 
 /**
- * Lets a pilot decide which optional columns the flights list shows, instead of
- * letting the list guess from the data on the page. Automatic stays the default
- * — the guess is usually right — but someone who never flies IFR should not
- * have to see an IFR column on the pages where they once did.
+ * Lets a pilot decide which optional columns the flights list shows.
+ * Automatic is the default.
  */
 export function FlightColumnsSection() {
   const { t } = useTranslation(['settings', 'flights']);
@@ -32,8 +30,7 @@ export function FlightColumnsSection() {
         flightListColumnMode: mode,
         flightListColumns: columns,
       });
-      // The API normalizes the list (dedupe, canonical order), so adopt what it
-      // stored rather than what we sent.
+      // Adopt the API's normalized list, not what was sent.
       updateUser({
         flightListColumnMode: updated.flightListColumnMode,
         flightListColumns: updated.flightListColumns,
@@ -45,8 +42,7 @@ export function FlightColumnsSection() {
 
   const setMode = (mode: 'auto' | 'custom') => {
     if (mode === prefs.mode) return;
-    // Switching to custom for the first time starts from a sensible logbook
-    // rather than from an empty table.
+    // First switch to custom starts from the default column set.
     const columns = mode === 'custom' && prefs.columns.length === 0 ? DEFAULT_CUSTOM_COLUMNS : prefs.columns;
     void save(mode, columns);
   };
@@ -65,7 +61,7 @@ export function FlightColumnsSection() {
         checked={prefs.columns.includes(column.key)}
         onChange={() => toggle(column.key)}
         disabled={updateProfile.isPending}
-        className="rounded border-slate-300 dark:border-slate-600"
+        className="checkbox"
         data-testid={`flight-column-${column.key}`}
       />
       <span className="text-sm text-slate-700 dark:text-slate-300">

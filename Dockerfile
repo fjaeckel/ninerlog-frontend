@@ -15,6 +15,9 @@ COPY . .
 # Build the application
 RUN npm run build
 
+# public/.well-known/ reached the bundle.
+RUN test -f dist/.well-known/apple-app-site-association
+
 # Production stage with Nginx
 FROM nginx:1.31-alpine
 

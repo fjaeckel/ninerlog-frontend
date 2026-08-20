@@ -12,12 +12,7 @@ interface State {
   error: Error | null;
 }
 
-/**
- * Top-level error boundary. Without this, a rejected dynamic `import()` from a
- * lazy-loaded route (very common after a PWA redeploy) unmounts the entire
- * tree and leaves the user on a blank white screen forever — most visibly
- * right after login, when `/dashboard` is the first never-fetched chunk.
- */
+/** Top-level error boundary. */
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { error: null };
 
@@ -26,7 +21,6 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    // Surfaces in DevTools and the iOS Web Inspector.
     log.error('uncaught render error', {
       err: error,
       componentStack: info.componentStack,

@@ -4,7 +4,7 @@
     "afternoon": "Good afternoon",
     "evening": "Good evening"
   },
-  "logFlight": "+ Log Flight",
+  "logFlight": "Log Flight",
   "flightCurrency": "Flight Currency",
   "credentialAlert": {
     "expired": "expired {{days}} days ago",

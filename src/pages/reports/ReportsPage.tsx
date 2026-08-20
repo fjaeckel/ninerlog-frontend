@@ -34,6 +34,7 @@ import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { exportAnalyticsToCSV, exportAnalyticsToPDF } from '../../lib/exportReports';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
+import { PageWrapper } from '../../components/ui/PageWrapper';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { useChartTheme } from '../../components/reports/chartTheme';
 import { SectionNav, ReportSectionBlock, type ReportSection } from '../../components/reports/SectionNav';
@@ -77,31 +78,26 @@ export default function ReportsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[1280px] py-6">
+      <PageWrapper maxWidth="list">
         <SkeletonList rows={4} />
-      </div>
+      </PageWrapper>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="mx-auto max-w-[1280px] py-6">
-        <ErrorState
-          title={t('failedToLoad')}
-          message={t('failedToLoadMessage')}
-        />
-      </div>
+      <PageWrapper maxWidth="list">
+        <ErrorState title={t('failedToLoad')} message={t('failedToLoadMessage')} />
+      </PageWrapper>
     );
   }
 
   const { totals, records } = data;
-  // Totals carry the initial-hours snapshot, so a logbook with nothing logged
-  // but hours carried forward is not empty — the pilot has experience to show.
+  // Totals carry the initial-hours snapshot.
   const empty = totals.totalFlights === 0 && totals.totalMinutes === 0;
 
-  // Role composition is charted per year. It is folded from `monthly` rather
-  // than `yearly` because only the monthly series carries the SIC split, and
-  // both series cover exactly the same timeframe.
+  // Role composition per year, folded from the monthly series (it carries
+  // the SIC split).
   const roleByYear = foldRoleByYear(data);
 
   const rangeLabel = data.range.allTime
@@ -112,7 +108,7 @@ export default function ReportsPage() {
       });
 
   return (
-    <div className="mx-auto max-w-[1280px] py-6">
+    <PageWrapper maxWidth="list">
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
@@ -120,22 +116,9 @@ export default function ReportsPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{rangeLabel}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div
-            className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
-            role="group"
-            aria-label={t('timeRange')}
-          >
+          <div className="segmented" role="group" aria-label={t('timeRange')}>
             {ANALYTICS_RANGES.map((m) => (
-              <button
-                key={m}
-                onClick={() => setMonths(m)}
-                aria-pressed={months === m}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                  months === m
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-                }`}
-              >
+              <button key={m} onClick={() => setMonths(m)} aria-pressed={months === m} className="segment">
                 {m === 0 ? t('allTime') : t('range.months', { count: m })}
               </button>
             ))}
@@ -159,7 +142,7 @@ export default function ReportsPage() {
 
       {empty ? (
         <EmptyState
-          icon={<BarChart3 className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600" />}
+          icon={BarChart3}
           title={t('empty.title')}
           description={t('empty.description')}
         />
@@ -167,8 +150,7 @@ export default function ReportsPage() {
         <>
           <SectionNav sections={sections} />
 
-          {/* Refetching holds the previous render at reduced opacity instead of
-              collapsing the page back into skeletons. */}
+          {/* Previous render at reduced opacity while refetching */}
           <div className={isFetching ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
             {/* ── Overview ── */}
             <ReportSectionBlock id="overview" title={t('sections.overview')} description={t('sections.overviewHint')}>
@@ -185,8 +167,7 @@ export default function ReportsPage() {
                       {t('hero.acrossFlights', { count: totals.totalFlights })}
                       {totals.firstFlightDate && ` · ${t('hero.since', { date: fmtDate(totals.firstFlightDate) })}`}
                     </p>
-                    {/* Prior experience that was never entered as flights. It
-                        only reaches the totals, so say so where they are shown. */}
+                    {/* Initial-hours snapshot note */}
                     {data.baseline && (
                       <p className="text-xs text-blue-100/80 mt-1">
                         {t('hero.includesBaseline', {
@@ -753,7 +734,7 @@ export default function ReportsPage() {
           </div>
         </>
       )}
-    </div>
+    </PageWrapper>
   );
 }
 
@@ -799,10 +780,7 @@ function flightRefLabel(ref: AnalyticsFlightRef, fmtDate: (d: string) => string)
   return [fmtDate(ref.date), ref.aircraftReg, route].filter(Boolean).join(' · ');
 }
 
-/**
- * Groups the monthly series into calendar years. Used for the role stack,
- * which needs the SIC split that the yearly series does not carry.
- */
+/** Groups the monthly series into calendar years. */
 function foldRoleByYear(data: FlightAnalytics) {
   const byYear = new Map<string, { year: string; picMinutes: number; sicMinutes: number; dualMinutes: number }>();
   for (const m of data.monthly) {
@@ -825,7 +803,7 @@ function countryName(code: string, locale: string) {
 }
 
 function dayName(isoDow: number, locale: string) {
-  // 2024-01-01 was a Monday, so ISO day 1..7 maps onto that week directly.
+  // ISO day 1..7 mapped onto the week of 2024-01-01, a Monday.
   const date = new Date(Date.UTC(2024, 0, isoDow));
   return date.toLocaleDateString(locale, { weekday: 'short' });
 }

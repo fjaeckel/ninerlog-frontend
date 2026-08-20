@@ -1,20 +1,9 @@
 import { useEffect, useState } from 'react';
 
 /**
- * Chart palette for the Reports page.
- *
- * Both columns are selected, not flipped: the dark steps are the same hues
- * re-stepped for the dark card surface (slate-800). The three categorical
- * slots are validated against this app's real surfaces (#ffffff light,
- * #1e293b dark) for the lightness band, chroma floor, colour-vision
- * separation and normal-vision separation across every pair.
- *
- * Only three categorical slots exist on purpose. The one place the page
- * shows distinct series at once is the PIC / SIC / Dual split, which is a
- * true part-to-whole under EASA (every flight is exactly one of the three).
- * Everything else is a single-hue magnitude comparison, so it uses `accent`.
- * If a fourth series is ever needed, fold the tail into "Other" rather than
- * inventing a hue.
+ * Chart palette for the Reports page. The dark steps are the same hues
+ * re-stepped for the dark card surface (slate-800). Three categorical slots;
+ * a fourth series folds its tail into "Other" rather than adding a hue.
  */
 export interface ChartTheme {
   dark: boolean;
@@ -65,9 +54,7 @@ const DARK: ChartTheme = {
 
 /**
  * Tracks the resolved colour scheme by observing the `dark` class the theme
- * store stamps on <html>. Watching the DOM rather than the store means the
- * charts stay correct for the "system" setting and for any theme change made
- * outside React.
+ * store stamps on <html>.
  */
 export function useChartTheme(): ChartTheme {
   const [dark, setDark] = useState(

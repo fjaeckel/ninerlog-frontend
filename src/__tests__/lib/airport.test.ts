@@ -116,7 +116,7 @@ describe('abbreviateSiteName', () => {
   });
 
   it('keeps a comma-led fragment only when it says something', () => {
-    // A leading comma would otherwise abbreviate the name away to nothing
+    // A leading comma is stripped before abbreviation.
     expect(abbreviateSiteName(', North field')).toBe('North field');
   });
 });

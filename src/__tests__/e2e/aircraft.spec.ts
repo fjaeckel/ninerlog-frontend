@@ -27,7 +27,7 @@ test.describe('Aircraft', () => {
   test('should create aircraft via form', async ({ page }) => {
     await page.getByRole('link', { name: 'Aircraft' }).first().click();
     // Use the header "+" button (first one)
-    await page.getByRole('button', { name: '+ Add Aircraft' }).first().click();
+    await page.getByRole('button', { name: 'Add Aircraft' }).first().click();
     await expect(page.getByRole('heading', { name: 'Add Aircraft' })).toBeVisible();
 
     await page.locator('#registration').fill('D-ACR2');

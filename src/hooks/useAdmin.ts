@@ -215,8 +215,6 @@ export const useLiftEmailSuppression = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      // The delivery log and the admin user list both show suppression state,
-      // and /admin/config counts suppressed addresses.
       queryClient.invalidateQueries({ queryKey: ['admin', 'email'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'config'] });
@@ -233,8 +231,6 @@ export const useCleanupUnverifiedAccounts = () => {
       return data as { remindersSent: number; accountsDeleted: number; message?: string };
     },
     onSuccess: () => {
-      // A sweep both sends reminders and deletes accounts, so the user list
-      // and the delivery log are stale afterwards.
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'email'] });
     },

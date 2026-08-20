@@ -87,6 +87,6 @@ describe('LicenseCard', () => {
       />
     );
     
-    expect(screen.getByText('YES')).toBeInTheDocument();
+    expect(screen.getByText('Separate Logbook')).toBeInTheDocument();
   });
 });

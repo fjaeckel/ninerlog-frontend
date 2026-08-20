@@ -80,13 +80,45 @@ src/i18n/locales/
 
 ### General
 - Keep translations **concise** — German words are often longer than English; ensure they fit the UI layout.
-- Use **formal German** (Sie-Form) consistently.
+- Address the reader informally (**du-Form**), the way pilots address each other in a club or a flight school. Not chatty — plain and direct: "Füge deine erste Lizenz hinzu", not "Fügen Sie Ihre erste Lizenz hinzu" and not "Hey, leg doch mal los!".
+  - **One exception:** strings shown to someone who is *not* the account holder keep the Sie-Form. Today that is the public signing page and the in-person signing dialog in `signatures.json`, both of which address a visiting instructor.
+- Progress states are verbal, not bare infinitives: "Wird gespeichert…", not "Speichern…".
 - Keep **technical terms** in English when they are standard aviation terminology (e.g., "PIC", "IFR", "METAR").
 
 ### Aviation Terminology
 - Keep regulatory references untranslated: "FCL.740.A", "14 CFR 61.57", "LuftPersV §45"
 - Aircraft class types stay in English: "SEP", "MEP", "TMG", "IR"
-- Translate descriptive terms: "Klassenberechtigung" for "class rating", "Flugüberprüfung" for "flight review"
+- FAA-only aircraft categories have no German equivalent and stay English: "Complex", "High Performance" (but "Tailwheel" → "Spornrad", which German pilots do say)
+- Prefer the wording on the German EASA logbook form over a literal translation, and prefer what pilots say over what a regulation says.
+
+#### Glossary
+
+Use these consistently — the same concept must not appear under two names across namespaces.
+
+| English | German | Note |
+|---|---|---|
+| Aircraft (the entity) | **Luftfahrzeug** | Not "Flugzeug" — the app also holds gliders, TMG, balloons and helicopters |
+| Aircraft type | **Muster** | As on the licence and the logbook form |
+| Dual received | **Doppelsteuer** | The German logbook column; never "Dual empfangen" |
+| Dual given | **Als Fluglehrer** | Never "Dual erteilt" on its own |
+| Multi-pilot | **Multi-Pilot**, column header **MP** | **Not MCC** — that is a training course, not a time class |
+| Holds / holding procedures | **Holdings** | Not "Warteschleifen", which is call-centre German |
+| Simulated instrument (hood) | **unter der Haube** | What instrument students actually say |
+| Currency (of experience) | **Recency** | German pilots use the English word |
+| Validity (of a document or rating) | **Gültigkeit** | Keep the two apart: a medical is *gültig*, a pilot is *current* |
+| Revalidation (still valid) | **Verlängerung** | The EASA German term |
+| Renewal (already expired) | **Erneuerung** | Distinct from Verlängerung; never "Wiederinkraftsetzung" |
+| Proficiency check | **Befähigungsüberprüfung** | FCL.740 |
+| Flight review (FAA) | **Flugüberprüfung** | Keep "(BFR)" where the English does |
+| Medical certificate | **Medical** | "Medical Klasse 1", not "Klasse 1 Tauglichkeit" |
+| Initial hours snapshot | **Übertrag** | What a paper logbook calls carried-forward totals |
+| Co-pilot | **Kopilot** | Duden spelling, not "Co-Pilot" |
+| Paper logbook | **Papierflugbuch** | Not "Papierlogbuch" |
+| Instructor signature | **Fluglehrer-Unterschrift** | Not "-Signatur"; the action is *widerrufen*, not *aufheben* |
+
+Two German words are already taken and must not be reused for anything else:
+**Kennzeichen** means the registration (so "Flight Flags" is *Flug-Merkmale*, not *Flug-Kennzeichen*), and
+**Muster** means the aircraft type (so the reports section "Patterns" is *Flugverhalten*, not *Muster*).
 
 ### Interpolation
 - Translation strings use `{{variable}}` syntax for dynamic values: `"Expires in {{days}} days"`

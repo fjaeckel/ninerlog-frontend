@@ -1,6 +1,5 @@
 /**
- * Installs a Playwright network mock for the NinerLog API on a page, so the
- * real app renders fully-populated real screens with no backend running.
+ * Installs a Playwright network mock for the NinerLog API on a page.
  * Dev-tooling only — never imported by the app itself.
  */
 
@@ -133,7 +132,7 @@ export async function installApiMocks(page, state) {
       }
     }
 
-    // Fallback: keep the app alive for anything else we didn't anticipate.
+    // Fallback for unmatched paths.
     if (method === 'GET') return json(route, 200, {});
     return json(route, 200, {});
   });

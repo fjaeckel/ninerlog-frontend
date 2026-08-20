@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { ArrowRight, DatabaseBackup, FileSpreadsheet, FileText, Upload } from 'lucide-react';
 import { exportFlightsCSV, exportDataJSON, exportFlightsPDF } from '../../hooks/useExport';
+import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 
 export default function ExportPage() {
   const { t } = useTranslation('reports');
@@ -25,20 +28,15 @@ export default function ExportPage() {
         await exportDataJSON();
       }
     } catch {
-      setError('Export failed. Please try again.');
+      setError(t('export.failed'));
     } finally {
       setExporting(null);
     }
   };
 
   return (
-    <div className="mx-auto max-w-[960px] py-6">
-      <div className="mb-6">
-        <h1 className="page-title">{t('export.title')}</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          {t('export.subtitle', 'Download your flight data in various formats')}
-        </p>
-      </div>
+    <PageWrapper>
+      <PageHeader title={t('export.title')} subtitle={t('export.subtitle')} />
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
@@ -46,60 +44,62 @@ export default function ExportPage() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 items-start">
         {/* CSV Export */}
-        <div className="card">
-          <div className="text-3xl mb-3">📊</div>
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.csvTitle', 'Flight Log CSV')}</h3>
+        <div className="card flex flex-col h-full">
+          <FileSpreadsheet className="w-8 h-8 mb-3 text-blue-600 dark:text-blue-400" strokeWidth={1.5} aria-hidden="true" />
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.csvTitle')}</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-            {t('export.csvDescription', 'Export all flights as a CSV file. Choose a column format for your authority.')}
+            {t('export.csvDescription')}
           </p>
+          <div className="flex-1" />
           <select
             value={csvFormat}
             onChange={(e) => setCsvFormat(e.target.value as 'standard' | 'easa' | 'faa')}
             className="input mb-3 text-sm"
           >
-            <option value="standard">{t('export.standardCsv')} (ForeFlight-compatible)</option>
-            <option value="easa">{t('export.easaLogbook', 'EASA (AMC1 FCL.050 columns)')}</option>
-            <option value="faa">{t('export.faaLogbook', 'FAA (ASA/Jeppesen columns)')}</option>
+            <option value="standard">{t('export.standardCsv')}</option>
+            <option value="easa">{t('export.easaLogbook')}</option>
+            <option value="faa">{t('export.faaLogbook')}</option>
           </select>
           <button
             onClick={() => handleExport('csv')}
             disabled={exporting === 'csv'}
             className="btn-primary w-full"
           >
-            {exporting === 'csv' ? t('export.downloading') : t('export.download') + ' CSV'}
+            {exporting === 'csv' ? t('export.downloading') : t('export.downloadCsv')}
           </button>
         </div>
 
         {/* JSON Backup */}
-        <div className="card">
-          <div className="text-3xl mb-3">💾</div>
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.jsonBackup', 'Full Data Backup')}</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-            {t('export.jsonDescription', 'Export everything — flights, aircraft, licenses, class ratings, and credentials as a JSON backup file.')}
+        <div className="card flex flex-col h-full">
+          <DatabaseBackup className="w-8 h-8 mb-3 text-blue-600 dark:text-blue-400" strokeWidth={1.5} aria-hidden="true" />
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.jsonBackup')}</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+            {t('export.jsonDescription')}
           </p>
+          <div className="flex-1" />
           <button
             onClick={() => handleExport('json')}
             disabled={exporting === 'json'}
-            className="btn-secondary w-full"
+            className="btn-primary w-full"
           >
-            {exporting === 'json' ? t('export.downloading') : t('export.download') + ' JSON Backup'}
+            {exporting === 'json' ? t('export.downloading') : t('export.downloadJson')}
           </button>
         </div>
 
         {/* PDF Logbook */}
-        <div className="card">
-          <div className="text-3xl mb-3">📄</div>
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.pdfTitle', 'PDF Logbook')}</h3>
+        <div className="card flex flex-col h-full">
+          <FileText className="w-8 h-8 mb-3 text-blue-600 dark:text-blue-400" strokeWidth={1.5} aria-hidden="true" />
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.pdfTitle')}</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-            {t('export.pdfDescription', 'Generate a formatted logbook PDF. Print it, sign it, and use it as a paper logbook.')}
+            {t('export.pdfDescription')}
           </p>
           <select
             value={pdfFormat}
             onChange={(e) => setPdfFormat(e.target.value as 'easa' | 'faa' | 'summary')}
             className="input mb-3 text-sm"
-            aria-label={t('export.pdfFormat', 'PDF format')}
+            aria-label={t('export.pdfFormat')}
           >
             <option value="easa">{t('export.easaLogbook')}</option>
             <option value="faa">{t('export.faaLogbook')}</option>
@@ -109,11 +109,11 @@ export default function ExportPage() {
             value={pdfPageSize}
             onChange={(e) => setPdfPageSize(e.target.value as 'a4' | 'a5' | 'letter')}
             className="input mb-3 text-sm"
-            aria-label={t('export.pdfPageSize', 'Page size')}
+            aria-label={t('export.pdfPageSize')}
           >
-            <option value="a4">{t('export.pageSizeA4', 'A4 (landscape)')}</option>
-            <option value="a5">{t('export.pageSizeA5', 'A5 (landscape)')}</option>
-            <option value="letter">{t('export.pageSizeLetter', 'US Letter (landscape)')}</option>
+            <option value="a4">{t('export.pageSizeA4')}</option>
+            <option value="a5">{t('export.pageSizeA5')}</option>
+            <option value="letter">{t('export.pageSizeLetter')}</option>
           </select>
           {pdfFormat !== 'summary' && (
             <>
@@ -121,10 +121,10 @@ export default function ExportPage() {
                 value={pdfLayout}
                 onChange={(e) => setPdfLayout(e.target.value as 'spread' | 'single')}
                 className="input mb-3 text-sm"
-                aria-label={t('export.pdfLayout', 'Page layout')}
+                aria-label={t('export.pdfLayout')}
               >
-                <option value="spread">{t('export.layoutSpread', 'Two-page spread (duplex printing)')}</option>
-                <option value="single">{t('export.layoutSingle', 'Single page (all columns on one page)')}</option>
+                <option value="spread">{t('export.layoutSpread')}</option>
+                <option value="single">{t('export.layoutSingle')}</option>
               </select>
               <input
                 type="number"
@@ -132,46 +132,45 @@ export default function ExportPage() {
                 max={50}
                 value={pdfRowsPerPage}
                 onChange={(e) => setPdfRowsPerPage(e.target.value)}
-                placeholder={t('export.rowsPerPageAuto', 'Rows per page (auto)')}
+                placeholder={t('export.rowsPerPageAuto')}
                 className="input mb-3 text-sm"
-                aria-label={t('export.rowsPerPage', 'Rows per page')}
+                aria-label={t('export.rowsPerPage')}
               />
             </>
           )}
+          <div className="flex-1" />
           <button
             onClick={() => handleExport('pdf')}
             disabled={exporting === 'pdf'}
-            className="btn-secondary w-full"
+            className="btn-primary w-full"
           >
-            {exporting === 'pdf' ? t('export.downloading') : t('export.download') + ' PDF Logbook'}
+            {exporting === 'pdf' ? t('export.downloading') : t('export.downloadPdf')}
           </button>
         </div>
 
         {/* Import Link */}
-        <div className="card">
-          <div className="text-3xl mb-3">📥</div>
-          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.importTitle', 'Import Flights')}</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-            {t('export.importDescription', 'Import flights from ForeFlight, CSV files, or other logbook exports. Auto-detects format and column mapping.')}
+        <div className="card flex flex-col h-full">
+          <Upload className="w-8 h-8 mb-3 text-blue-600 dark:text-blue-400" strokeWidth={1.5} aria-hidden="true" />
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{t('export.importTitle')}</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+            {t('export.importDescription')}
           </p>
-          <a href="/import" className="btn-ghost w-full inline-flex items-center justify-center">
-            Go to Import →
-          </a>
+          <div className="flex-1" />
+          <Link to="/import" className="btn-secondary w-full">
+            {t('export.goToImport')}
+            <ArrowRight className="w-4 h-4" aria-hidden="true" />
+          </Link>
         </div>
       </div>
 
       <div className="mt-8 card bg-slate-50 dark:bg-slate-800/50">
-        <h3 className="font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('export.aboutTitle', 'About Exports')}</h3>
-        <ul className="text-sm text-slate-500 dark:text-slate-400 space-y-1.5">
-          <li>• <strong>CSV Standard</strong> — ForeFlight-compatible with all flight fields. Opens in Excel, Google Sheets, or any spreadsheet app.</li>
-          <li>• <strong>CSV EASA</strong> — AMC1 FCL.050 column layout (24 columns: SP-SE/ME, Multi-Pilot, PIC Name, Co-Pilot, Instructor, FSTD).</li>
-          <li>• <strong>CSV FAA</strong> — ASA/Jeppesen standard logbook columns with decimal hours.</li>
-          <li>• <strong>PDF EASA</strong> — Full AMC1 FCL.050 compliant logbook with SP-SE/ME split, FSTD sessions, and page totals.</li>
-          <li>• <strong>PDF FAA</strong> — Standard ASA/Jeppesen layout with approaches, holds, and IPC/Flight Review markers.</li>
-          <li>• <strong>JSON Backup</strong> — Complete data snapshot including aircraft fleet, licenses with class ratings, and credentials.</li>
-          <li>• Your data is yours — export anytime, no restrictions, no fees.</li>
+        <h3 className="font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('export.aboutTitle')}</h3>
+        <ul className="text-sm text-slate-500 dark:text-slate-400 space-y-1.5 list-disc pl-5 marker:text-slate-300 dark:marker:text-slate-600">
+          {(t('export.aboutItems', { returnObjects: true }) as string[]).map((item) => (
+            <li key={item}>{item}</li>
+          ))}
         </ul>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

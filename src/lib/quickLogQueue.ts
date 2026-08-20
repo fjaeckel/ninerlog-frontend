@@ -2,10 +2,8 @@ import type { components } from '../api/schema';
 
 type FlightSessionEvent = components['schemas']['FlightSessionEvent'];
 
-// Offline queue for quick-log taps. Ramps often have no coverage, so a tap
-// that can't reach the API is stored here (with its true occurredAt) and
-// replayed when the connection returns. The API applies each event type at
-// most once per session, so replaying is always safe.
+// Offline queue for quick-log taps, stored with their true occurredAt and
+// replayed when the connection returns.
 const STORAGE_KEY = 'ninerlog.quicklog.queue';
 
 export function loadQuickLogQueue(): FlightSessionEvent[] {
@@ -27,8 +25,7 @@ export function saveQuickLogQueue(queue: FlightSessionEvent[]): void {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
     }
   } catch {
-    // Storage full/unavailable — the tap still reached the UI state; worst
-    // case the pilot re-taps once back online.
+    // Storage full/unavailable; drop.
   }
 }
 

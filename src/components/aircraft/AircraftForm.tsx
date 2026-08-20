@@ -175,7 +175,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
               <input
                 {...register('renameFlights')}
                 type="checkbox"
-                className="mt-0.5 rounded border-slate-300 dark:border-slate-600"
+                className="checkbox"
               />
               {t('form.renameFlights', {
                 count: flightsOnOldRegistration,
@@ -294,16 +294,16 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       <div className="space-y-3">
         <label className="form-label">{t('form.characteristics')}</label>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
-          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isComplex')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
+          <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+            <input {...register('isComplex')} type="checkbox" className="checkbox" />
             {t('fields.isComplex')}
           </label>
-          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isHighPerformance')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
+          <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+            <input {...register('isHighPerformance')} type="checkbox" className="checkbox" />
             {t('fields.isHighPerformance')}
           </label>
-          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isTailwheel')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
+          <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+            <input {...register('isTailwheel')} type="checkbox" className="checkbox" />
             {t('fields.isTailwheel')}
           </label>
         </div>
@@ -358,8 +358,8 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       {/* Active toggle (edit only) */}
       {isEditing && (
         <div>
-          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isActive')} type="checkbox" className="rounded border-slate-300 dark:border-slate-600" />
+          <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+            <input {...register('isActive')} type="checkbox" className="checkbox" />
             {t('form.activeInFleet')}
           </label>
         </div>

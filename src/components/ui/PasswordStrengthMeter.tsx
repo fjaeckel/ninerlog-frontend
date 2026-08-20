@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/cn';
+import { RequirementIcon } from './RequirementIcon';
 import {
   evaluatePasswordStrength,
   PASSWORD_RULE_IDS,
@@ -38,11 +39,8 @@ const LEVEL_STYLES: Record<
 
 /**
  * Live feedback on a password being chosen: a three-step red/amber/green bar
- * plus the individual rules, so a user who is stuck can see exactly which one
- * they are failing. Colour is never the only signal — the level is spelled out
- * and every rule carries a ✓ / ✗ glyph.
- *
- * Renders nothing for an empty field, so an untouched form stays quiet.
+ * plus the individual rules, each with the shared met / not-met marker.
+ * Renders nothing for an empty field.
  */
 export function PasswordStrengthMeter({
   password,
@@ -104,9 +102,7 @@ export function PasswordStrengthMeter({
                   : 'text-slate-500 dark:text-slate-400',
               )}
             >
-              <span aria-hidden="true" className="w-3 text-center">
-                {met ? '✓' : '✗'}
-              </span>
+              <RequirementIcon met={met} className="w-3 h-3" />
               <span>
                 {t(`auth:passwordStrength.rules.${rule}`)}
                 <span className="sr-only">

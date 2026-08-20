@@ -42,12 +42,9 @@ export const aircraft = [
   },
 ];
 
-// The real API returns several backend-computed fields that the frontend's
-// hand-maintained `Flight` type (src/types/api.ts) doesn't declare but the
-// detail page reads directly (soloTime, crossCountryTime, takeoffsDay/Night,
-// distance, offBlock/onBlockTime, isPic/isDual, instrument breakdown). This
-// derives them for the fixtures so FlightDetailPage renders cleanly instead
-// of "NaN"/"undefined".
+// Derives the backend-computed fields the detail page reads (soloTime,
+// crossCountryTime, takeoffsDay/Night, distance, offBlock/onBlockTime,
+// isPic/isDual, instrument breakdown).
 function enrichFlight(f) {
   const isSolo = !f.crewMembers || f.crewMembers.length === 0;
   return {

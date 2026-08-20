@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BookOpen, Pencil, Plus, Trash2 } from 'lucide-react';
 import { License } from '../../stores/licenseStore';
 import { isPast, differenceInDays } from 'date-fns';
 import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateClassRating } from '../../hooks/useClassRatings';
@@ -16,7 +17,7 @@ function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
   const { t } = useTranslation('licenses');
   const { fmtDate } = useFormatPrefs();
   if (!expiryDate) {
-    return <span className="text-xs text-slate-400">{t('card.noExpiry')}</span>;
+    return <span className="text-xs text-slate-500 dark:text-slate-400">{t('card.noExpiry')}</span>;
   }
   const expiry = new Date(expiryDate);
   const expired = isPast(expiry);
@@ -27,7 +28,7 @@ function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs">
         <span className="font-medium text-red-600 dark:text-red-400">{formatted}</span>
-        <span className="badge-expired text-[10px]">{t('card.expired')}</span>
+        <span className="badge-expired text-xs">{t('card.expired')}</span>
       </span>
     );
   }
@@ -35,7 +36,7 @@ function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs">
         <span className="font-medium text-amber-600 dark:text-amber-400">{formatted}</span>
-        <span className="badge-expiring text-[10px]">{t('card.expiresInDays', { days: daysLeft })}</span>
+        <span className="badge-expiring text-xs">{t('card.expiresInDays', { days: daysLeft })}</span>
       </span>
     );
   }
@@ -120,7 +121,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
     <div className="card transition-shadow hover:shadow-md">
       <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
         {/* Identity */}
-        <div className="lg:w-72 lg:shrink-0">
+        <div className="lg:w-52 lg:shrink-0">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="badge-info font-semibold">{license.licenseType}</span>
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
@@ -132,8 +133,8 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
           </p>
           {license.requiresSeparateLogbook && (
             <div className="mt-2">
-              <span className="badge-info text-[10px]">YES</span>
-              <span className="ml-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <span className="badge-neutral">
+                <BookOpen className="w-3 h-3 mr-1" aria-hidden="true" />
                 {t('card.separateLogbook')}
               </span>
             </div>
@@ -182,17 +183,15 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                 {t('classRatings')}
               </h4>
               {!showAddForm && (
-                <button
-                  onClick={() => setShowAddForm(true)}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                >
+                <button onClick={() => setShowAddForm(true)} className="btn-ghost btn-sm text-xs">
+                  <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                   {t('card.addRating')}
                 </button>
               )}
             </div>
 
             {ratingsLoading ? (
-              <p className="text-xs text-slate-400 dark:text-slate-500">{t('common:loading')}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">{t('common:loading')}</p>
             ) : classRatings && classRatings.length > 0 ? (
               <ul className="divide-y divide-slate-200 dark:divide-slate-700 rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
                 {/* Header row (desktop only) */}
@@ -232,29 +231,29 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                           {t(`classTypeLabels.${rating.classType}`, { defaultValue: rating.classType })}
                         </span>
                         <span className="text-slate-600 dark:text-slate-300">
-                          <span className="sm:hidden text-xs text-slate-400 mr-1">{t('card.issued')}:</span>
+                          <span className="sm:hidden text-xs text-slate-500 dark:text-slate-400 mr-1">{t('card.issued')}:</span>
                           {fmtDate(rating.issueDate)}
                         </span>
                         <span>
-                          <span className="sm:hidden text-xs text-slate-400 mr-1">{t('classRatingFields.expiryDate')}:</span>
+                          <span className="sm:hidden text-xs text-slate-500 dark:text-slate-400 mr-1">{t('classRatingFields.expiryDate')}:</span>
                           <ExpiryBadge expiryDate={rating.expiryDate} />
                         </span>
                         <div className="flex items-center gap-1 justify-end col-span-2 sm:col-span-1">
                           <button
                             onClick={() => startEditRating(rating)}
-                            className="min-w-[32px] min-h-[32px] flex items-center justify-center text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors text-xs"
+                            className="btn-ghost btn-sm min-w-[44px] min-h-[44px] px-0 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400"
                             title={t('card.editRating')}
                             aria-label={t('card.editRating')}
                           >
-                            ✏
+                            <Pencil className="w-4 h-4" aria-hidden="true" />
                           </button>
                           <button
                             onClick={() => handleDeleteRating(rating.id)}
-                            className="min-w-[32px] min-h-[32px] flex items-center justify-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors text-xs font-bold leading-none"
+                            className="btn-ghost btn-sm min-w-[44px] min-h-[44px] px-0 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400"
                             title={t('card.removeRating')}
                             aria-label={t('card.removeRating')}
                           >
-                            ✕
+                            <Trash2 className="w-4 h-4" aria-hidden="true" />
                           </button>
                         </div>
                       </div>
@@ -263,7 +262,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-slate-400 dark:text-slate-500 italic">{t('card.noClassRatings')}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 italic">{t('card.noClassRatings')}</p>
             )}
 
             {/* Add Rating */}
@@ -321,12 +320,12 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
 
         {/* Actions */}
         <div className="flex lg:flex-col gap-2 lg:w-28 lg:shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-700">
-          <button onClick={onEdit} className="btn-secondary btn-sm flex-1">
+          <button onClick={onEdit} className="btn-ghost btn-sm flex-1 lg:w-full lg:flex-none">
             {t('common:edit')}
           </button>
           <button
             onClick={onDelete}
-            className="btn-secondary btn-sm flex-1 hover:bg-red-50 hover:text-red-700 hover:border-red-200 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+            className="btn-ghost btn-sm flex-1 lg:w-full lg:flex-none text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
           >
             {t('common:delete')}
           </button>

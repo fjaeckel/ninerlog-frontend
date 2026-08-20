@@ -5,8 +5,7 @@ import React from 'react';
 import { useFlights, FLIGHTS_STALE_TIME_MS } from '../../hooks/useFlights';
 import { invalidateFlightDependentQueries } from '../../hooks/invalidation';
 
-// The real query-client defaults from src/main.tsx. The point of these tests
-// is how useFlights behaves *under* them, so they must not be relaxed here.
+// The real query-client defaults from src/main.tsx.
 const APP_QUERY_DEFAULTS = {
   staleTime: 0,
   refetchOnMount: true,
@@ -52,7 +51,6 @@ describe('useFlights refetch behaviour', () => {
     for (let i = 0; i < 3; i++) await refocus();
     await waitFor(() => expect(result.current.isFetching).toBe(false));
 
-    // Previously this was 4: one initial fetch plus one search per refocus.
     expect(calls).toBe(1);
   });
 

@@ -1,9 +1,11 @@
+import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../lib/cn';
 
 interface EmptyStateProps {
-  icon: React.ReactNode;
+  /** A lucide icon component — passed as the component itself, not an element. */
+  icon: LucideIcon;
   title: string;
-  description: string;
+  description?: string;
   action?: {
     label: string;
     onClick: () => void;
@@ -12,18 +14,22 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
+/** The "nothing here yet" panel. Takes a lucide icon, not arbitrary content. */
+export function EmptyState({ icon: Icon, title, description, action, className }: EmptyStateProps) {
   return (
     <div className={cn('card text-center py-12', className)}>
-      <div className="text-5xl mb-4" aria-hidden="true">{icon}</div>
-      <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
-        {title}
-      </h2>
-      <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-        {description}
-      </p>
+      <Icon
+        className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600"
+        strokeWidth={1.5}
+        aria-hidden="true"
+      />
+      <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">{title}</h2>
+      {description && (
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">{description}</p>
+      )}
       {action && (
         <button
+          type="button"
           onClick={action.onClick}
           className={action.variant === 'secondary' ? 'btn-secondary' : 'btn-primary'}
         >

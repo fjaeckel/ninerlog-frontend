@@ -23,16 +23,13 @@ export default function Layout() {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const { t } = useTranslation(['nav', 'common']);
 
-  // Auto-start the welcome tour the first time a freshly registered user lands
-  // in the app. Persisted per-user, so it never re-appears after being seen or
-  // skipped. Replayable from the Help page. Skipped for users who already have
-  // flights logged, even when the completion flag is missing (e.g. new device).
+  // Auto-start the welcome tour once per user. Skipped for users who already
+  // have flights logged.
   const openTour = useOnboardingStore((s) => s.open);
   const { data: flights, isLoading: flightsLoading } = useFlights({ pageSize: 1 });
   useEffect(() => {
     if (!user) return;
-    // Wait for the flight count before deciding, so experienced users on a
-    // fresh device don't see the tour flash before it's skipped.
+    // Wait for the flight count before deciding.
     if (flightsLoading) return;
     if ((flights?.pagination.total ?? 0) > 0) return;
     const { hasCompleted, isOpen } = useOnboardingStore.getState();
@@ -45,9 +42,7 @@ export default function Layout() {
     navigate('/login');
   };
 
-  // The "More" sheet lists its entries rarely-used → frequently-used, so the
-  // thumb-nearest items sit at the very bottom. If the list is tall enough to
-  // scroll, land on that bottom (Quick Log, Aircraft…) instead of the top.
+  // Open the "More" sheet scrolled to the bottom.
   const scrollToBottomOnMount = (el: HTMLElement | null) => {
     if (el) el.scrollTop = el.scrollHeight;
   };
@@ -72,17 +67,17 @@ export default function Layout() {
         role="banner"
       >
         <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <Link to="/dashboard" className="flex items-center gap-2.5 group" aria-label={APP_NAME}>
+          <Link to="/dashboard" className="flex items-center gap-2.5 min-h-11 group" aria-label={APP_NAME}>
             <LogoMark size={32} decorative className="drop-shadow-sm transition-transform group-hover:scale-[1.04] group-active:scale-95" />
             <span className="text-lg font-bold tracking-tight text-gradient-brand">{APP_NAME}</span>
           </Link>
-          {/* Quick Log — compact entry next to the logo; the mobile FAB now opens the full flight form */}
+          {/* Quick Log — compact entry next to the logo */}
           <NavLink
             to="/quicklog"
             title={t('nav:quickLog')}
             aria-label={t('nav:quickLog')}
             className={({ isActive }) =>
-              `lg:hidden inline-flex items-center justify-center w-9 h-9 rounded-full transition-colors tap-none ${
+              `lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-full transition-colors tap-none ${
                 isActive
                   ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/25 dark:text-blue-400'
                   : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
@@ -229,9 +224,7 @@ export default function Layout() {
             <div className="flex justify-center pt-3 pb-2">
               <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
             </div>
-            {/* Ordered for thumb reach: rarely-used items up top, frequently-used
-                ones at the bottom nearest the thumb — Quick Log last of all.
-                Opens scrolled to the bottom so the important items land first. */}
+            {/* Rarely-used items up top, frequently-used at the bottom; opens scrolled to the bottom */}
             <nav
               ref={scrollToBottomOnMount}
               className="px-4 pb-4 space-y-1 max-h-[70vh] overflow-y-auto"
@@ -361,7 +354,7 @@ function SidebarExternalItem({ href, label, title, icon }: { href: string; label
     >
       <span className="shrink-0" aria-hidden="true">{icon}</span>
       <span className="flex-1">{label}</span>
-      <ExternalLink className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+      <ExternalLink className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" aria-hidden="true" />
     </a>
   );
 }

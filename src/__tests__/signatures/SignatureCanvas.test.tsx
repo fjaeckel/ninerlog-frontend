@@ -70,11 +70,7 @@ describe('SignatureCanvas', () => {
   });
 
   it('does not resize (and so does not wipe) the canvas backing store once a stroke has started', () => {
-    // Regression test: the canvas used to eagerly re-apply its backing
-    // store size whenever the container's ResizeObserver fired again,
-    // which reset all pixel content. A resize mid-signature is a realistic
-    // scenario (a dialog settling its layout, a mobile keyboard opening),
-    // so once the user has started drawing, resizing must become a no-op.
+    // Once drawing has started, a container resize is a no-op.
     let resizeCallback: ResizeObserverCallback | undefined;
     const OriginalResizeObserver = globalThis.ResizeObserver;
     class FakeResizeObserver {

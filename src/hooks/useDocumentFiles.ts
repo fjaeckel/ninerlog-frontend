@@ -9,13 +9,7 @@ export type DocumentFile = components['schemas']['DocumentFile'];
 export type DocumentSubject = 'license' | 'credential';
 
 
-/**
- * Whether a stored file is a raster image the client can render itself.
- *
- * Mirrors the server's own split: images were verified by decoding their
- * header and are served inline; anything else (today: PDF) was not, is served
- * as an attachment, and must never be rendered inside this origin.
- */
+/** Whether a stored file is a raster image the client can render itself. */
 export const isImageFile = (file: Pick<DocumentFile, 'contentType'>): boolean =>
   file.contentType === 'image/jpeg' || file.contentType === 'image/png';
 
@@ -24,10 +18,6 @@ export const documentFilesKey = (subject: DocumentSubject, subjectId: string) =>
 
 const documentFileBlobKey = (subject: DocumentSubject, subjectId: string, fileId: string) =>
   ['documentFileBlob', subject, subjectId, fileId] as const;
-
-// Licences and credentials have separate URLs, and openapi-fetch types each
-// path literally, so the branch below is what buys the type checking — a
-// templated path string would erase it.
 
 async function fetchFiles(subject: DocumentSubject, subjectId: string): Promise<DocumentFile[]> {
   if (subject === 'license') {
@@ -45,11 +35,7 @@ async function fetchFiles(subject: DocumentSubject, subjectId: string): Promise<
 }
 
 async function postFile(subject: DocumentSubject, subjectId: string, form: FormData): Promise<DocumentFile> {
-  // openapi-fetch passes a FormData body through untouched and lets the
-  // browser set the multipart boundary, so the upload still goes through the
-  // shared client and inherits its auth header and 401-refresh retry. The
-  // cast is only needed because the generated body type describes the parts,
-  // not their FormData encoding.
+  // Generated body type describes the parts, not their FormData encoding.
   const body = form as unknown as components['schemas']['DocumentFileUpload'];
 
   if (subject === 'license') {
@@ -99,20 +85,7 @@ async function fetchFileBlob(subject: DocumentSubject, subjectId: string, fileId
   return data as Blob;
 }
 
-/**
- * How long a document's file list stays fresh.
- *
- * The global default is `staleTime: 0` with `refetchOnMount` and
- * `refetchOnWindowFocus`, which is wrong for this query now that a strip
- * renders on every licence and credential card: one visit to the list page
- * would re-list files for *every* card, and again on every tab refocus. The
- * `/files` routes share the tight per-user rate-limit bucket, so a pilot with
- * a handful of documents would burn through it just by navigating.
- *
- * Deferring is safe because it never delays the user's own edits — uploading
- * and deleting both invalidate this key, and invalidation overrides staleTime.
- * What it defers is a change made in another tab or on another device.
- */
+/** How long a document's file list stays fresh. */
 export const DOCUMENT_FILES_STALE_TIME_MS = 60_000;
 
 /** Metadata for a document's files. The bytes are fetched per file. */
@@ -151,13 +124,8 @@ export const useDeleteDocumentFile = (subject: DocumentSubject, subjectId: strin
 };
 
 /**
- * An object URL for one image's bytes.
- *
- * The download is authenticated like every other call, so a plain `<img src>`
- * pointing at the API would 401 — the bytes have to be fetched with the
- * bearer token and handed to the browser as a blob. The URL is revoked when it
- * changes or the consumer unmounts; `gcTime: 0` keeps a revoked URL from being
- * replayed out of the cache to a later mount.
+ * An object URL for one image's bytes, fetched with the bearer token.
+ * The URL is revoked when it changes or the consumer unmounts.
  */
 export const useDocumentFileUrl = (
   subject: DocumentSubject,
@@ -186,19 +154,7 @@ export const useDocumentFileUrl = (
   return query;
 };
 
-/**
- * Downloads a file to disk as an explicit user action.
- *
- * This is the only path by which a non-image ever leaves the API, and it is
- * deliberately a download rather than a render: the server sends PDFs with
- * `Content-Disposition: attachment` so untrusted document bytes are never
- * rendered inside this origin, and the client honours that rather than
- * defeating it by piping the blob into an iframe.
- *
- * The fetch still goes through `apiClient`, so it carries the bearer token and
- * the 401-refresh retry like every other call. The object URL is revoked as
- * soon as the browser has taken the download.
- */
+/** Downloads a file to disk as an explicit user action. */
 export const useDownloadDocumentFile = (subject: DocumentSubject, subjectId: string) => {
   return useMutation({
     mutationFn: async (file: DocumentFile): Promise<void> => {

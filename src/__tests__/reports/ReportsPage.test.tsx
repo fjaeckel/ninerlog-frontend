@@ -7,9 +7,8 @@ import ReportsPage from '../../pages/reports/ReportsPage';
 import * as useAnalyticsHook from '../../hooks/useAnalytics';
 import type { FlightAnalytics } from '../../hooks/useAnalytics';
 
-// Recharts renders an SVG that happy-dom cannot lay out, so the chart bodies
-// are stubbed. Everything the tests assert on is DOM the page owns: headings,
-// stat tiles, ranked bars and the table-view twins.
+// Chart bodies stubbed; assertions target DOM the page owns (headings,
+// stat tiles, ranked bars, table-view twins).
 vi.mock('recharts', () => {
   const Stub = ({ children }: any) => <div data-testid="mock-chart">{children}</div>;
   const Null = () => null;
@@ -219,8 +218,7 @@ describe('ReportsPage', () => {
     renderWithProviders(<ReportsPage />);
     expect(screen.getByRole('heading', { name: 'Reports' })).toBeInTheDocument();
 
-    // The same duration also appears in the yearly table and the meters, so
-    // the assertion is scoped to the hero band.
+    // Assertion scoped to the hero band.
     const hero = screen.getByText(/across 8 flights/i).closest('div') as HTMLElement;
     expect(within(hero).getByText('12h 42m')).toBeInTheDocument();
     expect(within(hero).getByText(/since/i)).toBeInTheDocument();
@@ -252,8 +250,7 @@ describe('ReportsPage', () => {
     expect(within(cardBody('By aircraft type')).getByText('C172')).toBeInTheDocument();
     expect(within(cardBody('By aircraft type')).getByText('PA28')).toBeInTheDocument();
     expect(within(cardBody('By registration')).getByText('D-EAAA')).toBeInTheDocument();
-    // EDNY is deliberately in three places (airport list, home-base tile,
-    // route label), so this one is scoped to the airport ranking.
+    // Scoped to the airport ranking.
     expect(within(cardBody('Most visited airports')).getByText('EDNY')).toBeInTheDocument();
     expect(within(cardBody('Approach types')).getByText('ILS')).toBeInTheDocument();
     expect(within(cardBody('Most flown routes')).getByText('EDNY → LSZH')).toBeInTheDocument();
@@ -278,7 +275,7 @@ describe('ReportsPage', () => {
   it('omits time categories with no logged time', () => {
     mockUseAnalytics();
     renderWithProviders(<ReportsPage />);
-    // SIC and solo are zero in the fixture, so their meters are not rendered.
+    // SIC and solo are zero in the fixture: their meters are not rendered.
     expect(screen.queryByRole('meter', { name: 'SIC' })).not.toBeInTheDocument();
     expect(screen.queryByRole('meter', { name: 'Solo' })).not.toBeInTheDocument();
     expect(screen.getByRole('meter', { name: 'PIC' })).toBeInTheDocument();

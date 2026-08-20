@@ -3,8 +3,8 @@
  * DEV-ONLY preview entry — NOT part of the app build.
  *
  * Renders the real HelpPage (with real theme-aware figures) without the auth
- * gate, plus a Light/Dark/System switcher, so the Help Base can be viewed in a
- * browser without a backend. Reachable at /preview.html on the dev server.
+ * gate, plus a Light/Dark/System switcher. Reachable at /preview.html on the
+ * dev server.
  */
 import React from 'react';
 import ReactDOM from 'react-dom/client';

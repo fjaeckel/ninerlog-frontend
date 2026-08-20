@@ -11,11 +11,7 @@ type Flight = components['schemas']['Flight'];
 
 interface FlightCardProps {
   flight: Flight;
-  /**
-   * The readout columns every card on this page shows, from
-   * `selectFlightCardColumns`. Passed in rather than derived per flight so the
-   * whole list keeps one set of headings at one width.
-   */
+  /** The readout columns every card on this page shows, from `selectFlightCardColumns`. */
   columns: FlightCardColumns;
   onClick: () => void;
 }
@@ -30,19 +26,10 @@ interface Cell {
 }
 
 /**
- * One logbook entry as a phone-sized card.
- *
- * Below `lg` the flights table needs a horizontal scroll to reach even the
- * total time, so this takes its place: a header carrying what identifies the
- * entry — route, date, aircraft, block time, function — over a row of numeric
- * columns that reads like the table it replaces. Both stay on their own single
- * line: a logbook is read by scrolling, and a card that grows a line for a long
- * airfield name pushes every flight below it further away. Which time columns
- * those are
- * is decided once for the whole page (see `selectFlightCardColumns`), so the
- * headings and their widths hold still while the list scrolls and a flight that
- * logged none of a column shows a dash. Everything else lives one tap away on
- * the detail page.
+ * One logbook entry as a phone-sized card: a header (route, date, aircraft,
+ * block time, function) over a row of numeric columns. Time columns are
+ * decided once per page (`selectFlightCardColumns`); a flight that logged
+ * none of a column shows a dash.
  */
 export default function FlightCard({ flight, columns, onClick }: FlightCardProps) {
   const { t, i18n } = useTranslation('flights');
@@ -52,13 +39,10 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
   const arrival = splitAirportLabel(flight.arrivalIcao, flight.arrivalAirportName);
   const routeLabel = `${departure.code ?? departure.name ?? '—'} → ${arrival.code ?? arrival.name ?? '—'}`;
 
-  // The weekday is what makes a date read as a day rather than a record key —
-  // it follows the reader's locale, the date itself their format preference.
+  // Weekday follows the reader's locale; the date their format preference.
   const weekday = new Date(`${flight.date}T00:00:00`).toLocaleDateString(i18n.language, { weekday: 'short' });
 
-  // Every cell answers to the flights-list column setting, exactly as the
-  // table's cells do — a column switched off in Settings has to be off here
-  // too, or the setting is only telling half the truth.
+  // Cells honour the flights-list column setting, as the table's do.
   const offOnCells: Cell[] = columns.offOnBlock
     ? [
         { key: 'off', label: t('tableOff'), value: (flight.offBlockTime || flight.departureTime)?.slice(0, 5) || '—' },
@@ -70,8 +54,7 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
     ? [
         {
           key: 'ldg',
-          // Six columns leave ~55px each, so the day/night split drops its letters
-          // and moves them into the heading rather than truncating.
+          // At six columns the day/night split moves its letters into the heading.
           label: columns.landingsSplit ? t('tableLdgSplit') : t('tableLdg'),
           value: columns.landingsSplit
             ? `${flight.landingsDay}/${flight.landingsNight}`
@@ -97,9 +80,7 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
   return (
     <article
       className={cn(
-        // A row in a grouped list, not a card of its own: the surrounding list
-        // owns the border and the corners, so rows can sit flush together
-        // without doubling a border between every pair.
+        // A row in a grouped list; the surrounding list owns border and corners.
         'tap-none relative bg-white transition-colors dark:bg-slate-800',
         'hover:bg-slate-50 dark:hover:bg-slate-700/20',
         'active:bg-slate-100 dark:active:bg-slate-700/40',
@@ -120,19 +101,13 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
         duration: fmtDuration(flight.totalTime),
       })}
     >
-      {/* The rail runs the full height of the row, so where one entry ends and
-          the next begins stays obvious once the rows sit flush. Drawn as an
-          overlay rather than a left border, which would tint the hairline the
-          list draws between rows. */}
+      {/* Full-height rail, drawn as an overlay */}
       <span
         className="absolute inset-y-0 left-0 w-1 bg-blue-600 dark:bg-blue-500"
         aria-hidden="true"
       />
 
-      {/* Header — the entry's identity. The row only navigates: editing and
-          deleting a flight belong with the flight, where what is about to
-          change is on screen. That gives the route back the width two 44px
-          targets were taking. */}
+      {/* Header — the entry's identity. The row only navigates. */}
       <div className="bg-slate-50 pl-4 pr-3 py-2.5 dark:bg-slate-700/40">
         <div className="flex items-center gap-2">
           <FlightRouteHeading className="min-w-0 flex-1" departure={departure} arrival={arrival} />
@@ -145,13 +120,12 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
           />
         </div>
 
-        {/* Everything that qualifies the entry, on one line that gives up its
-            tail before it gives up a second line */}
+        {/* Qualifying details, one truncating line */}
         <p className="-mt-0.5 flex items-baseline gap-1.5 text-xs text-slate-500 dark:text-slate-400">
           {columns.function && (
             <span
               className={cn(
-                'shrink-0 rounded px-1 text-[10px] font-bold uppercase',
+                'shrink-0 rounded px-1 text-xs font-bold uppercase',
                 flight.isPic
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
                   : flight.isDual
@@ -171,8 +145,6 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
               <span className="sr-only">{t('signed')}</span>
             </>
           )}
-          {/* Remarks are deliberately not here: they are a sentence, and a
-              sentence clipped to a list row's leftover width says nothing. */}
           <span className="min-w-0 truncate">
             {weekday} <span className="font-mono tabular-nums">{fmtDate(flight.date)}</span>
             {' · '}
@@ -182,13 +154,12 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
         </p>
       </div>
 
-      {/* Readout — the table's columns, picked once for the page. Absent
-          entirely when the column setting leaves nothing to put in it. */}
+      {/* Readout — the table's columns, picked once for the page */}
       {cells.length > 0 && (
         <dl className="flex divide-x divide-slate-100 dark:divide-slate-700/60">
           {cells.map((cell) => (
             <div key={cell.key} className="min-w-0 flex-1 px-1 py-1.5 text-center">
-              <dt className="truncate text-[10px] font-medium uppercase leading-tight tracking-wider text-slate-400 dark:text-slate-500">
+              <dt className="truncate text-xs font-medium uppercase leading-tight tracking-wider text-slate-400 dark:text-slate-500">
                 {cell.label}
               </dt>
               <dd

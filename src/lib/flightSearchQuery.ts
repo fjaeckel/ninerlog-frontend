@@ -3,15 +3,7 @@
 // ./flightSearchTags.ts and parsed server-side in
 // ninerlog-api internal/flightsearch/parse.go.
 
-/**
- * How long to wait after the last keystroke before issuing a search.
- *
- * Search is the most expensive read in the app — a free-text query compiles to
- * leading-wildcard scans across every text field plus a crew subquery — and it
- * has its own server-side rate limit. 300ms was short enough that an ordinary
- * typing hesitation counted as a finished query, so refining one search cost
- * several requests.
- */
+/** How long to wait after the last keystroke before issuing a search. */
 export const SEARCH_DEBOUNCE_MS = 500;
 
 /** Trailing tokens that mean the user is still mid-expression. */
@@ -20,20 +12,11 @@ const DANGLING_KEYWORD = /(^|\s)(AND|OR|NOT)\s*$/i;
 
 /**
  * Whether a search box's contents are worth spending a request on.
- *
- * The flights search is a structured language, not a substring match, so a
- * half-typed query is not a coarser search — it is a guaranteed-useless one.
- * `from:` cannot match anything, and `f` matches everything. Sending those
- * burns rate-limit budget that the user's *finished* query then gets refused
- * for.
- *
- * An empty query always passes: clearing the box has to reach the URL so the
- * unfiltered list comes back.
+ * An empty query always passes.
  */
 export function isSearchWorthSending(query: string): boolean {
   const trimmed = query.trim();
 
-  // Clearing the search must always propagate.
   if (trimmed === '') return true;
 
   // A single character constrains nothing.

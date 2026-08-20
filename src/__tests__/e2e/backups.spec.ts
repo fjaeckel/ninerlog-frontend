@@ -27,7 +27,7 @@ test.describe('Cloud Backups', () => {
       throw new Error(`Backups endpoint not reachable: ${probe.status()} ${await probe.text()}`);
     }
 
-    // Cloud backups now live under Profile Settings → Cloud Backups tab.
+    // Cloud backups live under Profile Settings → Cloud Backups tab.
     await page.goto('/profile');
     await page.getByRole('button', { name: /cloud backups/i }).click();
     await expect(page.getByText(/no backup destinations/i)).toBeVisible();

@@ -1,7 +1,7 @@
 import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Pencil, Trash2, ShieldCheck } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUp, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { useFlights, useInfiniteFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
@@ -9,6 +9,11 @@ import FlightForm from '../../components/flights/FlightForm';
 import FlightCard from '../../components/flights/FlightCard';
 import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { FormModal } from '../../components/ui/FormModal';
+import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
+import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -26,17 +31,15 @@ const SORT_FIELDS: SortField[] = ['date', 'totalTime', 'createdAt'];
 /** A run of consecutive cards sharing a heading in the mobile list. */
 interface FlightGroup {
   key: string;
-  /** Null when the list is not in date order and a month heading would lie. */
+  /** Null when the list is not in date order. */
   label: string | null;
   flights: Flight[];
   totalMinutes: number;
 }
 
 /**
- * Splits the page's flights into the months they were flown in.
- *
- * Only meaningful while the list is sorted by date — under any other sort the
- * months interleave, so the whole page becomes one unlabelled group instead.
+ * Splits the page's flights into the months they were flown in. Under any
+ * sort other than date, the whole page becomes one unlabelled group.
  */
 function groupFlightsByMonth(flights: Flight[], locale: string, byMonth: boolean): FlightGroup[] {
   const groups: FlightGroup[] = [];
@@ -53,10 +56,7 @@ function groupFlightsByMonth(flights: Flight[], locale: string, byMonth: boolean
   return groups;
 }
 
-/**
- * Whether neither end of a route resolved to a code — two free-text sites have
- * to share the column, so each is abbreviated harder.
- */
+/** Whether neither end of a route resolved to a code. */
 function routeIsFreeText(flight: Flight): boolean {
   return (
     !splitAirportLabel(flight.departureIcao, flight.departureAirportName).code &&
@@ -65,11 +65,7 @@ function routeIsFreeText(flight: Flight): boolean {
 }
 
 /**
- * One end of a route in the table.
- *
- * The table has one column for the whole route, and an off-airport site written
- * out in full ("North field, Bad Hersfeld-Johannesberg") stretches it until the
- * time columns fall off the right-hand edge. A code is shown as it is; a name is
+ * One end of a route in the table. A code is shown as-is; a name is
  * abbreviated, with the full value in a title.
  */
 function RouteEnd({ part, both }: { part: AirportParts; both: boolean }) {
@@ -82,12 +78,7 @@ function RouteEnd({ part, both }: { part: AirportParts; both: boolean }) {
   );
 }
 
-/**
- * The list params without the page.
- *
- * The scrolling query owns its own pages; passing one in would cache the same
- * list once per page the reader happens to have arrived on.
- */
+/** The list params without the page; the scrolling query owns its own pages. */
 function infiniteParamsOf(params: ListFlightsParams): Omit<ListFlightsParams, 'page'> {
   const rest = { ...params };
   delete rest.page;
@@ -105,9 +96,7 @@ function monthLabel(month: string, locale: string): string {
 
 export default function FlightsPage() {
   const { t, i18n } = useTranslation(['flights', 'common']);
-  // `lg` is where the table takes over from the card list. Deciding it here
-  // rather than in CSS means only one of the two queries runs: rendering both
-  // views and hiding one would fetch the same flights twice.
+  // At `lg` the table takes over from the card list; only one query runs.
   const isWide = useMediaQuery('(min-width: 1024px)');
   const { fmtDate, fmtDuration } = useFormatPrefs();
   const columnPrefs = useFlightColumnPrefs();
@@ -115,8 +104,7 @@ export default function FlightsPage() {
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
 
-  // Search, filters, sort and page live in the URL query string so they
-  // survive a trip to a flight's detail page and back (and stay shareable).
+  // Search, filters, sort and page live in the URL query string.
   const [searchParams, setSearchParams] = useSearchParams();
   const param = useCallback((key: string) => searchParams.get(key) ?? '', [searchParams]);
 
@@ -135,9 +123,7 @@ export default function FlightsPage() {
   const functionFilter: '' | 'pic' | 'dual' = functionParam === 'pic' || functionParam === 'dual' ? functionParam : '';
   const logbookLicenseId = param('logbook');
 
-  // Replace rather than push: filtering is not a navigation step the user
-  // wants to walk back through, but the current filters must be part of the
-  // history entry so the browser (and the detail page's back link) restore them.
+  // Replace rather than push, keeping the filters in the history entry.
   const updateParams = useCallback(
     (updates: Record<string, string>, { keepPage = false }: { keepPage?: boolean } = {}) => {
       setSearchParams(
@@ -161,21 +147,20 @@ export default function FlightsPage() {
     return !!state?.openForm;
   });
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
-  // Filters restored from the URL start expanded, so they are not applied invisibly.
+  // Filters restored from the URL start expanded.
   const [showFilters, setShowFilters] = useState(
     () => !!(startDate || endDate || aircraftReg || departureIcao || arrivalIcao || functionFilter)
   );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  // The search input keeps its own state so typing stays responsive; the URL
-  // is only written after the debounce.
+  // The search input keeps its own state; the URL is written after the debounce.
   const [search, setSearch] = useState(searchQuery);
   const syncedQuery = useRef(searchQuery);
 
   const { data: licenses } = useLicenses();
   const separateLogbookLicenses = licenses?.filter((l) => l.requiresSeparateLogbook) || [];
 
-  // Query changed outside the input (back/forward, clear all) — adopt it.
+  // Adopt a query changed outside the input (back/forward, clear all).
   useEffect(() => {
     if (searchQuery !== syncedQuery.current) {
       syncedQuery.current = searchQuery;
@@ -183,10 +168,8 @@ export default function FlightsPage() {
     }
   }, [searchQuery]);
 
-  // Debounce search input into the URL. Half-finished queries never leave the
-  // browser: the search language is structured, so "from:" or a trailing "AND"
-  // cannot match anything, and spending a request (and rate-limit budget) on
-  // one only makes the finished query more likely to be refused.
+  // Debounce search input into the URL; half-finished queries never leave
+  // the browser.
   useEffect(() => {
     if (search === syncedQuery.current) return;
     if (!isSearchWorthSending(search)) return;
@@ -197,7 +180,7 @@ export default function FlightsPage() {
     return () => clearTimeout(timer);
   }, [search, updateParams]);
 
-  // Open form modal when navigated with state.openForm (e.g. from bottom nav + button)
+  // Open the form modal when navigated with state.openForm.
   const locationState = location.state as Record<string, unknown> | null;
   const shouldOpenForm = !!locationState?.openForm;
   const [prevShouldOpen, setPrevShouldOpen] = useState(shouldOpenForm);
@@ -209,7 +192,7 @@ export default function FlightsPage() {
   }
   useEffect(() => {
     if (shouldOpenForm) {
-      // Clear the state so refreshing doesn't re-open (keeping the active filters)
+      // Clear the state, keeping the active filters.
       navigate(`${location.pathname}${location.search}`, { replace: true, state: {} });
     }
   }, [shouldOpenForm, location.pathname, location.search, navigate]);
@@ -246,15 +229,13 @@ export default function FlightsPage() {
     });
   }, [updateParams, setSearch]);
 
-  // The table reads a page at a time; the card list scrolls and never goes
-  // back to page one. Exactly one of these is enabled.
+  // Exactly one of these is enabled: paged table or scrolling card list.
   const paged = useFlights(params, { enabled: isWide });
   const infinite = useInfiniteFlights(infiniteParamsOf(params), { enabled: !isWide });
 
   const isLoading = isWide ? paged.isLoading : infinite.isLoading;
-  // A page that fails halfway down the list must not throw away the flights
-  // already read — only a first load with nothing to show is a page error.
-  // A later failure is reported at the foot, where it happened.
+  // Only a first load with nothing to show is a page error; a later failure
+  // is reported at the foot.
   const error = isWide ? paged.error : infinite.data ? null : infinite.error;
   const data = paged.data;
 
@@ -262,27 +243,21 @@ export default function FlightsPage() {
     () => (isWide ? data?.data || [] : infinite.data?.pages.flatMap((p) => p.data) || []),
     [isWide, data, infinite.data]
   );
-  // Optional table columns — which ones the user wants (or, in automatic mode,
-  // which ones the flights on this page justify), and how many of them the
-  // table's own width can take.
+  // Optional table columns for this page.
   const columns = useMemo(() => selectFlightColumns(flights, columnPrefs), [flights, columnPrefs]);
-  // One set of time columns for every card on the page — see
-  // `selectFlightCardColumns`.
+  // One set of time columns for every card on the page.
   const cardColumns = useMemo(
     () => selectFlightCardColumns(flights, columnPrefs),
     [flights, columnPrefs]
   );
-  // Month headings for the mobile card list — a logbook reads by month, and the
-  // running total per month is the number pilots actually look for.
+  // Month headings with running totals for the mobile card list.
   const monthGroups = useMemo(
     () => groupFlightsByMonth(flights, i18n.language, sortBy === 'date'),
     [flights, i18n.language, sortBy]
   );
 
-  // Endless scroll: the next page is pulled when the foot of the list comes
-  // into view, a screen early so the seam is rarely visible. The button under
-  // it is not a fallback for show — it is how this works without a pointer
-  // that scrolls, and how it works when the observer never fires.
+  // Endless scroll: the next page is pulled a screen before the foot of the
+  // list; the button covers pointerless input and a never-firing observer.
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = infinite;
   useEffect(() => {
@@ -331,19 +306,9 @@ export default function FlightsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[960px] xl:max-w-[1600px] py-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-48"></div>
-          <div className="card p-0">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="px-4 py-4 border-b border-slate-100 dark:border-slate-700 last:border-0">
-                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <PageWrapper maxWidth="list">
+        <SkeletonList rows={5} />
+      </PageWrapper>
     );
   }
 
@@ -356,13 +321,9 @@ export default function FlightsPage() {
 
   if (error && !searchError) {
     return (
-      <div className="mx-auto max-w-[960px] py-6">
-        <div className="card text-center py-12">
-          <div className="text-4xl mb-3">⚠</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('flights:errorTitle')}</h2>
-          <p className="text-slate-500 dark:text-slate-400">{t('flights:errorDescription')}</p>
-        </div>
-      </div>
+      <PageWrapper maxWidth="list">
+        <ErrorState title={t('flights:errorTitle')} message={t('flights:errorDescription')} />
+      </PageWrapper>
     );
   }
 
@@ -382,21 +343,19 @@ export default function FlightsPage() {
     (columns.remarksRevealClass ? 1 : 0);
 
   return (
-    <div className="mx-auto max-w-[960px] xl:max-w-[1600px] py-6">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h1 className="page-title">{t('flights:pageTitle')}</h1>
-          {pagination && (
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-              {t('flights:flightsTotal', { count: pagination.total })}
-              <HelpLink topic="flights" />
-            </p>
-          )}
-        </div>
-        <button onClick={() => setShowForm(true)} className="btn-primary">
-          + {t('flights:logFlight')}
-        </button>
-      </div>
+    <PageWrapper maxWidth="list">
+      <PageHeader
+        title={t('flights:pageTitle')}
+        subtitle={pagination ? t('flights:flightsTotal', { count: pagination.total }) : undefined}
+        titleAdornment={<HelpLink topic="flights" />}
+        className="mb-4"
+        action={
+          <button onClick={() => setShowForm(true)} className="btn-primary whitespace-nowrap">
+            <Plus className="w-4 h-4" aria-hidden="true" />
+            {t('flights:logFlight')}
+          </button>
+        }
+      />
 
       {/* Logbook Selector — only shown if separate-logbook licenses exist */}
       {separateLogbookLicenses.length > 0 && (
@@ -443,14 +402,19 @@ export default function FlightsPage() {
           <button
             key={field}
             onClick={() => toggleSort(field)}
-            className={`px-3 py-2 min-h-[44px] rounded-full text-xs transition-colors ${
+            className={`inline-flex items-center gap-1 px-3 py-2 min-h-[44px] rounded-full text-xs transition-colors ${
               sortBy === field
                 ? 'bg-blue-100 text-blue-700 font-medium dark:bg-blue-900/30 dark:text-blue-400'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
             }`}
           >
             {field === 'date' ? t('flights:sortDate') : field === 'totalTime' ? t('flights:sortHours') : t('flights:sortAdded')}
-            {sortBy === field && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+            {sortBy === field &&
+              (sortOrder === 'asc' ? (
+                <ArrowUp className="w-3 h-3" aria-hidden="true" />
+              ) : (
+                <ArrowDown className="w-3 h-3" aria-hidden="true" />
+              ))}
           </button>
         ))}
       </div>
@@ -526,40 +490,23 @@ export default function FlightsPage() {
       )}
 
       {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center sm:p-4 z-[1020]" role="dialog" aria-modal="true" aria-labelledby="flight-form-title">
-          <div className="bg-white dark:bg-slate-800 w-full sm:rounded-xl sm:max-w-2xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto shadow-2xl pt-safe-top">
-            <div className="p-4 sm:p-6">
-              <div className="flex justify-between items-center mb-4 sm:mb-6 sticky top-0 bg-white dark:bg-slate-800 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 -mt-4 sm:-mt-6 pt-4 sm:pt-6 border-b border-slate-100 dark:border-slate-700 sm:border-0">
-                <h2 id="flight-form-title" className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-100">
-                  {editingFlight ? t('flights:editFlight') : t('flights:logNewFlight')}
-                </h2>
-                <button
-                  onClick={handleCloseForm}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                  aria-label={t('common:close')}
-                >
-                  ✕
-                </button>
-              </div>
-              <FlightForm flightId={editingFlight} onClose={handleCloseForm} />
-            </div>
-          </div>
-        </div>
-      )}
+      <FormModal
+        open={showForm}
+        onClose={handleCloseForm}
+        title={editingFlight ? t('flights:editFlight') : t('flights:logNewFlight')}
+        size="xl"
+      >
+        <FlightForm flightId={editingFlight} onClose={handleCloseForm} />
+      </FormModal>
 
       {/* Flight List */}
       {flights.length === 0 ? (
-        <div className="card text-center py-12">
-          <div className="text-5xl mb-4">✈</div>
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('flights:noFlights')}</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-6">
-            {t('flights:startBuildingLogbook')}
-          </p>
-          <button onClick={() => setShowForm(true)} className="btn-primary">
-            + {t('flights:logFirstFlight')}
-          </button>
-        </div>
+        <EmptyState
+          icon={Plane}
+          title={t('flights:noFlights')}
+          description={t('flights:startBuildingLogbook')}
+          action={{ label: t('flights:logFirstFlight'), onClick: () => setShowForm(true) }}
+        />
       ) : (
         <>
           {/* Phones and tablets get a card per flight: the table below needs a
@@ -703,7 +650,7 @@ export default function FlightsPage() {
                           part={splitAirportLabel(flight.departureIcao, flight.departureAirportName)}
                           both={routeIsFreeText(flight)}
                         />
-                        <span className="text-blue-500 dark:text-blue-400" aria-hidden="true">→</span>
+                        <ArrowRight className="w-3.5 h-3.5 shrink-0 text-blue-500 dark:text-blue-400" aria-hidden="true" />
                         <RouteEnd
                           part={splitAirportLabel(flight.arrivalIcao, flight.arrivalAirportName)}
                           both={routeIsFreeText(flight)}
@@ -829,6 +776,6 @@ export default function FlightsPage() {
         variant="danger"
         isLoading={deleteFlight.isPending}
       />
-    </div>
+    </PageWrapper>
   );
 }

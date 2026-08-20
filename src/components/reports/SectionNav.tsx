@@ -7,11 +7,8 @@ export interface ReportSection {
 }
 
 /**
- * Sticky jump-nav for the Reports page.
- *
- * Scroll-spy uses IntersectionObserver against a band just under the sticky
- * header, so the highlighted tab is the section actually under the reader
- * rather than whichever one happens to touch the viewport edge.
+ * Sticky jump-nav for the Reports page. Scroll-spy uses IntersectionObserver
+ * against a band just under the sticky header.
  */
 export function SectionNav({ sections }: { sections: ReportSection[] }) {
   const [active, setActive] = useState(sections[0]?.id ?? '');
@@ -30,18 +27,15 @@ export function SectionNav({ sections }: { sections: ReportSection[] }) {
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         if (visible[0]) setActive(visible[0].target.id);
       },
-      // Bottom-heavy margin: a section counts as "current" once its heading
-      // clears the sticky chrome, and stops counting well before it leaves.
+      // Bottom-heavy margin.
       { rootMargin: '-96px 0px -65% 0px', threshold: 0 }
     );
     targets.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, [sections]);
 
-  // Keep the active tab in view on narrow screens, where the strip scrolls.
-  // The strip's own scrollLeft is set directly rather than using
-  // scrollIntoView, which also scrolls ancestors and would fight the reader's
-  // position on the page every time scroll-spy changes the active section.
+  // Keep the active tab in view on narrow screens; sets the strip's own
+  // scrollLeft directly.
   useEffect(() => {
     const strip = listRef.current;
     const el = strip?.querySelector<HTMLElement>(`[data-section="${active}"]`);
@@ -70,10 +64,8 @@ export function SectionNav({ sections }: { sections: ReportSection[] }) {
               aria-selected={active === s.id}
               onClick={() => jump(s.id)}
               className={cn(
-                'px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors tap-none',
-                active === s.id
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-700/60'
+                'segment rounded-md whitespace-nowrap tap-none',
+                active !== s.id && 'bg-transparent dark:bg-transparent'
               )}
             >
               {s.label}

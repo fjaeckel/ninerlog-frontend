@@ -5,10 +5,7 @@ import { DEFAULT_FLIGHT_COLUMN_PREFS } from '../components/flights/flightTableCo
 
 /**
  * The user's choice of optional flights-list columns.
- *
- * Accounts that never opened the setting — and any older client state that
- * predates it — fall back to automatic mode, where the list picks its columns
- * from the flights on the page.
+ * Unset state falls back to automatic mode.
  */
 export function useFlightColumnPrefs(): FlightColumnPrefs {
   const mode = useAuthStore((s) => s.user?.flightListColumnMode);

@@ -16,9 +16,12 @@ npm run generate:api        # regenerate src/api/schema.ts from the OpenAPI spec
 npx vitest run              # unit tests, single run (what CI runs); npm test = watch
 npx vitest run LoginPage    # single file / name filter
 npm run test:e2e            # Playwright — needs a live API + MailPit, see the testing skill
+npm run shots -- <label>    # screenshot every screen against fixtures (no API needed)
 ```
 
 Push gate: `npx vitest run && npm run type-check && npm run lint`, plus e2e when behavior changed.
+
+**Any change that alters rendered UI also requires before/after screenshots** — capture `before`, make the change, capture `after`, and look at both. Load skill `screenshots`; it is not optional.
 
 ## Invariants
 
@@ -35,12 +38,14 @@ Push gate: `npx vitest run && npm run type-check && npm run lint`, plus e2e when
 
 | Task | Load |
 |---|---|
+| **Anything that renders — always** | skill `screenshots` |
 | API client, hooks, caching, auth/token flow | skill `api-layer` |
 | Styling, components, tokens, dark mode | skill `design-system` |
 | Translatable strings, namespaces | skill `i18n` |
 | New route/page | skill `add-page` |
 | Admin console — stat tiles, config rows, maintenance actions, tabs | skill `admin-surface` |
 | Writing or running tests | skill `testing` |
+| Writing or editing any code comment | skill `terse-comments` |
 | Deep architecture reference | `docs/DEVELOPER_GUIDE.md` |
 
 Root `IMPLEMENTATION.md` and root `TESTING.md` are stale (React 18, axios, Tailwind 3) — ignore them; `docs/TESTING.md` is current except that it wrongly describes E2E as MSW-mocked.

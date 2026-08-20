@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
-import { ShieldCheck, Search, Ban, CheckCircle, Unlock, KeyRound, Users, BarChart3, Wrench, ScrollText, Settings2, Megaphone, Trash2, Mail, MailX } from 'lucide-react';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
+import { SkeletonGrid } from '../../components/ui/Skeleton';
+import { ShieldCheck, Search, Ban, CheckCircle, Lock, Unlock, KeyRound, Users, BarChart3, Wrench, ScrollText, Settings2, Megaphone, Trash2, Mail, MailX } from 'lucide-react';
 import {
   useAdminUsers, useDisableUser, useEnableUser, useUnlockUser, useResetUser2fa, useDeleteUser,
   useAdminStats, useAdminAuditLog, useCleanupTokens, useSmtpTest, useAdminConfig,
@@ -21,25 +24,20 @@ export default function AdminPage() {
 
   if (!user?.isAdmin) {
     return (
-      <div className="mx-auto max-w-[960px] py-6">
-        <div className="card text-center py-12">
-          <div className="text-5xl mb-4">{'\uD83D\uDD12'}</div>
-          <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('admin.accessDenied')}</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{t('admin.noPrivileges')}</p>
-        </div>
-      </div>
+      <PageWrapper maxWidth="list">
+        <EmptyState icon={Lock} title={t('admin.accessDenied')} description={t('admin.noPrivileges')} />
+      </PageWrapper>
     );
   }
 
   return (
-    <div className="mx-auto max-w-[1100px] py-6">
-      <div className="mb-6">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-6 h-6 text-blue-600" />
-          <h1 className="page-title">{t('admin.title')}</h1>
-        </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('admin.subtitle')}</p>
-      </div>
+    <PageWrapper maxWidth="list">
+      <PageHeader
+        title={t('admin.title')}
+        subtitle={t('admin.subtitle')}
+        icon={ShieldCheck}
+        iconClassName="text-blue-600 dark:text-blue-400"
+      />
 
       {/* Tabs — select on mobile, tabs on sm+ */}
       {(() => {
@@ -84,7 +82,7 @@ export default function AdminPage() {
       {tab === 'maintenance' && <MaintenanceTab />}
       {tab === 'announcements' && <AnnouncementsTab />}
       {tab === 'config' && <ConfigTab />}
-    </div>
+    </PageWrapper>
   );
 }
 
@@ -92,7 +90,7 @@ function DashboardTab() {
   const { t } = useTranslation('common');
   const { data, isLoading } = useAdminStats();
 
-  if (isLoading) return <div className="text-slate-400 text-sm">{t('admin.dashboard.loadingStats')}</div>;
+  if (isLoading) return <SkeletonGrid count={6} />;
   if (!data) return null;
 
   const stats = [
@@ -124,8 +122,8 @@ function DashboardTab() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
           <div key={s.label} className="card text-center py-4">
-            <div className={`text-2xl font-bold ${s.warn ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-100'}`}>{s.value}</div>
-            <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+            <div className={`data-lg ${s.warn ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-100'}`}>{s.value}</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{s.label}</div>
           </div>
         ))}
       </div>
@@ -157,16 +155,16 @@ function DashboardTab() {
             <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
               {t('admin.dashboard.cloudBackupDestinations')}
             </h3>
-            <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">{backups.total}</div>
+            <div className="data-lg text-slate-800 dark:text-slate-100">{backups.total}</div>
           </div>
           {backupProviders.length === 0 ? (
-            <div className="text-xs text-slate-500">{t('admin.dashboard.cloudBackupDestinationsNone')}</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">{t('admin.dashboard.cloudBackupDestinationsNone')}</div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {backupProviders.map(([provider, count]) => (
                 <div key={provider} className="rounded border border-slate-200 dark:border-slate-700 px-3 py-2 text-center">
-                  <div className="text-lg font-semibold text-slate-800 dark:text-slate-100">{count}</div>
-                  <div className="text-xs text-slate-500 mt-0.5 uppercase tracking-wide">{provider}</div>
+                  <div className="text-lg font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">{count}</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 uppercase tracking-wide">{provider}</div>
                 </div>
               ))}
             </div>
@@ -225,7 +223,7 @@ function UsersTab() {
       )}
       <form onSubmit={handleSearch} className="mb-4 flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
           <input type="text" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder={t('admin.users.searchPlaceholder')} className="input pl-10" aria-label={t('admin.users.searchAriaLabel')} />
         </div>
         <button type="submit" className="btn-primary">{t('admin.users.search')}</button>
@@ -236,19 +234,19 @@ function UsersTab() {
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-slate-200 dark:border-slate-700 text-left">
-              <th className="px-4 py-3 font-medium text-slate-500">{t('admin.users.user')}</th>
-              <th className="px-4 py-3 font-medium text-slate-500">{t('admin.users.status')}</th>
-              <th className="px-4 py-3 font-medium text-slate-500">{t('admin.users.twoFA')}</th>
-              <th className="px-4 py-3 font-medium text-slate-500">{t('admin.users.flights')}</th>
-              <th className="px-4 py-3 font-medium text-slate-500">{t('admin.users.aircraft')}</th>
-              <th className="px-4 py-3 font-medium text-slate-500">{t('admin.users.lastLogin')}</th>
-              <th className="px-4 py-3 font-medium text-slate-500">{t('admin.users.actions')}</th>
+              <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.user')}</th>
+              <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.status')}</th>
+              <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.twoFA')}</th>
+              <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.flights')}</th>
+              <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.aircraft')}</th>
+              <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.lastLogin')}</th>
+              <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.actions')}</th>
             </tr></thead>
             <tbody>
-              {isLoading && <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-400">{t('common:loading')}</td></tr>}
+              {isLoading && <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('common:loading')}</td></tr>}
               {data?.data?.map((u) => (
                 <tr key={u.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <td className="px-4 py-3"><div className="font-medium text-slate-700 dark:text-slate-200">{u.name}</div><div className="text-xs text-slate-400">{u.email}</div></td>
+                  <td className="px-4 py-3"><div className="font-medium text-slate-700 dark:text-slate-200">{u.name}</div><div className="text-xs text-slate-500 dark:text-slate-400">{u.email}</div></td>
                   <td className="px-4 py-3"><div className="flex flex-col items-start gap-1">
                     {u.disabled ? <span className="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs">{t('admin.users.disabled')}</span> : u.locked ? <span className="badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs">{t('admin.users.locked')}</span> : <span className="badge badge-current text-xs">{t('admin.users.active')}</span>}
                     {u.emailVerified
@@ -265,33 +263,33 @@ function UsersTab() {
                       </span>
                     )}
                   </div></td>
-                  <td className="px-4 py-3">{u.twoFactorEnabled ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.enabled')}</span> : <span className="text-slate-400 text-xs">{t('admin.users.off')}</span>}</td>
+                  <td className="px-4 py-3">{u.twoFactorEnabled ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.enabled')}</span> : <span className="text-slate-500 dark:text-slate-400 text-xs">{t('admin.users.off')}</span>}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{u.flightCount}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{u.aircraftCount}</td>
-                  <td className="px-4 py-3 text-xs text-slate-400">{u.lastLoginAt ? fmtDate(u.lastLoginAt) : '—'}</td>
+                  <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">{u.lastLoginAt ? fmtDate(u.lastLoginAt) : '—'}</td>
                   <td className="px-4 py-3"><div className="flex gap-1 flex-wrap">
                     {u.disabled
                       ? <button onClick={() => setConfirmAction({ type: 'enable', user: u })} className="btn-ghost btn-sm text-xs text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" title="Enable account"><CheckCircle className="w-3.5 h-3.5" /></button>
                       : <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title="Disable account"><Ban className="w-3.5 h-3.5" /></button>}
                     {u.locked && <button onClick={() => setConfirmAction({ type: 'unlock', user: u })} className="btn-ghost btn-sm text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="Unlock account"><Unlock className="w-3.5 h-3.5" /></button>}
-                    {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Reset 2FA"><KeyRound className="w-3.5 h-3.5" /></button>}
+                    {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Reset 2FA"><KeyRound className="w-3.5 h-3.5" /></button>}
                     <button onClick={() => setConfirmAction({ type: 'delete', user: u })} className="btn-ghost btn-sm text-xs text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.deleteTitle')}><Trash2 className="w-3.5 h-3.5" /></button>
                   </div></td>
                 </tr>
               ))}
-              {!isLoading && data?.data?.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-400">{t('admin.users.noUsers')}</td></tr>}
+              {!isLoading && data?.data?.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('admin.users.noUsers')}</td></tr>}
             </tbody>
           </table>
         </div>
         {/* Mobile card layout */}
         <div className="sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
-          {isLoading && <div className="px-4 py-8 text-center text-slate-400">{t('common:loading')}</div>}
+          {isLoading && <div className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('common:loading')}</div>}
           {data?.data?.map((u) => (
             <div key={u.id} className="px-4 py-3 space-y-2">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="font-medium text-slate-700 dark:text-slate-200">{u.name}</div>
-                  <div className="text-xs text-slate-400">{u.email}</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">{u.email}</div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   {u.disabled ? <span className="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs">{t('admin.users.disabled')}</span> : u.locked ? <span className="badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs">{t('admin.users.locked')}</span> : <span className="badge badge-current text-xs">{t('admin.users.active')}</span>}
@@ -311,7 +309,12 @@ function UsersTab() {
               <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                 <span>{u.flightCount} {t('admin.users.flights')}</span>
                 <span>{u.aircraftCount} {t('admin.users.aircraft')}</span>
-                <span>{u.twoFactorEnabled ? '2FA ✓' : ''}</span>
+                {u.twoFactorEnabled && (
+                  <span className="inline-flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3" aria-hidden="true" />
+                    {t('admin.users.twoFactorShort')}
+                  </span>
+                )}
                 {u.lastLoginAt && <span>{fmtDate(u.lastLoginAt)}</span>}
               </div>
               <div className="flex gap-1">
@@ -319,16 +322,16 @@ function UsersTab() {
                   ? <button onClick={() => setConfirmAction({ type: 'enable', user: u })} className="btn-ghost btn-sm text-xs text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" title="Enable account"><CheckCircle className="w-3.5 h-3.5" /></button>
                   : <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title="Disable account"><Ban className="w-3.5 h-3.5" /></button>}
                 {u.locked && <button onClick={() => setConfirmAction({ type: 'unlock', user: u })} className="btn-ghost btn-sm text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="Unlock account"><Unlock className="w-3.5 h-3.5" /></button>}
-                {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Reset 2FA"><KeyRound className="w-3.5 h-3.5" /></button>}
+                {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Reset 2FA"><KeyRound className="w-3.5 h-3.5" /></button>}
                 <button onClick={() => setConfirmAction({ type: 'delete', user: u })} className="btn-ghost btn-sm text-xs text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.deleteTitle')}><Trash2 className="w-3.5 h-3.5" /></button>
               </div>
             </div>
           ))}
-          {!isLoading && data?.data?.length === 0 && <div className="px-4 py-8 text-center text-slate-400">{t('admin.users.noUsers')}</div>}
+          {!isLoading && data?.data?.length === 0 && <div className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('admin.users.noUsers')}</div>}
         </div>
         {data && data.pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
-            <span className="text-xs text-slate-400">Page {data.pagination.page} of {data.pagination.totalPages} ({data.pagination.total} users)</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">Page {data.pagination.page} of {data.pagination.totalPages} ({data.pagination.total} users)</span>
             <div className="flex gap-2">
               <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="btn-secondary btn-sm text-xs">{t('admin.users.previous')}</button>
               <button disabled={page >= data.pagination.totalPages} onClick={() => setPage(p => p + 1)} className="btn-secondary btn-sm text-xs">{t('admin.users.next')}</button>
@@ -367,7 +370,7 @@ function UsersTab() {
               />
             </>
           )}
-          <p className="text-xs text-slate-400 mb-4">{t('admin.users.auditTrailNote')}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{t('admin.users.auditTrailNote')}</p>
           <div className="flex gap-3 justify-end">
             <button onClick={() => { setConfirmAction(null); setDeleteEmailInput(''); }} className="btn-secondary text-sm">{t('common:cancel')}</button>
             <button
@@ -398,13 +401,13 @@ function AuditLogTab() {
       return (
         <span>
           <span className="text-slate-700 dark:text-slate-200">{name}</span>
-          <span className="text-slate-400"> &lt;{email}&gt;</span>
+          <span className="text-slate-500 dark:text-slate-400"> &lt;{email}&gt;</span>
         </span>
       );
     }
     if (name) return <span className="text-slate-700 dark:text-slate-200">{name}</span>;
     if (email) return <span className="text-slate-700 dark:text-slate-200">{email}</span>;
-    return <span className="font-mono text-slate-400">{id.slice(0, 8)}…</span>;
+    return <span className="font-mono text-slate-500 dark:text-slate-400">{id.slice(0, 8)}…</span>;
   };
 
   return (
@@ -413,35 +416,35 @@ function AuditLogTab() {
       <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-slate-200 dark:border-slate-700 text-left">
-            <th className="px-4 py-3 font-medium text-slate-500">{t('admin.audit.timestamp')}</th>
-            <th className="px-4 py-3 font-medium text-slate-500">{t('admin.audit.action')}</th>
-            <th className="px-4 py-3 font-medium text-slate-500">{t('admin.audit.admin')}</th>
-            <th className="px-4 py-3 font-medium text-slate-500">{t('admin.audit.targetUser')}</th>
+            <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.audit.timestamp')}</th>
+            <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.audit.action')}</th>
+            <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.audit.admin')}</th>
+            <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.audit.targetUser')}</th>
           </tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">{t('common:loading')}</td></tr>}
+            {isLoading && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('common:loading')}</td></tr>}
             {data?.data?.map((entry) => (
               <tr key={entry.id} className="border-b border-slate-100 dark:border-slate-800">
-                <td className="px-4 py-3 text-xs text-slate-500">{fmtDateTime(entry.createdAt)}</td>
+                <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">{fmtDateTime(entry.createdAt)}</td>
                 <td className="px-4 py-3"><span className="badge badge-current text-xs">{entry.action}</span></td>
                 <td className="px-4 py-3 text-xs">{renderUser(entry.adminUserId, entry.adminName, entry.adminEmail)}</td>
                 <td className="px-4 py-3 text-xs">{renderUser(entry.targetUserId, entry.targetUserName, entry.targetUserEmail)}</td>
               </tr>
             ))}
-            {!isLoading && data?.data?.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">{t('admin.audit.noEntries')}</td></tr>}
+            {!isLoading && data?.data?.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('admin.audit.noEntries')}</td></tr>}
           </tbody>
         </table>
       </div>
       {/* Mobile card layout */}
       <div className="sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
-        {isLoading && <div className="px-4 py-8 text-center text-slate-400">{t('common:loading')}</div>}
+        {isLoading && <div className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('common:loading')}</div>}
         {data?.data?.map((entry) => (
           <div key={entry.id} className="px-4 py-3 space-y-1">
             <div className="flex items-center justify-between">
               <span className="badge badge-current text-xs">{entry.action}</span>
-              <span className="text-xs text-slate-400">{fmtDateTime(entry.createdAt)}</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">{fmtDateTime(entry.createdAt)}</span>
             </div>
-            <div className="flex flex-col gap-1 text-xs text-slate-400">
+            <div className="flex flex-col gap-1 text-xs text-slate-500 dark:text-slate-400">
               <span>{t('admin.audit.admin')}: {renderUser(entry.adminUserId, entry.adminName, entry.adminEmail)}</span>
               {entry.targetUserId && (
                 <span>{t('admin.audit.targetUser')}: {renderUser(entry.targetUserId, entry.targetUserName, entry.targetUserEmail)}</span>
@@ -449,11 +452,11 @@ function AuditLogTab() {
             </div>
           </div>
         ))}
-        {!isLoading && data?.data?.length === 0 && <div className="px-4 py-8 text-center text-slate-400">{t('admin.audit.noEntries')}</div>}
+        {!isLoading && data?.data?.length === 0 && <div className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('admin.audit.noEntries')}</div>}
       </div>
       {data && data.pagination.totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
-          <span className="text-xs text-slate-400">Page {data.pagination.page} of {data.pagination.totalPages}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">Page {data.pagination.page} of {data.pagination.totalPages}</span>
           <div className="flex gap-2">
             <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="btn-secondary btn-sm text-xs">{t('admin.users.previous')}</button>
             <button disabled={page >= data.pagination.totalPages} onClick={() => setPage(p => p + 1)} className="btn-secondary btn-sm text-xs">{t('admin.users.next')}</button>
@@ -463,9 +466,8 @@ function AuditLogTab() {
   );
 }
 
-// Delivery statuses, ordered so the ones an operator must act on read first.
-// Only `hard_bounce` and `invalid_address` stop mail to an address; the rest
-// are informational, and colouring them alike would hide that difference.
+// Delivery statuses, actionable ones first. Only `hard_bounce` and
+// `invalid_address` stop mail to an address.
 const DELIVERY_STATUS_TONE: Record<string, string> = {
   delivered: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   hard_bounce: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
@@ -513,7 +515,7 @@ function EmailTab() {
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
           {t('admin.email.suppressionsDesc')}
         </p>
-        {suppressions.isLoading && <div className="text-slate-400 text-sm">{t('common:loading')}</div>}
+        {suppressions.isLoading && <div className="text-slate-500 dark:text-slate-400 text-sm">{t('common:loading')}</div>}
         {!suppressions.isLoading && suppressions.data?.length === 0 && (
           <div className="text-sm text-slate-500 dark:text-slate-400">{t('admin.email.noSuppressions')}</div>
         )}
@@ -523,10 +525,10 @@ function EmailTab() {
               <div key={s.email} className="flex flex-wrap items-center justify-between gap-2 py-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-200 break-all">
-                    <MailX className="w-4 h-4 shrink-0 text-red-500" />
+                    <MailX className="w-4 h-4 shrink-0 text-red-500 dark:text-red-400" />
                     {s.email}
                   </div>
-                  <div className="text-xs text-slate-400">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
                     {t('admin.email.bouncedSummary', {
                       count: s.bounceCount,
                       date: fmtDateTime(s.lastBouncedAt),
@@ -559,7 +561,7 @@ function EmailTab() {
           className="flex gap-2 mb-4"
         >
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               value={recipientInput}
@@ -580,7 +582,7 @@ function EmailTab() {
           )}
         </form>
 
-        {deliveries.isLoading && <div className="text-slate-400 text-sm">{t('common:loading')}</div>}
+        {deliveries.isLoading && <div className="text-slate-500 dark:text-slate-400 text-sm">{t('common:loading')}</div>}
         {!deliveries.isLoading && deliveries.data?.length === 0 && (
           <div className="text-sm text-slate-500 dark:text-slate-400">{t('admin.email.noDeliveries')}</div>
         )}
@@ -588,10 +590,10 @@ function EmailTab() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead><tr className="border-b border-slate-200 dark:border-slate-700 text-left">
-                <th className="px-3 py-2 font-medium text-slate-500">{t('admin.email.colRecipient')}</th>
-                <th className="px-3 py-2 font-medium text-slate-500">{t('admin.email.colType')}</th>
-                <th className="px-3 py-2 font-medium text-slate-500">{t('admin.email.colStatus')}</th>
-                <th className="px-3 py-2 font-medium text-slate-500">{t('admin.email.colWhen')}</th>
+                <th className="px-3 py-2 font-medium text-slate-500 dark:text-slate-400">{t('admin.email.colRecipient')}</th>
+                <th className="px-3 py-2 font-medium text-slate-500 dark:text-slate-400">{t('admin.email.colType')}</th>
+                <th className="px-3 py-2 font-medium text-slate-500 dark:text-slate-400">{t('admin.email.colStatus')}</th>
+                <th className="px-3 py-2 font-medium text-slate-500 dark:text-slate-400">{t('admin.email.colWhen')}</th>
               </tr></thead>
               <tbody>
                 {deliveries.data.map((e) => (
@@ -607,14 +609,14 @@ function EmailTab() {
                         {e.smtpCode ? ` (${e.smtpCode})` : ''}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-xs text-slate-400 whitespace-nowrap">{fmtDateTime(e.createdAt)}</td>
+                    <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{fmtDateTime(e.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-        <p className="mt-4 text-xs text-slate-400">{t('admin.email.asyncCaveat')}</p>
+        <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">{t('admin.email.asyncCaveat')}</p>
       </div>
     </div>
   );
@@ -720,17 +722,15 @@ function ConfigTab() {
   const { t } = useTranslation('common');
   const { data, isLoading } = useAdminConfig();
 
-  if (isLoading) return <div className="text-slate-400 text-sm">{t('admin.config.loadingConfig')}</div>;
+  if (isLoading) return <div className="text-slate-500 dark:text-slate-400 text-sm">{t('admin.config.loadingConfig')}</div>;
   if (!data) return null;
 
   const rows: { label: string; value: React.ReactNode }[] = [
     {
-      // Reported before everything else: the auth mode decides how accounts are
-      // created at all, and switches other rows off (unverified cleanup never
-      // runs under SSO).
+      // Auth mode first.
       label: t('admin.config.authMode'),
       value: data.authMode === undefined
-        ? <span className="text-slate-400">{'—'}</span>
+        ? <span className="text-slate-500 dark:text-slate-400">{'—'}</span>
         : data.authMode === 'oidc'
           ? <span className="text-slate-800 dark:text-slate-200">{t('admin.config.authModeOidc')}</span>
           : <span className="text-slate-800 dark:text-slate-200">{t('admin.config.authModeLocal')}</span>,
@@ -739,7 +739,7 @@ function ConfigTab() {
       label: t('admin.config.oidcIssuer'),
       value: data.oidcIssuer
         ? <span className="font-mono text-xs break-all">{data.oidcIssuer}</span>
-        : <span className="text-slate-400">{'—'}</span>,
+        : <span className="text-slate-500 dark:text-slate-400">{'—'}</span>,
     },
     { label: t('admin.config.goVersion'), value: data.goVersion },
     { label: t('admin.config.serverUptime'), value: data.serverUptime },
@@ -770,17 +770,16 @@ function ConfigTab() {
       label: t('admin.config.cloudBackupProviders'),
       value: data.cloudBackupProviders.length > 0
         ? <span className="font-mono text-xs uppercase">{data.cloudBackupProviders.join(', ')}</span>
-        : <span className="text-slate-400">{t('admin.config.cloudBackupProvidersNone')}</span>,
+        : <span className="text-slate-500 dark:text-slate-400">{t('admin.config.cloudBackupProvidersNone')}</span>,
     },
     {
-      // Off is a deliberate deployment choice here, not a misconfiguration, so
-      // it renders muted rather than amber.
+      // Off renders muted, not amber.
       label: t('admin.config.documentFiles'),
       value: data.documentFilesEnabled === undefined
-        ? <span className="text-slate-400">{'—'}</span>
+        ? <span className="text-slate-500 dark:text-slate-400">{'—'}</span>
         : data.documentFilesEnabled
           ? <span className="text-green-600 dark:text-green-400 font-medium">{t('admin.config.enabled')}</span>
-          : <span className="text-slate-400">{t('admin.config.disabled')}</span>,
+          : <span className="text-slate-500 dark:text-slate-400">{t('admin.config.disabled')}</span>,
     },
     {
       label: t('admin.config.unverifiedCleanup'),
@@ -794,7 +793,7 @@ function ConfigTab() {
           </span>
         )
         : (
-          <span className="text-slate-400">
+          <span className="text-slate-500 dark:text-slate-400">
             {data.unverifiedCleanupDisabledReason === 'oidc_mode'
               ? t('admin.config.unverifiedCleanupOffOidc')
               : t('admin.config.unverifiedCleanupOff')}
@@ -804,7 +803,7 @@ function ConfigTab() {
     {
       label: t('admin.config.emailSuppressed'),
       value: data.emailSuppressedCount === undefined
-        ? <span className="text-slate-400">—</span>
+        ? <span className="text-slate-500 dark:text-slate-400">—</span>
         : data.emailSuppressedCount > 0
           ? <span className="text-red-600 dark:text-red-400 font-medium">{data.emailSuppressedCount}</span>
           : <span className="text-green-600 dark:text-green-400 font-medium">0</span>,
@@ -814,7 +813,7 @@ function ConfigTab() {
   return (
     <div className="card">
       <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">{t('admin.config.title')}</h3>
-      <p className="text-xs text-slate-400 mb-4">{t('admin.config.subtitle')}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{t('admin.config.subtitle')}</p>
       <div className="divide-y divide-slate-100 dark:divide-slate-800">
         {rows.map((row) => (
           <div key={row.label} className="flex justify-between items-center py-3">
@@ -872,7 +871,7 @@ function AnnouncementsTab() {
       {feedback && <div className={`px-4 py-3 rounded-lg text-sm ${feedback.includes('Failed') ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400' : 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'}`}>{feedback}</div>}
       <div className="card">
         <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">{t('admin.announcements.createTitle')}</h3>
-        <p className="text-xs text-slate-400 mb-4">{t('admin.announcements.createDesc')}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">{t('admin.announcements.createDesc')}</p>
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
             <label className="form-label" htmlFor="ann-message">{t('admin.announcements.message')}</label>
@@ -897,17 +896,17 @@ function AnnouncementsTab() {
       </div>
       <div className="card">
         <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">{t('admin.announcements.activeTitle')}</h3>
-        {isLoading && <p className="text-slate-400 text-sm">{t('common:loading')}</p>}
-        {data?.announcements?.length === 0 && !isLoading && <p className="text-slate-400 text-sm">{t('admin.announcements.noAnnouncements')}</p>}
+        {isLoading && <p className="text-slate-500 dark:text-slate-400 text-sm">{t('common:loading')}</p>}
+        {data?.announcements?.length === 0 && !isLoading && <p className="text-slate-500 dark:text-slate-400 text-sm">{t('admin.announcements.noAnnouncements')}</p>}
         <div className="space-y-2">
           {data?.announcements?.map((a) => {
             const sc = severityOptions.find((s) => s.value === a.severity);
             return (
               <div key={a.id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
-                <span className={`badge text-xs ${sc?.color || 'bg-slate-100 text-slate-700'}`}>{a.severity}</span>
+                <span className={sc?.color ? `badge text-xs ${sc.color}` : 'badge-neutral'}>{a.severity}</span>
                 <span className="flex-1 text-sm text-slate-700 dark:text-slate-300">{a.message}</span>
-                {a.expiresAt && <span className="text-xs text-slate-400">{t('admin.announcements.expires')} {fmtDateTime(a.expiresAt)}</span>}
-                <button onClick={() => handleDelete(a.id)} className="btn-ghost btn-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                {a.expiresAt && <span className="text-xs text-slate-500 dark:text-slate-400">{t('admin.announcements.expires')} {fmtDateTime(a.expiresAt)}</span>}
+                <button onClick={() => handleDelete(a.id)} className="btn-ghost btn-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20" title="Delete"><Trash2 className="w-4 h-4" /></button>
               </div>
             );
           })}

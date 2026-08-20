@@ -4,9 +4,9 @@
   "editLicense": "Lizenz bearbeiten",
   "updateLicense": "Lizenz aktualisieren",
   "noLicenses": "Noch keine Lizenzen eingetragen.",
-  "addFirst": "Fügen Sie Ihre erste Pilotenlizenz hinzu.",
+  "addFirst": "Füge deine erste Pilotenlizenz hinzu.",
   "deleteLicense": "Lizenz löschen",
-  "deleteConfirm": "Möchten Sie diese Lizenz wirklich löschen? Alle zugehörigen Klassenberechtigungen werden ebenfalls gelöscht.",
+  "deleteConfirm": "Möchtest du diese Lizenz wirklich löschen? Alle zugehörigen Klassenberechtigungen werden ebenfalls gelöscht.",
   "fields": {
     "regulatoryAuthority": "Aufsichtsbehörde",
     "licenseType": "Lizenztyp",
@@ -56,7 +56,7 @@
     "issued": "Ausgestellt",
     "separateLogbook": "Separates Flugbuch",
     "noClassRatings": "Keine Klassenberechtigungen",
-    "addRating": "+ Berechtigung hinzufügen",
+    "addRating": "Berechtigung hinzufügen",
     "classType": "Klassentyp",
     "expiryDateOptional": "Ablaufdatum (optional)",
     "failedToAdd": "Klassenberechtigung konnte nicht hinzugefügt werden.",
@@ -66,7 +66,7 @@
     "removeRating": "Klassenberechtigung entfernen",
     "noExpiry": "Kein Ablaufdatum",
     "expired": "Abgelaufen",
-    "expiresInDays": "Läuft in {{days}}T ab"
+    "expiresInDays": "Noch {{days}} Tage"
   },
   "classTypeLabels": {
     "SEP_LAND": "SEP (Land)",

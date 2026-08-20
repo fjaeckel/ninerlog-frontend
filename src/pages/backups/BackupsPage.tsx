@@ -6,10 +6,13 @@ import {
   useRunBackupNow,
   useTestBackupDestination,
 } from '../../hooks/useBackups';
+import { CloudUpload, Plus } from 'lucide-react';
 import BackupDestinationForm from '../../components/backups/BackupDestinationForm';
 import BackupRunsList from '../../components/backups/BackupRunsList';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import { SkeletonGrid } from '../../components/ui/Skeleton';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { FormModal } from '../../components/ui/FormModal';
+import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { extractApiError } from '../../lib/errors';
@@ -94,7 +97,7 @@ export default function BackupsPage() {
   if (isLoading) {
     return (
       <div className="py-2">
-        <SkeletonGrid count={3} />
+        <SkeletonList rows={2} />
       </div>
     );
   }
@@ -126,7 +129,8 @@ export default function BackupsPage() {
           }}
           className="btn-primary self-start sm:self-auto whitespace-nowrap"
         >
-          + {t('addDestination')}
+          <Plus className="w-4 h-4" aria-hidden="true" />
+          {t('addDestination')}
         </button>
       </div>
 
@@ -143,32 +147,14 @@ export default function BackupsPage() {
         </div>
       )}
 
-      {showForm && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[1020]"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="backup-form-title"
-        >
-          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 id="backup-form-title" className="text-xl font-semibold text-slate-800 dark:text-slate-100">
-                  {editing ? t('form.editTitle') : t('form.createTitle')}
-                </h2>
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                  aria-label={t('form.close')}
-                >
-                  ✕
-                </button>
-              </div>
-              <BackupDestinationForm destination={editing} onClose={() => setShowForm(false)} />
-            </div>
-          </div>
-        </div>
-      )}
+      <FormModal
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        title={editing ? t('form.editTitle') : t('form.createTitle')}
+        size="lg"
+      >
+        <BackupDestinationForm destination={editing} onClose={() => setShowForm(false)} />
+      </FormModal>
 
       <ConfirmDialog
         open={!!deleteTarget}
@@ -181,46 +167,28 @@ export default function BackupsPage() {
         isLoading={deleteMutation.isPending}
       />
 
-      {historyTarget && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[1020]"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="backup-history-title"
-        >
-          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 id="backup-history-title" className="text-xl font-semibold text-slate-800 dark:text-slate-100">
-                  {t('history.title', { name: historyTarget.displayName })}
-                </h2>
-                <button
-                  onClick={() => setHistoryTarget(null)}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                  aria-label={t('form.close')}
-                >
-                  ✕
-                </button>
-              </div>
-              <BackupRunsList destinationId={historyTarget.id} />
-            </div>
-          </div>
-        </div>
-      )}
+      <FormModal
+        open={!!historyTarget}
+        onClose={() => setHistoryTarget(null)}
+        title={t('history.title', { name: historyTarget?.displayName ?? '' })}
+        size="2xl"
+      >
+        {historyTarget && <BackupRunsList destinationId={historyTarget.id} />}
+      </FormModal>
 
       {!sortedDestinations || sortedDestinations.length === 0 ? (
-        <div className="card text-center py-12">
-          <p className="text-slate-500 dark:text-slate-400 mb-4">{t('empty')}</p>
-          <button
-            onClick={() => {
+        <EmptyState
+          icon={CloudUpload}
+          title={t('empty')}
+          description={t('subtitle')}
+          action={{
+            label: t('addFirst'),
+            onClick: () => {
               setEditing(null);
               setShowForm(true);
-            }}
-            className="btn-primary"
-          >
-            {t('addFirst')}
-          </button>
-        </div>
+            },
+          }}
+        />
       ) : (
         <div className="grid gap-4">
           {sortedDestinations.map((dest) => {
@@ -243,7 +211,7 @@ export default function BackupsPage() {
                       {!dest.enabled && <> · {t('paused')}</>}
                     </p>
                   </div>
-                  <span className={`badge text-xs shrink-0 ${statusClass}`}>
+                  <span className={`${statusClass} shrink-0`}>
                     {t(`status.${dest.status}`)}
                   </span>
                 </div>

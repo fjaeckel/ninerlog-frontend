@@ -142,10 +142,7 @@ describe('HelpPage', () => {
 
   it('renders theme-aware figures within help content', () => {
     const { container } = renderWithProviders(<HelpPage />);
-    // Getting Started embeds figure: images which render as real annotated
-    // screenshots served from /help/<id>-<theme>.png — this guards against
-    // the figure: scheme being stripped by the markdown URL sanitizer
-    // (which would otherwise yield a broken <img> with no src).
+    // The figure: scheme survives the markdown URL sanitizer.
     const figure = container.querySelector('img[src^="/help/"][src$="-light.png"]');
     expect(figure).toBeInTheDocument();
   });

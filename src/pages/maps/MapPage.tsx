@@ -5,6 +5,7 @@ import { useFlightRoutes, useAirportStats } from '../../hooks/useMaps';
 import { useTheme } from '../../hooks/useTheme';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
+import { PageWrapper } from '../../components/ui/PageWrapper';
 import 'leaflet/dist/leaflet.css';
 
 // Fit map bounds to all markers
@@ -33,20 +34,17 @@ export default function MapPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[1280px] py-6">
+      <PageWrapper maxWidth="list">
         <SkeletonList rows={3} />
-      </div>
+      </PageWrapper>
     );
   }
 
   if (isError) {
     return (
-      <div className="mx-auto max-w-[1280px] py-6">
-        <ErrorState
-          title={t('map.failedToLoad', 'Failed to load map data')}
-          message={t('map.failedToLoadMessage', 'An error occurred while loading your flight routes. Please try again.')}
-        />
-      </div>
+      <PageWrapper maxWidth="list">
+        <ErrorState title={t('map.failedToLoad')} message={t('map.failedToLoadMessage')} />
+      </PageWrapper>
     );
   }
 
@@ -74,35 +72,21 @@ export default function MapPage() {
   const maxFlights = Math.max(...stats.map((s) => s.totalFlights), 1);
 
   return (
-    <div className="mx-auto max-w-[1280px] py-6">
+    <PageWrapper maxWidth="list">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="page-title">{t('map.title')}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             {hasData
-              ? `${routes.length} ${t('map.routes', 'routes')} · ${stats.length} ${t('map.airports', 'airports')}`
+              ? `${routes.length} ${t('map.routes')} · ${stats.length} ${t('map.airports')}`
               : t('map.noRoutes')}
           </p>
         </div>
-        <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <button
-            onClick={() => setView('routes')}
-            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-              view === 'routes'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-            }`}
-          >
-            Routes
+        <div className="segmented" role="group" aria-label={t('map.viewMode')}>
+          <button onClick={() => setView('routes')} aria-pressed={view === 'routes'} className="segment">
+            {t('map.routes')}
           </button>
-          <button
-            onClick={() => setView('heatmap')}
-            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-              view === 'heatmap'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-            }`}
-          >
+          <button onClick={() => setView('heatmap')} aria-pressed={view === 'heatmap'} className="segment">
             {t('map.heatmap')}
           </button>
         </div>
@@ -242,6 +226,6 @@ export default function MapPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageWrapper>
   );
 }

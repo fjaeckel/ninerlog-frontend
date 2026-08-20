@@ -27,14 +27,14 @@ They resolve to normal Tailwind utilities: `bg-brand-600`, `text-expired-500`, `
 - Status is semantic: green = current, amber = expiring, red = expired. Never signal by color alone — pair with an icon or text.
 - Every light-mode class needs a `dark:` counterpart (`bg-white dark:bg-slate-800`).
 - Mobile-first: base styles target phones, then `sm:` / `lg:`. Breakpoints sm 640 / md 768 / lg 1024 / xl 1280.
-- Interactive targets ≥ 44×44px.
-- Numeric data uses `font-mono tabular-nums`.
+- Interactive targets: **≥ 44×44px on touch**, ≥ 24×24px with a pointer (WCAG 2.2 AA). `.btn-*`, `.input` and `.checkbox` already meet it; `.btn-sm` is 36px and grows to 44 under `(pointer: coarse)`. An inline link gets its height from `.link`'s padding, not from its text.
+- Numeric data uses `font-mono tabular-nums`. Nothing is set below `text-xs` (12px); chart ticks are 11px.
 - Radii: `rounded-lg` cards, `rounded-md` inputs/buttons, `rounded-full` badges.
 - WCAG 2.1 AA: semantic HTML, focus management in modals, keyboard nav, no hover-only interactions.
 
 ## Component classes — reuse, don't re-derive
 
-`.btn-primary` `.btn-secondary` `.btn-danger` `.btn-ghost` (+ `.btn-sm` `.btn-lg`) · `.input` `.input-error` · `.card` `.card-hover` · `.badge-current` `.badge-expiring` `.badge-expired` `.badge-info` `.badge-neutral` · `.form-label` `.form-error` `.form-helper` · `.page-title` `.section-title` · `.data-lg` `.data-sm` · `.hover-lift` `.surface-glass` `.gradient-brand` `.text-gradient-brand`
+`.btn-primary` `.btn-secondary` `.btn-danger` `.btn-ghost` (+ `.btn-sm` `.btn-lg`) · `.input` `.input-error` `.checkbox` · `.link` · `.segmented` `.segment` · `.card` `.card-hover` · `.badge-current` `.badge-expiring` `.badge-expired` `.badge-info` `.badge-neutral` · `.form-label` `.form-error` `.form-helper` · `.page-title` `.section-title` · `.data-lg` `.data-sm` · `.hover-lift` `.surface-glass` `.gradient-brand` `.text-gradient-brand`
 
 Repeating a utility chain? Add a class to `@layer components` instead of copying it.
 
@@ -57,7 +57,17 @@ import { cn } from '@/lib/cn';
 
 ## Layout & dark mode
 
-Header `h-14` mobile / `h-16` on `lg:`; bottom nav `h-14`, hidden on `lg:`; sidebar `w-64` on `lg:`. Main content `pt-14 lg:pt-16 pb-16 lg:pb-4 lg:pl-64`. Content max-widths: forms 640px, lists 960px, dashboard 1280px. Notch safety via `pt-safe-top` / `pb-safe` and the `--header-height` / `--bottom-nav-height` variables.
+Header `h-14` mobile / `h-16` on `lg:`; bottom nav `h-14`, hidden on `lg:`; sidebar `w-64` on `lg:`. Main content `pt-14 lg:pt-16 pb-16 lg:pb-4 lg:pl-64`.
+
+Page width comes from `PageWrapper`, never from an ad-hoc `max-w-*`, and there are three:
+
+| `maxWidth` | Width | For |
+|---|---|---|
+| `form` | 640px | a single column of fields |
+| `content` | 960px | prose and step-by-step flows, bound by the reading measure |
+| `list` | none | tables, record lists, dashboards — **fills the column**, because a wide monitor is width the reader does not have to scroll |
+
+Notch safety via `pt-safe-top` / `pb-safe` and the `--header-height` / `--bottom-nav-height` variables.
 
 Dark mode is class-based (`@custom-variant dark`): `useTheme()` runs once at the app root, resolves `system` against `matchMedia`, toggles `.dark` on `<html>`, and updates the mobile chrome color. In markup you only write `dark:` variants.
 

@@ -15,7 +15,7 @@
     "email": "E-Mail",
     "phone": "Telefon",
     "notes": "Notizen",
-    "notesPlaceholder": "z. B. CFI, Sicherheitspilot…"
+    "notesPlaceholder": "z. B. FI, Sicherheitspilot…"
   },
   "errors": {
     "nameRequired": "Name ist erforderlich.",

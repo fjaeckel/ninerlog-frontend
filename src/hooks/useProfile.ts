@@ -7,12 +7,7 @@ import { invalidateFlightDependentQueries } from './invalidation';
 
 type User = components['schemas']['User'];
 
-/**
- * Fresh profile from GET /users/me. The auth store is otherwise only fed by
- * the login/refresh payloads, so server-side changes (an admin edit, an OIDC
- * re-sync) never reached a running session. On success the store is updated
- * so the header and greeting reflect the server's view.
- */
+/** Fresh profile from GET /users/me. On success the auth store is updated. */
 export const useCurrentUser = () => {
   const { updateUser } = useAuthStore();
   const query = useQuery({
@@ -76,8 +71,7 @@ export const useDeleteAccount = () => {
   const { clearAuth } = useAuthStore();
 
   return useMutation({
-    // Local mode confirms with the account password; OIDC mode has no local
-    // password, so the API takes the account's own email typed out instead.
+    // Confirmation: password in local mode, typed-out account email in OIDC mode.
     mutationFn: async (confirmation: { password?: string; confirmEmail?: string }): Promise<void> => {
       const { error } = await apiClient.DELETE('/users/me', {
         body: confirmation as any,

@@ -5,11 +5,8 @@ import { differenceInDays } from 'date-fns';
 import type { ClassRatingCurrency, FlightReviewStatus } from '../../types/api';
 
 /**
- * Buckets each rating's revalidation/renewal rule into the handful of
- * "next step" archetypes a pilot actually needs to act on. The precise
- * legal text (hours, landings, exact CFR/FCL citation) is already shown
- * on the rating's own card below — this banner only needs to point at
- * the right kind of action.
+ * Buckets each rating's revalidation/renewal rule into "next step"
+ * archetypes.
  */
 type NextStepCategory =
   | 'training_flight'

@@ -29,11 +29,8 @@ function formatBytes(bytes: number): string {
 }
 
 /**
- * Reference photos for one licence or credential.
- *
- * Renders nothing at all when the server has the feature switched off — the
- * capability probe is the source of truth, so an operator who disabled it does
- * not get UI that only fails on submit.
+ * Reference photos for one licence or credential. Renders nothing when the
+ * server has the feature switched off.
  */
 export function DocumentFileGallery({ subject, subjectId }: DocumentFileGalleryProps) {
   const { t } = useTranslation('documents');
@@ -56,15 +53,13 @@ export function DocumentFileGallery({ subject, subjectId }: DocumentFileGalleryP
 
   const handleFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    // Let the same file be picked again after a failure — without this the
-    // input's value is unchanged and the change event never fires.
+    // Reset the input so the same file can be picked again.
     event.target.value = '';
     if (!file) return;
 
     setError(null);
 
-    // Check locally against the server's own advertised limits so an obviously
-    // doomed 5 MB upload is not sent just to be refused.
+    // Check locally against the server's advertised limits.
     if (!feature.allowedContentTypes.includes(file.type)) {
       setError(t('errors.unsupportedType'));
       return;

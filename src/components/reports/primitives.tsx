@@ -18,10 +18,7 @@ interface ReportCardProps<T> {
   hint?: string;
   children: ReactNode;
   className?: string;
-  /**
-   * Table-view twin. Every chart offers one so no value is reachable by
-   * colour or hover alone.
-   */
+  /** Table-view twin. */
   table?: { rows: T[]; columns: TableColumn<T>[] };
   /** Rendered at the top-right, before the table toggle. */
   action?: ReactNode;
@@ -33,9 +30,7 @@ export function ReportCard<T>({ title, hint, children, className, table, action 
   const panelId = useId();
 
   return (
-    // min-w-0 stops the card, as a grid item, from being widened past the
-    // viewport by long unwrappable labels (airport names, registrations) —
-    // grid items default to min-width:auto, which is their min-content width.
+    // min-w-0 overrides the grid item's min-width:auto.
     <section className={cn('card flex flex-col min-w-0', className)} aria-labelledby={`${panelId}-title`}>
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="min-w-0">
@@ -53,7 +48,7 @@ export function ReportCard<T>({ title, hint, children, className, table, action 
               aria-pressed={showTable}
               aria-controls={panelId}
               title={showTable ? t('view.showChart') : t('view.showTable')}
-              className="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-700 transition-colors"
+              className="inline-flex items-center justify-center w-11 h-11 -my-2 rounded-md text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700 transition-colors"
             >
               {showTable ? <BarChart3 className="w-4 h-4" /> : <Table2 className="w-4 h-4" />}
               <span className="sr-only">{showTable ? t('view.showChart') : t('view.showTable')}</span>
@@ -117,10 +112,7 @@ export function ReportTable<T>({ rows, columns }: { rows: T[]; columns: TableCol
   );
 }
 
-/**
- * A headline number. Proportional figures on purpose — tabular digits make a
- * large standalone value look loose.
- */
+/** A headline number, in proportional figures. */
 export function StatTile({
   label,
   value,
@@ -161,8 +153,8 @@ export function StatTile({
 }
 
 /**
- * A single ratio against a total. The unfilled track is a lighter step of the
- * fill's own ramp so the state reads across the whole bar.
+ * A single ratio against a total. The unfilled track is a lighter step of
+ * the fill's own ramp.
  */
 export function Meter({
   label,
@@ -205,9 +197,8 @@ export function Meter({
 }
 
 /**
- * Horizontal ranked bars — the workhorse for "compare magnitude" lists
- * (aircraft, airports, approach types). One hue for every bar: the length
- * already encodes the value, so hue stays free.
+ * Horizontal ranked bars for "compare magnitude" lists (aircraft, airports,
+ * approach types). One hue for every bar.
  */
 export function RankedBars({
   rows,
