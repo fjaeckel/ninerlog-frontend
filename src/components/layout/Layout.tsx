@@ -11,6 +11,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import AnnouncementBanner from '../ui/AnnouncementBanner';
 import { ScrollToTop } from './ScrollToTop';
+import { UpdateIndicator } from './UpdateIndicator';
 import { LogoMark } from '../ui/Logo';
 import { ThemeSwitcher } from '../ui/ThemeSwitcher';
 import { OnboardingTour } from '../onboarding/OnboardingTour';
@@ -89,6 +90,7 @@ export default function Layout() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
+          {user?.isAdmin && <UpdateIndicator />}
           <ThemeSwitcher className="hidden sm:flex" />
           {/* Report a bug — mobile/tablet only; the desktop sidebar has its own entry */}
           <a

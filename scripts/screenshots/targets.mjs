@@ -42,6 +42,14 @@ export const TARGETS = [
   { name: 'import', path: '/import' },
   { name: 'help', path: '/help' },
   { name: 'profile', path: '/profile' },
+  {
+    name: 'update-indicator',
+    path: '/dashboard',
+    act: async (page) => {
+      await page.getByRole('button', { name: /an update is available|ein update ist verfügbar/i }).first().click();
+      await page.waitForTimeout(400);
+    },
+  },
   { name: 'admin', path: '/admin' },
   {
     name: 'admin-users',
