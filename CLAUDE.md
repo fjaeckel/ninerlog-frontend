@@ -29,6 +29,7 @@ Push gate: `npx vitest run && npm run type-check && npm run lint`, plus e2e when
 - Data access goes `component → hook in src/hooks/ → apiClient`. No `fetch`/`axios` in components, no fetching in `src/components/ui/`.
 - Mutations invalidate on success. Anything derived from flights uses `invalidateFlightDependentQueries()` — add new derived keys to `FLIGHT_DEPENDENT_QUERY_KEYS` (`src/hooks/invalidation.ts`).
 - Server state → TanStack Query. Client-only state → Zustand (`auth`, `theme`, `onboarding`, `license`). Nothing with a server counterpart goes in a store.
+- **Sessions follow `../ninerlog-api/docs/SESSION_CONTRACT.md`** — a binding cross-repo contract. In particular: **only a `401` from `/auth/refresh` may clear the session.** A `429`, a `5xx`, or a network error is transient and must be retried with the tokens kept — treating one as a logout is the bug that made users re-login after every backend restart. Refreshes are de-duplicated per client and coordinated across tabs. Read the contract before touching `src/api/client.ts`, `src/stores/authStore.ts`, or anything under `/auth/*`.
 - No user-facing string is hard-coded. Every key exists in **both** `en` and `de` — CI fails otherwise.
 - Neutrals are `slate-*`, never `gray-*`; every light class needs a `dark:` counterpart. There is no `tailwind.config.js` — Tailwind v4 is configured in `src/index.css`.
 - Strict TS, no `any`. Path alias `@` → `src/`.

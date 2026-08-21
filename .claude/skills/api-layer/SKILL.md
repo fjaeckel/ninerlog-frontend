@@ -69,11 +69,33 @@ Flights feed statistics, currency, and trends. Rather than remembering every dep
 
 ## Auth — you generally don't touch this
 
+> **`../ninerlog-api/docs/SESSION_CONTRACT.md` is binding here.** It is shared with the API repo and governs everything below. Read it before changing `client.ts`, and change it in the same PR as any behaviour it describes.
+
 `src/api/client.ts` owns the token lifecycle through `openapi-fetch` middleware:
 
 - **on request** — awaits `bootstrapPromise`, then attaches `Authorization: Bearer <accessToken>`.
-- **on response** — a `401` from a non-auth endpoint triggers a single refresh (de-duplicated across concurrent requests via a shared `refreshPromise`), retries the original request once, and redirects to `/login` if the refresh fails. `/auth/login|register|refresh|2fa|password-reset` and `/sign/*` are excluded — an anonymous instructor signing a flight has no refresh token and must never be bounced to login.
-- a proactive timer refreshes ~60s before expiry; `visibilitychange` / `online` / `pageshow` refresh a stale token when the installed PWA resumes.
+- **on response** — a `401` from a non-auth endpoint triggers a single refresh (de-duplicated across concurrent requests via a shared `refreshPromise`), retries the original request once, and redirects to `/login` **only if the session was actually cleared**. `/auth/login|register|refresh|2fa|password-reset` and `/sign/*` are excluded — an anonymous instructor signing a flight has no refresh token and must never be bounced to login.
+- a proactive timer refreshes ~60s before expiry and re-arms itself after a failed attempt; `visibilitychange` / `online` / `pageshow` refresh a stale token when the installed PWA resumes.
+
+### The rule that matters
+
+**Only a `401` from `/auth/refresh` ends a session.** `refreshAccessToken` classifies every other outcome as transient and retries with backoff, keeping the stored tokens:
+
+| Outcome | Meaning |
+|---|---|
+| `200` | Renewed — store the pair, broadcast it to the other tabs |
+| `401` | The session is genuinely gone — `clearAuth()` and go to `/login` |
+| `429`, `5xx`, network error, malformed body | Transient — back off and retry, **keep the tokens** |
+
+Clearing the session on a `5xx` or a dropped connection is how a backend restart or a moment of bad signal used to log everyone out. `src/__tests__/api/refreshResilience.test.ts` holds each row of that table in place.
+
+### Cross-tab coordination
+
+Tabs share `localStorage` but hold their own in-memory copy, so a rotation in one tab leaves the others with a superseded token. `client.ts` broadcasts each new pair over a `BroadcastChannel` (`ninerlog-auth`); a tab adopts an incoming pair when it is newer than what it holds. The API's reuse grace covers the races this cannot prevent — it is a safety net, not a substitute.
+
+### Sessions UI
+
+`src/hooks/useSessions.ts` wraps `GET/DELETE /auth/sessions`; `SessionsSection` renders them under Profile → Data & Security. A user may hold several concurrent sessions (default 5) — **signing in on one device never signs out another**.
 
 `App.tsx` blocks all rendering until the module-level `bootstrapPromise` settles, so a cold PWA launch from the iOS home screen never flashes `/login`. `authStore` persists the access token to `localStorage` — a deliberate trade-off documented inline in `src/stores/authStore.ts`.
 

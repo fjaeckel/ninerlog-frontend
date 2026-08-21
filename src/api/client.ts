@@ -10,35 +10,126 @@ export const apiClient = createClient<paths>({
   baseUrl: API_BASE_URL,
 });
 
+// ── Cross-tab token coordination ──
+// Tabs share one localStorage-backed session but hold their own copy in
+// memory, so a rotation in one tab leaves the others holding a token the API
+// has already superseded.
+
+const TOKEN_CHANNEL = 'ninerlog-auth';
+
+type TokenBroadcast = {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  tokenExpiresAt: number;
+};
+
+const tokenChannel =
+  typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(TOKEN_CHANNEL) : null;
+
+/** Announces a freshly rotated pair to the other tabs. */
+function publishTokens() {
+  if (!tokenChannel) return;
+  const { accessToken, refreshToken, expiresIn, tokenExpiresAt } = useAuthStore.getState();
+  if (!accessToken || !refreshToken) return;
+  tokenChannel.postMessage({
+    accessToken,
+    refreshToken,
+    expiresIn: expiresIn ?? 0,
+    tokenExpiresAt: tokenExpiresAt ?? 0,
+  } satisfies TokenBroadcast);
+}
+
+if (tokenChannel) {
+  tokenChannel.onmessage = (event: MessageEvent<TokenBroadcast>) => {
+    const incoming = event.data;
+    if (!incoming?.accessToken || !incoming.refreshToken) return;
+
+    const state = useAuthStore.getState();
+    if (!state.isAuthenticated) return;
+    // Ignore anything not newer than what this tab already holds.
+    if (state.tokenExpiresAt && incoming.tokenExpiresAt <= state.tokenExpiresAt) return;
+
+    state.updateTokens(incoming.accessToken, incoming.refreshToken, incoming.expiresIn);
+  };
+}
+
 // In-flight token refresh, shared by concurrent callers.
 let refreshPromise: Promise<boolean> | null = null;
 
-async function refreshAccessToken(): Promise<boolean> {
-  const { refreshToken, updateTokens, clearAuth } = useAuthStore.getState();
+/** Attempts before a transient refresh failure is given up on for this call. */
+const REFRESH_MAX_ATTEMPTS = 4;
+
+/** Backoff before each retry, in milliseconds. */
+const REFRESH_BACKOFF_MS = [1_000, 3_000, 8_000];
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * One refresh attempt. `session-ended` is returned only for the responses the
+ * API defines as terminal; everything else is transient and retryable.
+ *
+ * Contract: ninerlog-api/docs/SESSION_CONTRACT.md §5.
+ */
+async function attemptRefresh(refreshToken: string): Promise<'ok' | 'session-ended' | 'transient'> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+  } catch {
+    // Offline, DNS failure, connection reset, API restarting.
+    return 'transient';
+  }
+
+  if (response.status === 401) return 'session-ended';
+  if (!response.ok) return 'transient';
+
+  try {
+    const data = await response.json();
+    if (!data?.accessToken || !data?.refreshToken) return 'transient';
+    useAuthStore.getState().updateTokens(data.accessToken, data.refreshToken, data.expiresIn);
+    publishTokens();
+    return 'ok';
+  } catch {
+    return 'transient';
+  }
+}
+
+/**
+ * Refreshes the access token, retrying transient failures with backoff. Clears
+ * the session only when the API says it has ended — a `401` from
+ * `/auth/refresh`. Exported for the tests that hold that rule in place.
+ */
+export async function refreshAccessToken(): Promise<boolean> {
+  const { refreshToken, clearAuth } = useAuthStore.getState();
   if (!refreshToken) {
     clearAuth();
     return false;
   }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }),
-    });
+  for (let attempt = 0; attempt < REFRESH_MAX_ATTEMPTS; attempt++) {
+    // A parallel tab may have rotated the token while this attempt waited.
+    const current = useAuthStore.getState().refreshToken;
+    if (!current) return false;
 
-    if (!response.ok) {
+    const outcome = await attemptRefresh(current);
+    if (outcome === 'ok') return true;
+    if (outcome === 'session-ended') {
       clearAuth();
       return false;
     }
 
-    const data = await response.json();
-    updateTokens(data.accessToken, data.refreshToken, data.expiresIn);
-    return true;
-  } catch {
-    clearAuth();
-    return false;
+    const backoff = REFRESH_BACKOFF_MS[attempt];
+    if (backoff === undefined) break;
+    await delay(backoff);
   }
+
+  // Out of attempts: the session may well still be valid, so it is kept and
+  // retried on the next request, timer tick, or foreground resume.
+  return false;
 }
 
 // Auth middleware: attach token, refresh-and-retry on 401.
@@ -73,14 +164,16 @@ apiClient.use({
     // Retry at most once per request.
     if ((request as Request & { __retried?: boolean }).__retried) return response;
 
-    if (!refreshPromise) {
-      refreshPromise = refreshAccessToken().finally(() => {
-        refreshPromise = null;
-      });
-    }
-    const success = await refreshPromise;
+    const success = await sharedRefresh();
     if (!success) {
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+      // Only a cleared session means the user must sign in again; a refresh
+      // that merely ran out of retries leaves them where they are.
+      const { isAuthenticated } = useAuthStore.getState();
+      if (
+        !isAuthenticated &&
+        typeof window !== 'undefined' &&
+        !window.location.pathname.startsWith('/login')
+      ) {
         window.location.href = '/login';
       }
       return response;
@@ -145,6 +238,9 @@ apiClient.use({
 // Refreshes the access token 60 seconds before it expires.
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
+/** Wait before re-arming the timer after a refresh that could not complete. */
+const RETRY_AFTER_FAILURE_MS = 30_000;
+
 function scheduleTokenRefresh() {
   if (refreshTimer) {
     clearTimeout(refreshTimer);
@@ -159,16 +255,27 @@ function scheduleTokenRefresh() {
   const refreshIn = Math.max(msUntilExpiry - 60_000, 5_000);
 
   refreshTimer = setTimeout(async () => {
-    if (!refreshPromise) {
-      refreshPromise = refreshAccessToken().finally(() => {
-        refreshPromise = null;
-      });
-    }
-    const success = await refreshPromise;
+    const success = await sharedRefresh();
     if (success) {
       scheduleTokenRefresh();
+      return;
+    }
+    // A cleared session is final; anything else is worth another attempt, or
+    // the app would sit on a stale token until the next request.
+    if (useAuthStore.getState().isAuthenticated) {
+      refreshTimer = setTimeout(scheduleTokenRefresh, RETRY_AFTER_FAILURE_MS);
     }
   }, refreshIn);
+}
+
+/** Runs a refresh, joining the in-flight one when there is already one. */
+function sharedRefresh(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = refreshAccessToken().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
 }
 
 // Start/stop the refresh timer on auth store changes.
@@ -220,8 +327,7 @@ if (typeof window !== 'undefined') {
     const stale = !tokenExpiresAt || tokenExpiresAt - Date.now() < 60_000;
     if (!stale) return;
     if (refreshPromise) return; // already refreshing
-    refreshPromise = refreshAccessToken().finally(() => { refreshPromise = null; });
-    refreshPromise.then((ok) => { if (ok) scheduleTokenRefresh(); });
+    sharedRefresh().then((ok) => { if (ok) scheduleTokenRefresh(); });
   };
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') refreshIfStale();

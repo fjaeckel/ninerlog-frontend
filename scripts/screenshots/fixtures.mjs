@@ -379,6 +379,39 @@ export const imports = {
   pagination: { page: 1, pageSize: 10, total: 2, totalPages: 1 },
 };
 
+export const sessions = {
+  sessions: [
+    {
+      id: 's1',
+      deviceLabel: 'Chrome on macOS',
+      ipAddress: '203.0.113.7',
+      createdAt: shift(-2),
+      lastUsedAt: shift(0),
+      expiresAt: shift(5),
+      current: true,
+    },
+    {
+      id: 's2',
+      deviceLabel: 'Safari on iPhone',
+      ipAddress: '198.51.100.24',
+      createdAt: shift(-9),
+      lastUsedAt: shift(-1),
+      expiresAt: shift(4),
+      current: false,
+    },
+    {
+      id: 's3',
+      deviceLabel: 'NinerLog app on iOS',
+      ipAddress: '198.51.100.24',
+      createdAt: shift(-20),
+      lastUsedAt: shift(-3),
+      expiresAt: shift(2),
+      current: false,
+    },
+  ],
+  maxSessions: 5,
+};
+
 export const backupDestinations = [
   { id: 'b1', displayName: 'Hetzner Storage Box', provider: 'webdav', status: 'active', enabled: true, schedule: 'daily', lastRunAt: iso('2026-08-15'), createdAt: iso('2025-01-01'), updatedAt: iso('2026-01-01') },
 ];
@@ -447,6 +480,7 @@ const ROUTES = {
   '/features': { signatures: true, backups: true, customCurrency: true },
   '/auth/providers': { providers: [] },
   '/auth/webauthn/credentials': [],
+  '/auth/sessions': sessions,
   '/flight-sessions/current': null,
 };
 

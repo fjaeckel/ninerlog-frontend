@@ -233,5 +233,24 @@
     "dark": "Dunkel",
     "system": "System",
     "change": "Design: {{theme}}. Zum Wechseln auswählen."
+  },
+  "sessions": {
+    "title": "Angemeldete Geräte",
+    "description": "Alle Geräte, die derzeit in deinem Konto angemeldet sind. Eine neue Anmeldung meldet dich hier nicht ab.",
+    "descriptionWithMax": "Alle Geräte, die derzeit in deinem Konto angemeldet sind. Eine neue Anmeldung meldet dich hier nicht ab — du kannst auf bis zu {{max}} Geräten angemeldet bleiben, danach wird das am längsten ungenutzte abgemeldet.",
+    "loading": "Wird geladen…",
+    "empty": "Es sind keine weiteren Geräte angemeldet.",
+    "loadFailed": "Angemeldete Geräte konnten nicht geladen werden. Bitte versuche es erneut.",
+    "thisDevice": "Dieses Gerät",
+    "lastActive": "Zuletzt aktiv {{when}}",
+    "signedIn": "Angemeldet {{when}}",
+    "signOut": "Abmelden",
+    "signOutThis": "Hier abmelden",
+    "signOutOthers": "Alle anderen Geräte abmelden ({{count}})",
+    "signingOutOthers": "Wird abgemeldet…",
+    "revoked": "{{device}} wurde abgemeldet.",
+    "revokedOthers_one": "1 weiteres Gerät wurde abgemeldet.",
+    "revokedOthers_other": "{{count}} weitere Geräte wurden abgemeldet.",
+    "revokeFailed": "Das Gerät konnte nicht abgemeldet werden. Bitte versuche es erneut."
   }
 }
