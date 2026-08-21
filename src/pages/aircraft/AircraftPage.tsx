@@ -151,7 +151,10 @@ export default function AircraftPage() {
                       {ac.isTailwheel && (
                         <span className="badge-neutral">{t('fields.isTailwheel')}</span>
                       )}
-                      {!ac.isComplex && !ac.isHighPerformance && !ac.isTailwheel && (
+                      {ac.isMultiPilot && (
+                        <span className="badge-info">{t('fields.isMultiPilot')}</span>
+                      )}
+                      {!ac.isComplex && !ac.isHighPerformance && !ac.isTailwheel && !ac.isMultiPilot && (
                         <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
                       )}
                     </dd>

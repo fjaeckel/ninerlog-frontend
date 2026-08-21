@@ -21,6 +21,7 @@ const aircraftSchema = z.object({
   isComplex: z.boolean(),
   isHighPerformance: z.boolean(),
   isTailwheel: z.boolean(),
+  isMultiPilot: z.boolean(),
   notes: z.string().optional().or(z.literal('')),
   isActive: z.boolean(),
   defaultDepartureIcao: z.string().max(100).optional().or(z.literal('')),
@@ -71,6 +72,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       isComplex: false,
       isHighPerformance: false,
       isTailwheel: false,
+      isMultiPilot: false,
       notes: '',
       isActive: true,
       defaultDepartureIcao: '',
@@ -94,6 +96,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       isComplex: existingAircraft.isComplex ?? false,
       isHighPerformance: existingAircraft.isHighPerformance ?? false,
       isTailwheel: existingAircraft.isTailwheel ?? false,
+      isMultiPilot: existingAircraft.isMultiPilot ?? false,
       notes: existingAircraft.notes || '',
       isActive: existingAircraft.isActive ?? true,
       defaultDepartureIcao: existingAircraft.defaultDepartureIcao || '',
@@ -125,6 +128,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         isComplex: data.isComplex,
         isHighPerformance: data.isHighPerformance,
         isTailwheel: data.isTailwheel,
+        isMultiPilot: data.isMultiPilot,
         notes: data.notes || null,
         defaultDepartureIcao: data.defaultDepartureIcao ? normalizeLocation(data.defaultDepartureIcao) || null : null,
         defaultArrivalIcao: data.defaultArrivalIcao ? normalizeLocation(data.defaultArrivalIcao) || null : null,
@@ -306,7 +310,12 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             <input {...register('isTailwheel')} type="checkbox" className="checkbox" />
             {t('fields.isTailwheel')}
           </label>
+          <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+            <input {...register('isMultiPilot')} type="checkbox" className="checkbox" />
+            {t('fields.isMultiPilot')}
+          </label>
         </div>
+        <p className="form-helper">{t('form.multiPilotHelper')}</p>
       </div>
 
       {/* Logging defaults */}

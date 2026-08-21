@@ -124,7 +124,11 @@
       "lockedAccounts": "Gesperrte Konten",
       "disabledAccounts": "Deaktivierte Konten",
       "cloudBackupDestinations": "Cloud-Backup-Ziele",
-      "cloudBackupDestinationsNone": "Noch keine Cloud-Backup-Ziele von Benutzern konfiguriert."
+      "cloudBackupDestinationsNone": "Noch keine Cloud-Backup-Ziele von Benutzern konfiguriert.",
+      "totalSimulatorSessions": "Simulatorsitzungen",
+      "totalPassengerFlights": "Passagierflüge",
+      "totalContacts": "Kontakte",
+      "activeSessions": "Aktive Sitzungen"
     },
     "users": {
       "searchPlaceholder": "Nach E-Mail oder Name suchen...",
@@ -235,7 +239,14 @@
       "appVersion": "App-Version",
       "updateCheck": "Update-Prüfung",
       "updateCheckOn": "Aktiviert (alle {{interval}})",
-      "updateCheckOnStartupOnly": "Aktiviert (nur beim Start)"
+      "updateCheckOnStartupOnly": "Aktiviert (nur beim Start)",
+      "airportDatabaseUpdated": "Flughafen-Datenbank aktualisiert",
+      "airportDatabaseNeverLoaded": "Nie geladen",
+      "registrationPrefixes": "Kennzeichen-Präfixe",
+      "registrationPrefixesValue": "{{marks}} Staatszugehörigkeitszeichen, geprüft {{reviewed}}",
+      "maxSessionsPerUser": "Max. Sitzungen pro Benutzer",
+      "refreshReuseGrace": "Refresh-Kulanzzeit",
+      "oidcNativeRedirect": "OIDC-Native-Weiterleitung"
     },
     "announcements": {
       "createTitle": "Ankündigung erstellen",

@@ -28,6 +28,8 @@ const baseFlight: Flight = {
   aircraftReg: 'D-EFGH',
   aircraftType: 'C172',
   totalTime: 90,
+  isSimulator: false,
+  isPassenger: false,
   isPic: false,
   isDual: true,
   picTime: 0,

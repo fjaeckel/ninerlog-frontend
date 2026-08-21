@@ -18,6 +18,8 @@ const baseFlight: Flight = {
   offBlockTime: '12:28:00',
   onBlockTime: '14:23:00',
   totalTime: 115,
+  isSimulator: false,
+  isPassenger: false,
   isPic: true,
   isDual: false,
   picTime: 115,

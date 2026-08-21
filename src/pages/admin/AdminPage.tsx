@@ -99,7 +99,11 @@ function DashboardTab() {
   const stats = [
     { label: t('admin.dashboard.totalUsers'), value: data.totalUsers },
     { label: t('admin.dashboard.totalFlights'), value: data.totalFlights },
+    { label: t('admin.dashboard.totalSimulatorSessions'), value: data.totalSimulatorSessions },
+    { label: t('admin.dashboard.totalPassengerFlights'), value: data.totalPassengerFlights },
     { label: t('admin.dashboard.totalAircraft'), value: data.totalAircraft },
+    { label: t('admin.dashboard.totalContacts'), value: data.totalContacts },
+    { label: t('admin.dashboard.activeSessions'), value: data.activeSessions },
     { label: t('admin.dashboard.totalCredentials'), value: data.totalCredentials },
     { label: t('admin.dashboard.totalImports'), value: data.totalImports },
     { label: t('admin.dashboard.flightsThisMonth'), value: data.flightsThisMonth },
@@ -723,6 +727,7 @@ function MaintenanceTab() {
 
 function ConfigTab() {
   const { t } = useTranslation('common');
+  const { fmtDate } = useFormatPrefs();
   const { data, isLoading } = useAdminConfig();
 
   if (isLoading) return <div className="text-slate-500 dark:text-slate-400 text-sm">{t('admin.config.loadingConfig')}</div>;
@@ -745,6 +750,12 @@ function ConfigTab() {
         : <span className="text-slate-500 dark:text-slate-400">{'—'}</span>,
     },
     {
+      label: t('admin.config.oidcNativeRedirect'),
+      value: data.oidcNativeRedirect
+        ? <span className="font-mono text-xs break-all">{data.oidcNativeRedirect}</span>
+        : <span className="text-slate-500 dark:text-slate-400">{'—'}</span>,
+    },
+    {
       label: t('admin.config.appVersion'),
       value: data.appVersion
         ? <span className="font-mono text-xs">{data.appVersion}</span>
@@ -754,6 +765,33 @@ function ConfigTab() {
     { label: t('admin.config.serverUptime'), value: data.serverUptime },
     { label: t('admin.config.migrationVersion'), value: data.migrationVersion },
     { label: t('admin.config.airportDatabase'), value: `${data.airportDatabaseSize.toLocaleString()} airports` },
+    {
+      label: t('admin.config.airportDatabaseUpdated'),
+      value: data.airportDatabaseUpdatedAt
+        ? fmtDate(data.airportDatabaseUpdatedAt)
+        : <span className="text-slate-500 dark:text-slate-400">{t('admin.config.airportDatabaseNeverLoaded')}</span>,
+    },
+    {
+      label: t('admin.config.registrationPrefixes'),
+      value: data.registrationPrefixCount === undefined
+        ? <span className="text-slate-500 dark:text-slate-400">{'—'}</span>
+        : t('admin.config.registrationPrefixesValue', {
+            marks: data.registrationPrefixCount,
+            reviewed: data.registrationPrefixesReviewed
+              ? fmtDate(data.registrationPrefixesReviewed)
+              : '—',
+          }),
+    },
+    {
+      label: t('admin.config.maxSessionsPerUser'),
+      value: data.maxSessionsPerUser ?? <span className="text-slate-500 dark:text-slate-400">{'—'}</span>,
+    },
+    {
+      label: t('admin.config.refreshReuseGrace'),
+      value: data.refreshReuseGrace
+        ? <span className="font-mono text-xs">{data.refreshReuseGrace}</span>
+        : <span className="text-slate-500 dark:text-slate-400">{'—'}</span>,
+    },
     { label: t('admin.config.corsOrigins'), value: data.corsOrigins.join(', ') },
     { label: t('admin.config.rateLimitAuth'), value: data.rateLimitAuth },
     { label: t('admin.config.rateLimitAdmin'), value: data.rateLimitAdmin },

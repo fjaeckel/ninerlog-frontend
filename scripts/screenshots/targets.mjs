@@ -20,7 +20,18 @@ export const TARGETS = [
       await page.waitForTimeout(600);
     },
   },
+  {
+    name: 'flights-modal-simulator',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.getByRole('radio', { name: /simulator/i }).click();
+      await page.waitForTimeout(300);
+    },
+  },
   { name: 'flight-detail', path: '/flights/f1' },
+  { name: 'flight-detail-simulator', path: '/flights/f6' },
   { name: 'aircraft', path: '/aircraft' },
   {
     name: 'aircraft-modal',

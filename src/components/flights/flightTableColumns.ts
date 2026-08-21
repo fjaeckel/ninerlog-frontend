@@ -5,6 +5,40 @@ type Flight = components['schemas']['Flight'];
 /** The optional flights-list columns, as named by the API. */
 export type FlightColumnKey = components['schemas']['FlightListColumn'];
 
+/** What the function column reads for one entry. */
+export type FlightFunctionKind = 'sim' | 'pax' | 'pic' | 'dual' | 'sic' | 'none';
+
+/**
+ * An FSTD session and a flight the pilot was carried on log no flight
+ * function at all, so they take the column over rather than share it.
+ */
+export function flightFunctionKind(flight: Flight): FlightFunctionKind {
+  if (flight.isSimulator) return 'sim';
+  if (flight.isPassenger) return 'pax';
+  if (flight.isPic) return 'pic';
+  if (flight.isDual) return 'dual';
+  if ((flight.sicTime || 0) > 0) return 'sic';
+  return 'none';
+}
+
+/** The function column's text. SIM and PAX are translated; the rest are ICAO shorthand. */
+export function flightFunctionLabel(kind: FlightFunctionKind, t: (key: string) => string): string {
+  if (kind === 'sim') return t('simulatorBadge');
+  if (kind === 'pax') return t('passengerBadge');
+  if (kind === 'none') return '—';
+  return kind.toUpperCase();
+}
+
+/** The badge modifier each function kind wears. */
+export const FLIGHT_FUNCTION_BADGE: Record<FlightFunctionKind, string> = {
+  sim: 'badge-info',
+  pax: 'badge-neutral',
+  pic: 'badge-info',
+  dual: 'badge-expiring',
+  sic: 'badge-neutral',
+  none: 'badge-neutral',
+};
+
 /**
  * Reveal tiers for the optional flight table columns, narrowest first.
  * Container queries, not viewport queries. The class strings must stay

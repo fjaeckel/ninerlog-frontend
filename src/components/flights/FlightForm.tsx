@@ -9,6 +9,7 @@ import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { useSearchContacts, useCreateContact } from '../../hooks/useContacts';
 import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
 import { normalizeLocation } from '../../lib/airport';
+import { cn } from '../../lib/cn';
 import { extractApiError } from '../../lib/errors';
 import { useAuthStore } from '../../stores/authStore';
 import type { Aircraft } from '../../hooks/useAircraft';
@@ -22,12 +23,13 @@ const getCurrentUtcTime = (): string => {
 
 const flightSchema = z.object({
   date: z.string().min(1, 'Date is required'),
-  aircraftReg: z.string().min(1, 'Aircraft registration is required'),
+  isSimulator: z.boolean(),
+  aircraftReg: z.string().max(20),
   aircraftType: z.string().min(1, 'Aircraft type is required'),
-  departureIcao: z.string().min(1, 'Departure is required').max(100),
-  arrivalIcao: z.string().min(1, 'Arrival is required').max(100),
-  offBlockTime: z.string().min(1, 'Off-block time is required'),
-  onBlockTime: z.string().min(1, 'On-block time is required'),
+  departureIcao: z.string().max(100),
+  arrivalIcao: z.string().max(100),
+  offBlockTime: z.string(),
+  onBlockTime: z.string(),
   departureTime: z.string().optional().or(z.literal('')),
   arrivalTime: z.string().optional().or(z.literal('')),
   route: z.string().optional().or(z.literal('')),
@@ -54,6 +56,20 @@ const flightSchema = z.object({
   multiPilotTime: z.number().min(0),
   fstdType: z.string().optional().or(z.literal('')),
   endorsements: z.string().optional().or(z.literal('')),
+}).superRefine((v, ctx) => {
+  const missing = (path: keyof typeof v, message: string) => {
+    ctx.addIssue({ code: 'custom', path: [path], message });
+  };
+  if (v.isSimulator) {
+    if (!v.fstdType) missing('fstdType', 'Device type is required');
+    if (!v.simulatedFlightTime) missing('simulatedFlightTime', 'Session time is required');
+    return;
+  }
+  if (!v.aircraftReg) missing('aircraftReg', 'Aircraft registration is required');
+  if (!v.departureIcao) missing('departureIcao', 'Departure is required');
+  if (!v.arrivalIcao) missing('arrivalIcao', 'Arrival is required');
+  if (!v.offBlockTime) missing('offBlockTime', 'Off-block time is required');
+  if (!v.onBlockTime) missing('onBlockTime', 'On-block time is required');
 });
 
 type FlightFormData = z.infer<typeof flightSchema>;
@@ -129,6 +145,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     resolver: zodResolver(flightSchema),
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
+      isSimulator: false,
       aircraftReg: '',
       aircraftType: '',
       departureIcao: '',
@@ -166,6 +183,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     if (existingFlight && isEditing) {
       reset({
         date: existingFlight.date,
+        isSimulator: existingFlight.isSimulator ?? false,
         aircraftReg: existingFlight.aircraftReg,
         aircraftType: existingFlight.aircraftType,
         departureIcao: existingFlight.departureIcao || '',
@@ -301,6 +319,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isComplex: false,
         isHighPerformance: false,
         isTailwheel: false,
+        isMultiPilot: false,
       });
       setShowQuickAdd(false);
       setQuickAddMake('');
@@ -319,37 +338,30 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     if (lastFlight.arrivalIcao) setValue('arrivalIcao', '', { shouldValidate: false });
   };
 
+  // An FSTD session logs its duration and device instead of a route, block
+  // times and landings, and feeds no flight total.
+  const isSim = watch('isSimulator');
+
   // Determine if current aircraft is a glider/TMG (show launch method)
   const currentAircraftClass = (aircraftList ?? []).find(
     (ac) => ac.registration.toUpperCase() === (watch('aircraftReg') || '').toUpperCase()
   )?.aircraftClass;
-  const showLaunchMethod = currentAircraftClass === 'TMG' || currentAircraftClass === 'GLIDER' ||
-    (currentAircraftClass && currentAircraftClass.toLowerCase().includes('glider'));
+  const showLaunchMethod = !isSim && (currentAircraftClass === 'TMG' || currentAircraftClass === 'GLIDER' ||
+    (currentAircraftClass && currentAircraftClass.toLowerCase().includes('glider')));
 
   const onSubmit = async (data: FlightFormData) => {
     try {
-      const basePayload = {
+      // Columns both kinds of entry carry.
+      const sharedPayload = {
         date: data.date,
-        aircraftReg: data.aircraftReg.toUpperCase(),
+        isSimulator: data.isSimulator,
         aircraftType: data.aircraftType.toUpperCase(),
-        departureIcao: normalizeLocation(data.departureIcao),
-        arrivalIcao: normalizeLocation(data.arrivalIcao),
-        offBlockTime: data.offBlockTime + ':00',
-        onBlockTime: data.onBlockTime + ':00',
-        departureTime: data.departureTime ? data.departureTime + ':00' : undefined,
-        arrivalTime: data.arrivalTime ? data.arrivalTime + ':00' : undefined,
-        route: data.route || null,
-        ifrTime: data.ifrTime,
-        landings: data.landings,
-        ...(data.takeoffsDay !== undefined && { takeoffsDay: data.takeoffsDay }),
-        ...(data.takeoffsNight !== undefined && { takeoffsNight: data.takeoffsNight }),
         remarks: data.remarks || null,
         // Auto-derive instructor & PIC names from crew (single source of truth: Crew section).
         instructorName: crewMembers.find((m) => m.role === 'Instructor')?.name ?? null,
         instructorComments: data.instructorComments || null,
         simulatedFlightTime: data.simulatedFlightTime,
         groundTrainingTime: data.groundTrainingTime,
-        actualInstrumentTime: data.actualInstrumentTime,
         simulatedInstrumentTime: data.simulatedInstrumentTime,
         holds: data.holds,
         approaches: approaches.length > 0 ? approaches.map(a => ({
@@ -360,13 +372,35 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isIpc: data.isIpc,
         isFlightReview: data.isFlightReview,
         isProficiencyCheck: data.isProficiencyCheck,
-        launchMethod: (data.launchMethod || null) as any,
         picName: crewMembers.find((m) => m.role === 'PIC')?.name ?? null,
-        multiPilotTime: data.multiPilotTime,
         fstdType: data.fstdType || null,
         endorsements: data.endorsements || null,
         crewMembers: crewMembers.length > 0 ? crewMembers : undefined,
       };
+
+      // A training device is not flown between places: the API rejects the
+      // registration, route, block times and landings a flight requires, and
+      // carries zero in every flight-time column.
+      const basePayload = data.isSimulator
+        ? { ...sharedPayload, ifrTime: 0 }
+        : {
+            ...sharedPayload,
+            aircraftReg: data.aircraftReg.toUpperCase(),
+            departureIcao: normalizeLocation(data.departureIcao),
+            arrivalIcao: normalizeLocation(data.arrivalIcao),
+            offBlockTime: data.offBlockTime + ':00',
+            onBlockTime: data.onBlockTime + ':00',
+            departureTime: data.departureTime ? data.departureTime + ':00' : undefined,
+            arrivalTime: data.arrivalTime ? data.arrivalTime + ':00' : undefined,
+            route: data.route || null,
+            ifrTime: data.ifrTime,
+            actualInstrumentTime: data.actualInstrumentTime,
+            multiPilotTime: data.multiPilotTime,
+            landings: data.landings,
+            ...(data.takeoffsDay !== undefined && { takeoffsDay: data.takeoffsDay }),
+            ...(data.takeoffsNight !== undefined && { takeoffsNight: data.takeoffsNight }),
+            launchMethod: (data.launchMethod || null) as any,
+          };
 
       if (isEditing && flightId) {
         await updateFlight.mutateAsync({ id: flightId, data: basePayload });
@@ -391,8 +425,34 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           {t('form.lockedBySignature')}
         </div>
       )}
+
+      {/* Entry kind — a flight, or a session in a training device */}
+      <div role="radiogroup" aria-label={t('form.entryKind')} className="flex gap-2">
+        {([false, true] as const).map((simulator) => (
+          <button
+            key={String(simulator)}
+            type="button"
+            role="radio"
+            aria-checked={isSim === simulator}
+            disabled={isLocked}
+            onClick={() => setValue('isSimulator', simulator, { shouldValidate: true })}
+            className={cn(
+              'flex-1 min-h-11 rounded-lg border px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50',
+              isSim === simulator
+                ? 'border-blue-600 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
+                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700/50'
+            )}
+          >
+            {simulator ? t('form.entryKindSimulator') : t('form.entryKindFlight')}
+          </button>
+        ))}
+      </div>
+      {isSim && (
+        <p className="-mt-4 text-xs text-slate-500 dark:text-slate-400">{t('form.simulatorHelper')}</p>
+      )}
+
       {/* Auto-fill from last flight — prominent banner */}
-      {!isEditing && lastFlight && (
+      {!isEditing && !isSim && lastFlight && (
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">{t('form.fillFromLastFlightTitle')}</p>
@@ -425,6 +485,26 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             )}
           </div>
 
+          {isSim ? (
+            <div>
+              <label htmlFor="aircraftType" className="form-label">
+                {t('fields.aircraftType')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register('aircraftType')}
+                type="text"
+                id="aircraftType"
+                className="input"
+                placeholder="C172"
+                autoComplete="off"
+                onChange={(e) => setValue('aircraftType', e.target.value.toUpperCase(), { shouldValidate: true })}
+              />
+              {errors.aircraftType && (
+                <p className="form-error">{errors.aircraftType.message}</p>
+              )}
+              <p className="form-helper">{t('form.simulatorTypeHelper')}</p>
+            </div>
+          ) : (
           <div className="relative" ref={suggestionsRef}>
             <label htmlFor="aircraftReg" className="form-label">
               {t('fields.aircraftReg')} <span className="text-red-500">*</span>
@@ -474,13 +554,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               </button>
             )}
           </div>
+          )}
         </div>
 
         {/* Hidden aircraft type — auto-filled from aircraft selection */}
-        <input {...register('aircraftType')} type="hidden" />
+        {!isSim && <input {...register('aircraftType')} type="hidden" />}
 
         {/* Quick-add aircraft inline form */}
-        {showQuickAdd && (
+        {!isSim && showQuickAdd && (
           <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
               {t('form.quickAddTitle', { reg: regUppercase })}
@@ -532,7 +613,50 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         )}
       </fieldset>
 
+      {/* Session — the device and its duration stand in for route and block times */}
+      {isSim && (
+        <fieldset>
+          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('sections.session')}</legend>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 [&>*]:min-w-0">
+            <div>
+              <label htmlFor="sessionFstdType" className="form-label">
+                {t('fields.fstdType')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register('fstdType')}
+                type="text"
+                id="sessionFstdType"
+                className="input"
+                placeholder="e.g. FNPT II, FFS A320, BATD"
+              />
+              {errors.fstdType && (
+                <p className="form-error">{errors.fstdType.message}</p>
+              )}
+              <p className="form-helper">{t('form.fstdHelper')}</p>
+            </div>
+            <div>
+              <label htmlFor="sessionTime" className="form-label">
+                {t('fields.simulatedFlightTime')} <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register('simulatedFlightTime', { valueAsNumber: true })}
+                type="number"
+                id="sessionTime"
+                step="1"
+                min="0"
+                className="input"
+              />
+              {errors.simulatedFlightTime && (
+                <p className="form-error">{errors.simulatedFlightTime.message}</p>
+              )}
+              <p className="form-helper">{t('form.minutesFtd')}</p>
+            </div>
+          </div>
+        </fieldset>
+      )}
+
       {/* Route & Times */}
+      {!isSim && (
       <fieldset>
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.routeAndTimesUtc')}</legend>
 
@@ -646,8 +770,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           <p className="form-helper">{t('form.commaSeparatedIcao')}</p>
         </div>
       </fieldset>
+      )}
 
       {/* Takeoffs & Landings — right after route */}
+      {!isSim && (
       <fieldset>
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.takeoffsAndLandings')}</legend>
         <div className="grid grid-cols-3 gap-3 [&>*]:min-w-0">
@@ -692,6 +818,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         </div>
         <p className="form-helper mt-2">{t('form.takeoffsAutoHelper')}</p>
       </fieldset>
+      )}
 
       {/* Launch Method — shown for glider/TMG aircraft */}
       {showLaunchMethod && (
@@ -796,7 +923,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       </fieldset>
 
       {/* Total block time (edit mode only) */}
-      {isEditing && existingFlight && (
+      {isEditing && existingFlight && !isSim && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div>
             <label className="form-label">
@@ -813,7 +940,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       {/* Takeoffs & Landings — old location removed, now after route */}
 
       {/* Auto-Calculated Values (edit mode) */}
-      {isEditing && existingFlight && (
+      {isEditing && existingFlight && !isSim && (
         <fieldset>
           <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.autoCalculatedValues')}</legend>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -885,6 +1012,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         {expandedSections.instrument && (
           <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {!isSim && (
             <div>
               <label htmlFor="ifrTime" className="form-label">{t('fields.ifrTime')}</label>
               <input
@@ -897,6 +1025,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               />
               <p className="form-helper">Minutes</p>
             </div>
+            )}
+            {!isSim && (
             <div>
               <label htmlFor="actualInstrumentTime" className="form-label">{t('fields.actualInstrumentTime')}</label>
               <input
@@ -909,6 +1039,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               />
               <p className="form-helper">{t('form.minutesImc')}</p>
             </div>
+            )}
             <div>
               <label htmlFor="simulatedInstrumentTime" className="form-label">{t('fields.simulatedInstrumentTime')}</label>
               <input
@@ -1027,6 +1158,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               />
               <p className="form-helper">{t('form.minutes')}</p>
             </div>
+            {!isSim && (
             <div>
               <label htmlFor="simulatedFlightTime" className="form-label">{t('fields.simulatedFlightTime')}</label>
               <input
@@ -1039,6 +1171,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               />
               <p className="form-helper">{t('form.minutesFtd')}</p>
             </div>
+            )}
+            {!isSim && (
             <div>
               <label htmlFor="multiPilotTime" className="form-label">{t('fields.multiPilotTime')}</label>
               <input
@@ -1055,10 +1189,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   : t('form.multiPilotHelper')}
               </p>
             </div>
+            )}
           </div>
 
           {/* FSTD Type — shown when simulated flight time > 0 */}
-          {(watch('simulatedFlightTime') > 0 || watch('fstdType')) && (
+          {!isSim && (watch('simulatedFlightTime') > 0 || watch('fstdType')) && (
             <div className="mt-3">
               <label htmlFor="fstdType" className="form-label">{t('fields.fstdType')}</label>
               <input
@@ -1128,7 +1263,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       {/* Submit */}
       <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
         <button type="submit" disabled={isSubmitting || isLocked} className="btn-primary flex-1">
-          {isSubmitting ? t('saving') : isEditing ? t('updateFlight') : t('logFlight')}
+          {isSubmitting
+            ? t('saving')
+            : isEditing
+              ? t(isSim ? 'updateSession' : 'updateFlight')
+              : t(isSim ? 'logSession' : 'logFlight')}
         </button>
         <button type="button" onClick={onClose} className="btn-secondary flex-1">
           {t('common:cancel')}
