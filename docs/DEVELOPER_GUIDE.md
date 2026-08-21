@@ -240,6 +240,10 @@ surprise.
 
 ### The auth interceptor
 
+> Session behaviour is governed by
+> **[`../ninerlog-api/docs/SESSION_CONTRACT.md`](../../ninerlog-api/docs/SESSION_CONTRACT.md)**,
+> a contract binding on both repos. Read it before changing anything below.
+
 `api/client.ts` registers an `openapi-fetch` middleware that:
 
 - **on request** — waits for the bootstrap refresh, then attaches
@@ -247,12 +251,32 @@ surprise.
 - **on response** — if a non-auth endpoint returns `401`, performs a **single**
   token refresh (de-duplicated across concurrent requests via a shared
   `refreshPromise`), retries the original request once, and redirects to
-  `/login` if the refresh fails.
+  `/login` only if that refresh actually cleared the session.
 
 A proactive timer also refreshes the token ~60s before expiry, and
 `visibilitychange` / `online` / `pageshow` listeners refresh a stale token when
 the installed PWA is resumed. You generally don't need to touch any of this —
 just use the hooks.
+
+**Only a `401` from `/auth/refresh` ends a session.** Everything else — `429`,
+any `5xx`, a dropped connection, an unparseable body — is transient:
+`refreshAccessToken` backs off and retries, and the stored tokens stay put. A
+backend restart, a deploy or a moment of bad mobile signal must not sign anyone
+out, and `src/__tests__/api/refreshResilience.test.ts` fails if that ever
+regresses.
+
+### Sessions across tabs and devices
+
+A user may be signed in on several devices at once (five by default); signing in
+on one never signs out another. Profile → Data & Security lists the signed-in
+devices and can end any of them, via `src/hooks/useSessions.ts`.
+
+Within one browser, tabs share `localStorage` but keep their own in-memory copy
+of the tokens, so a rotation in one tab would otherwise leave the others holding
+a superseded token. `client.ts` broadcasts each new pair over a
+`BroadcastChannel` named `ninerlog-auth`, and a tab adopts an incoming pair when
+it is newer than its own. The API additionally accepts a just-rotated token for
+a short grace window, which covers the races the broadcast cannot.
 
 ### The hook pattern
 

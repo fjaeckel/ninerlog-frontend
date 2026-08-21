@@ -199,6 +199,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List active sessions
+         * @description Lists the signed-in devices holding a live session for the authenticated user, most recently used first.
+         */
+        get: operations["listSessions"];
+        put?: never;
+        post?: never;
+        /**
+         * Revoke all other sessions
+         * @description Revokes every session the user holds apart from the one making the request.
+         */
+        delete: operations["revokeOtherSessions"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/sessions/{sessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Revoke a session
+         * @description Revokes one of the authenticated user's sessions. Revoking the current session signs this device out.
+         */
+        delete: operations["revokeSession"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/change-password": {
         parameters: {
             query?: never;
@@ -2737,6 +2781,38 @@ export interface components {
             expiresIn: number;
             user: components["schemas"]["User"];
         };
+        /** @description One signed-in device holding a live session. */
+        Session: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description Browser and platform derived from the User-Agent
+             * @example Safari on iPhone
+             */
+            deviceLabel: string;
+            /**
+             * @description Address the session was last renewed from
+             * @example 203.0.113.7
+             */
+            ipAddress?: string;
+            /**
+             * Format: date-time
+             * @description When the session was created by signing in
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description When the session last refreshed its access token
+             */
+            lastUsedAt: string;
+            /**
+             * Format: date-time
+             * @description When the session ends unless it is refreshed again
+             */
+            expiresAt: string;
+            /** @description Whether this is the session making the request */
+            current: boolean;
+        };
         /** @description The sign-in methods this server offers. Exactly one authentication mode is active; the flags below are all derived from it and from what the operator has configured. */
         AuthProviders: {
             /**
@@ -2765,6 +2841,16 @@ export interface components {
                  * @example /api/v1/auth/oidc/authorize
                  */
                 authorizeUrl?: string;
+                /**
+                 * @description Where a native app sends its in-app browser to start the login. The same redirect endpoint, flagged so the callback finishes at `nativeRedirectUri` instead of the web frontend.
+                 * @example /api/v1/auth/oidc/authorize?native=1
+                 */
+                nativeAuthorizeUrl?: string;
+                /**
+                 * @description Where the callback sends the browser after a login started at `nativeAuthorizeUrl`, carrying the same `oidc_code` or `oidc_error` parameter. A custom scheme, which a native app can intercept without an associated domain. From OIDC_NATIVE_POST_LOGIN_REDIRECT.
+                 * @example ninerlog://auth/callback
+                 */
+                nativeRedirectUri?: string;
             };
         };
         RegistrationResponse: {
@@ -5095,6 +5181,8 @@ export interface components {
             newUsersThisWeek: number;
             lockedAccounts: number;
             disabledAccounts: number;
+            /** @description Live sessions across all users. A session is live while it holds an unrevoked, unexpired refresh token, so this counts signed-in devices rather than users. */
+            activeSessions: number;
             /** @description Counts of user-configured cloud backup destinations. */
             cloudBackupDestinations: {
                 /** @description Total number of cloud backup destinations configured across all users. */
@@ -5198,6 +5286,16 @@ export interface components {
              */
             rateLimitAuth: string;
             /**
+             * @description Concurrent sessions kept per user (MAX_SESSIONS_PER_USER) before the least recently used is evicted
+             * @example 5
+             */
+            maxSessionsPerUser?: number;
+            /**
+             * @description How long a rotated refresh token stays usable (REFRESH_REUSE_GRACE)
+             * @example 30s
+             */
+            refreshReuseGrace?: string;
+            /**
              * @description Admin endpoint rate limit
              * @example 30 req/min
              */
@@ -5245,6 +5343,11 @@ export interface components {
             authMode?: "local" | "oidc";
             /** @description Configured OIDC issuer URL. Present only in oidc mode; the client ID and secret are never exposed. */
             oidcIssuer?: string;
+            /**
+             * @description Where a native-client login finishes, from OIDC_NATIVE_POST_LOGIN_REDIRECT. Present only in oidc mode.
+             * @example ninerlog://auth/callback
+             */
+            oidcNativeRedirect?: string;
             /**
              * @description Names of registered cloud backup providers (e.g. s3, sftp, webdav). Empty when cloud backups are disabled.
              * @example [
@@ -6491,7 +6594,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         accessToken?: string;
-                        /** @description New refresh token (rotation — old token is invalidated) */
+                        /** @description New refresh token. The presented token is superseded, but stays usable for a short grace window so two clients refreshing at once do not evict each other. Presenting it after the grace revokes the whole session. */
                         refreshToken?: string;
                         /** @description Token expiry in seconds */
                         expiresIn?: number;
@@ -6499,6 +6602,77 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    listSessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active sessions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        sessions: components["schemas"]["Session"][];
+                        /** @description Concurrent sessions kept per user before the least recently used is evicted */
+                        maxSessions: number;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    revokeOtherSessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Other sessions revoked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Number of sessions revoked */
+                        revoked: number;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    revokeSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session revoked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
     changePassword: {

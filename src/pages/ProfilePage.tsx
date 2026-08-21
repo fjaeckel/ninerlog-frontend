@@ -21,6 +21,7 @@ import { PasskeySection } from '../components/auth/PasskeySection';
 import BackupsPage from './backups/BackupsPage';
 import { BaselineSection } from '../components/profile/BaselineSection';
 import { FlightColumnsSection } from '../components/profile/FlightColumnsSection';
+import { SessionsSection } from '../components/profile/SessionsSection';
 
 export default function ProfilePage() {
   const { t } = useTranslation(['settings', 'common']);
@@ -592,6 +593,9 @@ export default function ProfilePage() {
       {/* ════════════════════════════════════════════════════════════════ */}
       {activeTab === 'data' && (
         <div className="space-y-6">
+          {/* Signed-in devices */}
+          <SessionsSection />
+
           {/* Initial Hours Snapshot */}
           <BaselineSection />
 

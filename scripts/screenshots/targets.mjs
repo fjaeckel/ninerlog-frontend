@@ -43,6 +43,14 @@ export const TARGETS = [
   { name: 'help', path: '/help' },
   { name: 'profile', path: '/profile' },
   {
+    name: 'profile-sessions',
+    path: '/profile',
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
     name: 'update-indicator',
     path: '/dashboard',
     act: async (page) => {

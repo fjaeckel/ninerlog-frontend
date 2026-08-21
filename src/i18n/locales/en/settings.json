@@ -233,5 +233,24 @@
     "dark": "Dark",
     "system": "System",
     "change": "Theme: {{theme}}. Select to change."
+  },
+  "sessions": {
+    "title": "Signed-in Devices",
+    "description": "Every device currently signed in to your account. Signing in somewhere new does not sign you out here.",
+    "descriptionWithMax": "Every device currently signed in to your account. Signing in somewhere new does not sign you out here — you can stay signed in on up to {{max}} devices, after which the least recently used one is signed out.",
+    "loading": "Loading…",
+    "empty": "No other devices are signed in.",
+    "loadFailed": "Could not load your signed-in devices. Please try again.",
+    "thisDevice": "This device",
+    "lastActive": "Last active {{when}}",
+    "signedIn": "Signed in {{when}}",
+    "signOut": "Sign out",
+    "signOutThis": "Sign out here",
+    "signOutOthers": "Sign out all other devices ({{count}})",
+    "signingOutOthers": "Signing out…",
+    "revoked": "Signed out {{device}}.",
+    "revokedOthers_one": "Signed out 1 other device.",
+    "revokedOthers_other": "Signed out {{count}} other devices.",
+    "revokeFailed": "Could not sign that device out. Please try again."
   }
 }
