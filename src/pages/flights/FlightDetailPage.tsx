@@ -10,6 +10,11 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { FormModal } from '../../components/ui/FormModal';
 import { PageWrapper } from '../../components/ui/PageWrapper';
 import { SignatureSection } from '../../components/flights/SignatureSection';
+import {
+  FLIGHT_FUNCTION_BADGE,
+  flightFunctionKind,
+  flightFunctionLabel,
+} from '../../components/flights/flightTableColumns';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { DataTile, DataTileGrid } from '../../components/ui/DataTile';
@@ -71,13 +76,8 @@ export default function FlightDetailPage() {
   const departure = splitAirportLabel(flight.departureIcao, flight.departureAirportName);
   const arrival = splitAirportLabel(flight.arrivalIcao, flight.arrivalAirportName);
 
-  const pilotFunction = flight.isPic
-    ? 'PIC'
-    : flight.isDual
-      ? 'Dual'
-      : (flight.sicTime || 0) > 0
-        ? 'SIC'
-        : '—';
+  const functionKind = flightFunctionKind(flight);
+  const pilotFunction = functionKind === 'dual' ? 'Dual' : flightFunctionLabel(functionKind, t);
 
   const hasInstrumentData =
     (flight.ifrTime ?? 0) > 0 ||
@@ -161,14 +161,20 @@ export default function FlightDetailPage() {
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
               {fmtDateLong(flight.date)}
             </p>
-            <FlightRouteHeading
-              as="h1"
-              size="page"
-              className="mt-1"
-              departure={departure}
-              arrival={arrival}
-              title={`${departureLabel} → ${arrivalLabel}`}
-            />
+            {flight.isSimulator ? (
+              <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight text-slate-800 sm:text-3xl dark:text-slate-100">
+                {flight.fstdType || t('simulatorEntry')}
+              </h1>
+            ) : (
+              <FlightRouteHeading
+                as="h1"
+                size="page"
+                className="mt-1"
+                departure={departure}
+                arrival={arrival}
+                title={`${departureLabel} → ${arrivalLabel}`}
+              />
+            )}
           </div>
           <div className="shrink-0 text-right">
             <p className="font-mono text-2xl font-bold leading-none tabular-nums text-slate-800 dark:text-slate-100">
@@ -177,7 +183,7 @@ export default function FlightDetailPage() {
             <span
               className={cn(
                 'mt-1.5 inline-flex text-[11px] font-semibold',
-                flight.isPic ? 'badge-info' : flight.isDual ? 'badge-expiring' : 'badge-neutral'
+                FLIGHT_FUNCTION_BADGE[functionKind]
               )}
             >
               {pilotFunction}
@@ -251,6 +257,12 @@ export default function FlightDetailPage() {
         <FlightForm flightId={flight.id} onClose={() => setShowEditForm(false)} />
       </FormModal>
 
+      {flight.isPassenger && (
+        <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
+          {t('passengerHelper')}
+        </div>
+      )}
+
       {/* Flight details — multi-column flow; each panel carries
           break-inside-avoid and its own bottom margin */}
       <div className="columns-1 gap-4 md:columns-2 xl:columns-3">
@@ -280,6 +292,7 @@ export default function FlightDetailPage() {
         </div>
 
         {/* Takeoffs & Landings */}
+        {!flight.isSimulator && (
         <div className="card mb-4 break-inside-avoid">
           <h2 className="section-title mb-3">{t('detail.takeoffsAndLandings')}</h2>
           <DataTileGrid>
@@ -299,6 +312,7 @@ export default function FlightDetailPage() {
             />
           </DataTileGrid>
         </div>
+        )}
 
         {/* Instrument & Approaches */}
         {hasInstrumentData && (

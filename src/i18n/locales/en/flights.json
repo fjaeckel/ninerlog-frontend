@@ -19,7 +19,8 @@
     "training": "Training & Currency",
     "crew": "Crew",
     "remarks": "Remarks & Endorsements",
-    "flags": "Flight Flags"
+    "flags": "Flight Flags",
+    "session": "Session"
   },
   "fields": {
     "date": "Date",
@@ -270,7 +271,8 @@
     "delete": "Delete",
     "close": "Close",
     "created": "Created {{date}}",
-    "updated": "Updated {{date}}"
+    "updated": "Updated {{date}}",
+    "device": "Device"
   },
   "form": {
     "lockedBySignature": "This flight is locked by an instructor signature and can't be edited. Void the signature (on the flight detail page) to make changes.",
@@ -325,7 +327,12 @@
     "picNamePlaceholder": "Auto-filled: Self (PIC) or instructor name (Dual)",
     "fillFromLastFlightTitle": "Fill from last flight",
     "fill": "Fill",
-    "takeoffsAutoHelper": "Day & night takeoffs are auto-calculated if left empty"
+    "takeoffsAutoHelper": "Day & night takeoffs are auto-calculated if left empty",
+    "entryKind": "Entry type",
+    "entryKindFlight": "Flight",
+    "entryKindSimulator": "Simulator session",
+    "simulatorHelper": "A session in a training device. It records its own duration and never counts towards flight time, totals or currency.",
+    "simulatorTypeHelper": "The aircraft type the device represents."
   },
   "crewRoles": {
     "PIC": "PIC",
@@ -335,5 +342,12 @@
     "Passenger": "Passenger",
     "SafetyPilot": "Safety Pilot",
     "Examiner": "Examiner"
-  }
+  },
+  "simulatorBadge": "SIM",
+  "simulatorEntry": "Simulator session",
+  "passengerBadge": "PAX",
+  "passengerEntry": "Carried as passenger",
+  "passengerHelper": "You were carried on this flight rather than crewing it, so it counts towards no total, statistic or currency.",
+  "logSession": "Log Session",
+  "updateSession": "Update Session"
 }

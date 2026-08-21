@@ -1685,6 +1685,10 @@ export interface paths {
          *     total from previous pages / total time) and a per-page certification and
          *     signature block, so each printed page can be individually signed.
          *
+         *     Every logged row is rendered, co-pilot (SIC) flights included: co-pilot
+         *     time is part of total time of flight and the EASA layout has a CO-PILOT
+         *     column for it (AMC1 FCL.050 col 16).
+         *
          *     If the pilot has recorded prior experience (`PUT /users/me/baseline`),
          *     those hours open the balance: they are carried into the first
          *     "total from previous pages" row and into every running total and the
@@ -2984,6 +2988,12 @@ export interface components {
              */
             isTailwheel: boolean;
             /**
+             * @description Whether the type is certificated for a minimum crew of two pilots. Co-pilot time is loggable only on such an aircraft.
+             * @default false
+             * @example false
+             */
+            isMultiPilot: boolean;
+            /**
              * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, or any custom value)
              * @example SEP_LAND
              */
@@ -3057,6 +3067,12 @@ export interface components {
              */
             isTailwheel: boolean;
             /**
+             * @description Whether the type is certificated for a minimum crew of two pilots. Co-pilot time is loggable only on such an aircraft.
+             * @default false
+             * @example false
+             */
+            isMultiPilot: boolean;
+            /**
              * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, or any custom value)
              * @example SEP_LAND
              */
@@ -3089,6 +3105,11 @@ export interface components {
             isHighPerformance?: boolean;
             /** @example false */
             isTailwheel?: boolean;
+            /**
+             * @description Whether the type is certificated for a minimum crew of two pilots. Co-pilot time is loggable only on such an aircraft.
+             * @example false
+             */
+            isMultiPilot?: boolean;
             /**
              * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, or any custom value)
              * @example SEP_LAND
@@ -3441,6 +3462,29 @@ export interface components {
              */
             multiPilotTime?: number;
             /**
+             * @description True when this entry is an FSTD (simulator) session rather than a flight.
+             *     A session carries its duration in simulatedFlightTime and zero in every
+             *     flight-time column — totalTime, picTime, dualTime, sicTime, dualGivenTime,
+             *     multiPilotTime, soloTime, crossCountryTime, nightTime and ifrTime — and
+             *     contributes to no flight total, statistic or currency calculation
+             *     (EASA AMC1 FCL.050: session time is recorded separately and is never
+             *     summed with flight time).
+             * @example false
+             */
+            isSimulator: boolean;
+            /**
+             * @description True when the user was carried on this flight rather than crewing it.
+             *     Derived on save: another person is pilot-in-command and the operation
+             *     carries no co-pilot seat the user may occupy — the aircraft is not
+             *     certificated for a minimum crew of two, the user is not a required
+             *     safety pilot, and no co-pilot seat was declared. The row keeps its
+             *     route and block times as the record of the trip and carries zero in
+             *     every flight-time column, contributing to no total, statistic or
+             *     currency calculation.
+             * @example false
+             */
+            isPassenger: boolean;
+            /**
              * @description FSTD type designation (e.g., "FNPT II", "FFS A320", "FTD Level 5", "BATD", "AATD"). Required by EASA AMC1 FCL.050 Col 22 and FAA §61.51(b)(1)(iv).
              * @example FNPT II
              */
@@ -3473,38 +3517,61 @@ export interface components {
              */
             signatureId?: string | null;
         };
+        /**
+         * @description Creates either a flight or an FSTD (simulator) session.
+         *
+         *     For a flight (`isSimulator` absent or false) `aircraftReg`, `departureIcao`,
+         *     `arrivalIcao`, `offBlockTime`, `onBlockTime` and `landings` are all required;
+         *     omitting any of them returns 400.
+         *
+         *     For an FSTD session (`isSimulator: true`) they must be omitted — a training
+         *     device is not flown between places and has no block times. The session
+         *     requires `fstdType` and `simulatedFlightTime` instead. Session time is never
+         *     summed into flight time (EASA AMC1 FCL.050 Cols 20-22).
+         */
         FlightCreate: {
             /**
              * Format: date
              * @example 2026-01-30
              */
             date: string;
-            /** @example D-EFGH */
-            aircraftReg: string;
-            /** @example C172 */
+            /**
+             * @description Marks this entry as an FSTD (simulator) session rather than a flight.
+             * @default false
+             */
+            isSimulator: boolean;
+            /**
+             * @description Aircraft registration. Required for a flight, rejected for an FSTD session.
+             * @example D-EFGH
+             */
+            aircraftReg?: string;
+            /**
+             * @description Aircraft type. For an FSTD session, the aircraft type the device represents.
+             * @example C172
+             */
             aircraftType: string;
             /**
-             * @description Departure location — an ICAO code (resolved to coordinates for maps/distance) or a free-text place name for off-airport sites
+             * @description Departure location — an ICAO code (resolved to coordinates for maps/distance) or a free-text place name for off-airport sites. Required for a flight, rejected for an FSTD session.
              * @example EDDF
              */
-            departureIcao: string;
+            departureIcao?: string;
             /**
-             * @description Arrival location — an ICAO code (resolved to coordinates for maps/distance) or a free-text place name for off-airport sites
+             * @description Arrival location — an ICAO code (resolved to coordinates for maps/distance) or a free-text place name for off-airport sites. Required for a flight, rejected for an FSTD session.
              * @example EDDH
              */
-            arrivalIcao: string;
+            arrivalIcao?: string;
             /**
              * Format: time
-             * @description Off-block time (chocks off / engine start) in UTC
+             * @description Off-block time (chocks off / engine start) in UTC. Required for a flight, rejected for an FSTD session.
              * @example 14:15:00
              */
-            offBlockTime: string;
+            offBlockTime?: string;
             /**
              * Format: time
-             * @description On-block time (chocks on / engine shutdown) in UTC
+             * @description On-block time (chocks on / engine shutdown) in UTC. Required for a flight, rejected for an FSTD session.
              * @example 16:55:00
              */
-            onBlockTime: string;
+            onBlockTime?: string;
             /**
              * Format: time
              * @description Takeoff time in UTC
@@ -3518,7 +3585,7 @@ export interface components {
              */
             arrivalTime?: string;
             /**
-             * @description Total block time in minutes calculated from offBlockTime and onBlockTime. This field is computed by the server and should not be provided by the client.
+             * @description Total block time in minutes calculated from offBlockTime and onBlockTime. Always 0 for an FSTD session. This field is computed by the server and should not be provided by the client.
              * @example 150
              */
             readonly totalTime?: number;
@@ -3538,10 +3605,10 @@ export interface components {
              */
             ifrTime: number;
             /**
-             * @description Total number of landings. Day/night split is auto-calculated from sunset/sunrise at arrival airport.
+             * @description Total number of landings. Day/night split is auto-calculated from sunset/sunrise at arrival airport. Required for a flight, rejected for an FSTD session.
              * @example 3
              */
-            landings: number;
+            landings?: number;
             /**
              * @description Number of day takeoffs. Provide to override auto-calculation.
              * @example 3
@@ -3574,8 +3641,10 @@ export interface components {
             instructorComments?: string | null;
             sicTime?: number;
             dualGivenTime?: number;
+            /** @description FSTD session duration in minutes (EASA AMC1 FCL.050 Col 22). Required and positive when isSimulator is true. */
             simulatedFlightTime?: number;
             groundTrainingTime?: number;
+            /** @description Actual instrument (IMC) time in minutes. Always 0 for an FSTD session. */
             actualInstrumentTime?: number;
             simulatedInstrumentTime?: number;
             holds?: number;
@@ -3589,7 +3658,7 @@ export interface components {
             picName?: string | null;
             /** @description Multi-pilot time in minutes (EASA AMC1 FCL.050 Col 10) */
             multiPilotTime?: number;
-            /** @description FSTD type designation (e.g., "FNPT II", "FFS A320") */
+            /** @description FSTD type designation (e.g., "FNPT II", "FFS A320"). Required when isSimulator is true. */
             fstdType?: string | null;
             /** @description Structured instrument approach details */
             approaches?: components["schemas"]["ApproachEntryInput"][];
@@ -3655,6 +3724,8 @@ export interface components {
             picName?: string | null;
             /** @description Multi-pilot time in minutes */
             multiPilotTime?: number;
+            /** @description Switches the entry between flight and FSTD session. Changing it clears the columns that do not apply to the new kind. */
+            isSimulator?: boolean;
             /** @description FSTD type designation */
             fstdType?: string | null;
             approaches?: components["schemas"]["ApproachEntryInput"][];
@@ -5171,7 +5242,12 @@ export interface components {
         };
         AdminStats: {
             totalUsers: number;
+            /** @description Flights across all users. Excludes FSTD sessions and passenger flights, which are counted separately. */
             totalFlights: number;
+            /** @description FSTD (simulator) sessions across all users. Recorded separately from flights and never summed into flight time (EASA AMC1 FCL.050). */
+            totalSimulatorSessions: number;
+            /** @description Flights across all users whose owner was carried as a passenger rather than crewing. Recorded separately and never summed into flight time. */
+            totalPassengerFlights: number;
             totalAircraft: number;
             /** @description Contacts across all users. Grows on its own as flights are logged, since crew names are turned into contacts automatically. */
             totalContacts: number;

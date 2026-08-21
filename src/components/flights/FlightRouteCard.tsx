@@ -48,10 +48,15 @@ export default function FlightRouteCard({ flight }: { flight: Flight }) {
 
   return (
     <div className="card">
-      <h2 className="section-title mb-4">{t('detail.aircraftAndRoute')}</h2>
+      <h2 className="section-title mb-4">
+        {flight.isSimulator ? t('detail.device') : t('detail.aircraftAndRoute')}
+      </h2>
 
-      {/* Aircraft */}
-      <div className="flex items-center gap-3 rounded-lg bg-slate-50 dark:bg-slate-700/40 px-3 py-2.5 mb-5">
+      {/* Aircraft — an FSTD session names the device instead of a registration */}
+      <div className={cn(
+        'flex items-center gap-3 rounded-lg bg-slate-50 px-3 py-2.5 dark:bg-slate-700/40',
+        !flight.isSimulator && 'mb-5'
+      )}>
         <span
           className="flex w-9 h-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300"
           aria-hidden="true"
@@ -60,11 +65,11 @@ export default function FlightRouteCard({ flight }: { flight: Flight }) {
         </span>
         <div className="min-w-0">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
-            {t('detail.aircraft')}
+            {flight.isSimulator ? t('fields.fstdType') : t('detail.aircraft')}
           </p>
           <p className="flex flex-wrap items-baseline gap-x-2">
             <span className="font-mono font-semibold text-slate-800 dark:text-slate-100 break-all">
-              {flight.aircraftReg}
+              {flight.isSimulator ? flight.fstdType : flight.aircraftReg}
             </span>
             <span className="text-sm text-slate-500 dark:text-slate-400 break-words">
               {flight.aircraftType}
@@ -74,6 +79,7 @@ export default function FlightRouteCard({ flight }: { flight: Flight }) {
       </div>
 
       {/* Route */}
+      {!flight.isSimulator && (
       <ol>
         <RouteStop
           icon={PlaneTakeoff}
@@ -100,6 +106,7 @@ export default function FlightRouteCard({ flight }: { flight: Flight }) {
           isLast
         />
       </ol>
+      )}
 
       {meta.length > 0 && (
         <dl className="grid gap-3 sm:grid-cols-2 mt-5 pt-4 border-t border-slate-200 dark:border-slate-700">

@@ -131,6 +131,7 @@ export default function QuickLogPage() {
         isComplex: false,
         isHighPerformance: false,
         isTailwheel: false,
+        isMultiPilot: false,
       });
       setSelectedReg(regUppercase);
       setShowQuickAdd(false);

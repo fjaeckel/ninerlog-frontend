@@ -5,7 +5,11 @@ import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { splitAirportLabel } from '../../lib/airport';
 import { cn } from '../../lib/cn';
 import FlightRouteHeading from './FlightRouteHeading';
-import type { FlightCardColumns } from './flightTableColumns';
+import {
+  flightFunctionKind,
+  flightFunctionLabel,
+  type FlightCardColumns,
+} from './flightTableColumns';
 
 type Flight = components['schemas']['Flight'];
 
@@ -34,6 +38,8 @@ interface Cell {
 export default function FlightCard({ flight, columns, onClick }: FlightCardProps) {
   const { t, i18n } = useTranslation('flights');
   const { fmtDuration, fmtDate } = useFormatPrefs();
+
+  const functionKind = flightFunctionKind(flight);
 
   const departure = splitAirportLabel(flight.departureIcao, flight.departureAirportName);
   const arrival = splitAirportLabel(flight.arrivalIcao, flight.arrivalAirportName);
@@ -110,7 +116,13 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
       {/* Header — the entry's identity. The row only navigates. */}
       <div className="bg-slate-50 pl-4 pr-3 py-2.5 dark:bg-slate-700/40">
         <div className="flex items-center gap-2">
-          <FlightRouteHeading className="min-w-0 flex-1" departure={departure} arrival={arrival} />
+          {flight.isSimulator ? (
+            <p className="min-w-0 flex-1 truncate text-base font-bold leading-tight tracking-tight text-slate-800 dark:text-slate-100">
+              {flight.fstdType || t('simulatorEntry')}
+            </p>
+          ) : (
+            <FlightRouteHeading className="min-w-0 flex-1" departure={departure} arrival={arrival} />
+          )}
           <p className="shrink-0 font-mono text-base font-bold tabular-nums text-slate-800 dark:text-slate-100">
             {fmtDuration(flight.totalTime)}
           </p>
@@ -126,14 +138,14 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
             <span
               className={cn(
                 'shrink-0 rounded px-1 text-xs font-bold uppercase',
-                flight.isPic
+                functionKind === 'pic' || functionKind === 'sim'
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                  : flight.isDual
+                  : functionKind === 'dual'
                     ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
                     : 'bg-slate-200 text-slate-600 dark:bg-slate-600 dark:text-slate-300'
               )}
             >
-              {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : (flight.sicTime || 0) > 0 ? 'SIC' : '—'}
+              {flightFunctionLabel(functionKind, t)}
             </span>
           )}
           {flight.signatureId && (

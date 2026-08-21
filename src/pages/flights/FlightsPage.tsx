@@ -17,7 +17,7 @@ import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { selectFlightColumns, selectFlightCardColumns } from '../../components/flights/flightTableColumns';
+import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, FLIGHT_FUNCTION_BADGE } from '../../components/flights/flightTableColumns';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
 import type { components, operations } from '../../api/schema';
@@ -693,15 +693,14 @@ export default function FlightsPage() {
                     })}
                     {columns.function && (
                       <td className="px-3 py-2 whitespace-nowrap text-center">
-                        <span className={`badge ${
-                          flight.isPic
-                            ? 'badge-info'
-                            : flight.isDual
-                              ? 'badge-expiring'
-                              : 'badge-neutral'
-                        }`}>
-                          {flight.isPic ? 'PIC' : flight.isDual ? 'DUAL' : (flight.sicTime || 0) > 0 ? 'SIC' : '—'}
-                        </span>
+                        {(() => {
+                          const kind = flightFunctionKind(flight);
+                          return (
+                            <span className={`badge ${FLIGHT_FUNCTION_BADGE[kind]}`}>
+                              {flightFunctionLabel(kind, (k) => t(`flights:${k}`))}
+                            </span>
+                          );
+                        })()}
                       </td>
                     )}
                     {columns.landings && (

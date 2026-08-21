@@ -124,7 +124,11 @@
       "lockedAccounts": "Locked Accounts",
       "disabledAccounts": "Disabled Accounts",
       "cloudBackupDestinations": "Cloud Backup Destinations",
-      "cloudBackupDestinationsNone": "No cloud backup destinations configured by users yet."
+      "cloudBackupDestinationsNone": "No cloud backup destinations configured by users yet.",
+      "totalSimulatorSessions": "Simulator Sessions",
+      "totalPassengerFlights": "Passenger Flights",
+      "totalContacts": "Contacts",
+      "activeSessions": "Active Sessions"
     },
     "users": {
       "searchPlaceholder": "Search by email or name...",
@@ -235,7 +239,14 @@
       "appVersion": "App Version",
       "updateCheck": "Update check",
       "updateCheckOn": "Enabled (every {{interval}})",
-      "updateCheckOnStartupOnly": "Enabled (at startup only)"
+      "updateCheckOnStartupOnly": "Enabled (at startup only)",
+      "airportDatabaseUpdated": "Airport Database Updated",
+      "airportDatabaseNeverLoaded": "Never loaded",
+      "registrationPrefixes": "Registration Prefixes",
+      "registrationPrefixesValue": "{{marks}} nationality marks, reviewed {{reviewed}}",
+      "maxSessionsPerUser": "Max Sessions per User",
+      "refreshReuseGrace": "Refresh Reuse Grace",
+      "oidcNativeRedirect": "OIDC Native Redirect"
     },
     "announcements": {
       "createTitle": "Create Announcement",

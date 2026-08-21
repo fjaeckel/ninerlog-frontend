@@ -49,6 +49,8 @@ const flight = (i, dep, arr, reg, type, minutes, offset) => ({
   takeoffsNight: i % 3 === 0 ? 1 : 0,
   simulatedFlightTime: 0,
   groundTrainingTime: 0,
+  isSimulator: false,
+  isPassenger: false,
   remarks: i % 2 === 0 ? 'Training flight, crosswind circuits' : null,
   instructorName: null,
   instructorComments: null,
@@ -57,9 +59,30 @@ const flight = (i, dep, arr, reg, type, minutes, offset) => ({
   updatedAt: iso('2026-01-01'),
 });
 
+const simulatorSession = (i, type, minutes, fstdType, offset) => ({
+  ...flight(i, null, null, '', type, 0, offset),
+  isSimulator: true,
+  aircraftReg: '',
+  picTime: 0,
+  nightTime: 0,
+  ifrTime: 0,
+  departureTime: null,
+  arrivalTime: null,
+  landingsDay: 0,
+  landingsNight: 0,
+  allLandings: 0,
+  takeoffsDay: 0,
+  takeoffsNight: 0,
+  simulatedFlightTime: minutes,
+  fstdType,
+  remarks: 'IR renewal — partial panel, holds',
+});
+
 export const flights = [
   flight(1, 'EDDF', 'EDDH', 'D-EABC', 'C172', 95, -2),
+  simulatorSession(6, 'A320', 120, 'FFS A320', -3),
   flight(2, 'EDDH', 'EDDF', 'D-EABC', 'C172', 88, -5),
+  { ...flight(7, 'EDDF', 'EDDM', 'D-EFGH', 'PA28', 70, -8), isPassenger: true, picTime: 0, totalTime: 70 },
   flight(3, 'EDMO', 'LOWI', 'D-EFGH', 'PA28', 145, -11),
   flight(4, 'LOWI', 'EDMO', 'D-EFGH', 'PA28', 152, -12),
   flight(5, 'EDDB', 'EDDB', 'D-EABC', 'C172', 60, -20),
@@ -68,20 +91,20 @@ export const flights = [
 export const aircraft = [
   {
     id: 'a1', userId: 'u1', registration: 'D-EABC', type: 'C172', make: 'Cessna', model: '172S Skyhawk',
-    aircraftClass: 'SEP_LAND', isComplex: false, isHighPerformance: false, isTailwheel: false,
+    aircraftClass: 'SEP_LAND', isComplex: false, isHighPerformance: false, isTailwheel: false, isMultiPilot: false,
     defaultDepartureIcao: 'EDDF', defaultArrivalIcao: 'EDDF', isActive: true,
     notes: 'Club aircraft — book via the online calendar.',
     createdAt: iso('2024-02-01'), updatedAt: iso('2026-01-01'),
   },
   {
     id: 'a2', userId: 'u1', registration: 'D-EFGH', type: 'PA28', make: 'Piper', model: 'PA-28-181 Archer',
-    aircraftClass: 'SEP_LAND', isComplex: true, isHighPerformance: true, isTailwheel: false,
+    aircraftClass: 'SEP_LAND', isComplex: true, isHighPerformance: true, isTailwheel: false, isMultiPilot: true,
     defaultDepartureIcao: 'EDMO', defaultArrivalIcao: null, isActive: true,
     notes: null, createdAt: iso('2024-02-01'), updatedAt: iso('2026-01-01'),
   },
   {
     id: 'a3', userId: 'u1', registration: 'D-MTOW', type: 'DR40', make: 'Robin', model: 'DR400-180',
-    aircraftClass: 'SEP_LAND', isComplex: false, isHighPerformance: false, isTailwheel: true,
+    aircraftClass: 'SEP_LAND', isComplex: false, isHighPerformance: false, isTailwheel: true, isMultiPilot: false,
     defaultDepartureIcao: null, defaultArrivalIcao: null, isActive: false,
     notes: null, createdAt: iso('2024-02-01'), updatedAt: iso('2026-01-01'),
   },
@@ -170,7 +193,8 @@ export const currency = {
 };
 
 export const adminStats = {
-  totalUsers: 128, totalFlights: 9421, totalAircraft: 312, totalCredentials: 244,
+  totalUsers: 128, totalFlights: 9421, totalSimulatorSessions: 486, totalPassengerFlights: 132,
+  totalAircraft: 312, totalContacts: 517, activeSessions: 194, totalCredentials: 244,
   totalImports: 87, flightsThisMonth: 216, newUsersThisWeek: 6, lockedAccounts: 2, disabledAccounts: 1,
   importsByFormat: { FOREFLIGHT_CSV: 31, LOGTEN_CSV: 18, MYFLIGHTBOOK_CSV: 14,
     VEREINSFLIEGER_EXTENDED_CSV: 9, SKYDEMON_CSV: 7, CSV: 5, VEREINSFLIEGER_CSV: 3 },
@@ -187,6 +211,8 @@ export const adminConfig = {
   registrationPrefixCount: 210,
   registrationPrefixesReviewed: '2026-08-17',
   corsOrigins: ['https://logbook.example.com'],
+  maxSessionsPerUser: 5,
+  refreshReuseGrace: '30s',
   rateLimitAuth: '10 req/min',
   rateLimitAdmin: '30 req/min',
   smtpConfigured: true,
@@ -496,7 +522,8 @@ export function bodyFor(pathname) {
   if (classRatingsMatch) return classRatings[classRatingsMatch[1]] ?? [];
   if (/^\/licenses\/[^/]+\/currency$/.test(path)) return currency;
   if (/^\/licenses\/[^/]+\/statistics$/.test(path)) return statistics;
-  if (/^\/flights\/[^/]+$/.test(path)) return flights[0];
+  const flightMatch = path.match(/^\/flights\/([^/]+)$/);
+  if (flightMatch) return flights.find((f) => f.id === flightMatch[1]) ?? flights[0];
   if (path.startsWith('/documents')) return EMPTY_PAGE;
   return null;
 }

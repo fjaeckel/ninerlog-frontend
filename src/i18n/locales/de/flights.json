@@ -19,7 +19,8 @@
     "training": "Ausbildung & Recency",
     "crew": "Besatzung",
     "remarks": "Bemerkungen & Vermerke",
-    "flags": "Flug-Merkmale"
+    "flags": "Flug-Merkmale",
+    "session": "Sitzung"
   },
   "fields": {
     "date": "Datum",
@@ -270,7 +271,8 @@
     "delete": "Löschen",
     "close": "Schließen",
     "created": "Erstellt {{date}}",
-    "updated": "Aktualisiert {{date}}"
+    "updated": "Aktualisiert {{date}}",
+    "device": "Gerät"
   },
   "form": {
     "lockedBySignature": "Dieser Flug ist durch eine Fluglehrer-Unterschrift gesperrt und kann nicht bearbeitet werden. Widerrufe die Unterschrift (auf der Flugdetailseite), um Änderungen vorzunehmen.",
@@ -325,7 +327,12 @@
     "picNamePlaceholder": "Automatisch: Selbst (PIC) oder Fluglehrername (Dual)",
     "fillFromLastFlightTitle": "Aus letztem Flug übernehmen",
     "fill": "Übernehmen",
-    "takeoffsAutoHelper": "Tag- und Nachtstarts werden automatisch berechnet, wenn das Feld leer bleibt"
+    "takeoffsAutoHelper": "Tag- und Nachtstarts werden automatisch berechnet, wenn das Feld leer bleibt",
+    "entryKind": "Eintragsart",
+    "entryKindFlight": "Flug",
+    "entryKindSimulator": "Simulatorsitzung",
+    "simulatorHelper": "Eine Sitzung in einem Übungsgerät. Sie erfasst ihre eigene Dauer und zählt nie zur Flugzeit, zu Summen oder zur Währigkeit.",
+    "simulatorTypeHelper": "Das Luftfahrzeugmuster, das das Gerät abbildet."
   },
   "crewRoles": {
     "PIC": "PIC",
@@ -335,5 +342,12 @@
     "Passenger": "Passagier",
     "SafetyPilot": "Sicherheitspilot",
     "Examiner": "Prüfer"
-  }
+  },
+  "simulatorBadge": "SIM",
+  "simulatorEntry": "Simulatorsitzung",
+  "passengerBadge": "PAX",
+  "passengerEntry": "Als Passagier mitgeflogen",
+  "passengerHelper": "Sie wurden auf diesem Flug mitgenommen, statt ihn zu führen; er zählt daher zu keiner Summe, Statistik oder Währigkeit.",
+  "logSession": "Sitzung eintragen",
+  "updateSession": "Sitzung aktualisieren"
 }
