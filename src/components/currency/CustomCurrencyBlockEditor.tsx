@@ -1,5 +1,13 @@
 import { Clock, Filter, Target, Plus, Trash2, ChevronUp, ChevronDown, Info } from 'lucide-react';
-import type { CustomRuleInput, CurrencyFilter, CurrencyRequirementDef, FilterOp, WindowUnit } from '../../types/customCurrency';
+import type {
+  CustomRuleInput,
+  CurrencyFilter,
+  CurrencyFilterField,
+  CurrencyMetric,
+  CurrencyRequirementDef,
+  FilterOp,
+  WindowUnit,
+} from '../../types/customCurrency';
 import {
   METRIC_OPTIONS, FILTER_FIELD_OPTIONS, CLASS_TYPE_OPTIONS, LAUNCH_METHOD_OPTIONS,
 } from '../../types/customCurrency';
@@ -13,11 +21,11 @@ import {
 
 const WINDOW_UNITS: WindowUnit[] = ['days', 'weeks', 'months', 'years'];
 
-function fieldMeta(field: string) {
+function fieldMeta(field: CurrencyFilterField) {
   return FILTER_FIELD_OPTIONS.find((f) => f.value === field) ?? FILTER_FIELD_OPTIONS[0];
 }
 
-function metricMeta(metric: string) {
+function metricMeta(metric: CurrencyMetric) {
   return METRIC_OPTIONS.find((m) => m.value === metric);
 }
 
@@ -87,7 +95,7 @@ export function CustomCurrencyBlockEditor({ value, onChange }: Props) {
   const updateFilter = (i: number, next: CurrencyFilter) => setFilters(filters.map((f, idx) => (idx === i ? next : f)));
   const removeFilter = (i: number) => setFilters(filters.filter((_, idx) => idx !== i));
 
-  const onFilterFieldChange = (i: number, field: string) => {
+  const onFilterFieldChange = (i: number, field: CurrencyFilterField) => {
     const meta = fieldMeta(field);
     const op: FilterOp = meta.ops[0];
     const next: CurrencyFilter = { field, op };
@@ -110,7 +118,7 @@ export function CustomCurrencyBlockEditor({ value, onChange }: Props) {
   const updateReq = (i: number, next: CurrencyRequirementDef) => setReqs(reqs.map((r, idx) => (idx === i ? next : r)));
   const removeReq = (i: number) => setReqs(reqs.filter((_, idx) => idx !== i));
 
-  const onReqMetricChange = (i: number, metric: string) => {
+  const onReqMetricChange = (i: number, metric: CurrencyMetric) => {
     const meta = metricMeta(metric);
     const prev = reqs[i];
     const next: CurrencyRequirementDef = { ...prev, metric };
@@ -163,7 +171,7 @@ export function CustomCurrencyBlockEditor({ value, onChange }: Props) {
             value={value.emoji ?? ''}
             placeholder="🙂"
             aria-label="Emoji"
-            onChange={(e) => patch({ emoji: e.target.value || null })}
+            onChange={(e) => patch({ emoji: e.target.value || undefined })}
           />
           <input
             className="input text-sm flex-1"
@@ -180,7 +188,7 @@ export function CustomCurrencyBlockEditor({ value, onChange }: Props) {
           value={value.description ?? ''}
           placeholder="What is this rule for? (optional)"
           aria-label="Description"
-          onChange={(e) => patch({ description: e.target.value || null })}
+          onChange={(e) => patch({ description: e.target.value || undefined })}
         />
       </Block>
 
@@ -217,7 +225,7 @@ export function CustomCurrencyBlockEditor({ value, onChange }: Props) {
             return (
               <div key={i} className="flex items-start gap-2" data-testid={`filter-row-${i}`}>
                 <div className="flex-1 flex flex-wrap items-center gap-2">
-                  <select className="input text-sm" value={f.field} onChange={(e) => onFilterFieldChange(i, e.target.value)} aria-label="Filter field">
+                  <select className="input text-sm" value={f.field} onChange={(e) => onFilterFieldChange(i, e.target.value as CurrencyFilterField)} aria-label="Filter field">
                     {FILTER_FIELD_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                   {meta.ops.length > 1 && (
@@ -264,7 +272,7 @@ export function CustomCurrencyBlockEditor({ value, onChange }: Props) {
                     data-testid={`requirement-min-${i}`}
                     onChange={(e) => updateReq(i, { ...r, min: Number(e.target.value) })}
                   />
-                  <select className="input text-sm" value={r.metric} onChange={(e) => onReqMetricChange(i, e.target.value)} aria-label="Metric">
+                  <select className="input text-sm" value={r.metric} onChange={(e) => onReqMetricChange(i, e.target.value as CurrencyMetric)} aria-label="Metric">
                     {METRIC_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                   {meta?.time && (

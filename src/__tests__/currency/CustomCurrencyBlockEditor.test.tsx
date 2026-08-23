@@ -8,7 +8,7 @@ function baseInput(): CustomRuleInput {
   return {
     name: 'Night landings',
     emoji: '🌙',
-    description: null,
+    description: undefined,
     definition: {
       window: { amount: 90, unit: 'days' },
       filters: [{ field: 'has_night', op: 'is_true' }],

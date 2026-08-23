@@ -8,7 +8,7 @@ function item(overrides = {}): CustomRuleWithStatus {
   return {
     rule: {
       id: 'r1', userId: 'u1', name: 'Night landings', emoji: '🌙',
-      description: null, enabled: true, notify: false, isShared: false, createdAt: '', updatedAt: '',
+      description: undefined, enabled: true, notify: false, isShared: false, createdAt: '', updatedAt: '',
       definition: { window: { amount: 90, unit: 'days' }, requirements: [{ metric: 'night_landings', min: 3 }] },
       ...overrides,
     },

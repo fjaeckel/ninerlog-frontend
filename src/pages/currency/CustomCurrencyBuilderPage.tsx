@@ -23,7 +23,12 @@ const STARTER_DRAFT: CustomRuleInput = yamlToInput(STARTER_YAML);
 
 /** Map a stored rule to the editable input shape. */
 function ruleToInput(rule: CustomCurrencyRule): CustomRuleInput {
-  return { name: rule.name, emoji: rule.emoji ?? null, description: rule.description ?? null, definition: rule.definition };
+  return {
+    name: rule.name,
+    emoji: rule.emoji ?? undefined,
+    description: rule.description ?? undefined,
+    definition: rule.definition,
+  };
 }
 
 /** Light client-side check so Save/Preview only fire on a plausible rule. The

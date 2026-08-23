@@ -74,8 +74,8 @@ export function yamlToInput(text: string): CustomRuleInput {
 
   return {
     name: doc.name.trim(),
-    emoji: typeof doc.emoji === 'string' ? doc.emoji : null,
-    description: typeof doc.description === 'string' ? doc.description : null,
+    emoji: typeof doc.emoji === 'string' ? doc.emoji : undefined,
+    description: typeof doc.description === 'string' ? doc.description : undefined,
     definition,
   };
 }
