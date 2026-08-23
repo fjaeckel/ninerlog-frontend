@@ -35,6 +35,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/oidc/authorize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Start an OIDC login (browser redirect)
+         * @description A browser redirect endpoint, not a JSON API: open it in a system browser
+         *     or web-auth session rather than calling it from a generated client. It
+         *     mints the state, nonce and PKCE verifier, plants a short-lived
+         *     browser-binding cookie, and answers `302` to the provider's
+         *     authorization URL.
+         *
+         *     `native=1` finishes the login at the native redirect URI instead of the
+         *     web frontend; both URLs are advertised by `GET /auth/providers`.
+         */
+        get: operations["authorizeOidc"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/oidc/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * OIDC provider redirect target (browser redirect)
+         * @description Where the identity provider sends the browser back. A browser redirect
+         *     endpoint, not a JSON API — clients never call it directly.
+         *
+         *     On success it redirects to the frontend (or the native redirect URI)
+         *     with a single-use `oidc_code` parameter to be posted to
+         *     `/auth/oidc/exchange`. Every failure also ends in a redirect, carrying
+         *     an `oidc_error` code instead — consent denied, an invalid or expired
+         *     state, a missing email claim, an email already held by a local account,
+         *     or a disabled account.
+         */
+        get: operations["oidcCallback"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/oidc/exchange": {
         parameters: {
             query?: never;
@@ -808,6 +863,190 @@ export interface paths {
          */
         get: operations["getAllCurrencyStatus"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/custom-currency": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the caller's custom currency rules
+         * @description Returns every rule the caller owns, each bundled with its current
+         *     evaluation. Disabled rules are listed but evaluated as `unknown`.
+         */
+        get: operations["listCustomCurrencyRules"];
+        put?: never;
+        /**
+         * Create a custom currency rule
+         * @description Creates a rule owned by the caller and returns it with a first
+         *     evaluation. An account may hold at most 200 rules.
+         */
+        post: operations["createCustomCurrencyRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/custom-currency/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Evaluate an unsaved rule definition
+         * @description Evaluates a definition against the caller's flights without storing it,
+         *     so a rule can be tried out while it is being written. Subject to the
+         *     `expensive` rate limit (15/min).
+         */
+        post: operations["previewCustomCurrencyRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/custom-currency/shared/{shareToken}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a shared rule by its share token
+         * @description Returns the read-only projection of a rule whose owner has enabled
+         *     sharing. Owner identity is omitted. Requires authentication, but the
+         *     caller need not own the rule.
+         */
+        get: operations["getSharedCustomCurrencyRule"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/custom-currency/shared/{shareToken}/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import a shared rule into the caller's account
+         * @description Copies a shared rule into the caller's own rules. The copy records the
+         *     source rule in `importedFrom` and is not itself shared.
+         */
+        post: operations["importSharedCustomCurrencyRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/custom-currency/{ruleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one custom currency rule */
+        get: operations["getCustomCurrencyRule"];
+        /**
+         * Replace a custom currency rule
+         * @description Replaces the rule's metadata and definition; sharing state is untouched.
+         */
+        put: operations["updateCustomCurrencyRule"];
+        post?: never;
+        /**
+         * Delete a custom currency rule
+         * @description Deletes the rule permanently. Copies other users imported from it are
+         *     kept; their `importedFrom` is cleared.
+         */
+        delete: operations["deleteCustomCurrencyRule"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/custom-currency/{ruleId}/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enable sharing for a rule
+         * @description Turns on sharing and mints a share token if the rule does not have one.
+         *     The token is stable across disable/enable cycles.
+         */
+        post: operations["enableCustomCurrencyRuleShare"];
+        /**
+         * Disable sharing for a rule
+         * @description Stops serving the rule at its share token. Existing imports are unaffected.
+         */
+        delete: operations["disableCustomCurrencyRuleShare"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/custom-currency/{ruleId}/enabled": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Pause or resume a rule
+         * @description A disabled rule is kept and listed but not evaluated and not surfaced as
+         *     active currency.
+         */
+        put: operations["setCustomCurrencyRuleEnabled"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/custom-currency/{ruleId}/notify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Opt a rule in or out of expiry notifications
+         * @description Per-rule opt-in. Mail is only sent when the rule is enabled and the user
+         *     has email notifications switched on.
+         */
+        put: operations["setCustomCurrencyRuleNotify"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1630,7 +1869,13 @@ export interface paths {
         };
         /**
          * Export full data backup as JSON
-         * @description Export all user data (flights, aircraft, licenses, class ratings, credentials) as a JSON backup file
+         * @description Exports everything the user owns as a JSON backup file: flights (with
+         *     crew), aircraft, licences and class ratings, credentials, contacts,
+         *     custom currency rules, notification preferences and the carried-forward
+         *     hours baseline.
+         *
+         *     This is the same payload a cloud backup run writes, and
+         *     `POST /imports/json` restores every section of it.
          */
         get: operations["exportDataJSON"];
         put?: never;
@@ -1653,14 +1898,23 @@ export interface paths {
         /**
          * Restore a NinerLog JSON backup
          * @description Restore a previously exported NinerLog JSON backup into the authenticated
-         *     user's account. Recreates aircraft, licenses, class ratings, credentials,
-         *     flights and crew members from the backup. New UUIDs are assigned so the
-         *     backup can be restored into any NinerLog installation (including the one
-         *     it was exported from).
+         *     user's account. Recreates every section the backup carries: aircraft,
+         *     licences, class ratings, credentials, flights and crew members,
+         *     contacts, custom currency rules, notification preferences and the
+         *     carried-forward hours baseline. New UUIDs are assigned so the backup can
+         *     be restored into any NinerLog installation (including the one it was
+         *     exported from).
          *
          *     This is an additive operation — it does not modify or delete existing
-         *     data. Aircraft whose registration already exists for the user are
-         *     skipped (and the existing aircraft is referenced by imported flights).
+         *     data, with two exceptions that are single-row settings rather than
+         *     collections: notification preferences and the flight baseline replace
+         *     whatever the account currently has.
+         *
+         *     Aircraft whose registration already exists for the user are skipped (and
+         *     the existing aircraft is referenced by imported flights); contacts whose
+         *     name the account already holds are skipped the same way. Custom currency
+         *     rules are revalidated on restore and count against the per-account
+         *     limit; a rule's sharing state is never carried over.
          */
         post: operations["importDataJSON"];
         delete?: never;
@@ -4737,7 +4991,7 @@ export interface components {
             /** @description Unit of measurement (e.g., "landings", "hours", "flights") */
             unit: string;
             /** @description Human-readable progress description */
-            message?: string;
+            message: string;
         };
         /**
          * @description Aircraft class rating type:
@@ -5167,10 +5421,29 @@ export interface components {
             /** @example 11 */
             crewMembersImported: number;
             /**
-             * @description Contacts created because a crew name in the backup matched none of this account's contacts. Contacts are not carried in the backup format, so a restore into an empty account creates one per distinct crew name.
+             * @description Contacts restored from the backup's own contacts section
+             * @example 12
+             */
+            contactsImported: number;
+            /**
+             * @description Contacts skipped because this account already holds that name
+             * @example 2
+             */
+            contactsSkipped: number;
+            /**
+             * @description Contacts created because a crew name in the backup matched none of this account's contacts — counted after the backup's own contacts have been restored, so it covers only crew names with no contact record of their own.
              * @example 5
              */
             contactsCreated: number;
+            /**
+             * @description User-authored currency rules restored. Sharing state is never carried over: a restored rule is private until shared again.
+             * @example 3
+             */
+            customCurrencyRulesImported: number;
+            /** @description Whether the backup carried notification preferences that were applied */
+            notificationPreferencesImported: boolean;
+            /** @description Whether the backup carried a carried-forward hours baseline that was applied */
+            flightBaselineImported: boolean;
         };
         PaginatedImports: {
             data: components["schemas"]["ImportResult"][];
@@ -6161,6 +6434,151 @@ export interface components {
             /** Format: double */
             distanceNm: number;
         };
+        /** @description Rolling lookback anchored at the moment of evaluation: only flights on or after (now − amount × unit) count. */
+        CustomCurrencyWindow: {
+            /** @example 90 */
+            amount: number;
+            /**
+             * @example days
+             * @enum {string}
+             */
+            unit: "days" | "weeks" | "months" | "years";
+        };
+        /**
+         * @description Narrows the set of flights a rule counts. `op` determines how
+         *     `value`/`values` are read: `eq` matches one value, `in` matches any of
+         *     `values`, and `is_true` tests a boolean or derived field and ignores
+         *     both. Filters combine with logical AND.
+         */
+        CustomCurrencyFilter: {
+            /**
+             * @example aircraft_class
+             * @enum {string}
+             */
+            field: "aircraft_class" | "aircraft_type" | "aircraft_registration" | "launch_method" | "aircraft_complex" | "aircraft_high_performance" | "aircraft_tailwheel" | "is_pic" | "is_dual" | "has_night" | "has_ifr" | "is_cross_country";
+            /**
+             * @example eq
+             * @enum {string}
+             */
+            op: "eq" | "in" | "is_true";
+            /**
+             * @description The value to match when `op` is `eq`
+             * @example SEP_LAND
+             */
+            value?: string;
+            /** @description The values to match when `op` is `in` */
+            values?: string[];
+        };
+        /** @description A single "at least N" threshold on an aggregated metric over the filtered, windowed flight set. Requirements combine with logical AND. */
+        CustomCurrencyThreshold: {
+            /**
+             * @description Time metrics (`unit` applies): `total_time`, `pic_time`,
+             *     `dual_time`, `night_time`, `ifr_time`, `cross_country_time`.
+             *     Count metrics (`unit` ignored): `flights`, `landings`,
+             *     `day_landings`, `night_landings`, `takeoffs`, `day_takeoffs`,
+             *     `night_takeoffs`, `approaches`, `holds`.
+             * @example landings
+             * @enum {string}
+             */
+            metric: "total_time" | "pic_time" | "dual_time" | "night_time" | "ifr_time" | "cross_country_time" | "flights" | "landings" | "day_landings" | "night_landings" | "takeoffs" | "day_takeoffs" | "night_takeoffs" | "approaches" | "holds";
+            /**
+             * Format: double
+             * @description The threshold the metric must reach
+             * @example 3
+             */
+            min: number;
+            /**
+             * @description How `min` is expressed, for time metrics only. Defaults to hours. Rejected on count metrics.
+             * @enum {string}
+             */
+            unit?: "hours" | "minutes";
+            /**
+             * @description Optional display label for this requirement
+             * @example 3 landings in 90 days
+             */
+            label?: string;
+        };
+        /** @description The declarative rule document: a lookback window, filters selecting which flights count, and requirements measured against the aggregated flight metrics. */
+        CustomCurrencyRuleBody: {
+            window: components["schemas"]["CustomCurrencyWindow"];
+            filters?: components["schemas"]["CustomCurrencyFilter"][];
+            requirements: components["schemas"]["CustomCurrencyThreshold"][];
+        };
+        /** @description A stored, user-authored currency definition. Rules are private by default; enabling sharing exposes a read-only copy at a share token that other users can import. */
+        CustomCurrencyRule: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            /** @example Night landings */
+            name: string;
+            description?: string;
+            /** @example 🌙 */
+            emoji?: string;
+            definition: components["schemas"]["CustomCurrencyRuleBody"];
+            /** @description A paused rule is kept and listed but not evaluated. */
+            enabled: boolean;
+            /** @description Per-rule opt-in to expiry and lapse notification emails. */
+            notify: boolean;
+            isShared: boolean;
+            /** @description Present once sharing has been enabled at least once. */
+            shareToken?: string;
+            /**
+             * Format: uuid
+             * @description The source rule this one was imported from, when applicable.
+             */
+            importedFrom?: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        /** @description The result of evaluating a rule definition against the caller's flights. */
+        CustomCurrencyEvaluation: {
+            /** @enum {string} */
+            status: "current" | "expiring" | "expired" | "unknown";
+            /** @example last 90 days */
+            windowLabel: string;
+            requirements: components["schemas"]["CurrencyRequirement"][];
+            /**
+             * Format: date
+             * @description The last date the rule stays current assuming no further flights. Set only when the rule is currently met and a lapse date is computable.
+             */
+            expiresOn?: string;
+            /** Format: date-time */
+            evaluatedAt: string;
+        };
+        /** @description A stored rule bundled with its current evaluation — the rule carries the definition for editing, the evaluation carries status and progress for display. */
+        CustomCurrencyRuleWithStatus: {
+            rule: components["schemas"]["CustomCurrencyRule"];
+            evaluation: components["schemas"]["CustomCurrencyEvaluation"];
+        };
+        /** @description Read-only projection of a shared rule. Owner identity is omitted. */
+        SharedCustomCurrencyRule: {
+            name: string;
+            description?: string;
+            emoji?: string;
+            definition: components["schemas"]["CustomCurrencyRuleBody"];
+            shareToken: string;
+        };
+        /** @description Writable fields of a custom currency rule. */
+        CustomCurrencyRuleInput: {
+            /** @example Night landings */
+            name: string;
+            description?: string;
+            /** @example 🌙 */
+            emoji?: string;
+            definition: components["schemas"]["CustomCurrencyRuleBody"];
+        };
+        CustomCurrencyPreviewRequest: {
+            definition: components["schemas"]["CustomCurrencyRuleBody"];
+        };
+        CustomCurrencyEnabledRequest: {
+            enabled: boolean;
+        };
+        CustomCurrencyNotifyRequest: {
+            notify: boolean;
+        };
         Error: {
             /**
              * @description Error message
@@ -6208,7 +6626,10 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
-        /** @description Unauthorized - missing or invalid token */
+        /**
+         * @description Unauthorized - missing or invalid token, or a token whose session has
+         *     been revoked or whose account is disabled or deleted
+         */
         Unauthorized: {
             headers: {
                 [name: string]: unknown;
@@ -6346,6 +6767,10 @@ export interface components {
          *     Deletions are not reported: a removed record simply stops appearing.
          */
         UpdatedSince: string;
+        /** @description Custom currency rule UUID */
+        CustomCurrencyRuleId: string;
+        /** @description Opaque share token minted when sharing was enabled for a rule */
+        CustomCurrencyShareToken: string;
     };
     requestBodies: never;
     headers: never;
@@ -6369,6 +6794,85 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthProviders"];
+                };
+            };
+        };
+    };
+    authorizeOidc: {
+        parameters: {
+            query?: {
+                /** @description Finish the login at the app's native redirect URI. Any affirmative value (`1`, `true`, `yes`) selects native mode. */
+                native?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Redirect to the identity provider */
+            302: {
+                headers: {
+                    /** @description The provider's authorization URL */
+                    Location?: string;
+                    /** @description Short-lived browser-binding cookie for this login attempt */
+                    "Set-Cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The login could not be started */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description OIDC is not configured on this server, or the provider is unreachable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    oidcCallback: {
+        parameters: {
+            query?: {
+                /** @description Authorization code issued by the provider */
+                code?: string;
+                /** @description Opaque state minted by /auth/oidc/authorize */
+                state?: string;
+                /** @description Error code reported by the provider (for example `access_denied`) */
+                error?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Redirect back to the frontend or native redirect URI, carrying either `oidc_code` or `oidc_error` */
+            302: {
+                headers: {
+                    /** @description Frontend or native redirect URI */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description OIDC is not configured on this server */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -7843,6 +8347,322 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    listCustomCurrencyRules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's rules, oldest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCurrencyRuleWithStatus"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    createCustomCurrencyRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomCurrencyRuleInput"];
+            };
+        };
+        responses: {
+            /** @description Rule created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCurrencyRuleWithStatus"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    previewCustomCurrencyRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomCurrencyPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Evaluation of the submitted definition */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCurrencyEvaluation"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getSharedCustomCurrencyRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Opaque share token minted when sharing was enabled for a rule */
+                shareToken: components["parameters"]["CustomCurrencyShareToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The shared rule */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SharedCustomCurrencyRule"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    importSharedCustomCurrencyRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Opaque share token minted when sharing was enabled for a rule */
+                shareToken: components["parameters"]["CustomCurrencyShareToken"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The imported copy, with its first evaluation */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCurrencyRuleWithStatus"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getCustomCurrencyRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Custom currency rule UUID */
+                ruleId: components["parameters"]["CustomCurrencyRuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rule and its current evaluation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCurrencyRuleWithStatus"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateCustomCurrencyRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Custom currency rule UUID */
+                ruleId: components["parameters"]["CustomCurrencyRuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomCurrencyRuleInput"];
+            };
+        };
+        responses: {
+            /** @description The updated rule and its re-evaluation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCurrencyRuleWithStatus"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteCustomCurrencyRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Custom currency rule UUID */
+                ruleId: components["parameters"]["CustomCurrencyRuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rule deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    enableCustomCurrencyRuleShare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Custom currency rule UUID */
+                ruleId: components["parameters"]["CustomCurrencyRuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rule, now carrying a share token */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCurrencyRule"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    disableCustomCurrencyRuleShare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Custom currency rule UUID */
+                ruleId: components["parameters"]["CustomCurrencyRuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rule, no longer shared */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCurrencyRule"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setCustomCurrencyRuleEnabled: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Custom currency rule UUID */
+                ruleId: components["parameters"]["CustomCurrencyRuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomCurrencyEnabledRequest"];
+            };
+        };
+        responses: {
+            /** @description The rule and its evaluation after the change */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCurrencyRuleWithStatus"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    setCustomCurrencyRuleNotify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Custom currency rule UUID */
+                ruleId: components["parameters"]["CustomCurrencyRuleId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomCurrencyNotifyRequest"];
+            };
+        };
+        responses: {
+            /** @description The rule and its evaluation after the change */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCurrencyRuleWithStatus"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
     listClassRatings: {
@@ -9401,6 +10221,10 @@ export interface operations {
                     aircraft?: Record<string, never>[];
                     licenses?: Record<string, never>[];
                     credentials?: Record<string, never>[];
+                    contacts?: Record<string, never>[];
+                    customCurrencyRules?: Record<string, never>[];
+                    notificationPreferences?: Record<string, never>;
+                    flightBaseline?: Record<string, never>;
                 };
             };
         };
