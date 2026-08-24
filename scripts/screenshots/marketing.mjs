@@ -40,17 +40,17 @@ const MOBILE = { viewport: { width: 393, height: 852 }, hasTouch: true, isMobile
 // ── Targets ──────────────────────────────────────────────────────────────────
 
 const fillFlightForm = async (page) => {
-  await page.getByRole('button', { name: /log flight/i }).first().click();
+  await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
   await page.waitForTimeout(600);
-  await page.getByLabel(/aircraft registration/i).first().fill('NR16020');
+  await page.getByLabel(/aircraft registration|kennzeichen/i).first().fill('NR16020');
   await page.waitForTimeout(400);
   // Picking the fleet suggestion closes the autocomplete.
   await page.getByText(/Lockheed Model 10-E/).first().click().catch(() => {});
-  await page.getByLabel(/^departure/i).first().fill('KOAK');
-  await page.getByLabel(/^arrival/i).first().fill('KBUR');
+  await page.getByLabel(/^(departure|abflug)/i).first().fill('KOAK');
+  await page.getByLabel(/^(arrival|ankunft)/i).first().fill('KBUR');
   await page.getByLabel(/off-block/i).first().fill('09:15');
-  await page.getByLabel(/^takeoff\b/i).first().fill('09:28');
-  await page.getByLabel(/^landing\b/i).first().fill('11:31');
+  await page.getByLabel(/^(takeoff|start)\b/i).first().fill('09:28');
+  await page.getByLabel(/^(landing|landung)\b/i).first().fill('11:31');
   await page.getByLabel(/on-block/i).first().fill('11:40');
   await page.waitForTimeout(400);
 };
@@ -79,8 +79,8 @@ export const STILLS = [
   { name: 'import', path: '/import' },
   { name: 'export', path: '/export' },
   { name: 'cloud-backup', path: '/profile', act: clickTab(/backup/i) },
-  { name: 'login-security', path: '/profile', act: clickTab(/^account/i), scrollY: 1200 },
-  { name: 'flying-club', path: '/admin', act: clickTab(/^users$/i) },
+  { name: 'login-security', path: '/profile', act: clickTab(/^(account|konto)/i), scrollY: 1200 },
+  { name: 'flying-club', path: '/admin', act: clickTab(/^(users|benutzer)$/i) },
   { name: 'mobile', path: '/flights', device: MOBILE },
 ];
 
@@ -93,6 +93,8 @@ const flagValue = (name) => {
 };
 const wanted = argv.filter((a) => !a.startsWith('--'));
 const themes = (flagValue('theme') || 'light,dark').split(',');
+const lang = flagValue('lang') || 'en';
+const langSuffix = lang === 'en' ? '' : `-${lang}`;
 const animationsOnly = flags.has('--animations');
 const outDir = join(ROOT, '.screenshots', 'marketing');
 
@@ -106,9 +108,10 @@ if (flags.has('--help')) {
 }
 
 // ── Session seeding ──────────────────────────────────────────────────────────
+const seedUser = lang === 'de' ? { ...user, preferredLocale: 'de', dateFormat: 'DD.MM.YYYY' } : user;
 const authStorage = JSON.stringify({
   state: {
-    user,
+    user: seedUser,
     isAuthenticated: true,
     accessToken: 'fixture-access-token',
     refreshToken: 'fixture-refresh-token',
@@ -207,6 +210,14 @@ function routeHandler(overrides) {
       return route.fulfill({ status: 200, contentType: 'image/png', body: signaturePngBuffer });
     }
 
+    if (path === '/users/me' && lang === 'de') {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(seedUser),
+      });
+    }
+
     let body;
     if (overrides) {
       body = await overrides({ path, method: request.method(), postData: request.postData() });
@@ -225,19 +236,19 @@ async function makeContext(browser, { theme, device = DESKTOP, video = null, ove
     ...device,
     deviceScaleFactor: 2,
     colorScheme: theme,
-    locale: 'en-GB',
+    locale: lang === 'de' ? 'de-DE' : 'en-GB',
     timezoneId: 'Europe/Berlin',
     ...(video ? { recordVideo: { dir: video, size: device.viewport } } : {}),
     ...(geolocation ? { geolocation, permissions: ['geolocation'] } : {}),
   });
   await context.addInitScript(
-    ([auth, onboarding, themeName]) => {
+    ([auth, onboarding, themeName, langName]) => {
       localStorage.setItem('auth-storage', auth);
       localStorage.setItem('ninerlog-onboarding', onboarding);
       localStorage.setItem('ninerlog-theme', JSON.stringify({ state: { theme: themeName }, version: 0 }));
-      localStorage.setItem('ninerlog-language', 'en');
+      localStorage.setItem('ninerlog-language', langName);
     },
-    [authStorage, onboardingStorage, theme]
+    [authStorage, onboardingStorage, theme, lang]
   );
   await context.route('**/api/v1/**', routeHandler(overrides));
   return context;
@@ -267,7 +278,7 @@ async function shootStill(browser, target, theme) {
   await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' });
   await page.waitForTimeout(250);
 
-  const suffix = theme === 'dark' ? '-dark' : '';
+  const suffix = `${langSuffix}${theme === 'dark' ? '-dark' : ''}`;
   const raw = await page.screenshot({ fullPage: false });
   writeFileSync(join(outDir, `feature-${target.name}${suffix}.png`), await frameStill(raw, theme));
   // Video posters must match the unframed video, so keep a plain copy too.
@@ -371,7 +382,7 @@ export const ANIMATIONS = [
     overrides: logFlightOverrides,
     run: async (page) => {
       await page.waitForTimeout(1600);
-      await page.getByRole('button', { name: /log flight/i }).first().click();
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
       await page.waitForTimeout(1000);
       const type = async (label, text) => {
         const field = page.getByLabel(label).first();
@@ -380,14 +391,14 @@ export const ANIMATIONS = [
         await field.pressSequentially(text, { delay: 70 });
         await page.waitForTimeout(350);
       };
-      await type(/aircraft registration/i, 'NR16020');
-      await type(/^departure/i, 'KOAK');
-      await type(/^arrival/i, 'KBUR');
+      await type(/aircraft registration|kennzeichen/i, 'NR16020');
+      await type(/^(departure|abflug)/i, 'KOAK');
+      await type(/^(arrival|ankunft)/i, 'KBUR');
       await page.getByLabel(/off-block/i).first().fill('09:15');
       await page.waitForTimeout(350);
       await page.getByLabel(/on-block/i).first().fill('11:40');
       await page.waitForTimeout(700);
-      const save = page.locator('button[type="submit"]').filter({ hasText: /log flight/i }).first();
+      const save = page.locator('button[type="submit"]').filter({ hasText: /log flight|flug eintragen/i }).first();
       await save.scrollIntoViewIfNeeded();
       await page.waitForTimeout(900);
       await save.click();
@@ -458,7 +469,7 @@ async function recordAnimation(browser, spec, theme) {
 
   const rawWebm = readdirSync(videoDir).find((f) => f.endsWith('.webm'));
   if (!rawWebm) throw new Error(`no video recorded for ${spec.name}`);
-  const suffix = theme === 'dark' ? '-dark' : '';
+  const suffix = `${langSuffix}${theme === 'dark' ? '-dark' : ''}`;
   const outWebm = join(outDir, `demo-${spec.name}${suffix}.webm`);
   // Trim the page-load lead and cap the bitrate.
   ffmpeg(['-ss', leadSeconds.toFixed(1), '-i', join(videoDir, rawWebm), '-c:v', 'libvpx', '-b:v', '1.2M', '-crf', '14', '-auto-alt-ref', '0', outWebm]);
@@ -488,7 +499,7 @@ try {
     for (const theme of themes) {
       const problems = await shootStill(browser, target, theme);
       const status = problems.length ? `⚠ ${problems[0]}` : 'ok';
-      process.stdout.write(`  feature-${target.name}${theme === 'dark' ? '-dark' : ''}.png  ${status}\n`);
+      process.stdout.write(`  feature-${target.name}${langSuffix}${theme === 'dark' ? '-dark' : ''}.png  ${status}\n`);
       if (problems.length) failures++;
     }
   }
@@ -496,7 +507,7 @@ try {
   for (const spec of animations) {
     for (const theme of themes) {
       await recordAnimation(browser, spec, theme);
-      process.stdout.write(`  demo-${spec.name}${theme === 'dark' ? '-dark' : ''}.{webm,gif}  ok\n`);
+      process.stdout.write(`  demo-${spec.name}${langSuffix}${theme === 'dark' ? '-dark' : ''}.{webm,gif}  ok\n`);
     }
   }
 
