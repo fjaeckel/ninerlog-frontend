@@ -32,7 +32,11 @@ SHOT_CHROMIUM=/opt/pw-browsers/chromium npm run shots:marketing   # sandboxed en
 Output lands in `.screenshots/marketing/` (gitignored):
 
 - `feature-<name>.png` (light) and `feature-<name>-dark.png` — 1200×675
-  viewport at 2× (2400×1350); `mobile` is 393×852 at 2×
+  viewport at 2×, shipped with the frame baked in (rounded corners, hairline
+  border, soft shadow on a transparent margin → 2528×1478); `mobile` is
+  393×852 at 2× (914×1832 framed). Consumers must NOT add their own shadow.
+- `poster-quicklog[-dark].png`, `poster-reports[-dark].png` — unframed copies
+  of those two stills, used as `<video>` posters where CSS does the framing
 - `demo-<name>[-dark].webm` — 1200×675 screen recordings, load lead trimmed
 - `demo-<name>[-dark].gif` — 720px, 8 fps, for contexts that can't play WebM
 
@@ -41,7 +45,7 @@ Output lands in `.screenshots/marketing/` (gitignored):
 Copy into the sibling website repo — it is the single host for all of it:
 
 ```bash
-cp .screenshots/marketing/feature-*.png ../ninerlog-website/images/
+cp .screenshots/marketing/feature-*.png .screenshots/marketing/poster-*.png ../ninerlog-website/images/
 cp .screenshots/marketing/demo-*.webm  ../ninerlog-website/images/
 cp .screenshots/marketing/demo-quicklog{,-dark}.gif ../ninerlog-website/images/
 ```

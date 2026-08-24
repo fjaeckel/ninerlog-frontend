@@ -68,13 +68,13 @@ const clickTab = (name) => async (page) => {
  */
 export const STILLS = [
   { name: 'flight-logging', path: '/flights', act: fillFlightForm },
-  { name: 'quick-log', path: '/quicklog' },
+  { name: 'quick-log', path: '/quicklog', plainCopy: 'poster-quicklog' },
   { name: 'search', path: '/flights?q=Atlantic' },
   { name: 'currency-tracking', path: '/currency' },
   { name: 'custom-currency', path: '/currency/builder?rule=ccr1', scrollY: 120 },
   { name: 'credentials', path: '/credentials' },
   { name: 'fleet', path: '/aircraft' },
-  { name: 'reports', path: '/reports' },
+  { name: 'reports', path: '/reports', plainCopy: 'poster-reports' },
   { name: 'instructor-signing', path: '/flights/f4', scrollY: 500 },
   { name: 'import', path: '/import' },
   { name: 'export', path: '/export' },
@@ -118,6 +118,46 @@ const authStorage = JSON.stringify({
   version: 0,
 });
 const onboardingStorage = JSON.stringify({ state: { completedUserIds: [user.id] }, version: 0 });
+
+// ── Framing ──────────────────────────────────────────────────────────────────
+// Stills ship with the frame baked in — rounded corners, a hairline border
+// and a soft shadow on a transparent margin — so they read as pictures on any
+// background (GitHub README, docs, the website) without CSS.
+const FRAME = { margin: 64, radius: 20, border: 2 };
+
+let framerPage = null;
+
+async function frameStill(pngBuffer, theme) {
+  const out = await framerPage.evaluate(
+    async ({ src, margin, radius, border, dark }) => {
+      const img = new Image();
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = src; });
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width + margin * 2;
+      canvas.height = img.height + margin * 2;
+      const ctx = canvas.getContext('2d');
+      const path = new Path2D();
+      path.roundRect(margin, margin, img.width, img.height, radius);
+      ctx.save();
+      ctx.shadowColor = 'rgba(2, 6, 23, 0.38)';
+      ctx.shadowBlur = 44;
+      ctx.shadowOffsetY = 16;
+      ctx.fillStyle = '#0f172a';
+      ctx.fill(path);
+      ctx.restore();
+      ctx.save();
+      ctx.clip(path);
+      ctx.drawImage(img, margin, margin);
+      ctx.restore();
+      ctx.lineWidth = border;
+      ctx.strokeStyle = dark ? 'rgba(148, 163, 184, 0.35)' : 'rgba(15, 23, 42, 0.16)';
+      ctx.stroke(path);
+      return canvas.toDataURL('image/png');
+    },
+    { src: `data:image/png;base64,${pngBuffer.toString('base64')}`, ...FRAME, dark: theme === 'dark' }
+  );
+  return Buffer.from(out.split(',')[1], 'base64');
+}
 
 // ── Signature image ──────────────────────────────────────────────────────────
 let signaturePngBuffer = null;
@@ -228,7 +268,10 @@ async function shootStill(browser, target, theme) {
   await page.waitForTimeout(250);
 
   const suffix = theme === 'dark' ? '-dark' : '';
-  await page.screenshot({ path: join(outDir, `feature-${target.name}${suffix}.png`), fullPage: false });
+  const raw = await page.screenshot({ fullPage: false });
+  writeFileSync(join(outDir, `feature-${target.name}${suffix}.png`), await frameStill(raw, theme));
+  // Video posters must match the unframed video, so keep a plain copy too.
+  if (target.plainCopy) writeFileSync(join(outDir, `${target.plainCopy}${suffix}.png`), raw);
   await context.close();
   return problems;
 }
@@ -439,6 +482,7 @@ try {
   const browser = await launchBrowser({ args: ['--lang=en-GB'] });
   mkdirSync(outDir, { recursive: true });
   await renderSignature(browser);
+  framerPage = await (await browser.newContext()).newPage();
 
   for (const target of stills) {
     for (const theme of themes) {
