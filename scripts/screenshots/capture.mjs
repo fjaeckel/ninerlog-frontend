@@ -18,14 +18,13 @@
  * `fixtures.mjs`. The dev server is started automatically when one is not
  * already listening on the base URL.
  */
-import { chromium } from 'playwright';
-import { spawn } from 'node:child_process';
 import { mkdirSync, rmSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { user, bodyFor } from './fixtures.mjs';
 import { TARGETS, FAILING_PATHS, EMPTY_BODIES } from './targets.mjs';
 import { collectReport, formatReport, TARGET_MIN } from './audit.mjs';
+import { startDevServer, launchBrowser } from './lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
@@ -92,45 +91,6 @@ const authStorage = JSON.stringify({
 });
 // Mark the welcome tour seen.
 const onboardingStorage = JSON.stringify({ state: { completedUserIds: [user.id] }, version: 0 });
-
-// ── Dev server ───────────────────────────────────────────────────────────────
-async function reachable(url) {
-  try {
-    await fetch(url, { signal: AbortSignal.timeout(1500) });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function startDevServer() {
-  if (await reachable(BASE_URL)) return null;
-  process.stdout.write(`starting dev server for ${BASE_URL}…\n`);
-  const child = spawn('npm', ['run', 'dev'], { cwd: ROOT, stdio: 'ignore', detached: false });
-  const deadline = Date.now() + 60_000;
-  while (Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, 500));
-    if (await reachable(BASE_URL)) return child;
-  }
-  child.kill();
-  throw new Error(`dev server did not come up at ${BASE_URL} within 60s`);
-}
-
-/** Playwright's bundled Chromium, or the one the environment provides. */
-async function launchBrowser() {
-  const explicit = process.env.SHOT_CHROMIUM;
-  if (explicit) return chromium.launch({ executablePath: explicit });
-  try {
-    return await chromium.launch();
-  } catch (err) {
-    for (const candidate of ['/opt/pw-browsers/chromium', '/usr/bin/chromium', '/usr/bin/google-chrome']) {
-      try {
-        return await chromium.launch({ executablePath: candidate });
-      } catch { /* try the next one */ }
-    }
-    throw err;
-  }
-}
 
 // ── Capture ──────────────────────────────────────────────────────────────────
 async function shoot(browser, target, theme) {
@@ -223,7 +183,7 @@ async function shoot(browser, target, theme) {
 let devServer = null;
 let failures = 0;
 try {
-  devServer = await startDevServer();
+  devServer = await startDevServer(ROOT, BASE_URL);
   const browser = await launchBrowser();
   if (!auditOnly) rmSync(outDir, { recursive: true, force: true });
 

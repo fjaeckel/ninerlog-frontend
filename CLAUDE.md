@@ -40,6 +40,7 @@ Push gate: `npx vitest run && npm run type-check && npm run lint`, plus e2e when
 | Task | Load |
 |---|---|
 | **Anything that renders — always** | skill `screenshots` |
+| Marketing images/demos for ninerlog.com & the deployment README | skill `marketing-images` |
 | API client, hooks, caching, auth/token flow | skill `api-layer` |
 | Styling, components, tokens, dark mode | skill `design-system` |
 | Translatable strings, namespaces | skill `i18n` |
