@@ -25,6 +25,8 @@ diffs, `fixtures-story.mjs` is allowed to be characterful.
 npm run shots:marketing                      # every still, light + dark
 npm run shots:marketing -- fleet search      # just those
 npm run shots:marketing -- --animations      # demo WebM + GIF, both themes
+npm run shots:marketing -- --lang=de                # German-UI stills (-de set)
+npm run shots:marketing -- --lang=de --animations   # German demo clips
 npm run shots:marketing -- --help            # list targets
 SHOT_CHROMIUM=/opt/pw-browsers/chromium npm run shots:marketing   # sandboxed env
 ```
@@ -39,6 +41,10 @@ Output lands in `.screenshots/marketing/` (gitignored):
   of those two stills, used as `<video>` posters where CSS does the framing
 - `demo-<name>[-dark].webm` — 1200×675 screen recordings, load lead trimmed
 - `demo-<name>[-dark].gif` — 720px, 8 fps, for contexts that can't play WebM
+- `--lang=de` produces the same set with the app UI in German and dates as
+  DD.MM.YYYY, suffixed `-de` before the theme suffix (`feature-fleet-de.png`,
+  `feature-fleet-de-dark.png`, `demo-quicklog-de.webm`, `poster-*-de*.png`) —
+  these are what `de/funktionen.njk` references
 
 ## Where the output goes
 
@@ -47,7 +53,7 @@ Copy into the sibling website repo — it is the single host for all of it:
 ```bash
 cp .screenshots/marketing/feature-*.png .screenshots/marketing/poster-*.png ../ninerlog-website/images/
 cp .screenshots/marketing/demo-*.webm  ../ninerlog-website/images/
-cp .screenshots/marketing/demo-quicklog{,-dark}.gif ../ninerlog-website/images/
+cp .screenshots/marketing/demo-quicklog{,-de}{,-dark}.gif ../ninerlog-website/images/
 ```
 
 Consumers (keep basenames stable — they are a published URL contract):
