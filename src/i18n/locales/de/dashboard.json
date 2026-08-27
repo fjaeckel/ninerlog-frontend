@@ -16,7 +16,8 @@
     "totalFlights": "Flüge gesamt",
     "landings": "Landungen",
     "day": "Tag",
-    "night": "Nacht"
+    "night": "Nacht",
+    "picusDetail": "+ {{time}} PICUS"
   },
   "blockTimeBreakdown": "Blockzeit-Aufteilung",
   "baselineApplied": "Inklusive {{hours}} h aus deinem Übertrag (Stand {{date}}).",
@@ -26,7 +27,12 @@
     "solo": "Solo",
     "crossCountry": "Überlandflug",
     "night": "Nacht",
-    "ifr": "IFR"
+    "ifr": "IFR",
+    "picus": "PICUS",
+    "spic": "SPIC",
+    "sic": "SIC",
+    "relief": "Cruise Relief",
+    "examiner": "Prüfer"
   },
   "timeByClass": "Zeit nach Klasse",
   "timeByModel": "Zeit nach Muster",

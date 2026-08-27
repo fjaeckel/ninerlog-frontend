@@ -33,6 +33,10 @@ const empty: FlightAnalytics = {
   totals: {
     totalFlights: 1, totalMinutes: 60, picMinutes: 60, sicMinutes: 0, dualMinutes: 0,
     dualGivenMinutes: 0, soloMinutes: 0, nightMinutes: 0, ifrMinutes: 0,
+    picusMinutes: 0,
+    spicMinutes: 0,
+    examinerMinutes: 0,
+    reliefMinutes: 0,
     actualInstrumentMinutes: 0, simulatedInstrumentMinutes: 0, crossCountryMinutes: 0,
     multiPilotMinutes: 0, simulatedFlightMinutes: 0, groundTrainingMinutes: 0,
     landingsDay: 1, landingsNight: 0, takeoffsDay: 1, takeoffsNight: 0,

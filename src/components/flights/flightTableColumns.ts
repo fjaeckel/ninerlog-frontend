@@ -6,7 +6,7 @@ type Flight = components['schemas']['Flight'];
 export type FlightColumnKey = components['schemas']['FlightListColumn'];
 
 /** What the function column reads for one entry. */
-export type FlightFunctionKind = 'sim' | 'pax' | 'pic' | 'dual' | 'sic' | 'none';
+export type FlightFunctionKind = 'sim' | 'pax' | 'pic' | 'picus' | 'spic' | 'dual' | 'sic' | 'none';
 
 /**
  * An FSTD session and a flight the pilot was carried on log no flight
@@ -16,8 +16,10 @@ export function flightFunctionKind(flight: Flight): FlightFunctionKind {
   if (flight.isSimulator) return 'sim';
   if (flight.isPassenger) return 'pax';
   if (flight.isPic) return 'pic';
+  if ((flight.picusTime || 0) > 0) return 'picus';
+  if ((flight.spicTime || 0) > 0) return 'spic';
   if (flight.isDual) return 'dual';
-  if ((flight.sicTime || 0) > 0) return 'sic';
+  if ((flight.sicTime || 0) > 0 || (flight.reliefTime || 0) > 0) return 'sic';
   return 'none';
 }
 
@@ -34,6 +36,8 @@ export const FLIGHT_FUNCTION_BADGE: Record<FlightFunctionKind, string> = {
   sim: 'badge-info',
   pax: 'badge-neutral',
   pic: 'badge-info',
+  picus: 'badge-info',
+  spic: 'badge-info',
   dual: 'badge-expiring',
   sic: 'badge-neutral',
   none: 'badge-neutral',
@@ -57,6 +61,9 @@ const REVEAL_TIERS = [
   'hidden @min-[1760px]:table-cell',
   'hidden @min-[1850px]:table-cell',
   'hidden @min-[1940px]:table-cell',
+  'hidden @min-[2030px]:table-cell',
+  'hidden @min-[2120px]:table-cell',
+  'hidden @min-[2210px]:table-cell',
 ] as const;
 
 /**
@@ -75,6 +82,10 @@ const REMARKS_TIERS = [
   'hidden @min-[1920px]:table-cell',
   'hidden @min-[2010px]:table-cell',
   'hidden @min-[2100px]:table-cell',
+  'hidden @min-[2190px]:table-cell',
+  'hidden @min-[2280px]:table-cell',
+  'hidden @min-[2370px]:table-cell',
+  'hidden @min-[2460px]:table-cell',
 ] as const;
 
 /** How many time columns automatic mode may claim. */
@@ -132,7 +143,11 @@ export const FLIGHT_COLUMNS: FlightColumnDef[] = [
   minutesColumn('ifrTime', 'tableIfr', 'fields.ifrTime', (f) => f.ifrTime),
   minutesColumn('crossCountryTime', 'tableXc', 'fields.crossCountryTime', (f) => f.crossCountryTime),
   minutesColumn('sicTime', 'tableSic', 'fields.sicTime', (f) => f.sicTime ?? 0),
+  minutesColumn('picusTime', 'tablePicus', 'fields.picusTime', (f) => f.picusTime ?? 0),
+  minutesColumn('spicTime', 'tableSpic', 'fields.spicTime', (f) => f.spicTime ?? 0),
+  minutesColumn('reliefTime', 'tableRelief', 'fields.reliefTime', (f) => f.reliefTime ?? 0),
   minutesColumn('dualGivenTime', 'tableDualGiven', 'fields.dualGivenTime', (f) => f.dualGivenTime ?? 0),
+  minutesColumn('examinerTime', 'tableExaminer', 'fields.examinerTime', (f) => f.examinerTime ?? 0),
   minutesColumn('multiPilotTime', 'tableMultiPilot', 'fields.multiPilotTime', (f) => f.multiPilotTime ?? 0),
   minutesColumn('soloTime', 'tableSolo', 'fields.soloTime', (f) => f.soloTime),
   minutesColumn('simulatedFlightTime', 'tableSim', 'fields.simulatedFlightTime', (f) => f.simulatedFlightTime ?? 0),
@@ -210,6 +225,10 @@ const CARD_TIME_PRIORITY: FlightColumnKey[] = [
   'simulatedFlightTime',
   'dualGivenTime',
   'sicTime',
+  'picusTime',
+  'spicTime',
+  'reliefTime',
+  'examinerTime',
   'multiPilotTime',
   'soloTime',
 ];

@@ -16,7 +16,8 @@
     "totalFlights": "Total Flights",
     "landings": "Landings",
     "day": "day",
-    "night": "night"
+    "night": "night",
+    "picusDetail": "+ {{time}} PICUS"
   },
   "blockTimeBreakdown": "Block Time Breakdown",
   "baselineApplied": "Includes {{hours}}h carried forward from your initial-hours snapshot (as of {{date}}).",
@@ -26,7 +27,12 @@
     "solo": "Solo",
     "crossCountry": "Cross-Country",
     "night": "Night",
-    "ifr": "IFR"
+    "ifr": "IFR",
+    "picus": "PICUS",
+    "spic": "SPIC",
+    "sic": "SIC",
+    "relief": "Cruise relief",
+    "examiner": "Examiner"
   },
   "timeByClass": "Time by Aircraft Class",
   "timeByModel": "Time by Aircraft Model",

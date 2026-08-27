@@ -54,6 +54,10 @@ const flightSchema = z.object({
   // Phase 6c regulatory compliance fields
   picName: z.string().optional().or(z.literal('')),
   multiPilotTime: z.number().min(0),
+  picusTime: z.number().min(0),
+  spicTime: z.number().min(0),
+  examinerTime: z.number().min(0),
+  reliefTime: z.number().min(0),
   fstdType: z.string().optional().or(z.literal('')),
   endorsements: z.string().optional().or(z.literal('')),
 }).superRefine((v, ctx) => {
@@ -174,6 +178,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       launchMethod: '',
       picName: '',
       multiPilotTime: 0,
+      picusTime: 0,
+      spicTime: 0,
+      examinerTime: 0,
+      reliefTime: 0,
       fstdType: '',
       endorsements: '',
     },
@@ -212,6 +220,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         launchMethod: existingFlight.launchMethod || '',
         picName: existingFlight.picName || '',
         multiPilotTime: existingFlight.multiPilotTime || 0,
+        picusTime: existingFlight.picusTime || 0,
+        spicTime: existingFlight.spicTime || 0,
+        examinerTime: existingFlight.examinerTime || 0,
+        reliefTime: existingFlight.reliefTime || 0,
         fstdType: existingFlight.fstdType || '',
         endorsements: existingFlight.endorsements || '',
       });
@@ -396,6 +408,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             ifrTime: data.ifrTime,
             actualInstrumentTime: data.actualInstrumentTime,
             multiPilotTime: data.multiPilotTime,
+            picusTime: data.picusTime,
+            spicTime: data.spicTime,
+            examinerTime: data.examinerTime,
+            reliefTime: data.reliefTime,
             landings: data.landings,
             ...(data.takeoffsDay !== undefined && { takeoffsDay: data.takeoffsDay }),
             ...(data.takeoffsNight !== undefined && { takeoffsNight: data.takeoffsNight }),
@@ -1188,6 +1204,62 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                   ? t('form.multiPilotAutoHelper')
                   : t('form.multiPilotHelper')}
               </p>
+            </div>
+            )}
+            {!isSim && (
+            <div>
+              <label htmlFor="picusTime" className="form-label">{t('fields.picusTime')}</label>
+              <input
+                {...register('picusTime', { valueAsNumber: true })}
+                type="number"
+                id="picusTime"
+                step="1"
+                min="0"
+                className="input"
+              />
+              <p className="form-helper">{t('form.picusHelper')}</p>
+            </div>
+            )}
+            {!isSim && (
+            <div>
+              <label htmlFor="spicTime" className="form-label">{t('fields.spicTime')}</label>
+              <input
+                {...register('spicTime', { valueAsNumber: true })}
+                type="number"
+                id="spicTime"
+                step="1"
+                min="0"
+                className="input"
+              />
+              <p className="form-helper">{t('form.spicHelper')}</p>
+            </div>
+            )}
+            {!isSim && (
+            <div>
+              <label htmlFor="examinerTime" className="form-label">{t('fields.examinerTime')}</label>
+              <input
+                {...register('examinerTime', { valueAsNumber: true })}
+                type="number"
+                id="examinerTime"
+                step="1"
+                min="0"
+                className="input"
+              />
+              <p className="form-helper">{t('form.examinerHelper')}</p>
+            </div>
+            )}
+            {!isSim && (
+            <div>
+              <label htmlFor="reliefTime" className="form-label">{t('fields.reliefTime')}</label>
+              <input
+                {...register('reliefTime', { valueAsNumber: true })}
+                type="number"
+                id="reliefTime"
+                step="1"
+                min="0"
+                className="input"
+              />
+              <p className="form-helper">{t('form.reliefHelper')}</p>
             </div>
             )}
           </div>

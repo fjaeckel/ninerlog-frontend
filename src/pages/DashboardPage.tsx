@@ -171,6 +171,11 @@ export default function DashboardPage() {
         <StatCard
           label={t('dashboard:stats.picTime')}
           value={statistics ? fmtDuration(statistics.picMinutes) : '0h 0m'}
+          detail={
+            (statistics?.picusMinutes ?? 0) > 0
+              ? t('dashboard:stats.picusDetail', { time: fmtDuration(statistics?.picusMinutes ?? 0) })
+              : undefined
+          }
           icon={<BadgeCheck className="w-4 h-4" />}
           accent="green"
         />
@@ -196,12 +201,22 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             {[
               { label: t('dashboard:breakdownLabels.pic'), value: statistics.picMinutes },
+              // Function times a pilot has not logged stay out of the grid.
+              ...[
+                { label: t('dashboard:breakdownLabels.picus'), value: statistics.picusMinutes ?? 0 },
+                { label: t('dashboard:breakdownLabels.spic'), value: statistics.spicMinutes ?? 0 },
+                { label: t('dashboard:breakdownLabels.sic'), value: statistics.sicMinutes ?? 0 },
+                { label: t('dashboard:breakdownLabels.relief'), value: statistics.reliefMinutes ?? 0 },
+              ].filter((e) => e.value > 0),
               { label: t('dashboard:breakdownLabels.dual'), value: statistics.dualMinutes },
+              ...[
+                { label: t('dashboard:breakdownLabels.examiner'), value: statistics.examinerMinutes ?? 0 },
+              ].filter((e) => e.value > 0),
               { label: t('dashboard:breakdownLabels.solo'), value: statistics.soloMinutes ?? 0 },
               { label: t('dashboard:breakdownLabels.crossCountry'), value: statistics.crossCountryMinutes ?? 0 },
               { label: t('dashboard:breakdownLabels.night'), value: statistics.nightMinutes },
               { label: t('dashboard:breakdownLabels.ifr'), value: statistics.ifrMinutes },
-            ].map(({ label, value }) => (
+            ].flat().map(({ label, value }) => (
               <div key={label}>
                 <p className="data-lg text-slate-800 dark:text-slate-100">{fmtDuration(value)}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</p>

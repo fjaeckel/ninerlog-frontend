@@ -91,7 +91,11 @@
     "multiPilot": "Multi-pilot",
     "night": "Night",
     "ifr": "IFR",
-    "crossCountry": "Cross country"
+    "crossCountry": "Cross country",
+    "picus": "PICUS",
+    "spic": "SPIC",
+    "relief": "Cruise relief",
+    "examiner": "Examiner"
   },
   "chart": {
     "careerHours": "Career flight time",

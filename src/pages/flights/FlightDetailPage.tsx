@@ -112,6 +112,10 @@ export default function FlightDetailPage() {
     { key: 'crossCountry', label: t('detail.crossCountry'), minutes: flight.crossCountryTime },
     { key: 'night', label: t('fields.nightTime'), minutes: flight.nightTime },
     { key: 'sic', label: t('detail.sicTime'), minutes: flight.sicTime ?? 0 },
+    { key: 'picus', label: t('fields.picusTime'), minutes: flight.picusTime ?? 0 },
+    { key: 'spic', label: t('fields.spicTime'), minutes: flight.spicTime ?? 0 },
+    { key: 'relief', label: t('fields.reliefTime'), minutes: flight.reliefTime ?? 0 },
+    { key: 'examiner', label: t('fields.examinerTime'), minutes: flight.examinerTime ?? 0 },
     { key: 'dualGiven', label: t('detail.dualGiven'), minutes: flight.dualGivenTime ?? 0 },
   ].filter((tile) => tile.minutes > 0);
 

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   DEFAULT_CUSTOM_COLUMNS,
   FLIGHT_COLUMNS,
+  flightFunctionKind,
   selectFlightColumns,
   selectFlightCardColumns,
   type FlightColumnKey,
@@ -144,7 +145,7 @@ describe('selectFlightColumns — custom mode', () => {
 
     const layout = selectFlightColumns([flight()], custom(everything));
 
-    expect(layout.time).toHaveLength(10);
+    expect(layout.time).toHaveLength(14);
     expect(layout.time.every((c) => !!c.revealClass)).toBe(true);
     expect(layout.remarksRevealClass).not.toBeNull();
   });
@@ -219,5 +220,22 @@ describe('column registry', () => {
     const offered = new Set(FLIGHT_COLUMNS.map((c) => c.key));
 
     expect(DEFAULT_CUSTOM_COLUMNS.every((key) => offered.has(key))).toBe(true);
+  });
+});
+
+describe('flightFunctionKind — declared function times', () => {
+  it('labels a PICUS sector PICUS, not SIC or none', () => {
+    const f = flight({ isPic: false, picusTime: 90, sicTime: 0 });
+    expect(flightFunctionKind(f)).toBe('picus');
+  });
+
+  it('labels an SPIC sector SPIC even when isDual is set', () => {
+    const f = flight({ isPic: false, isDual: true, spicTime: 90 });
+    expect(flightFunctionKind(f)).toBe('spic');
+  });
+
+  it('labels a relief-only sector SIC', () => {
+    const f = flight({ isPic: false, reliefTime: 90, sicTime: 0 });
+    expect(flightFunctionKind(f)).toBe('sic');
   });
 });
