@@ -17,6 +17,10 @@ type FormState = {
   totalMinutes: number;
   picMinutes: number;
   sicMinutes: number;
+  picusMinutes: number;
+  spicMinutes: number;
+  examinerMinutes: number;
+  reliefMinutes: number;
   dualMinutes: number;
   dualGivenMinutes: number;
   multiPilotMinutes: number;
@@ -35,6 +39,10 @@ const EMPTY_FORM: FormState = {
   totalMinutes: 0,
   picMinutes: 0,
   sicMinutes: 0,
+  picusMinutes: 0,
+  spicMinutes: 0,
+  examinerMinutes: 0,
+  reliefMinutes: 0,
   dualMinutes: 0,
   dualGivenMinutes: 0,
   multiPilotMinutes: 0,
@@ -60,6 +68,10 @@ function baselineToForm(b: FlightBaseline): FormState {
     totalMinutes: b.totalMinutes ?? 0,
     picMinutes: b.picMinutes ?? 0,
     sicMinutes: b.sicMinutes ?? 0,
+    picusMinutes: b.picusMinutes ?? 0,
+    spicMinutes: b.spicMinutes ?? 0,
+    examinerMinutes: b.examinerMinutes ?? 0,
+    reliefMinutes: b.reliefMinutes ?? 0,
     dualMinutes: b.dualMinutes ?? 0,
     dualGivenMinutes: b.dualGivenMinutes ?? 0,
     multiPilotMinutes: b.multiPilotMinutes ?? 0,
@@ -80,6 +92,10 @@ function formToInput(form: FormState): FlightBaselineInput {
     totalMinutes: form.totalMinutes,
     picMinutes: form.picMinutes,
     sicMinutes: form.sicMinutes,
+    picusMinutes: form.picusMinutes,
+    spicMinutes: form.spicMinutes,
+    examinerMinutes: form.examinerMinutes,
+    reliefMinutes: form.reliefMinutes,
     dualMinutes: form.dualMinutes,
     dualGivenMinutes: form.dualGivenMinutes,
     multiPilotMinutes: form.multiPilotMinutes,
@@ -234,6 +250,10 @@ export function BaselineSection() {
                 <HoursField label={t('baseline.fields.totalHours')} value={form.totalMinutes} onChange={(v) => setForm((s) => ({ ...s, totalMinutes: v }))} displayFormat={timeFormat} />
                 <HoursField label={t('baseline.fields.picHours')} value={form.picMinutes} onChange={(v) => setForm((s) => ({ ...s, picMinutes: v }))} displayFormat={timeFormat} />
                 <HoursField label={t('baseline.fields.sicHours')} value={form.sicMinutes} onChange={(v) => setForm((s) => ({ ...s, sicMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.picusHours')} value={form.picusMinutes} onChange={(v) => setForm((s) => ({ ...s, picusMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.spicHours')} value={form.spicMinutes} onChange={(v) => setForm((s) => ({ ...s, spicMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.examinerHours')} value={form.examinerMinutes} onChange={(v) => setForm((s) => ({ ...s, examinerMinutes: v }))} displayFormat={timeFormat} />
+                <HoursField label={t('baseline.fields.reliefHours')} value={form.reliefMinutes} onChange={(v) => setForm((s) => ({ ...s, reliefMinutes: v }))} displayFormat={timeFormat} />
                 <HoursField label={t('baseline.fields.dualHours')} value={form.dualMinutes} onChange={(v) => setForm((s) => ({ ...s, dualMinutes: v }))} displayFormat={timeFormat} />
                 <HoursField label={t('baseline.fields.dualGivenHours')} value={form.dualGivenMinutes} onChange={(v) => setForm((s) => ({ ...s, dualGivenMinutes: v }))} displayFormat={timeFormat} />
                 <HoursField label={t('baseline.fields.multiPilotHours')} value={form.multiPilotMinutes} onChange={(v) => setForm((s) => ({ ...s, multiPilotMinutes: v }))} displayFormat={timeFormat} />

@@ -2952,7 +2952,7 @@ export interface components {
          * @example picTime
          * @enum {string}
          */
-        FlightListColumn: "offOnBlock" | "picTime" | "nightTime" | "dualTime" | "ifrTime" | "crossCountryTime" | "sicTime" | "dualGivenTime" | "multiPilotTime" | "soloTime" | "simulatedFlightTime" | "function" | "landings" | "remarks";
+        FlightListColumn: "offOnBlock" | "picTime" | "nightTime" | "dualTime" | "ifrTime" | "crossCountryTime" | "sicTime" | "picusTime" | "spicTime" | "reliefTime" | "dualGivenTime" | "examinerTime" | "multiPilotTime" | "soloTime" | "simulatedFlightTime" | "function" | "landings" | "remarks";
         TwoFactorSetup: {
             /**
              * @description Base32-encoded TOTP secret for manual entry
@@ -3716,6 +3716,26 @@ export interface components {
              */
             multiPilotTime?: number;
             /**
+             * @description PIC under supervision (PICUS) time in minutes (EASA FCL.030, Part-FCL). Declared by the pilot, never auto-calculated; carved out of the derived function time. Counts toward PIC experience requirements (e.g. unfreezing an ATPL) but is kept distinct from PIC and SIC time.
+             * @example 0
+             */
+            picusTime?: number;
+            /**
+             * @description Student pilot-in-command (SPIC) time in minutes (EASA integrated course). Declared by the pilot, never auto-calculated; carved out of the derived function time.
+             * @example 0
+             */
+            spicTime?: number;
+            /**
+             * @description Time conducting a check as examiner, in minutes. Overlays the pilot function time like dualGivenTime; bounded by totalTime only.
+             * @example 0
+             */
+            examinerTime?: number;
+            /**
+             * @description Cruise relief co-pilot time in minutes (augmented crew). Declared by the pilot, never auto-calculated; carved out of the derived function time.
+             * @example 0
+             */
+            reliefTime?: number;
+            /**
              * @description True when this entry is an FSTD (simulator) session rather than a flight.
              *     A session carries its duration in simulatedFlightTime and zero in every
              *     flight-time column — totalTime, picTime, dualTime, sicTime, dualGivenTime,
@@ -3895,6 +3915,14 @@ export interface components {
             instructorComments?: string | null;
             sicTime?: number;
             dualGivenTime?: number;
+            /** @description PIC under supervision time in minutes. Carved out of the derived function time; the declared function times together with the derived ones must not exceed totalTime. */
+            picusTime?: number;
+            /** @description Student pilot-in-command time in minutes. Carved out of the derived function time. */
+            spicTime?: number;
+            /** @description Time conducting a check as examiner, in minutes. Overlays function time; bounded by totalTime. */
+            examinerTime?: number;
+            /** @description Cruise relief co-pilot time in minutes. Carved out of the derived function time. */
+            reliefTime?: number;
             /** @description FSTD session duration in minutes (EASA AMC1 FCL.050 Col 22). Required and positive when isSimulator is true. */
             simulatedFlightTime?: number;
             groundTrainingTime?: number;
@@ -3963,6 +3991,14 @@ export interface components {
             instructorComments?: string | null;
             sicTime?: number;
             dualGivenTime?: number;
+            /** @description PIC under supervision time in minutes. Carved out of the derived function time. */
+            picusTime?: number;
+            /** @description Student pilot-in-command time in minutes. Carved out of the derived function time. */
+            spicTime?: number;
+            /** @description Time conducting a check as examiner, in minutes. Overlays function time; bounded by totalTime. */
+            examinerTime?: number;
+            /** @description Cruise relief co-pilot time in minutes. Carved out of the derived function time. */
+            reliefTime?: number;
             simulatedFlightTime?: number;
             groundTrainingTime?: number;
             actualInstrumentTime?: number;
@@ -4040,6 +4076,36 @@ export interface components {
              */
             soloMinutes?: number;
             /**
+             * @description Total co-pilot (SIC) block time in minutes
+             * @example 4800
+             */
+            sicMinutes?: number;
+            /**
+             * @description Total instruction given in minutes
+             * @example 600
+             */
+            dualGivenMinutes?: number;
+            /**
+             * @description Total PIC under supervision (PICUS) time in minutes
+             * @example 3600
+             */
+            picusMinutes?: number;
+            /**
+             * @description Total student pilot-in-command (SPIC) time in minutes
+             * @example 0
+             */
+            spicMinutes?: number;
+            /**
+             * @description Total examiner time in minutes
+             * @example 0
+             */
+            examinerMinutes?: number;
+            /**
+             * @description Total cruise relief co-pilot time in minutes
+             * @example 0
+             */
+            reliefMinutes?: number;
+            /**
              * @description Total cross-country time in minutes
              * @example 12000
              */
@@ -4066,6 +4132,10 @@ export interface components {
             ifrMinutes: number;
             soloMinutes?: number;
             crossCountryMinutes?: number;
+            picusMinutes?: number;
+            spicMinutes?: number;
+            examinerMinutes?: number;
+            reliefMinutes?: number;
             landingsDay: number;
             landingsNight: number;
         };
@@ -4111,6 +4181,26 @@ export interface components {
             soloMinutes: number;
             /** @default 0 */
             crossCountryMinutes: number;
+            /**
+             * @description Carried-forward PIC under supervision (PICUS) time in minutes
+             * @default 0
+             */
+            picusMinutes: number;
+            /**
+             * @description Carried-forward student pilot-in-command (SPIC) time in minutes
+             * @default 0
+             */
+            spicMinutes: number;
+            /**
+             * @description Carried-forward examiner time in minutes
+             * @default 0
+             */
+            examinerMinutes: number;
+            /**
+             * @description Carried-forward cruise relief co-pilot time in minutes
+             * @default 0
+             */
+            reliefMinutes: number;
             /** @default 0 */
             landingsDay: number;
             /** @default 0 */
@@ -6147,7 +6237,11 @@ export interface components {
             byRoute: components["schemas"]["AnalyticsRouteRow"][];
             /** @description Dual received, grouped by the instructor named on the flight. */
             byInstructor: components["schemas"]["AnalyticsPersonRow"][];
-            /** @description Time flown alongside each logged crew member. */
+            /**
+             * @description Time flown alongside each logged crew member — one row per person,
+             *     not per role. Crew entries linked to the same contact are one
+             *     person; unlinked entries fold by trimmed, case-insensitive name.
+             */
             byCrew: components["schemas"]["AnalyticsPersonRow"][];
             /** @description Instrument approaches flown, grouped by approach type. */
             approachTypes: components["schemas"]["AnalyticsApproachTypeRow"][];
@@ -6207,6 +6301,14 @@ export interface components {
             dualMinutes: number;
             /** @description Instruction given as an instructor. */
             dualGivenMinutes: number;
+            /** @description PIC under supervision (PICUS) time. */
+            picusMinutes: number;
+            /** @description Student pilot-in-command (SPIC) time. */
+            spicMinutes: number;
+            /** @description Time conducting checks as examiner. */
+            examinerMinutes: number;
+            /** @description Cruise relief co-pilot time. */
+            reliefMinutes: number;
             soloMinutes: number;
             nightMinutes: number;
             ifrMinutes: number;
@@ -6356,10 +6458,22 @@ export interface components {
             /** @example J. Smith */
             name: string;
             /**
-             * @description Crew role, for byCrew rows only.
+             * @description The role this person most flies with you as (by time), for byCrew
+             *     rows only.
              * @example PIC
              */
             role?: string | null;
+            /**
+             * @description Every role this person has held across the logbook, most time
+             *     first. byCrew rows only.
+             */
+            roles?: string[];
+            /**
+             * Format: uuid
+             * @description The contact the person's crew entries are linked to, when they are
+             *     linked to one. byCrew rows only.
+             */
+            contactId?: string | null;
             flights: number;
             totalMinutes: number;
             lastFlightDate?: string | null;
@@ -6473,6 +6587,7 @@ export interface components {
         CustomCurrencyThreshold: {
             /**
              * @description Time metrics (`unit` applies): `total_time`, `pic_time`,
+             *     `picus_time`, `spic_time`, `examiner_time`, `relief_time`,
              *     `dual_time`, `night_time`, `ifr_time`, `cross_country_time`.
              *     Count metrics (`unit` ignored): `flights`, `landings`,
              *     `day_landings`, `night_landings`, `takeoffs`, `day_takeoffs`,
@@ -6480,7 +6595,7 @@ export interface components {
              * @example landings
              * @enum {string}
              */
-            metric: "total_time" | "pic_time" | "dual_time" | "night_time" | "ifr_time" | "cross_country_time" | "flights" | "landings" | "day_landings" | "night_landings" | "takeoffs" | "day_takeoffs" | "night_takeoffs" | "approaches" | "holds";
+            metric: "total_time" | "pic_time" | "picus_time" | "spic_time" | "examiner_time" | "relief_time" | "dual_time" | "night_time" | "ifr_time" | "cross_country_time" | "flights" | "landings" | "day_landings" | "night_landings" | "takeoffs" | "day_takeoffs" | "night_takeoffs" | "approaches" | "holds";
             /**
              * Format: double
              * @description The threshold the metric must reach
@@ -9265,7 +9380,9 @@ export interface operations {
                  *     departureTime (takeoffTime); arrivalTime (landingTime); totalTime
                  *     (total); picTime; dualTime; nightTime (night); ifrTime (ifr);
                  *     soloTime (solo); crossCountryTime (xc, crossCountry); sicTime;
-                 *     dualGivenTime (dualGiven); simulatedFlightTime (simTime);
+                 *     picusTime (picus); spicTime (spic); examinerTime (examiner);
+                 *     reliefTime (relief); dualGivenTime (dualGiven);
+                 *     simulatedFlightTime (simTime);
                  *     groundTrainingTime; actualInstrumentTime; simulatedInstrumentTime
                  *     (hoodTime); multiPilotTime; landings; landingsDay; landingsNight;
                  *     takeoffsDay; takeoffsNight; holds; approaches; approachType;

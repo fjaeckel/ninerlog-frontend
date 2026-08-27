@@ -283,9 +283,13 @@ export default function ReportsPage() {
                     {(
                       [
                         ['role.pic', totals.picMinutes],
+                        ['role.picus', totals.picusMinutes],
+                        ['role.spic', totals.spicMinutes],
                         ['role.sic', totals.sicMinutes],
+                        ['role.relief', totals.reliefMinutes],
                         ['role.dual', totals.dualMinutes],
                         ['role.dualGiven', totals.dualGivenMinutes],
+                        ['role.examiner', totals.examinerMinutes],
                         ['role.solo', totals.soloMinutes],
                         ['role.multiPilot', totals.multiPilotMinutes],
                         ['role.night', totals.nightMinutes],
