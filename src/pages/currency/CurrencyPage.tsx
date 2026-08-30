@@ -21,6 +21,7 @@ import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 import { RequirementIcon } from '../../components/ui/RequirementIcon';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import { useCurrencyMessages } from '../../lib/currencyMessages';
 
 const CLASS_TYPE_LABELS: Record<string, string> = {
   SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
@@ -52,6 +53,7 @@ export default function CurrencyPage() {
   const [expandedLicenses, setExpandedLicenses] = useState<Record<string, boolean>>({});
   const { t } = useTranslation(['currency', 'credentials', 'common']);
   const { fmtDate } = useFormatPrefs();
+  const { currencyMessage } = useCurrencyMessages();
 
   // Informational 90-day recency rows: models first, then registrations.
   // Each group is gated by its user preference (Profile → Settings).
@@ -200,7 +202,7 @@ export default function CurrencyPage() {
                   {t(`status.${currencyStatus.flightReview.status}`)}
                 </span>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300">{currencyStatus.flightReview.message}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{currencyMessage(currencyStatus.flightReview)}</p>
               {currencyStatus.flightReview.lastCompleted && (
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   {t('lastCompleted', { date: fmtDate(currencyStatus.flightReview.lastCompleted) })}
@@ -248,8 +250,8 @@ export default function CurrencyPage() {
                         <CurrencyCard rating={rating} />
                         {rating.ruleDescription && (
                           <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 px-1 italic">
-                            {(rating as any).ruleDescriptionKey
-                              ? t(`ruleDescriptions.${(rating as any).ruleDescriptionKey}`, { defaultValue: rating.ruleDescription })
+                            {rating.ruleDescriptionKey
+                              ? t(`ruleDescriptions.${rating.ruleDescriptionKey}`, { defaultValue: rating.ruleDescription })
                               : rating.ruleDescription}
                           </p>
                         )}
@@ -310,6 +312,11 @@ export default function CurrencyPage() {
                         style={{ width: `${Math.min((pax.dayLandings / pax.dayRequired) * 100, 100)}%` }}
                       />
                     </div>
+                    {pax.dayExpiresOn && (
+                      <p className="text-xs text-slate-400 dark:text-slate-500" data-testid="pax-day-expires">
+                        {t('passengerExpiry.day', { date: fmtDate(pax.dayExpiresOn) })}
+                      </p>
+                    )}
                   </div>
                   {/* Night currency bar — hidden when nightPrivilege is false */}
                   {hasNight && (
@@ -329,6 +336,11 @@ export default function CurrencyPage() {
                         style={{ width: `${Math.min((pax.nightLandings / pax.nightRequired) * 100, 100)}%` }}
                       />
                     </div>
+                    {pax.nightExpiresOn && (
+                      <p className="text-xs text-slate-400 dark:text-slate-500" data-testid="pax-night-expires">
+                        {t('passengerExpiry.night', { date: fmtDate(pax.nightExpiresOn) })}
+                      </p>
+                    )}
                   </div>
                   )}
                   {!hasNight && (
@@ -351,8 +363,8 @@ export default function CurrencyPage() {
                     </div>
                   )}
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">
-                    {(pax as any).ruleDescriptionKey
-                      ? t(`ruleDescriptions.${(pax as any).ruleDescriptionKey}`, { defaultValue: pax.ruleDescription })
+                    {pax.ruleDescriptionKey
+                      ? t(`ruleDescriptions.${pax.ruleDescriptionKey}`, { defaultValue: pax.ruleDescription })
                       : pax.ruleDescription}
                   </p>
                 </div>

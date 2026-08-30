@@ -73,7 +73,6 @@
   "expiresLabel": "Expires: {{date}}",
   "windowOpensLabel": "Experience window opens {{date}}",
   "windowClosedHint": "Recently revalidated — flights logged before this date don't count toward the next revalidation.",
-  "launchesCount": "{{current}} / {{required}} launches",
   "expiryBanner": {
     "headingExpired": "Action needed to fly again",
     "headingExpiring": "Renewal coming up",
@@ -146,5 +145,96 @@
   },
   "ratingCount_one": "{{count}} rating",
   "ratingCount_other": "{{count}} ratings",
-  "licenseFallback": "License"
+  "licenseFallback": "License",
+  "units": {
+    "approaches": "approaches",
+    "flights": "flights",
+    "holds": "holds",
+    "hours": "hours",
+    "landings": "landings",
+    "launches": "launches",
+    "minutes": "minutes",
+    "sectors": "route sectors"
+  },
+  "requirement": {
+    "total_time": "Total Time",
+    "pic_time": "PIC Time",
+    "ifr_time": "IFR Time",
+    "landings": "Takeoffs & Landings",
+    "day_landings": "Day Landings",
+    "night_landings": "Night Landings",
+    "refresher_training": "Refresher Training",
+    "training_flight": "Training Flight",
+    "proficiency_check": "Proficiency Check",
+    "approaches": "Instrument Approaches",
+    "holds": "Holding Procedures",
+    "route_sectors": "Route Sectors",
+    "launches": "Launches",
+    "launches_and_landings": "Launches & Landings"
+  },
+  "passengerExpiry": {
+    "day": "Day current until {{date}}",
+    "night": "Night current until {{date}}"
+  },
+  "messages": {
+    "rating": {
+      "no_expiry_date": "No expiry date recorded — add one to track this rating.",
+      "no_expiry_date_manual": "No expiry date recorded — this rating is tracked manually.",
+      "evaluation_failed": "Flight experience could not be read. Try again in a moment.",
+      "expired": "Expired.",
+      "expiring_one": "Expires in {{days}} day.",
+      "expiring_other": "Expires in {{days}} days.",
+      "valid_until": "Valid — no experience requirements attached.",
+      "window_not_open": "Recently revalidated — the experience window opens on {{date}}.",
+      "revalidation_not_met": "Revalidation requirements not fully met.",
+      "revalidation_not_met_prof_check": "Revalidation requirements not fully met — a proficiency check may be taken instead (FCL.740.A(b)(2)).",
+      "revalidation_expiring_met_one": "All requirements met — expires in {{days}} day.",
+      "revalidation_expiring_met_other": "All requirements met — expires in {{days}} days.",
+      "revalidation_current": "Current — all revalidation requirements met.",
+      "recency_not_met": "Recency requirements not fully met.",
+      "recency_current": "Current — all recency requirements met.",
+      "ir_hours_and_check_not_met": "Neither the IFR hours nor the proficiency check are met.",
+      "ir_hours_not_met": "IFR hour requirement not met.",
+      "ir_check_not_met": "Annual proficiency check not completed.",
+      "ir_current": "Instrument currency requirements met.",
+      "ir_lapsed_safety_pilot": "Instrument currency lapsed — you can regain it by flying the required experience with a safety pilot (§61.57(c)).",
+      "ir_expired_ipc": "Instrument currency expired more than 12 months ago — an instrument proficiency check is required (§61.57(d)).",
+      "ir_not_applicable": "This certificate carries no instrument privileges (§61.315).",
+      "pax_not_current_one": "Not current for passengers — {{needed}} more landing needed.",
+      "pax_not_current_other": "Not current for passengers — {{needed}} more landings needed.",
+      "pax_day_current_night_not_one": "Day current, night not current — {{needed}} more night landing needed.",
+      "pax_day_current_night_not_other": "Day current, night not current — {{needed}} more night landings needed.",
+      "pax_current_day_night": "Current for day and night passengers.",
+      "glider_not_current_one": "Not current — {{needed}} more launch needed.",
+      "glider_not_current_other": "Not current — {{needed}} more launches needed.",
+      "glider_current": "Current for passengers."
+    },
+    "pax": {
+      "evaluation_failed": "Passenger flight experience could not be read. Try again in a moment.",
+      "not_current_one": "Not current for passengers — {{needed}} more landing in the last 90 days.",
+      "not_current_other": "Not current for passengers — {{needed}} more landings in the last 90 days.",
+      "current_day_no_night_privilege": "Current for day passengers — this licence carries no night privilege.",
+      "current_day_night_ir_waived": "Current for day and night passengers — the night requirement is waived for IR holders (FCL.060(b)(2)(ii)).",
+      "current_day_night": "Current for day and night passengers.",
+      "day_current_night_not_one": "Day current, night not current — {{needed}} more night landing needed, or hold a valid IR.",
+      "day_current_night_not_other": "Day current, night not current — {{needed}} more night landings needed, or hold a valid IR.",
+      "current_day_privilege_separate": "Flight experience met — the passenger endorsement is proved separately."
+    },
+    "flight_review": {
+      "evaluation_failed": "Flight review status could not be determined.",
+      "none_on_record": "No flight review on record.",
+      "expired": "Expired — last completed {{date}}.",
+      "expiring_one": "Expires in {{days}} day — last completed {{date}}.",
+      "expiring_other": "Expires in {{days}} days — last completed {{date}}.",
+      "current": "Current — last completed {{date}}."
+    },
+    "requirement": {
+      "progress": "{{current}} / {{required}} {{unit}}",
+      "prof_check_completed": "Completed {{date}}",
+      "prof_check_missing": "Not completed"
+    },
+    "launch_method": {
+      "progress": "{{current}} / {{required}} launches"
+    }
+  }
 }

@@ -487,4 +487,104 @@ describe('CurrencyPage', () => {
     renderWithProviders(<CurrencyPage />);
     expect(screen.queryByTestId('passenger-privilege-badge')).not.toBeInTheDocument();
   });
+
+  it('renders the flight review status from its messageKey', () => {
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
+      data: {
+        ratings: [],
+        passengerCurrency: [],
+        flightReview: {
+          lastCompleted: '2025-06-15',
+          expiresOn: '2027-06-30',
+          status: 'current',
+          message: 'Flight review current — completed 2025-06-15, valid until 2027-06-30 (14 CFR 61.56)',
+          messageKey: 'flight_review.current',
+          messageParams: { date: '2025-06-15' },
+        },
+      },
+      isLoading: false, error: null,
+    } as any);
+    vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
+
+    renderWithProviders(<CurrencyPage />);
+    const card = screen.getByTestId('flight-review-card');
+    expect(card).toHaveTextContent('Current — last completed 15.06.2025.');
+    expect(card).not.toHaveTextContent('14 CFR 61.56');
+  });
+
+  it('renders an expiring flight review with its days and completion date', () => {
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
+      data: {
+        ratings: [],
+        passengerCurrency: [],
+        flightReview: {
+          lastCompleted: '2024-09-01',
+          expiresOn: '2026-09-30',
+          status: 'expiring',
+          message: 'Flight review expires in 30 days — last completed 2024-09-01 (14 CFR 61.56)',
+          messageKey: 'flight_review.expiring',
+          messageParams: { days: 30, date: '2024-09-01' },
+        },
+      },
+      isLoading: false, error: null,
+    } as any);
+    vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
+
+    renderWithProviders(<CurrencyPage />);
+    expect(screen.getByTestId('flight-review-card'))
+      .toHaveTextContent('Expires in 30 days — last completed 01.09.2024.');
+  });
+
+  it('shows when day and night passenger currency lapse', () => {
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
+      data: {
+        ratings: [],
+        passengerCurrency: [
+          {
+            classType: 'SEP_LAND', regulatoryAuthority: 'EASA',
+            dayStatus: 'current', nightStatus: 'current',
+            dayLandings: 5, nightLandings: 3, dayRequired: 3, nightRequired: 1,
+            nightPrivilege: true,
+            dayExpiresOn: '2026-11-15',
+            nightExpiresOn: '2026-10-02',
+            message: 'EASA SEP_LAND — passenger current (day and night)',
+            messageKey: 'pax.current_day_night',
+            ruleDescription: 'FCL.060(b)',
+          },
+        ],
+      },
+      isLoading: false, error: null,
+    } as any);
+    vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
+
+    renderWithProviders(<CurrencyPage />);
+    expect(screen.getByTestId('pax-day-expires')).toHaveTextContent('Day current until 15.11.2026');
+    expect(screen.getByTestId('pax-night-expires')).toHaveTextContent('Night current until 02.10.2026');
+  });
+
+  it('omits passenger expiry lines when the requirement is not met', () => {
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
+      data: {
+        ratings: [],
+        passengerCurrency: [
+          {
+            classType: 'SEP_LAND', regulatoryAuthority: 'EASA',
+            dayStatus: 'expired', nightStatus: 'expired',
+            dayLandings: 1, nightLandings: 0, dayRequired: 3, nightRequired: 1,
+            nightPrivilege: true,
+            message: 'EASA SEP_LAND — not current for passengers (need 2 more landings in 90 days)',
+            messageKey: 'pax.not_current',
+            messageParams: { needed: 2 },
+            ruleDescription: 'FCL.060(b)',
+          },
+        ],
+      },
+      isLoading: false, error: null,
+    } as any);
+    vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
+
+    renderWithProviders(<CurrencyPage />);
+    expect(screen.queryByTestId('pax-day-expires')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('pax-night-expires')).not.toBeInTheDocument();
+  });
 });

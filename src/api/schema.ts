@@ -4899,6 +4899,25 @@ export interface components {
             passengerCurrency: components["schemas"]["PassengerCurrency"][];
             flightReview?: components["schemas"]["FlightReviewStatus"];
         };
+        /** @description Variable parts of a localised message that are not already fields on the enclosing object. Which fields are present is determined by messageKey; see docs/CURRENCY_MESSAGES.md for the per-key contract. */
+        MessageParams: {
+            /**
+             * @description Days until expiry, for countdown keys
+             * @example 42
+             */
+            days?: number;
+            /**
+             * @description Outstanding count for a shortfall key (landings, launches)
+             * @example 2
+             */
+            needed?: number;
+            /**
+             * Format: date
+             * @description A date the message refers to that is not the object's own expiry — a proficiency check, a flight review completion, or a window opening
+             * @example 2026-01-15
+             */
+            date?: string;
+        };
         PassengerCurrency: {
             classType: components["schemas"]["ClassType"];
             /** @description Authority that defines the passenger currency rules */
@@ -4932,13 +4951,39 @@ export interface components {
              * @example true
              */
             nightPrivilege?: boolean;
-            /** @description Human-readable passenger currency status message */
+            /**
+             * Format: date
+             * @description Last date the day requirement stays met if the pilot does not fly again — the oldest landing still needed to reach dayRequired, plus 90 days (inclusive). Absent when the day requirement is not currently met.
+             * @example 2026-11-15
+             */
+            dayExpiresOn?: string | null;
+            /**
+             * Format: date
+             * @description Last date the night requirement stays met if the pilot does not fly again. Absent when the night requirement is not met, not applicable (no night privilege) or waived (EASA IR holders under FCL.060(b)(2)(ii)).
+             * @example 2026-10-02
+             */
+            nightExpiresOn?: string | null;
+            /**
+             * @deprecated
+             * @description DEPRECATED — English (German for UL) fallback text. Render messageKey with messageParams instead; this field is removed once the web and iOS clients have adopted the keys.
+             */
             message?: string;
+            /**
+             * @description Stable key identifying which statement is true, for client-side localisation. Catalogued in docs/CURRENCY_MESSAGES.md. Not an enum — an unrecognised key should fall back to `message`.
+             * @example pax.current_day_night
+             */
+            messageKey?: string;
+            messageParams?: components["schemas"]["MessageParams"];
             /**
              * @description Regulatory reference for the passenger currency rule
              * @example 3 takeoffs & landings in same type/class within preceding 90 days to carry passengers (EASA FCL.060(b))
              */
             ruleDescription?: string;
+            /**
+             * @description Stable key for the passenger currency rule, for client-side localisation of ruleDescription
+             * @example easa_pax
+             */
+            ruleDescriptionKey?: string;
             /** @description Informational — whether the pilot meets additional requirements to carry passengers (LAPL 10h PIC, SPL 30 launches, etc.) */
             passengerPrivilege?: {
                 /** @description Whether the pilot is eligible to carry passengers (based on total PIC hours/launches since license issue) */
@@ -4966,8 +5011,17 @@ export interface components {
              * @enum {string}
              */
             status: "current" | "expiring" | "expired" | "unknown";
-            /** @description Human-readable flight review status message */
+            /**
+             * @deprecated
+             * @description DEPRECATED — English fallback text. Render messageKey with messageParams instead.
+             */
             message: string;
+            /**
+             * @description Stable key identifying which statement is true, for client-side localisation. Catalogued in docs/CURRENCY_MESSAGES.md.
+             * @example flight_review.current
+             */
+            messageKey?: string;
+            messageParams?: components["schemas"]["MessageParams"];
         };
         ClassRatingCurrency: {
             /** Format: uuid */
@@ -5011,8 +5065,24 @@ export interface components {
              *     window opens.
              */
             windowOpen?: boolean;
-            /** @description Human-readable status message */
+            /**
+             * @deprecated
+             * @description DEPRECATED — English (German for UL) fallback text. Render messageKey with messageParams instead.
+             */
             message?: string;
+            /**
+             * @description Stable key identifying which statement is true, for client-side localisation. Catalogued in docs/CURRENCY_MESSAGES.md.
+             * @example rating.revalidation_current
+             */
+            messageKey?: string;
+            messageParams?: components["schemas"]["MessageParams"];
+            /** @description Regulatory reference for the rule that was applied */
+            ruleDescription?: string;
+            /**
+             * @description Stable key for the applied rule, for client-side localisation of ruleDescription
+             * @example easa_sep_tmg
+             */
+            ruleDescriptionKey?: string;
             /** @description Progress metrics toward currency requirements (authority-specific) */
             progress?: {
                 /** @description Total time in class in minutes in the evaluation period */
@@ -5060,12 +5130,28 @@ export interface components {
             required: number;
             /** @description Whether the requirement is met */
             met: boolean;
-            /** @description Human-readable progress message */
+            /**
+             * @deprecated
+             * @description DEPRECATED — English fallback text. Render messageKey from launches/required/method instead.
+             */
             message?: string;
+            /**
+             * @description Always `launch_method.progress`; the client renders launches/required/method.
+             * @example launch_method.progress
+             */
+            messageKey?: string;
         };
         CurrencyRequirement: {
-            /** @description Requirement name (e.g., "Day Currency", "PIC Hours", "Refresher Training") */
+            /**
+             * @deprecated
+             * @description DEPRECATED for regulatory requirements — English (German for UL) fallback for nameKey. Still authoritative for custom currency rules, whose names are author-supplied user data and carry no nameKey.
+             */
             name: string;
+            /**
+             * @description Stable key for the requirement name, for client-side localisation. Absent on custom currency rules, where `name` is user data and must be rendered as-is.
+             * @example requirement.refresher_training
+             */
+            nameKey?: string;
             /** @description Whether this requirement is currently satisfied */
             met: boolean;
             /**
@@ -5080,8 +5166,17 @@ export interface components {
             required: number;
             /** @description Unit of measurement (e.g., "landings", "hours", "flights") */
             unit: string;
-            /** @description Human-readable progress description */
+            /**
+             * @deprecated
+             * @description DEPRECATED — English fallback text. Render messageKey instead.
+             */
             message: string;
+            /**
+             * @description Stable key for the progress text. `requirement.progress` (the common case) is rendered by the client from current/required/unit.
+             * @example requirement.progress
+             */
+            messageKey?: string;
+            messageParams?: components["schemas"]["MessageParams"];
         };
         /**
          * @description Aircraft class rating type:

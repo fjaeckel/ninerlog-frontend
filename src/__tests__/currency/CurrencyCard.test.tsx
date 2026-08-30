@@ -238,6 +238,79 @@ describe('CurrencyCard', () => {
     expect(screen.queryByTestId(/requirement-/)).not.toBeInTheDocument();
   });
 
+  it('renders the localised status message from messageKey, not the API English', () => {
+    const rating: ClassRatingCurrency = {
+      ...baseRating,
+      message: 'EASA SEP_LAND current — all revalidation requirements met',
+      messageKey: 'rating.revalidation_current',
+    };
+    render(<CurrencyCard rating={rating} />);
+    expect(screen.getByText('Current — all revalidation requirements met.')).toBeInTheDocument();
+    expect(screen.queryByText(rating.message)).not.toBeInTheDocument();
+  });
+
+  it('renders German UL recency in the UI language rather than German prose', () => {
+    const ulRating: ClassRatingCurrency = {
+      ...baseRating,
+      regulatoryAuthority: 'GERMAN_UL',
+      licenseType: 'UL',
+      message: 'UL SEP_LAND — alle Anforderungen erfüllt (LuftPersV §45)',
+      messageKey: 'rating.recency_current',
+      requirements: [],
+    };
+    render(<CurrencyCard rating={ulRating} />);
+    expect(screen.getByText('Current — all recency requirements met.')).toBeInTheDocument();
+  });
+
+  it('interpolates messageParams into the countdown message', () => {
+    const rating: ClassRatingCurrency = {
+      ...baseRating,
+      status: 'expiring',
+      message: 'EASA SEP_LAND expires in 30 days — requirements met',
+      messageKey: 'rating.revalidation_expiring_met',
+      messageParams: { days: 30 },
+    };
+    render(<CurrencyCard rating={rating} />);
+    expect(screen.getByText('All requirements met — expires in 30 days.')).toBeInTheDocument();
+  });
+
+  it('renders requirement names and progress from their keys', () => {
+    const rating: ClassRatingCurrency = {
+      ...baseRating,
+      messageKey: 'rating.revalidation_current',
+      requirements: [
+        {
+          name: 'Takeoffs & Landings', nameKey: 'requirement.landings', met: true,
+          current: 20, required: 12, unit: 'landings',
+          message: '20 / 12 takeoffs & landings', messageKey: 'requirement.progress',
+        },
+        {
+          name: 'Proficiency Check', nameKey: 'requirement.proficiency_check', met: true,
+          current: 1, required: 1, unit: 'check',
+          message: 'Proficiency check completed 2026-01-15',
+          messageKey: 'requirement.prof_check_completed', messageParams: { date: '2026-01-15' },
+        },
+      ],
+    };
+    render(<CurrencyCard rating={rating} />);
+    expect(screen.getByTestId('requirement-requirement.landings')).toHaveTextContent('Takeoffs & Landings');
+    expect(screen.getByTestId('requirement-requirement.landings')).toHaveTextContent('20 / 12 landings');
+    expect(screen.getByTestId('requirement-requirement.proficiency_check')).toHaveTextContent('Proficiency Check');
+    expect(screen.getByTestId('requirement-requirement.proficiency_check')).toHaveTextContent('Completed 15.01.2026');
+  });
+
+  it('renders launch method progress from its key', () => {
+    const splRating: ClassRatingCurrency = {
+      ...baseRating,
+      licenseType: 'SPL',
+      launchMethodCurrency: [
+        { method: 'winch', launches: 8, required: 5, met: true, message: '8 / 5 winch launches', messageKey: 'launch_method.progress' },
+      ],
+    };
+    render(<CurrencyCard rating={splRating} />);
+    expect(screen.getByTestId('launch-method-winch')).toHaveTextContent('8 / 5 launches');
+  });
+
   it('does not render the window banner once the window is open', () => {
     const inWindow: ClassRatingCurrency = {
       ...baseRating,
