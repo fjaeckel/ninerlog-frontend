@@ -330,5 +330,12 @@
   },
   "actions": "Actions",
   "done": "Done",
-  "notes": "Notes"
+  "notes": "Notes",
+  "hints": {
+    "hint-enable-2fa": "Secure your account — enable two-factor authentication in Profile Settings.",
+    "hint-add-first-flight": "Welcome! Log your first flight to get started.",
+    "hint-add-aircraft": "Add your aircraft to auto-fill registrations when logging flights.",
+    "hint-add-credentials": "Track your medical and language proficiency — add credentials to get expiry reminders."
+  },
+  "dismiss": "Dismiss"
 }

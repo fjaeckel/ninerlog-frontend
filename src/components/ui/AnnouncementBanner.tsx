@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Info, CheckCircle, AlertTriangle, AlertOctagon } from 'lucide-react';
 import { useAnnouncements } from '../../hooks/useAnnouncements';
 
@@ -60,6 +61,7 @@ const severityConfig = {
 };
 
 export default function AnnouncementBanner() {
+  const { t } = useTranslation('common');
   const { data } = useAnnouncements();
   const [dismissed, setDismissedState] = useState<Set<string>>(getDismissed);
 
@@ -87,11 +89,17 @@ export default function AnnouncementBanner() {
         return (
           <div key={item.id} className={`flex items-start gap-3 px-4 py-3 rounded-lg border text-sm ${config.bg}`}>
             {config.icon}
-            <span className={`flex-1 ${config.text}`}>{linkify(item.message)}</span>
+            <span className={`flex-1 ${config.text}`}>
+              {linkify(
+                item.source === 'hint'
+                  ? t(`hints.${item.id}`, { defaultValue: item.message })
+                  : item.message
+              )}
+            </span>
             <button
               onClick={() => handleDismiss(item.id)}
               className={`shrink-0 p-0.5 rounded transition-colors ${config.dismiss}`}
-              aria-label="Dismiss"
+              aria-label={t('dismiss')}
             >
               <X className="w-4 h-4" />
             </button>
