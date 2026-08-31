@@ -5015,7 +5015,7 @@ export interface components {
              * @deprecated
              * @description DEPRECATED — English fallback text. Render messageKey with messageParams instead.
              */
-            message: string;
+            message?: string;
             /**
              * @description Stable key identifying which statement is true, for client-side localisation. Catalogued in docs/CURRENCY_MESSAGES.md.
              * @example flight_review.current
@@ -5146,7 +5146,7 @@ export interface components {
              * @deprecated
              * @description DEPRECATED for regulatory requirements — English (German for UL) fallback for nameKey. Still authoritative for custom currency rules, whose names are author-supplied user data and carry no nameKey.
              */
-            name: string;
+            name?: string;
             /**
              * @description Stable key for the requirement name, for client-side localisation. Absent on custom currency rules, where `name` is user data and must be rendered as-is.
              * @example requirement.refresher_training
@@ -5170,7 +5170,7 @@ export interface components {
              * @deprecated
              * @description DEPRECATED — English fallback text. Render messageKey instead.
              */
-            message: string;
+            message?: string;
             /**
              * @description Stable key for the progress text. `requirement.progress` (the common case) is rendered by the client from current/required/unit.
              * @example requirement.progress

@@ -13,7 +13,7 @@ import { recencyLevel, RECENCY_BADGE_CLASSES, RECENCY_REQUIRED_LANDINGS } from '
 import { CurrencyCard } from '../../components/currency/CurrencyCard';
 import { CustomCurrencyCard } from '../../components/currency/CustomCurrencyCard';
 import { CurrencyExpiryBanner } from '../../components/currency/CurrencyExpiryBanner';
-import { AlertTriangle, Check, ChevronDown, ChevronRight, Plane, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plane, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
 import { isPast, differenceInDays } from 'date-fns';
 import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
 import HelpLink from '../../components/ui/HelpLink';
@@ -347,20 +347,6 @@ export default function CurrencyPage() {
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1" data-testid="night-not-applicable">
                       {t('nightNotApplicable')}
                     </p>
-                  )}
-                  {/* Passenger privilege badge (LAPL, SPL, UL) */}
-                  {pax.passengerPrivilege && (
-                    <div
-                      className={`mt-2 px-2 py-1 rounded inline-flex items-start gap-1.5 text-xs ${pax.passengerPrivilege.eligible ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'}`}
-                      data-testid="passenger-privilege-badge"
-                    >
-                      {pax.passengerPrivilege.eligible ? (
-                        <Check className="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden="true" />
-                      ) : (
-                        <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden="true" />
-                      )}
-                      {pax.passengerPrivilege.message}
-                    </div>
                   )}
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">
                     {pax.ruleDescriptionKey

@@ -240,7 +240,7 @@ export interface CurrencyMessageParams {
 
 export interface CurrencyRequirement {
   /** Authoritative only for custom currency rules, where it is pilot-authored and carries no nameKey. */
-  name: string;
+  name?: string;
   /** Key into currency.json `requirement`. Absent on custom rules. */
   nameKey?: string;
   met: boolean;
@@ -248,7 +248,7 @@ export interface CurrencyRequirement {
   required: number;
   unit: string;
   /** @deprecated English fallback for messageKey. */
-  message: string;
+  message?: string;
   /** Key into currency.json `messages` (e.g. "requirement.progress"). */
   messageKey?: string;
   messageParams?: CurrencyMessageParams;
@@ -352,12 +352,6 @@ export interface PassengerCurrency {
    * Never populated by the API — the backend has no code path that sets it.
    * Kept so the guarded render does not become a type error.
    */
-  passengerPrivilege?: PassengerPrivilege;
-}
-
-export interface PassengerPrivilege {
-  eligible: boolean;
-  message: string;
 }
 
 export interface FlightReviewStatus {

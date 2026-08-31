@@ -53,7 +53,6 @@
   "launchMethod": "Launch Method Currency",
   "nightPrivilege": "Night Privilege",
   "noNightPrivilege": "No night flying privilege for this license type",
-  "passengerPrivilege": "Passenger Privilege",
   "tier1Description": "Determines whether you can fly at all in this class.",
   "tier2Description": "Determines whether you can carry passengers. You can still fly solo without passenger currency.",
   "flightReviewRequired": "Flight review required",

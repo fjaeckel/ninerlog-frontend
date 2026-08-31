@@ -53,7 +53,6 @@
   "launchMethod": "Startart-Recency",
   "nightPrivilege": "Nachtflugberechtigung",
   "noNightPrivilege": "Keine Nachtflugberechtigung für diesen Lizenztyp",
-  "passengerPrivilege": "Passagierberechtigung",
   "tier1Description": "Bestimmt, ob du in dieser Klasse überhaupt fliegen darfst.",
   "tier2Description": "Bestimmt, ob du Passagiere mitnehmen darfst. Ohne Passagiere darfst du weiterhin fliegen.",
   "flightReviewRequired": "Flugüberprüfung erforderlich",
