@@ -23,6 +23,9 @@ import { BaselineSection } from '../components/profile/BaselineSection';
 import { FlightColumnsSection } from '../components/profile/FlightColumnsSection';
 import { SessionsSection } from '../components/profile/SessionsSection';
 
+/** A maintenance action's result: the translated line plus whether it succeeded. */
+type Outcome = { text: string; ok: boolean } | null;
+
 export default function ProfilePage() {
   const { t } = useTranslation(['settings', 'common']);
   const { user, updateUser } = useAuthStore();
@@ -77,13 +80,13 @@ export default function ProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [showDeleteFlightsConfirm, setShowDeleteFlightsConfirm] = useState(false);
-  const [deleteFlightsMessage, setDeleteFlightsMessage] = useState('');
+  const [deleteFlightsMessage, setDeleteFlightsMessage] = useState<Outcome>(null);
   const [showDeleteDataConfirm, setShowDeleteDataConfirm] = useState(false);
-  const [deleteDataMessage, setDeleteDataMessage] = useState('');
+  const [deleteDataMessage, setDeleteDataMessage] = useState<Outcome>(null);
 
   // Recalculate state
   const [isRecalculating, setIsRecalculating] = useState(false);
-  const [recalcMessage, setRecalcMessage] = useState('');
+  const [recalcMessage, setRecalcMessage] = useState<Outcome>(null);
 
   // Tab state
   const [activeTab, setActiveTab] = useState<'preferences' | 'account' | 'notifications' | 'backups' | 'data'>('preferences');
@@ -169,7 +172,7 @@ export default function ProfilePage() {
 
   const handleRecalculate = async () => {
     setIsRecalculating(true);
-    setRecalcMessage('');
+    setRecalcMessage(null);
     try {
       const token = useAuthStore.getState().accessToken;
       const res = await fetch(`${API_BASE}/flights/recalculate`, {
@@ -178,9 +181,11 @@ export default function ProfilePage() {
       });
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
-      setRecalcMessage(`Recalculated ${data.updated} flight${data.updated !== 1 ? 's' : ''} successfully.${data.errors > 0 ? ` ${data.errors} error(s).` : ''}`);
+      const summary = t('flightData.recalculated', { count: data.updated });
+      const errors = data.errors > 0 ? ` ${t('flightData.recalculateErrors', { count: data.errors })}` : '';
+      setRecalcMessage({ text: `${summary}${errors}`, ok: true });
     } catch {
-      setRecalcMessage('Failed to recalculate flights. Please try again.');
+      setRecalcMessage({ text: t('flightData.recalculateFailed'), ok: false });
     } finally {
       setIsRecalculating(false);
     }
@@ -421,9 +426,9 @@ export default function ProfilePage() {
                 <p className="text-sm text-slate-600 dark:text-slate-400">{t('twoFactor.scanQr')}</p>
                 <div className="flex justify-center p-4 bg-white dark:bg-slate-900 rounded-lg border">
                   {qrDataUrl ? (
-                    <img src={qrDataUrl} alt="2FA QR Code" className="w-48 h-48" />
+                    <img src={qrDataUrl} alt={t('twoFactor.qrAlt')} className="w-48 h-48" />
                   ) : (
-                    <div className="w-48 h-48 flex items-center justify-center text-slate-500 dark:text-slate-400">Loading...</div>
+                    <div className="w-48 h-48 flex items-center justify-center text-slate-500 dark:text-slate-400">{t('common:loading')}</div>
                   )}
                 </div>
                 <div>
@@ -456,21 +461,21 @@ export default function ProfilePage() {
                 ) : (
                   <div className="space-y-3 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                     <p className="text-sm text-red-800 dark:text-red-300">{t('twoFactor.disablePrompt')}</p>
-                    <input type="password" value={twoFADisablePassword} onChange={(e) => setTwoFADisablePassword(e.target.value)} className="input" placeholder="Your password" />
+                    <input type="password" value={twoFADisablePassword} onChange={(e) => setTwoFADisablePassword(e.target.value)} className="input" placeholder={t('dangerZone.passwordPlaceholder')} />
                     {twoFAMessage && <p className="text-sm text-red-600 dark:text-red-400">{twoFAMessage}</p>}
                     <div className="flex gap-3">
                       <button onClick={async () => { setTwoFAMessage(''); try { await disable2FA.mutateAsync(twoFADisablePassword); updateUser({ twoFactorEnabled: false }); setShowDisable2FA(false); setTwoFADisablePassword(''); } catch { setTwoFAMessage(t('twoFactor.incorrectPassword')); } }} disabled={!twoFADisablePassword || disable2FA.isPending} className="btn-danger">
                         {disable2FA.isPending ? t('twoFactor.disabling') : t('twoFactor.disable')}
                       </button>
-                      <button onClick={() => { setShowDisable2FA(false); setTwoFADisablePassword(''); setTwoFAMessage(''); }} className="btn-secondary text-sm">Cancel</button>
+                      <button onClick={() => { setShowDisable2FA(false); setTwoFADisablePassword(''); setTwoFAMessage(''); }} className="btn-secondary text-sm">{t('common:cancel')}</button>
                     </div>
                   </div>
                 )}
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">Add an extra layer of security with a time-based one-time password (TOTP) from an authenticator app.</p>
-                <button onClick={async () => { try { const data = await setup2FA.mutateAsync(); setTwoFASetupData(data); QRCode.toDataURL(data.qrUri, { width: 200, margin: 1 }).then(setQrDataUrl).catch(() => setQrDataUrl(null)); } catch { setTwoFAMessage('Failed to start 2FA setup.'); } }} disabled={setup2FA.isPending} className="btn-primary">
+                <p className="text-sm text-slate-600 dark:text-slate-400">{t('twoFactor.setupDescription')}</p>
+                <button onClick={async () => { try { const data = await setup2FA.mutateAsync(); setTwoFASetupData(data); QRCode.toDataURL(data.qrUri, { width: 200, margin: 1 }).then(setQrDataUrl).catch(() => setQrDataUrl(null)); } catch { setTwoFAMessage(t('twoFactor.setupFailed')); } }} disabled={setup2FA.isPending} className="btn-primary">
                   {setup2FA.isPending ? t('twoFactor.settingUp') : t('twoFactor.enable')}
                 </button>
               </div>
@@ -609,7 +614,7 @@ export default function ProfilePage() {
               {isRecalculating ? t('flightData.recalculating') : t('flightData.recalculate')}
             </button>
             {recalcMessage && (
-              <p className={`text-sm mt-2 ${recalcMessage.includes('error') ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>{recalcMessage}</p>
+              <p className={`text-sm mt-2 ${recalcMessage.ok ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{recalcMessage.text}</p>
             )}
           </div>
 
@@ -625,14 +630,14 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                   <p className="text-sm font-medium text-red-800 dark:text-red-300">{t('dangerZone.deleteFlightsConfirm')}</p>
-                  {deleteFlightsMessage && <p className={`text-sm ${deleteFlightsMessage.includes('error') ? 'text-red-600' : 'text-green-600'}`}>{deleteFlightsMessage}</p>}
+                  {deleteFlightsMessage && <p className={`text-sm ${deleteFlightsMessage.ok ? 'text-green-600' : 'text-red-600'}`}>{deleteFlightsMessage.text}</p>}
                   <div className="flex gap-3">
-                    <button onClick={async () => { try { const result = await deleteAllFlights.mutateAsync(); setDeleteFlightsMessage(`Deleted ${result.deleted} flights.`); setShowDeleteFlightsConfirm(false); } catch { setDeleteFlightsMessage('Failed to delete flights — error.'); } }} disabled={deleteAllFlights.isPending} className="btn-danger">{deleteAllFlights.isPending ? t('common:deleting') : t('dangerZone.deleteFlightsButton')}</button>
-                    <button onClick={() => { setShowDeleteFlightsConfirm(false); setDeleteFlightsMessage(''); }} className="btn-secondary text-sm">Cancel</button>
+                    <button onClick={async () => { try { const result = await deleteAllFlights.mutateAsync(); setDeleteFlightsMessage({ text: t('dangerZone.deleteFlightsDone', { count: result.deleted }), ok: true }); setShowDeleteFlightsConfirm(false); } catch { setDeleteFlightsMessage({ text: t('dangerZone.deleteFlightsFailed'), ok: false }); } }} disabled={deleteAllFlights.isPending} className="btn-danger">{deleteAllFlights.isPending ? t('common:deleting') : t('dangerZone.deleteFlightsButton')}</button>
+                    <button onClick={() => { setShowDeleteFlightsConfirm(false); setDeleteFlightsMessage(null); }} className="btn-secondary text-sm">{t('common:cancel')}</button>
                   </div>
                 </div>
               )}
-              {!showDeleteFlightsConfirm && deleteFlightsMessage && <p className={`text-sm mt-2 ${deleteFlightsMessage.includes('error') ? 'text-red-600' : 'text-green-600'}`}>{deleteFlightsMessage}</p>}
+              {!showDeleteFlightsConfirm && deleteFlightsMessage && <p className={`text-sm mt-2 ${deleteFlightsMessage.ok ? 'text-green-600' : 'text-red-600'}`}>{deleteFlightsMessage.text}</p>}
             </div>
 
             {/* Delete All Data */}
@@ -643,14 +648,14 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
                   <p className="text-sm font-medium text-red-800 dark:text-red-300">{t('dangerZone.deleteDataConfirm')}</p>
-                  {deleteDataMessage && <p className={`text-sm ${deleteDataMessage.includes('error') ? 'text-red-600' : 'text-green-600'}`}>{deleteDataMessage}</p>}
+                  {deleteDataMessage && <p className={`text-sm ${deleteDataMessage.ok ? 'text-green-600' : 'text-red-600'}`}>{deleteDataMessage.text}</p>}
                   <div className="flex gap-3">
-                    <button onClick={async () => { try { await deleteAllUserData.mutateAsync(); setDeleteDataMessage('All data deleted successfully.'); setShowDeleteDataConfirm(false); } catch { setDeleteDataMessage('Failed to delete data — error.'); } }} disabled={deleteAllUserData.isPending} className="btn-danger">{deleteAllUserData.isPending ? t('common:deleting') : t('dangerZone.deleteDataButton')}</button>
-                    <button onClick={() => { setShowDeleteDataConfirm(false); setDeleteDataMessage(''); }} className="btn-secondary text-sm">Cancel</button>
+                    <button onClick={async () => { try { await deleteAllUserData.mutateAsync(); setDeleteDataMessage({ text: t('dangerZone.deleteDataDone'), ok: true }); setShowDeleteDataConfirm(false); } catch { setDeleteDataMessage({ text: t('dangerZone.deleteDataFailed'), ok: false }); } }} disabled={deleteAllUserData.isPending} className="btn-danger">{deleteAllUserData.isPending ? t('common:deleting') : t('dangerZone.deleteDataButton')}</button>
+                    <button onClick={() => { setShowDeleteDataConfirm(false); setDeleteDataMessage(null); }} className="btn-secondary text-sm">{t('common:cancel')}</button>
                   </div>
                 </div>
               )}
-              {!showDeleteDataConfirm && deleteDataMessage && <p className={`text-sm mt-2 ${deleteDataMessage.includes('error') ? 'text-red-600' : 'text-green-600'}`}>{deleteDataMessage}</p>}
+              {!showDeleteDataConfirm && deleteDataMessage && <p className={`text-sm mt-2 ${deleteDataMessage.ok ? 'text-green-600' : 'text-red-600'}`}>{deleteDataMessage.text}</p>}
             </div>
 
             {/* Delete Account */}
@@ -664,12 +669,12 @@ export default function ProfilePage() {
                   {oidcMode ? (
                     <input type="email" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="input" placeholder={user?.email || ''} aria-label={t('dangerZone.confirmDeletionEmail')} />
                   ) : (
-                    <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="input" placeholder="Your password" aria-label="Confirm deletion password" />
+                    <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="input" placeholder={t('dangerZone.passwordPlaceholder')} aria-label={t('dangerZone.confirmDeletionPassword')} />
                   )}
                   {deleteError && <p className="text-sm text-red-600 dark:text-red-400">{deleteError}</p>}
                   <div className="flex gap-3">
                     <button onClick={handleDeleteAccount} disabled={!deletePassword || deleteAccount.isPending} className="btn-danger">{deleteAccount.isPending ? t('common:deleting') : t('dangerZone.deleteAccountButton')}</button>
-                    <button onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }} className="btn-secondary text-sm">Cancel</button>
+                    <button onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }} className="btn-secondary text-sm">{t('common:cancel')}</button>
                   </div>
                 </div>
               )}

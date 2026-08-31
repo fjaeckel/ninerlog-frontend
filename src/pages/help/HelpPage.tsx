@@ -166,7 +166,7 @@ export default function HelpPage() {
       ) : (
         <div className="flex gap-6">
           {/* Sidebar TOC — desktop only, hidden on print */}
-          <nav className="hidden lg:block w-56 shrink-0 print:hidden" aria-label="Help topics">
+          <nav className="hidden lg:block w-56 shrink-0 print:hidden" aria-label={t('help.topicsNav')}>
             <div className="sticky top-20 space-y-1">
               {sections.map((s) => (
                 <button key={s.id} onClick={() => setActive(s.id)}

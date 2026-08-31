@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/cn';
 
 interface SkeletonProps {
@@ -24,8 +25,9 @@ export function SkeletonCard({ className }: SkeletonProps) {
 }
 
 export function SkeletonList({ rows = 5, className }: SkeletonProps & { rows?: number }) {
+  const { t } = useTranslation('common');
   return (
-    <div className={cn('space-y-4', className)} role="status" aria-label="Loading">
+    <div className={cn('space-y-4', className)} role="status" aria-label={t('a11y.loading')}>
       <Skeleton className="h-8 w-48" />
       <div className="card p-0">
         {Array.from({ length: rows }).map((_, i) => (
@@ -38,21 +40,22 @@ export function SkeletonList({ rows = 5, className }: SkeletonProps & { rows?: n
           </div>
         ))}
       </div>
-      <span className="sr-only">Loading content...</span>
+      <span className="sr-only">{t('a11y.loadingContent')}</span>
     </div>
   );
 }
 
 export function SkeletonGrid({ count = 3, className }: SkeletonProps & { count?: number }) {
+  const { t } = useTranslation('common');
   return (
-    <div className={cn('space-y-4', className)} role="status" aria-label="Loading">
+    <div className={cn('space-y-4', className)} role="status" aria-label={t('a11y.loading')}>
       <Skeleton className="h-8 w-48" />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: count }).map((_, i) => (
           <SkeletonCard key={i} className="h-48" />
         ))}
       </div>
-      <span className="sr-only">Loading content...</span>
+      <span className="sr-only">{t('a11y.loadingContent')}</span>
     </div>
   );
 }

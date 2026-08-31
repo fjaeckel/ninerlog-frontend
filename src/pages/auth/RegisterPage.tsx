@@ -210,7 +210,7 @@ export default function RegisterPage() {
               id="name"
               autoComplete="name"
               className={`input ${errors.name ? 'input-error' : ''}`}
-              placeholder="John Doe"
+              placeholder={t('register.namePlaceholder')}
             />
             {errors.name && <p className="form-error">{t(errors.name.message ?? '')}</p>}
           </div>

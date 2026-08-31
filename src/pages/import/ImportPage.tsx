@@ -22,42 +22,42 @@ const CSV_ACCEPT = '.csv,.txt';
 const JSON_ACCEPT = 'application/json,.json';
 
 const IMPORT_FIELDS = [
-  { value: 'ignore', label: '— Skip —' },
-  { value: 'date', label: 'Date' },
-  { value: 'aircraftReg', label: 'Aircraft Registration' },
-  { value: 'aircraftType', label: 'Aircraft Type' },
-  { value: 'departureIcao', label: 'Departure ICAO' },
-  { value: 'arrivalIcao', label: 'Arrival ICAO' },
-  { value: 'offBlockTime', label: 'Off-Block Time' },
-  { value: 'onBlockTime', label: 'On-Block Time' },
-  { value: 'departureTime', label: 'Takeoff Time' },
-  { value: 'arrivalTime', label: 'Landing Time' },
-  { value: 'totalTime', label: 'Total Time' },
-  { value: 'isPic', label: 'PIC' },
-  { value: 'isDual', label: 'Dual' },
-  { value: 'nightTime', label: 'Night Time' },
-  { value: 'ifrTime', label: 'IFR Time' },
-  { value: 'actualInstrumentTime', label: 'Actual Instrument Time' },
-  { value: 'simulatedInstrumentTime', label: 'Simulated Instrument Time' },
-  { value: 'landingsDay', label: 'Day Landings' },
-  { value: 'landingsNight', label: 'Night Landings' },
-  { value: 'landingsTotal', label: 'Total Landings' },
-  { value: 'holds', label: 'Holds' },
-  { value: 'approachesCount', label: 'Approaches' },
-  { value: 'isIpc', label: 'IPC' },
-  { value: 'isFlightReview', label: 'Flight Review' },
-  { value: 'route', label: 'Route' },
-  { value: 'remarks', label: 'Remarks' },
-  { value: 'instructorName', label: 'Instructor Name' },
-  { value: 'instructorComments', label: 'Instructor Comments' },
-  { value: 'dualGivenTime', label: 'Dual Given Time' },
-  { value: 'person1', label: 'Person 1' },
-  { value: 'person2', label: 'Person 2' },
-  { value: 'person3', label: 'Person 3' },
-  { value: 'person4', label: 'Person 4' },
-  { value: 'person5', label: 'Person 5' },
-  { value: 'person6', label: 'Person 6' },
-] as const satisfies readonly { value: ImportField; label: string }[];
+  { value: 'ignore', labelKey: 'fields.ignore' },
+  { value: 'date', labelKey: 'fields.date' },
+  { value: 'aircraftReg', labelKey: 'fields.aircraftReg' },
+  { value: 'aircraftType', labelKey: 'fields.aircraftType' },
+  { value: 'departureIcao', labelKey: 'fields.departureIcao' },
+  { value: 'arrivalIcao', labelKey: 'fields.arrivalIcao' },
+  { value: 'offBlockTime', labelKey: 'fields.offBlockTime' },
+  { value: 'onBlockTime', labelKey: 'fields.onBlockTime' },
+  { value: 'departureTime', labelKey: 'fields.departureTime' },
+  { value: 'arrivalTime', labelKey: 'fields.arrivalTime' },
+  { value: 'totalTime', labelKey: 'fields.totalTime' },
+  { value: 'isPic', labelKey: 'fields.isPic' },
+  { value: 'isDual', labelKey: 'fields.isDual' },
+  { value: 'nightTime', labelKey: 'fields.nightTime' },
+  { value: 'ifrTime', labelKey: 'fields.ifrTime' },
+  { value: 'actualInstrumentTime', labelKey: 'fields.actualInstrumentTime' },
+  { value: 'simulatedInstrumentTime', labelKey: 'fields.simulatedInstrumentTime' },
+  { value: 'landingsDay', labelKey: 'fields.landingsDay' },
+  { value: 'landingsNight', labelKey: 'fields.landingsNight' },
+  { value: 'landingsTotal', labelKey: 'fields.landingsTotal' },
+  { value: 'holds', labelKey: 'fields.holds' },
+  { value: 'approachesCount', labelKey: 'fields.approachesCount' },
+  { value: 'isIpc', labelKey: 'fields.isIpc' },
+  { value: 'isFlightReview', labelKey: 'fields.isFlightReview' },
+  { value: 'route', labelKey: 'fields.route' },
+  { value: 'remarks', labelKey: 'fields.remarks' },
+  { value: 'instructorName', labelKey: 'fields.instructorName' },
+  { value: 'instructorComments', labelKey: 'fields.instructorComments' },
+  { value: 'dualGivenTime', labelKey: 'fields.dualGivenTime' },
+  { value: 'person1', labelKey: 'fields.person1' },
+  { value: 'person2', labelKey: 'fields.person2' },
+  { value: 'person3', labelKey: 'fields.person3' },
+  { value: 'person4', labelKey: 'fields.person4' },
+  { value: 'person5', labelKey: 'fields.person5' },
+  { value: 'person6', labelKey: 'fields.person6' },
+] as const satisfies readonly { value: ImportField; labelKey: string }[];
 
 // Compile-time guard: every ImportField the API can suggest must have an option
 // here, or the mapping <select> renders a value it has no <option> for — the row
@@ -76,7 +76,7 @@ type Step = 'upload' | 'mapping' | 'preview' | 'result';
 type Mode = 'csv' | 'json';
 
 export default function ImportPage() {
-  const { t } = useTranslation('import');
+  const { t } = useTranslation(['import', 'common']);
   const [mode, setMode] = useState<Mode>('csv');
   const [step, setStep] = useState<Step>('upload');
   const [uploadData, setUploadData] = useState<ImportUploadResponse | null>(null);
@@ -99,7 +99,7 @@ export default function ImportPage() {
       setMappings(data.suggestedMappings || []);
       setStep('mapping');
     } catch (err: any) {
-      setError(err.message || 'Upload failed');
+      setError(err.message || t('uploadFailed'));
     }
   };
 
@@ -135,7 +135,7 @@ export default function ImportPage() {
       setPreviewData(data);
       setStep('preview');
     } catch (err: any) {
-      setError(err.message || 'Preview failed');
+      setError(err.message || t('previewFailed'));
     }
   };
 
@@ -149,7 +149,7 @@ export default function ImportPage() {
       setResult(res);
       setStep('result');
     } catch (err: any) {
-      setError(err.message || 'Import failed');
+      setError(err.message || t('importFailedShort'));
     }
   };
 
@@ -176,7 +176,7 @@ export default function ImportPage() {
       const data = await restore.mutateAsync(file);
       setJsonResult(data);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Restore failed';
+      const message = err instanceof Error ? err.message : t('restoreFailed');
       setError(message);
     }
   };
@@ -403,7 +403,7 @@ export default function ImportPage() {
                       className="input text-sm w-48"
                     >
                       {IMPORT_FIELDS.map((f) => (
-                        <option key={f.value} value={f.value}>{f.label}</option>
+                        <option key={f.value} value={f.value}>{t(f.labelKey)}</option>
                       ))}
                     </select>
                   </div>
@@ -441,9 +441,9 @@ export default function ImportPage() {
 
           <div className="flex gap-3">
             <button onClick={handlePreview} disabled={preview.isPending} className="btn-primary flex-1">
-              {preview.isPending ? 'Validating...' : 'Validate & Preview'}
+              {preview.isPending ? t('validating') : t('validatePreview')}
             </button>
-            <button onClick={handleReset} className="btn-secondary">Cancel</button>
+            <button onClick={handleReset} className="btn-secondary">{t('common:cancel')}</button>
           </div>
         </div>
       )}
@@ -452,10 +452,10 @@ export default function ImportPage() {
       {mode === 'csv' && step === 'preview' && previewData && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <SummaryCard label="Total Rows" value={previewData.totalRows} />
-            <SummaryCard label="Valid" value={previewData.validCount} color="green" />
-            <SummaryCard label="Duplicates" value={previewData.duplicateCount} color="amber" />
-            <SummaryCard label="Errors" value={previewData.errorCount} color="red" />
+            <SummaryCard label={t('previewSummary.totalRows')} value={previewData.totalRows} />
+            <SummaryCard label={t('previewSummary.valid')} value={previewData.validCount} color="green" />
+            <SummaryCard label={t('previewSummary.duplicates')} value={previewData.duplicateCount} color="amber" />
+            <SummaryCard label={t('previewSummary.errors')} value={previewData.errorCount} color="red" />
           </div>
 
           <div className="card">
@@ -464,13 +464,13 @@ export default function ImportPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Row</th>
-                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Status</th>
-                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Date</th>
-                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Aircraft</th>
-                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Route</th>
-                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Crew</th>
-                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">Details</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('previewTable.row')}</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('previewTable.status')}</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('previewTable.date')}</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('previewTable.aircraft')}</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('previewTable.route')}</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('previewTable.crew')}</th>
+                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium">{t('previewTable.details')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -483,7 +483,7 @@ export default function ImportPage() {
                           f.status === 'duplicate' ? 'badge-expiring' :
                           'badge-expired'
                         }`}>
-                          {f.status}
+                          {t(`previewStatus.${f.status}`, f.status)}
                         </span>
                       </td>
                       <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{f.flight.date || '—'}</td>
@@ -510,7 +510,7 @@ export default function ImportPage() {
                         {f.status === 'error' && f.errors?.map((e, i) => (
                           <span key={i} className="text-red-600 dark:text-red-400">{e.field}: {e.message}; </span>
                         ))}
-                        {f.status === 'duplicate' && <span>Already logged</span>}
+                        {f.status === 'duplicate' && <span>{t('alreadyLogged')}</span>}
                         {f.status === 'valid' && f.flight.totalTime != null && `${Math.floor(f.flight.totalTime / 60)}h ${f.flight.totalTime % 60}m`}
                       </td>
                     </tr>
@@ -519,7 +519,7 @@ export default function ImportPage() {
               </table>
             </div>
             {previewData.flights.length > 50 && (
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">Showing first 50 of {previewData.flights.length} rows</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">{t('showingFirstRows', { shown: 50, count: previewData.flights.length })}</p>
             )}
           </div>
 
@@ -529,10 +529,10 @@ export default function ImportPage() {
               disabled={confirm.isPending || previewData.validCount === 0}
               className="btn-primary flex-1"
             >
-              {confirm.isPending ? 'Importing...' : `Import ${previewData.validCount} Flight${previewData.validCount !== 1 ? 's' : ''}`}
+              {confirm.isPending ? t('importing') : t('importCount', { count: previewData.validCount })}
             </button>
-            <button onClick={() => setStep('mapping')} className="btn-secondary">Back</button>
-            <button onClick={handleReset} className="btn-ghost">Cancel</button>
+            <button onClick={() => setStep('mapping')} className="btn-secondary">{t('common:back')}</button>
+            <button onClick={handleReset} className="btn-ghost">{t('common:cancel')}</button>
           </div>
         </div>
       )}
@@ -558,15 +558,15 @@ export default function ImportPage() {
             <SummaryCard label={t('summary.contacts')} value={result.contactsCreated ?? 0} color="green" />
             <SummaryCard label={t('summary.skipped')} value={result.skippedCount} color="amber" />
             <SummaryCard label={t('summary.errors')} value={result.errorCount} color="red" />
-            <SummaryCard label="Duplicates" value={result.duplicateCount} />
+            <SummaryCard label={t('summary.duplicates')} value={result.duplicateCount} />
           </div>
           {result.errors && result.errors.length > 0 && (
             <div className="text-left max-w-lg mx-auto mb-6">
-              <h3 className="text-sm font-semibold text-red-700 dark:text-red-400 mb-2">Errors</h3>
+              <h3 className="text-sm font-semibold text-red-700 dark:text-red-400 mb-2">{t('summary.errors')}</h3>
               <div className="text-xs space-y-1">
                 {result.errors.slice(0, 10).map((e, i) => (
                   <div key={i} className="text-red-600 dark:text-red-400">
-                    Row {e.rowIndex}: {e.field} — {e.message}
+                    {t('errorRow', { row: e.rowIndex, field: e.field, message: e.message })}
                   </div>
                 ))}
               </div>

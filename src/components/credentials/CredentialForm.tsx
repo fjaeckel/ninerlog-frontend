@@ -186,7 +186,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
           type="text"
           id="issuingAuthority"
           className="input"
-          placeholder="EASA AME, FAA, etc."
+          placeholder={t('form.issuingAuthorityPlaceholder')}
           aria-invalid={!!errors.issuingAuthority}
           aria-describedby={errors.issuingAuthority ? 'err-issuingAuthority' : undefined}
         />
@@ -202,7 +202,7 @@ export default function CredentialForm({ credentialId, onClose }: CredentialForm
           id="notes"
           rows={2}
           className="input"
-          placeholder="Additional notes..."
+          placeholder={t('form.notesPlaceholder')}
         />
       </div>
 

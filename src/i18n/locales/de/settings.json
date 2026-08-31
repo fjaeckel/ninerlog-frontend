@@ -120,6 +120,7 @@
     "saveRecoveryCodes": "Bewahre diese Wiederherstellungscodes an einem sicheren Ort auf. Jeder Code kann nur einmal verwendet werden.",
     "savedCodes": "Codes gespeichert",
     "scanQr": "Scanne diesen QR-Code mit deiner Authenticator-App:",
+    "qrAlt": "QR-Code für die Zwei-Faktor-Einrichtung",
     "manualKey": "Manueller Eingabeschlüssel",
     "verificationCode": "Bestätigungscode",
     "invalidCode": "Ungültiger Code. Prüfe deine Authenticator-App und versuche es erneut.",
@@ -133,11 +134,19 @@
     "disabling": "Deaktivieren...",
     "enable": "2FA aktivieren",
     "settingUp": "Wird eingerichtet..."
+,
+    "setupDescription": "Sichere dein Konto zusätzlich mit einem zeitbasierten Einmalpasswort (TOTP) aus einer Authenticator-App.",
+    "setupFailed": "2FA-Einrichtung konnte nicht gestartet werden."
   },
   "flightData": {
     "title": "Flugdaten",
     "recalculate": "Alle Flüge neu berechnen",
     "recalculating": "Neuberechnung...",
+    "recalculated_one": "{{count}} Flug erfolgreich neu berechnet.",
+    "recalculated_other": "{{count}} Flüge erfolgreich neu berechnet.",
+    "recalculateErrors_one": "{{count}} Fehler.",
+    "recalculateErrors_other": "{{count}} Fehler.",
+    "recalculateFailed": "Flüge konnten nicht neu berechnet werden. Bitte erneut versuchen.",
     "recalculateDesc": "Alle automatisch berechneten Felder (Solo, Überland, Entfernung, Tag/Nacht-Aufteilung, IFR-Summen) für jeden Flug neu berechnen."
   },
   "dangerZone": {
@@ -147,10 +156,15 @@
     "deleteFlightsDesc": "Alle Flüge und den Importverlauf dauerhaft löschen. Konto, Lizenzen, Luftfahrzeuge und Nachweise bleiben erhalten.",
     "deleteFlightsConfirm": "Bist du sicher? Alle deine Flüge und der Importverlauf werden dauerhaft gelöscht. Das lässt sich nicht rückgängig machen.",
     "deleteFlightsButton": "Alle Flüge endgültig löschen",
+    "deleteFlightsDone_one": "{{count}} Flug gelöscht.",
+    "deleteFlightsDone_other": "{{count}} Flüge gelöscht.",
+    "deleteFlightsFailed": "Flüge konnten nicht gelöscht werden. Bitte erneut versuchen.",
     "deleteData": "Alle Daten löschen",
     "deleteDataDesc": "Alle Flüge, Luftfahrzeuge, Lizenzen, Nachweise und den Importverlauf löschen. Dein Konto bleibt aktiv.",
     "deleteDataConfirm": "Bist du sicher? Alle deine Flugbuchdaten werden dauerhaft gelöscht. Dein Konto bleibt erhalten, aber leer.",
     "deleteDataButton": "Alle Daten endgültig löschen",
+    "deleteDataDone": "Alle Daten wurden gelöscht.",
+    "deleteDataFailed": "Daten konnten nicht gelöscht werden. Bitte erneut versuchen.",
     "deleteAccount": "Konto löschen",
     "deleteAccountDesc": "Dein Konto und alle zugehörigen Daten dauerhaft löschen. Das ist unwiderruflich.",
     "deleteAccountPrompt": "Gib dein Passwort ein, um die Kontolöschung zu bestätigen:",
@@ -158,6 +172,9 @@
     "deleteAccountFailed": "Konto konnte nicht gelöscht werden. Prüfe dein Passwort.",
     "deleteAccountPromptEmail": "Gib zur Bestätigung der Kontolöschung deine E-Mail-Adresse ein:",
     "confirmDeletionEmail": "E-Mail-Adresse zur Löschbestätigung"
+,
+    "confirmDeletionPassword": "Passwort zur Löschbestätigung",
+    "passwordPlaceholder": "Dein Passwort"
   },
   "language": {
     "title": "Sprache",

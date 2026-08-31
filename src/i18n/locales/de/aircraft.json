@@ -67,6 +67,8 @@
     "selectClass": "Klasse wählen",
     "customClass": "Eigene →",
     "pickFromList": "← Aus Liste wählen",
+    "customClassPlaceholder": "z. B. ULTRALIGHT, GLIDER, GYROPLANE",
+    "notesPlaceholder": "Vereinsflugzeug, Einweisung erforderlich usw.",
     "characteristics": "Eigenschaften",
     "multiPilotHelper": "Für eine Mindestbesatzung von zwei Piloten zugelassen. Kopilotenzeit (SIC) kann nur auf einem mehrpilotigen Luftfahrzeug erfasst werden.",
     "activeInFleet": "Aktiv in der Flotte",

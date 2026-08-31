@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/cn';
 import { X } from 'lucide-react';
 
@@ -24,6 +25,7 @@ export function Dialog({
   children,
   maxWidthClassName = 'max-w-md',
 }: DialogProps) {
+  const { t } = useTranslation('common');
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
@@ -100,7 +102,7 @@ export function Dialog({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close"
+              aria-label={t('close')}
               className="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full p-1 -mt-1 -mr-1"
             >
               <X className="w-5 h-5" />

@@ -121,7 +121,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
             id="regulatoryAuthority"
             list="regulatoryAuthority-list"
             className={`input ${errors.regulatoryAuthority ? 'input-error' : ''}`}
-            placeholder="e.g. EASA"
+            placeholder={t('form.regulatoryAuthorityPlaceholder')}
           />
           <datalist id="regulatoryAuthority-list">
             <option value="EASA" />
@@ -146,7 +146,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
             id="licenseType"
             list="licenseType-list"
             className={`input ${errors.licenseType ? 'input-error' : ''}`}
-            placeholder="e.g. PPL"
+            placeholder={t('form.licenseTypePlaceholder')}
           />
           <datalist id="licenseType-list">
             <option value="PPL" />
@@ -188,7 +188,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
           type="text"
           id="issuingAuthority"
           className={`input ${errors.issuingAuthority ? 'input-error' : ''}`}
-          placeholder="LBA (Germany)"
+          placeholder={t('form.issuingAuthorityPlaceholder')}
         />
         {errors.issuingAuthority && (
           <p className="form-error">{errors.issuingAuthority.message}</p>

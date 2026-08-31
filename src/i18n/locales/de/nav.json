@@ -20,6 +20,13 @@
   "home": "Start",
   "addFlight": "Flug hinzufügen",
   "more": "Mehr",
+  "moreMenu": "Menü „Mehr“",
+  "landmarks": {
+    "desktop": "Desktop-Navigation",
+    "main": "Hauptnavigation",
+    "mobile": "Mobile Navigation",
+    "more": "Navigation „Mehr“"
+  },
   "sectionLogbook": "Flugbuch",
   "sectionData": "Daten",
   "sectionAccount": "Konto"

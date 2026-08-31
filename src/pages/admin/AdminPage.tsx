@@ -276,10 +276,10 @@ function UsersTab() {
                   <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">{u.lastLoginAt ? fmtDate(u.lastLoginAt) : '—'}</td>
                   <td className="px-4 py-3"><div className="flex gap-1 flex-wrap">
                     {u.disabled
-                      ? <button onClick={() => setConfirmAction({ type: 'enable', user: u })} className="btn-ghost btn-sm text-xs text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" title="Enable account"><CheckCircle className="w-3.5 h-3.5" /></button>
-                      : <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title="Disable account"><Ban className="w-3.5 h-3.5" /></button>}
-                    {u.locked && <button onClick={() => setConfirmAction({ type: 'unlock', user: u })} className="btn-ghost btn-sm text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="Unlock account"><Unlock className="w-3.5 h-3.5" /></button>}
-                    {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Reset 2FA"><KeyRound className="w-3.5 h-3.5" /></button>}
+                      ? <button onClick={() => setConfirmAction({ type: 'enable', user: u })} className="btn-ghost btn-sm text-xs text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" title={t('admin.users.enableTitle')}><CheckCircle className="w-3.5 h-3.5" /></button>
+                      : <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.disableTitle')}><Ban className="w-3.5 h-3.5" /></button>}
+                    {u.locked && <button onClick={() => setConfirmAction({ type: 'unlock', user: u })} className="btn-ghost btn-sm text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title={t('admin.users.unlockTitle')}><Unlock className="w-3.5 h-3.5" /></button>}
+                    {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20" title={t('admin.users.reset2faTitle')}><KeyRound className="w-3.5 h-3.5" /></button>}
                     <button onClick={() => setConfirmAction({ type: 'delete', user: u })} className="btn-ghost btn-sm text-xs text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.deleteTitle')}><Trash2 className="w-3.5 h-3.5" /></button>
                   </div></td>
                 </tr>
@@ -326,10 +326,10 @@ function UsersTab() {
               </div>
               <div className="flex gap-1">
                 {u.disabled
-                  ? <button onClick={() => setConfirmAction({ type: 'enable', user: u })} className="btn-ghost btn-sm text-xs text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" title="Enable account"><CheckCircle className="w-3.5 h-3.5" /></button>
-                  : <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title="Disable account"><Ban className="w-3.5 h-3.5" /></button>}
-                {u.locked && <button onClick={() => setConfirmAction({ type: 'unlock', user: u })} className="btn-ghost btn-sm text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title="Unlock account"><Unlock className="w-3.5 h-3.5" /></button>}
-                {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Reset 2FA"><KeyRound className="w-3.5 h-3.5" /></button>}
+                  ? <button onClick={() => setConfirmAction({ type: 'enable', user: u })} className="btn-ghost btn-sm text-xs text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" title={t('admin.users.enableTitle')}><CheckCircle className="w-3.5 h-3.5" /></button>
+                  : <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.disableTitle')}><Ban className="w-3.5 h-3.5" /></button>}
+                {u.locked && <button onClick={() => setConfirmAction({ type: 'unlock', user: u })} className="btn-ghost btn-sm text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title={t('admin.users.unlockTitle')}><Unlock className="w-3.5 h-3.5" /></button>}
+                {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20" title={t('admin.users.reset2faTitle')}><KeyRound className="w-3.5 h-3.5" /></button>}
                 <button onClick={() => setConfirmAction({ type: 'delete', user: u })} className="btn-ghost btn-sm text-xs text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.deleteTitle')}><Trash2 className="w-3.5 h-3.5" /></button>
               </div>
             </div>
@@ -636,47 +636,51 @@ function MaintenanceTab() {
   const cleanupUnverified = useCleanupUnverifiedAccounts();
   const triggerNotifications = useTriggerNotifications();
   const { data: config } = useAdminConfig();
-  const [message, setMessage] = useState('');
+  // Message plus outcome: the colour must not depend on the English wording.
+  const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
   const handleCleanup = async () => {
-    setMessage('');
+    setMessage(null);
     try {
       const result = await cleanupTokens.mutateAsync();
-      setMessage(result.message);
-    } catch { setMessage('Failed to clean up tokens.'); }
+      setMessage({ text: result.message, ok: true });
+    } catch { setMessage({ text: t('admin.maintenance.tokenCleanupFailed'), ok: false }); }
   };
 
   const handleSmtpTest = async () => {
-    setMessage('');
+    setMessage(null);
     try {
       const result = await smtpTest.mutateAsync();
-      setMessage(result.message);
-    } catch { setMessage('Failed to send test email.'); }
+      setMessage({ text: result.message, ok: true });
+    } catch { setMessage({ text: t('admin.maintenance.smtpTestFailed'), ok: false }); }
   };
 
   const handleCleanupUnverified = async () => {
-    setMessage('');
+    setMessage(null);
     try {
       const result = await cleanupUnverified.mutateAsync();
-      setMessage(t('admin.maintenance.unverifiedResult', {
-        reminders: result.remindersSent,
-        deleted: result.accountsDeleted,
-      }));
-    } catch { setMessage('Failed to sweep unverified accounts.'); }
+      setMessage({
+        text: t('admin.maintenance.unverifiedResult', {
+          reminders: result.remindersSent,
+          deleted: result.accountsDeleted,
+        }),
+        ok: true,
+      });
+    } catch { setMessage({ text: t('admin.maintenance.unverifiedSweepFailed'), ok: false }); }
   };
 
   const handleTriggerNotifications = async () => {
-    setMessage('');
+    setMessage(null);
     try {
       const result = await triggerNotifications.mutateAsync();
-      setMessage(result.message || t('admin.maintenance.notificationsTriggered'));
-    } catch { setMessage('Failed to trigger notification check.'); }
+      setMessage({ text: result.message || t('admin.maintenance.notificationsTriggered'), ok: true });
+    } catch { setMessage({ text: t('admin.maintenance.notificationCheckFailed'), ok: false }); }
   };
 
   return (
     <div className="space-y-6">
       {message && (
-        <div className={`px-4 py-3 rounded-lg text-sm ${message.includes('Failed') ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400' : 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'}`}>{message}</div>
+        <div className={`px-4 py-3 rounded-lg text-sm ${message.ok ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'}`}>{message.text}</div>
       )}
       <div className="card">
         <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">{t('admin.maintenance.tokenCleanup')}</h3>
@@ -924,10 +928,10 @@ function AnnouncementsTab() {
   };
 
   const severityOptions = [
-    { value: 'info', label: 'Info (blue)', color: 'bg-blue-100 text-blue-700' },
-    { value: 'success', label: 'Success (green)', color: 'bg-green-100 text-green-700' },
-    { value: 'warning', label: 'Warning (orange)', color: 'bg-amber-100 text-amber-700' },
-    { value: 'critical', label: 'Critical (red)', color: 'bg-red-100 text-red-700' },
+    { value: 'info', labelKey: 'admin.announcements.severityInfo', color: 'bg-blue-100 text-blue-700' },
+    { value: 'success', labelKey: 'admin.announcements.severitySuccess', color: 'bg-green-100 text-green-700' },
+    { value: 'warning', labelKey: 'admin.announcements.severityWarning', color: 'bg-amber-100 text-amber-700' },
+    { value: 'critical', labelKey: 'admin.announcements.severityCritical', color: 'bg-red-100 text-red-700' },
   ];
 
   return (
@@ -945,7 +949,7 @@ function AnnouncementsTab() {
             <div className="flex-1 min-w-[200px]">
               <label className="form-label" htmlFor="ann-severity">{t('admin.announcements.severity')}</label>
               <select id="ann-severity" value={severity} onChange={(e) => setSeverity(e.target.value)} className="input mt-1">
-                {severityOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                {severityOptions.map((o) => <option key={o.value} value={o.value}>{t(o.labelKey)}</option>)}
               </select>
             </div>
             <div className="flex-1 min-w-[200px]">
@@ -970,7 +974,7 @@ function AnnouncementsTab() {
                 <span className={sc?.color ? `badge text-xs ${sc.color}` : 'badge-neutral'}>{a.severity}</span>
                 <span className="flex-1 text-sm text-slate-700 dark:text-slate-300">{a.message}</span>
                 {a.expiresAt && <span className="text-xs text-slate-500 dark:text-slate-400">{t('admin.announcements.expires')} {fmtDateTime(a.expiresAt)}</span>}
-                <button onClick={() => handleDelete(a.id)} className="btn-ghost btn-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => handleDelete(a.id)} className="btn-ghost btn-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('delete')}><Trash2 className="w-4 h-4" /></button>
               </div>
             );
           })}

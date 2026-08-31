@@ -120,6 +120,7 @@
     "saveRecoveryCodes": "Save these recovery codes in a safe place. Each can only be used once.",
     "savedCodes": "I've saved my codes",
     "scanQr": "Scan this QR code with your authenticator app:",
+    "qrAlt": "QR code for two-factor setup",
     "manualKey": "Manual entry key",
     "verificationCode": "Verification Code",
     "invalidCode": "Invalid code. Check your authenticator app and try again.",
@@ -133,11 +134,19 @@
     "disabling": "Disabling...",
     "enable": "Enable 2FA",
     "settingUp": "Setting up..."
+,
+    "setupDescription": "Add an extra layer of security with a time-based one-time password (TOTP) from an authenticator app.",
+    "setupFailed": "Failed to start 2FA setup."
   },
   "flightData": {
     "title": "Flight Data",
     "recalculate": "Recalculate All Flights",
     "recalculating": "Recalculating...",
+    "recalculated_one": "Recalculated {{count}} flight successfully.",
+    "recalculated_other": "Recalculated {{count}} flights successfully.",
+    "recalculateErrors_one": "{{count}} error.",
+    "recalculateErrors_other": "{{count}} errors.",
+    "recalculateFailed": "Failed to recalculate flights. Please try again.",
     "recalculateDesc": "Recalculate all auto-computed fields (solo, XC, distance, day/night split, IFR totals) for every flight."
   },
   "dangerZone": {
@@ -147,10 +156,15 @@
     "deleteFlightsDesc": "Permanently remove all flights and import history. Your account, licenses, aircraft, and credentials are preserved.",
     "deleteFlightsConfirm": "Are you sure? This will permanently delete all your flights and import history. This action cannot be undone.",
     "deleteFlightsButton": "Permanently Delete All Flights",
+    "deleteFlightsDone_one": "Deleted {{count}} flight.",
+    "deleteFlightsDone_other": "Deleted {{count}} flights.",
+    "deleteFlightsFailed": "Failed to delete flights. Please try again.",
     "deleteData": "Delete All Data",
     "deleteDataDesc": "Remove all flights, aircraft, licenses, credentials, and import history. Your account remains active.",
     "deleteDataConfirm": "Are you sure? This will permanently delete all your logbook data. Your account will be preserved but empty.",
     "deleteDataButton": "Permanently Delete All Data",
+    "deleteDataDone": "All data deleted successfully.",
+    "deleteDataFailed": "Failed to delete data. Please try again.",
     "deleteAccount": "Delete Account",
     "deleteAccountDesc": "Permanently delete your account and all associated data. This is irreversible.",
     "deleteAccountPrompt": "Enter your password to confirm account deletion:",
@@ -158,6 +172,9 @@
     "deleteAccountFailed": "Failed to delete account. Check your password.",
     "deleteAccountPromptEmail": "Type your account email address to confirm deletion:",
     "confirmDeletionEmail": "Confirm deletion email address"
+,
+    "confirmDeletionPassword": "Confirm deletion password",
+    "passwordPlaceholder": "Your password"
   },
   "language": {
     "title": "Language",

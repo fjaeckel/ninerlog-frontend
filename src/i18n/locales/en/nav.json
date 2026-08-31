@@ -20,6 +20,13 @@
   "home": "Home",
   "addFlight": "Add Flight",
   "more": "More",
+  "moreMenu": "More menu",
+  "landmarks": {
+    "desktop": "Desktop navigation",
+    "main": "Main",
+    "mobile": "Mobile navigation",
+    "more": "More navigation"
+  },
   "sectionLogbook": "Logbook",
   "sectionData": "Data",
   "sectionAccount": "Account"

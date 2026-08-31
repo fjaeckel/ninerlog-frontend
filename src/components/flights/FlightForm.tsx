@@ -84,7 +84,7 @@ interface FlightFormProps {
 }
 
 export default function FlightForm({ flightId, onClose }: FlightFormProps) {
-  const { t } = useTranslation('flights');
+  const { t } = useTranslation(['flights', 'common']);
   const createFlight = useCreateFlight();
   const updateFlight = useUpdateFlight();
   const { data: existingFlight } = useFlight(flightId || '');
@@ -588,21 +588,21 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 value={watch('aircraftType')}
                 onChange={(e) => setValue('aircraftType', e.target.value.toUpperCase(), { shouldValidate: true })}
                 className="input text-sm"
-                placeholder="Type (e.g. C172)"
+                placeholder={t('form.quickAddTypePlaceholder')}
               />
               <input
                 type="text"
                 value={quickAddMake}
                 onChange={(e) => setQuickAddMake(e.target.value)}
                 className="input text-sm"
-                placeholder="Make (e.g. Cessna)"
+                placeholder={t('form.quickAddMakePlaceholder')}
               />
               <input
                 type="text"
                 value={quickAddModel}
                 onChange={(e) => setQuickAddModel(e.target.value)}
                 className="input text-sm"
-                placeholder="Model (e.g. 172 Skyhawk)"
+                placeholder={t('form.quickAddModelPlaceholder')}
               />
             </div>
             {quickAddError && (
@@ -643,7 +643,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 type="text"
                 id="sessionFstdType"
                 className="input"
-                placeholder="e.g. FNPT II, FFS A320, BATD"
+                placeholder={t('form.fstdTypePlaceholder')}
               />
               {errors.fstdType && (
                 <p className="form-error">{errors.fstdType.message}</p>
@@ -803,7 +803,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               id="takeoffsDay"
               min="0"
               className="input"
-              placeholder="Auto"
+              placeholder={t('form.autoPlaceholder')}
             />
           </div>
           <div>
@@ -816,7 +816,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 id="takeoffsNight"
                 min="0"
                 className="input"
-                placeholder="Auto"
+                placeholder={t('form.autoPlaceholder')}
               />
             </div>
           <div>
@@ -1039,7 +1039,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 min="0"
                 className="input"
               />
-              <p className="form-helper">Minutes</p>
+              <p className="form-helper">{t('common:minutes')}</p>
             </div>
             )}
             {!isSim && (
@@ -1272,7 +1272,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 {...register('fstdType')}
                 id="fstdType"
                 className="input"
-                placeholder="e.g. FNPT II, FFS A320, BATD"
+                placeholder={t('form.fstdTypePlaceholder')}
               />
               <p className="form-helper">{t('form.fstdHelper')}</p>
             </div>

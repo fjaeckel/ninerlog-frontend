@@ -99,7 +99,7 @@ export default function AnnouncementBanner() {
             <button
               onClick={() => handleDismiss(item.id)}
               className={`shrink-0 p-0.5 rounded transition-colors ${config.dismiss}`}
-              aria-label={t('dismiss')}
+              aria-label={t('a11y.dismiss')}
             >
               <X className="w-4 h-4" />
             </button>

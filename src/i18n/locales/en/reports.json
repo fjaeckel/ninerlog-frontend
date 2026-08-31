@@ -207,6 +207,13 @@
     "airports": "Airports",
     "heatmap": "Activity Heatmap",
     "statistics": "Airport Statistics",
+    "table": {
+      "name": "Name",
+      "departures": "Departures",
+      "arrivals": "Arrivals",
+      "total": "Total"
+    },
+    "tooltipCounts": "{{departures}} dep · {{arrivals}} arr · {{total}} total",
     "noRoutes": "No flight routes to display yet.",
     "flightCount_one": "{{count}} flight",
     "flightCount_other": "{{count}} flights",

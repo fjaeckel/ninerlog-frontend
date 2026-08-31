@@ -34,6 +34,11 @@
   "learnMore": "Learn more",
   "logout": "Logout",
   "skipToContent": "Skip to content",
+  "a11y": {
+    "loading": "Loading",
+    "loadingContent": "Loading content...",
+    "dismiss": "Dismiss"
+  },
   "day": "day",
   "days": "days",
   "night": "night",
@@ -75,6 +80,7 @@
     "resultCount_other": "{{count}} results for \"{{query}}\"",
     "noResults": "No help topics match your search.",
     "selectTopic": "Select help topic",
+    "topicsNav": "Help topics",
     "sections": {
       "gettingStarted": "Getting Started",
       "dashboard": "Dashboard",
@@ -167,6 +173,10 @@
       "enable": "Enable",
       "unlock": "Unlock",
       "reset2fa": "Reset 2FA",
+      "enableTitle": "Enable account",
+      "disableTitle": "Disable account",
+      "unlockTitle": "Unlock account",
+      "reset2faTitle": "Reset 2FA",
       "delete": "Delete",
       "scheduledDeletion": "Deletion {{date}}",
       "scheduledDeletionTitle": "This account will be deleted on this date unless the address is confirmed first.",
@@ -184,16 +194,19 @@
       "tokenCleanupDesc": "Delete expired and revoked refresh tokens and used password reset tokens from the database.",
       "cleanUpButton": "Clean Up Expired Tokens",
       "cleaning": "Cleaning...",
+      "tokenCleanupFailed": "Failed to clean up tokens.",
       "smtpTest": "SMTP Test",
       "smtpTestDesc": "Send a test email to your admin email address to verify SMTP configuration is working.",
       "sendTestEmail": "Send Test Email",
       "sending": "Sending...",
+      "smtpTestFailed": "Failed to send test email.",
       "unverifiedSweep": "Unverified accounts",
       "unverifiedSweepDesc": "Send any due verification reminders, then delete accounts that were reminded longer ago than the retention window and are still unverified.",
       "unverifiedSweepWarning": "Deletion is irreversible and removes everything the account owns.",
       "unverifiedSweepDisabled": "Not running on this deployment.",
       "runSweep": "Run sweep",
       "sweeping": "Sweeping…",
+      "unverifiedSweepFailed": "Failed to sweep unverified accounts.",
       "unverifiedResult": "Sweep complete: {{reminders}} reminder(s) sent, {{deleted}} account(s) deleted.",
       "disabledReason": {
         "oidc_mode": "Single sign-on is in charge of accounts here. An unverified account means the provider did not confirm the address — not that the account was abandoned — so deleting on that basis would remove accounts that are in use. This cannot be switched on in SSO mode.",
@@ -204,6 +217,7 @@
       "notificationCheckDesc": "Immediately run the expiry-notification checker for all users, bypassing the daily check-hour gating. Useful after changing notification settings or for testing email delivery.",
       "runNotificationCheck": "Run notification check",
       "triggering": "Running…",
+      "notificationCheckFailed": "Failed to trigger notification check.",
       "notificationsTriggered": "Notification check triggered."
     },
     "config": {
@@ -254,6 +268,10 @@
       "message": "Message",
       "messagePlaceholder": "e.g. Scheduled maintenance on Tuesday at 8pm UTC",
       "severity": "Severity",
+      "severityInfo": "Info (blue)",
+      "severitySuccess": "Success (green)",
+      "severityWarning": "Warning (orange)",
+      "severityCritical": "Critical (red)",
       "expireAfter": "Auto-expire after (hours)",
       "expirePlaceholder": "Leave empty for permanent",
       "publish": "Publish Announcement",
@@ -328,6 +346,14 @@
     "message": "We could not load this. Please try again.",
     "retry": "Try again"
   },
+  "appError": {
+    "crashTitle": "Something went wrong",
+    "crashMessage": "The app hit an unexpected error. Reloading usually fixes it.",
+    "updateTitle": "Update available",
+    "updateMessage": "A newer version of NinerLog is available. Reload to continue.",
+    "reload": "Reload",
+    "goHome": "Go to home"
+  },
   "actions": "Actions",
   "done": "Done",
   "notes": "Notes",
@@ -336,6 +362,5 @@
     "hint-add-first-flight": "Welcome! Log your first flight to get started.",
     "hint-add-aircraft": "Add your aircraft to auto-fill registrations when logging flights.",
     "hint-add-credentials": "Track your medical and language proficiency — add credentials to get expiry reminders."
-  },
-  "dismiss": "Dismiss"
+  }
 }

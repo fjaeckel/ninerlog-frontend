@@ -58,6 +58,7 @@
     "description": "Share this link or QR code with the instructor. Anyone with the link can sign this flight until it expires.",
     "copy": "Copy link",
     "copied": "Copied!",
+    "qrAlt": "QR code for the signing link",
     "expiresIn": "Expires"
   },
   "expiry": {

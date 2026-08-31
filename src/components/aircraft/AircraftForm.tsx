@@ -257,7 +257,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
               type="text"
               id="aircraftClass"
               className="input flex-1"
-              placeholder="e.g. ULTRALIGHT, GLIDER, GYROPLANE"
+              placeholder={t('form.customClassPlaceholder')}
             />
             <button
               type="button"
@@ -360,7 +360,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
           id="notes"
           rows={2}
           className="input"
-          placeholder="Club aircraft, checkout required, etc."
+          placeholder={t('form.notesPlaceholder')}
         />
       </div>
 

@@ -207,6 +207,13 @@
     "airports": "Flugplätze",
     "heatmap": "Aktivitäts-Heatmap",
     "statistics": "Flugplatz-Statistiken",
+    "table": {
+      "name": "Name",
+      "departures": "Starts",
+      "arrivals": "Landungen",
+      "total": "Gesamt"
+    },
+    "tooltipCounts": "{{departures}} Starts · {{arrivals}} Landungen · {{total}} gesamt",
     "noRoutes": "Noch keine Flugrouten vorhanden.",
     "flightCount_one": "{{count}} Flug",
     "flightCount_other": "{{count}} Flüge",

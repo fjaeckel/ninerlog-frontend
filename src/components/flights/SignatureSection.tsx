@@ -362,7 +362,7 @@ function SignUrlResult({ signUrl, sentTo, onDone }: { signUrl: string; sentTo?: 
       <p className="text-sm text-slate-500 dark:text-slate-400">{t('linkDialog.description')}</p>
       {qr && (
         <div className="flex justify-center">
-          <img src={qr} alt="QR code" className="rounded-lg border border-slate-200 dark:border-slate-700" />
+          <img src={qr} alt={t('linkDialog.qrAlt')} className="rounded-lg border border-slate-200 dark:border-slate-700" />
         </div>
       )}
       <div className="flex gap-2">

@@ -58,6 +58,7 @@
     "description": "Teile diesen Link oder QR-Code mit dem Fluglehrer. Jeder mit dem Link kann diesen Flug bis zum Ablauf unterschreiben.",
     "copy": "Link kopieren",
     "copied": "Kopiert!",
+    "qrAlt": "QR-Code für den Unterschrifts-Link",
     "expiresIn": "Läuft ab"
   },
   "expiry": {
