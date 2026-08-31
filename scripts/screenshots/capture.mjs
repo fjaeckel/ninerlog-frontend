@@ -126,6 +126,14 @@ async function shoot(browser, target, theme) {
         body: JSON.stringify({ error: 'Internal server error' }),
       });
     }
+    const override = target.respond?.[path];
+    if (override) {
+      return route.fulfill({
+        status: override.status ?? 200,
+        contentType: 'application/json',
+        body: JSON.stringify(override.body ?? null),
+      });
+    }
     const body = target.empty && path in EMPTY_BODIES ? EMPTY_BODIES[path] : bodyFor(path);
     return route.fulfill({
       status: 200,

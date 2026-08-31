@@ -6,6 +6,7 @@
  *   empty      serve empty collections, to capture the empty state
  *   fail       serve 500s for the page's own list, to capture the error state
  *   anonymous  do not seed a session — for the public/auth routes
+ *   respond    `{ path: { status, body } }`, replacing the fixture for that path
  *
  * Add a target whenever you add a screen.
  */
@@ -99,6 +100,23 @@ export const TARGETS = [
 
   // Public routes.
   { name: 'auth-login', path: '/login', anonymous: true },
+  {
+    name: 'auth-login-unverified',
+    path: '/login',
+    anonymous: true,
+    respond: {
+      '/auth/login': {
+        status: 403,
+        body: { error: 'Email address not verified.', code: 'email_not_verified' },
+      },
+    },
+    act: async (page) => {
+      await page.getByLabel(/^e-?mail/i).fill('amelia@example.com');
+      await page.getByLabel(/password|passwort/i).fill('correcthorsebattery');
+      await page.getByRole('button', { name: /^log in$|^anmelden$/i }).click();
+      await page.waitForTimeout(600);
+    },
+  },
   { name: 'auth-register', path: '/register', anonymous: true },
   { name: 'auth-reset', path: '/reset-password', anonymous: true },
   { name: 'auth-new-password', path: '/new-password?token=demo-token', anonymous: true },
