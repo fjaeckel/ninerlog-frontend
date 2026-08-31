@@ -67,6 +67,8 @@
     "selectClass": "Select class",
     "customClass": "Custom →",
     "pickFromList": "← Pick from list",
+    "customClassPlaceholder": "e.g. ULTRALIGHT, GLIDER, GYROPLANE",
+    "notesPlaceholder": "Club aircraft, checkout required, etc.",
     "characteristics": "Characteristics",
     "multiPilotHelper": "Certificated for a minimum crew of two pilots. Co-pilot (SIC) time can only be logged on a multi-pilot aircraft.",
     "activeInFleet": "Active in fleet",

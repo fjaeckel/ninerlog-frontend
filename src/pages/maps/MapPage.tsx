@@ -183,7 +183,7 @@ export default function MapPage() {
                       <Tooltip>
                         <strong>{s.icao}</strong> — {s.name}
                         <br />
-                        {s.departures} dep · {s.arrivals} arr · {s.totalFlights} total
+                        {t('map.tooltipCounts', { departures: s.departures, arrivals: s.arrivals, total: s.totalFlights })}
                       </Tooltip>
                     </CircleMarker>
                   );
@@ -203,10 +203,10 @@ export default function MapPage() {
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-700">
                   <th className="text-left py-2 px-3 text-slate-500 dark:text-slate-400 font-medium">ICAO</th>
-                  <th className="text-left py-2 px-3 text-slate-500 dark:text-slate-400 font-medium">Name</th>
-                  <th className="text-right py-2 px-3 text-slate-500 dark:text-slate-400 font-medium">Departures</th>
-                  <th className="text-right py-2 px-3 text-slate-500 dark:text-slate-400 font-medium">Arrivals</th>
-                  <th className="text-right py-2 px-3 text-slate-500 dark:text-slate-400 font-medium">Total</th>
+                  <th className="text-left py-2 px-3 text-slate-500 dark:text-slate-400 font-medium">{t('map.table.name')}</th>
+                  <th className="text-right py-2 px-3 text-slate-500 dark:text-slate-400 font-medium">{t('map.table.departures')}</th>
+                  <th className="text-right py-2 px-3 text-slate-500 dark:text-slate-400 font-medium">{t('map.table.arrivals')}</th>
+                  <th className="text-right py-2 px-3 text-slate-500 dark:text-slate-400 font-medium">{t('map.table.total')}</th>
                 </tr>
               </thead>
               <tbody>

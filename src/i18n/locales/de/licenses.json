@@ -48,6 +48,9 @@
   },
   "form": {
     "requiresSeparateLogbook": "Separates Flugbuch erforderlich",
+    "regulatoryAuthorityPlaceholder": "z. B. EASA",
+    "licenseTypePlaceholder": "z. B. PPL",
+    "issuingAuthorityPlaceholder": "LBA (Deutschland)",
     "failedToSave": "Lizenz konnte nicht gespeichert werden."
   },
   "card": {

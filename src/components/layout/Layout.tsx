@@ -127,7 +127,7 @@ export default function Layout() {
       {/* ── Desktop Sidebar ── */}
       <aside
         className="fixed left-0 top-16 bottom-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden lg:flex lg:flex-col z-30"
-        aria-label="Desktop navigation"
+        aria-label={t('nav:landmarks.desktop')}
       >
         <div className="p-4">
           <Link
@@ -140,7 +140,7 @@ export default function Layout() {
             {t('nav:addFlight')}
           </Link>
         </div>
-        <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5" aria-label="Main">
+        <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5" aria-label={t('nav:landmarks.main')}>
           <SidebarItem to="/dashboard" tourId="dashboard" label={t('nav:dashboard')} icon={<LayoutDashboard className="w-5 h-5" />} />
           <SidebarItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
           <SidebarItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} />
@@ -184,7 +184,7 @@ export default function Layout() {
       {/* ── Mobile Bottom Nav ── */}
       <nav
         className="fixed bottom-0 inset-x-0 surface-glass border-t z-[1010] lg:hidden tap-none"
-        aria-label="Mobile navigation"
+        aria-label={t('nav:landmarks.mobile')}
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="h-14 flex items-center justify-around">
@@ -206,7 +206,7 @@ export default function Layout() {
           onClick={() => setShowMoreMenu(true)}
           data-tour="more"
           className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors tap-none"
-          aria-label="More menu"
+          aria-label={t('nav:moreMenu')}
         >
           <Menu className="w-5 h-5 mb-0.5" />
           <span>{t('nav:more')}</span>
@@ -230,7 +230,7 @@ export default function Layout() {
             <nav
               ref={scrollToBottomOnMount}
               className="px-4 pb-4 space-y-1 max-h-[70vh] overflow-y-auto"
-              aria-label="More navigation"
+              aria-label={t('nav:landmarks.more')}
             >
               <MoreMenuGroup label={t('nav:sectionAccount')} />
               <MoreMenuItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />

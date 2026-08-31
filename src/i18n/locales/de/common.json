@@ -34,6 +34,11 @@
   "learnMore": "Mehr erfahren",
   "logout": "Abmelden",
   "skipToContent": "Zum Inhalt springen",
+  "a11y": {
+    "loading": "Wird geladen",
+    "loadingContent": "Inhalt wird geladen…",
+    "dismiss": "Ausblenden"
+  },
   "day": "Tag",
   "days": "Tage",
   "night": "Nacht",
@@ -75,6 +80,7 @@
     "resultCount_other": "{{count}} Ergebnisse für \"{{query}}\"",
     "noResults": "Keine Hilfethemen passen zu deiner Suche.",
     "selectTopic": "Hilfethema auswählen",
+    "topicsNav": "Hilfethemen",
     "sections": {
       "gettingStarted": "Erste Schritte",
       "dashboard": "Übersicht",
@@ -167,6 +173,10 @@
       "enable": "Aktivieren",
       "unlock": "Entsperren",
       "reset2fa": "2FA zurücksetzen",
+      "enableTitle": "Konto aktivieren",
+      "disableTitle": "Konto deaktivieren",
+      "unlockTitle": "Konto entsperren",
+      "reset2faTitle": "2FA zurücksetzen",
       "delete": "Löschen",
       "scheduledDeletion": "Löschung {{date}}",
       "scheduledDeletionTitle": "Dieses Konto wird an diesem Datum gelöscht, sofern die Adresse nicht vorher bestätigt wird.",
@@ -184,16 +194,19 @@
       "tokenCleanupDesc": "Abgelaufene und widerrufene Refresh-Tokens sowie verwendete Passwort-Reset-Tokens aus der Datenbank löschen.",
       "cleanUpButton": "Abgelaufene Tokens bereinigen",
       "cleaning": "Wird bereinigt…",
+      "tokenCleanupFailed": "Tokens konnten nicht bereinigt werden.",
       "smtpTest": "SMTP-Test",
       "smtpTestDesc": "Eine Test-E-Mail an deine Admin-E-Mail-Adresse senden, um die SMTP-Konfiguration zu überprüfen.",
       "sendTestEmail": "Test-E-Mail senden",
       "sending": "Wird gesendet…",
+      "smtpTestFailed": "Test-E-Mail konnte nicht gesendet werden.",
       "unverifiedSweep": "Nicht bestätigte Konten",
       "unverifiedSweepDesc": "Fällige Bestätigungserinnerungen senden und anschließend Konten löschen, deren Erinnerung länger als die Aufbewahrungsfrist zurückliegt und die weiterhin unbestätigt sind.",
       "unverifiedSweepWarning": "Das Löschen ist unwiderruflich und entfernt sämtliche Daten des Kontos.",
       "unverifiedSweepDisabled": "Auf dieser Installation nicht aktiv.",
       "runSweep": "Durchlauf starten",
       "sweeping": "Läuft…",
+      "unverifiedSweepFailed": "Durchlauf für nicht bestätigte Konten fehlgeschlagen.",
       "unverifiedResult": "Durchlauf abgeschlossen: {{reminders}} Erinnerung(en) gesendet, {{deleted}} Konto/Konten gelöscht.",
       "disabledReason": {
         "oidc_mode": "Hier verwaltet Single Sign-on die Konten. Ein nicht bestätigtes Konto bedeutet, dass der Anbieter die Adresse nicht bestätigt hat — nicht, dass das Konto aufgegeben wurde. Eine Löschung auf dieser Grundlage würde aktiv genutzte Konten entfernen. Im SSO-Modus nicht aktivierbar.",
@@ -204,6 +217,7 @@
       "notificationCheckDesc": "Führt die Ablauf-Benachrichtigungsprüfung für alle Benutzer sofort aus und umgeht dabei die tägliche Prüfstunde. Nützlich nach Änderungen an den Benachrichtigungseinstellungen oder zum Testen des E-Mail-Versands.",
       "runNotificationCheck": "Benachrichtigungsprüfung ausführen",
       "triggering": "Wird ausgeführt…",
+      "notificationCheckFailed": "Benachrichtigungsprüfung konnte nicht angestoßen werden.",
       "notificationsTriggered": "Benachrichtigungsprüfung angestoßen."
     },
     "config": {
@@ -254,6 +268,10 @@
       "message": "Nachricht",
       "messagePlaceholder": "z.B. Geplante Wartung am Dienstag um 20:00 UTC",
       "severity": "Schweregrad",
+      "severityInfo": "Info (blau)",
+      "severitySuccess": "Erfolg (grün)",
+      "severityWarning": "Warnung (orange)",
+      "severityCritical": "Kritisch (rot)",
       "expireAfter": "Automatisch ablaufen nach (Stunden)",
       "expirePlaceholder": "Leer lassen für permanent",
       "publish": "Ankündigung veröffentlichen",
@@ -328,6 +346,14 @@
     "message": "Der Inhalt konnte nicht geladen werden. Bitte erneut versuchen.",
     "retry": "Erneut versuchen"
   },
+  "appError": {
+    "crashTitle": "Etwas ist schiefgelaufen",
+    "crashMessage": "Die App hatte einen unerwarteten Fehler. Neu laden behebt das meistens.",
+    "updateTitle": "Update verfügbar",
+    "updateMessage": "Eine neuere Version von NinerLog ist verfügbar. Zum Fortfahren neu laden.",
+    "reload": "Neu laden",
+    "goHome": "Zur Startseite"
+  },
   "actions": "Aktionen",
   "done": "Fertig",
   "notes": "Anmerkungen",
@@ -336,6 +362,5 @@
     "hint-add-first-flight": "Willkommen! Trage deinen ersten Flug ein, um loszulegen.",
     "hint-add-aircraft": "Lege deine Luftfahrzeuge an, damit Kennzeichen beim Eintragen automatisch ausgefüllt werden.",
     "hint-add-credentials": "Behalte Tauglichkeit und Sprachprüfung im Blick — lege Nachweise an, um an Abläufe erinnert zu werden."
-  },
-  "dismiss": "Ausblenden"
+  }
 }

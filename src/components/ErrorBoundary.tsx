@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import i18n from 'i18next';
 import { isChunkLoadError } from '../lib/lazyWithRetry';
 import { createLogger } from '../lib/logger';
 
@@ -49,11 +50,10 @@ export class ErrorBoundary extends Component<Props, State> {
     const { error } = this.state;
     if (!error) return this.props.children;
 
+    // Class component: no hook, so the i18next instance is read directly.
     const isChunk = isChunkLoadError(error);
-    const title = isChunk ? 'Update available' : 'Something went wrong';
-    const message = isChunk
-      ? 'A newer version of NinerLog is available. Reload to continue.'
-      : 'The app hit an unexpected error. Reloading usually fixes it.';
+    const title = i18n.t(isChunk ? 'common:appError.updateTitle' : 'common:appError.crashTitle');
+    const message = i18n.t(isChunk ? 'common:appError.updateMessage' : 'common:appError.crashMessage');
 
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-slate-50 dark:bg-slate-900">
@@ -69,10 +69,10 @@ export class ErrorBoundary extends Component<Props, State> {
           </p>
           <div className="flex gap-3 justify-center">
             <button onClick={this.handleReload} className="btn-primary">
-              Reload
+              {i18n.t('common:appError.reload')}
             </button>
             <button onClick={this.handleGoHome} className="btn-ghost">
-              Go to home
+              {i18n.t('common:appError.goHome')}
             </button>
           </div>
         </div>

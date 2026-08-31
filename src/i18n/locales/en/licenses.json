@@ -48,6 +48,9 @@
   },
   "form": {
     "requiresSeparateLogbook": "Requires separate logbook",
+    "regulatoryAuthorityPlaceholder": "e.g. EASA",
+    "licenseTypePlaceholder": "e.g. PPL",
+    "issuingAuthorityPlaceholder": "LBA (Germany)",
     "failedToSave": "Failed to save license. Please try again."
   },
   "card": {
