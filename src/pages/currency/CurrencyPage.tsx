@@ -13,7 +13,7 @@ import { recencyLevel, RECENCY_BADGE_CLASSES, RECENCY_REQUIRED_LANDINGS } from '
 import { CurrencyCard } from '../../components/currency/CurrencyCard';
 import { CustomCurrencyCard } from '../../components/currency/CustomCurrencyCard';
 import { CurrencyExpiryBanner } from '../../components/currency/CurrencyExpiryBanner';
-import { AlertTriangle, Check, ChevronDown, ChevronRight, Plane, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plane, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
 import { isPast, differenceInDays } from 'date-fns';
 import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
 import HelpLink from '../../components/ui/HelpLink';
@@ -21,6 +21,7 @@ import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 import { RequirementIcon } from '../../components/ui/RequirementIcon';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import { useCurrencyMessages } from '../../lib/currencyMessages';
 
 const CLASS_TYPE_LABELS: Record<string, string> = {
   SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
@@ -52,6 +53,7 @@ export default function CurrencyPage() {
   const [expandedLicenses, setExpandedLicenses] = useState<Record<string, boolean>>({});
   const { t } = useTranslation(['currency', 'credentials', 'common']);
   const { fmtDate } = useFormatPrefs();
+  const { currencyMessage } = useCurrencyMessages();
 
   // Informational 90-day recency rows: models first, then registrations.
   // Each group is gated by its user preference (Profile → Settings).
@@ -200,7 +202,7 @@ export default function CurrencyPage() {
                   {t(`status.${currencyStatus.flightReview.status}`)}
                 </span>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300">{currencyStatus.flightReview.message}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{currencyMessage(currencyStatus.flightReview)}</p>
               {currencyStatus.flightReview.lastCompleted && (
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   {t('lastCompleted', { date: fmtDate(currencyStatus.flightReview.lastCompleted) })}
@@ -248,8 +250,8 @@ export default function CurrencyPage() {
                         <CurrencyCard rating={rating} />
                         {rating.ruleDescription && (
                           <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 px-1 italic">
-                            {(rating as any).ruleDescriptionKey
-                              ? t(`ruleDescriptions.${(rating as any).ruleDescriptionKey}`, { defaultValue: rating.ruleDescription })
+                            {rating.ruleDescriptionKey
+                              ? t(`ruleDescriptions.${rating.ruleDescriptionKey}`, { defaultValue: rating.ruleDescription })
                               : rating.ruleDescription}
                           </p>
                         )}
@@ -310,6 +312,11 @@ export default function CurrencyPage() {
                         style={{ width: `${Math.min((pax.dayLandings / pax.dayRequired) * 100, 100)}%` }}
                       />
                     </div>
+                    {pax.dayExpiresOn && (
+                      <p className="text-xs text-slate-400 dark:text-slate-500" data-testid="pax-day-expires">
+                        {t('passengerExpiry.day', { date: fmtDate(pax.dayExpiresOn) })}
+                      </p>
+                    )}
                   </div>
                   {/* Night currency bar — hidden when nightPrivilege is false */}
                   {hasNight && (
@@ -329,6 +336,11 @@ export default function CurrencyPage() {
                         style={{ width: `${Math.min((pax.nightLandings / pax.nightRequired) * 100, 100)}%` }}
                       />
                     </div>
+                    {pax.nightExpiresOn && (
+                      <p className="text-xs text-slate-400 dark:text-slate-500" data-testid="pax-night-expires">
+                        {t('passengerExpiry.night', { date: fmtDate(pax.nightExpiresOn) })}
+                      </p>
+                    )}
                   </div>
                   )}
                   {!hasNight && (
@@ -336,23 +348,9 @@ export default function CurrencyPage() {
                       {t('nightNotApplicable')}
                     </p>
                   )}
-                  {/* Passenger privilege badge (LAPL, SPL, UL) */}
-                  {pax.passengerPrivilege && (
-                    <div
-                      className={`mt-2 px-2 py-1 rounded inline-flex items-start gap-1.5 text-xs ${pax.passengerPrivilege.eligible ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'}`}
-                      data-testid="passenger-privilege-badge"
-                    >
-                      {pax.passengerPrivilege.eligible ? (
-                        <Check className="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden="true" />
-                      ) : (
-                        <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden="true" />
-                      )}
-                      {pax.passengerPrivilege.message}
-                    </div>
-                  )}
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">
-                    {(pax as any).ruleDescriptionKey
-                      ? t(`ruleDescriptions.${(pax as any).ruleDescriptionKey}`, { defaultValue: pax.ruleDescription })
+                    {pax.ruleDescriptionKey
+                      ? t(`ruleDescriptions.${pax.ruleDescriptionKey}`, { defaultValue: pax.ruleDescription })
                       : pax.ruleDescription}
                   </p>
                 </div>

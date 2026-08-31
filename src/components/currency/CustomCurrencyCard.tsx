@@ -2,6 +2,7 @@ import { ShieldCheck, ShieldX, Shield, Share2, Pencil, Trash2, CalendarClock, Pa
 import type { CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import type { CustomRuleWithStatus } from '../../types/customCurrency';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import { useCurrencyMessages } from '../../lib/currencyMessages';
 import { RequirementIcon } from '../ui/RequirementIcon';
 
 const STATUS_CONFIG: Record<CurrencyStatus, { bg: string; border: string; iconWrap: string; badge: string; label: string; Icon: typeof Shield }> = {
@@ -40,19 +41,18 @@ const STATUS_CONFIG: Record<CurrencyStatus, { bg: string; border: string; iconWr
 };
 
 function RequirementBar({ req }: { req: CurrencyRequirement }) {
-  const { fmtDuration } = useFormatPrefs();
+  const { requirementName, requirementProgress } = useCurrencyMessages();
   const pct = req.required > 0 ? Math.min((req.current / req.required) * 100, 100) : 0;
   const barColor = req.met ? 'bg-green-500 dark:bg-green-400' : pct >= 50 ? 'bg-amber-500 dark:bg-amber-400' : 'bg-red-500 dark:bg-red-400';
-  const displayMessage = req.unit === 'minutes' ? `${fmtDuration(req.current)} / ${fmtDuration(req.required)}` : req.message;
 
   return (
     <div className="space-y-1" data-testid={`custom-requirement-${req.name}`}>
       <div className="flex justify-between items-center text-xs">
         <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
           <RequirementIcon met={req.met} />
-          {req.name}
+          {requirementName(req)}
         </span>
-        <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{displayMessage}</span>
+        <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">{requirementProgress(req)}</span>
       </div>
       <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all duration-500 ease-out ${barColor}`} style={{ width: `${pct}%` }} />

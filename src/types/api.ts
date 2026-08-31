@@ -228,13 +228,30 @@ export interface Currency {
 
 export type CurrencyStatus = 'current' | 'expiring' | 'expired' | 'unknown';
 
+/**
+ * Variable parts of a localised currency message. Never repeats a field the
+ * enclosing object already carries — see ninerlog-api docs/CURRENCY_MESSAGES.md.
+ */
+export interface CurrencyMessageParams {
+  days?: number;
+  needed?: number;
+  date?: string;
+}
+
 export interface CurrencyRequirement {
-  name: string;
+  /** Authoritative only for custom currency rules, where it is pilot-authored and carries no nameKey. */
+  name?: string;
+  /** Key into currency.json `requirement`. Absent on custom rules. */
+  nameKey?: string;
   met: boolean;
   current: number;
   required: number;
   unit: string;
-  message: string;
+  /** @deprecated English fallback for messageKey. */
+  message?: string;
+  /** Key into currency.json `messages` (e.g. "requirement.progress"). */
+  messageKey?: string;
+  messageParams?: CurrencyMessageParams;
 }
 
 export interface CurrencyProgress {
@@ -273,7 +290,11 @@ export interface ClassRatingCurrency {
    * toward this rating's revalidation and `requirements` is suppressed.
    */
   windowOpen?: boolean;
+  /** @deprecated English (German for UL) fallback for messageKey. */
   message: string;
+  /** Key into currency.json `messages` (e.g. "rating.revalidation_current"). */
+  messageKey?: string;
+  messageParams?: CurrencyMessageParams;
   ruleDescription?: string;
   /** Key into currency.json `ruleDescriptions` (e.g. "easa_sep_tmg") identifying which revalidation/renewal rule applies. */
   ruleDescriptionKey?: string;
@@ -287,7 +308,10 @@ export interface LaunchMethodCurrency {
   launches: number;
   required: number;
   met: boolean;
+  /** @deprecated English fallback for messageKey. */
   message: string;
+  /** Always "launch_method.progress". */
+  messageKey?: string;
 }
 
 export interface CurrencyStatusResponse {
@@ -306,21 +330,39 @@ export interface PassengerCurrency {
   dayRequired: number;
   nightRequired: number;
   nightPrivilege: boolean;
+  /**
+   * Last date the day requirement stays met without flying again.
+   * Absent when the day requirement is not currently met.
+   */
+  dayExpiresOn?: string | null;
+  /**
+   * Last date the night requirement stays met without flying again.
+   * Absent when unmet, not applicable, or IR-waived under FCL.060(b)(2)(ii).
+   */
+  nightExpiresOn?: string | null;
+  /** @deprecated English (German for UL) fallback for messageKey. */
   message: string;
+  /** Key into currency.json `messages` (e.g. "pax.current_day_night"). */
+  messageKey?: string;
+  messageParams?: CurrencyMessageParams;
   ruleDescription: string;
-  passengerPrivilege?: PassengerPrivilege;
-}
-
-export interface PassengerPrivilege {
-  eligible: boolean;
-  message: string;
+  /** Key into currency.json `ruleDescriptions` (e.g. "easa_pax"). */
+  ruleDescriptionKey?: string;
+  /**
+   * Never populated by the API — the backend has no code path that sets it.
+   * Kept so the guarded render does not become a type error.
+   */
 }
 
 export interface FlightReviewStatus {
   lastCompleted?: string | null;
   expiresOn?: string | null;
   status: CurrencyStatus;
+  /** @deprecated English fallback for messageKey. */
   message: string;
+  /** Key into currency.json `messages` (e.g. "flight_review.current"). */
+  messageKey?: string;
+  messageParams?: CurrencyMessageParams;
 }
 
 // ============ Crew & Contact Types ============

@@ -53,7 +53,6 @@
   "launchMethod": "Startart-Recency",
   "nightPrivilege": "Nachtflugberechtigung",
   "noNightPrivilege": "Keine Nachtflugberechtigung für diesen Lizenztyp",
-  "passengerPrivilege": "Passagierberechtigung",
   "tier1Description": "Bestimmt, ob du in dieser Klasse überhaupt fliegen darfst.",
   "tier2Description": "Bestimmt, ob du Passagiere mitnehmen darfst. Ohne Passagiere darfst du weiterhin fliegen.",
   "flightReviewRequired": "Flugüberprüfung erforderlich",
@@ -73,7 +72,6 @@
   "expiresLabel": "Gültig bis: {{date}}",
   "windowOpensLabel": "Erfahrungszeitraum beginnt am {{date}}",
   "windowClosedHint": "Kürzlich verlängert — Flüge vor diesem Datum zählen nicht für die nächste Verlängerung.",
-  "launchesCount": "{{current}} / {{required}} Starts",
   "expiryBanner": {
     "headingExpired": "Handlungsbedarf, um wieder fliegen zu dürfen",
     "headingExpiring": "Verlängerung steht an",
@@ -146,5 +144,96 @@
   },
   "ratingCount_one": "{{count}} Berechtigung",
   "ratingCount_other": "{{count}} Berechtigungen",
-  "licenseFallback": "Lizenz"
+  "licenseFallback": "Lizenz",
+  "units": {
+    "approaches": "Anflüge",
+    "flights": "Flüge",
+    "holds": "Holdings",
+    "hours": "Stunden",
+    "landings": "Landungen",
+    "launches": "Starts",
+    "minutes": "Minuten",
+    "sectors": "Streckenabschnitte"
+  },
+  "requirement": {
+    "total_time": "Gesamtflugzeit",
+    "pic_time": "PIC-Zeit",
+    "ifr_time": "IFR-Zeit",
+    "landings": "Starts & Landungen",
+    "day_landings": "Taglandungen",
+    "night_landings": "Nachtlandungen",
+    "refresher_training": "Auffrischungsschulung",
+    "training_flight": "Übungsflug",
+    "proficiency_check": "Befähigungsüberprüfung",
+    "approaches": "Instrumentenanflüge",
+    "holds": "Holdings",
+    "route_sectors": "Streckenabschnitte",
+    "launches": "Starts",
+    "launches_and_landings": "Starts & Landungen"
+  },
+  "passengerExpiry": {
+    "day": "Tag gültig bis {{date}}",
+    "night": "Nacht gültig bis {{date}}"
+  },
+  "messages": {
+    "rating": {
+      "no_expiry_date": "Kein Ablaufdatum hinterlegt — trage eines ein, um diese Berechtigung zu verfolgen.",
+      "no_expiry_date_manual": "Kein Ablaufdatum hinterlegt — diese Berechtigung wird manuell verfolgt.",
+      "evaluation_failed": "Flugerfahrung konnte nicht ermittelt werden. Versuch es gleich noch einmal.",
+      "expired": "Abgelaufen.",
+      "expiring_one": "Läuft in {{days}} Tag ab.",
+      "expiring_other": "Läuft in {{days}} Tagen ab.",
+      "valid_until": "Gültig — keine Flugerfahrungsanforderungen hinterlegt.",
+      "window_not_open": "Kürzlich verlängert — der Erfahrungszeitraum beginnt am {{date}}.",
+      "revalidation_not_met": "Verlängerungsanforderungen nicht vollständig erfüllt.",
+      "revalidation_not_met_prof_check": "Verlängerungsanforderungen nicht vollständig erfüllt — ersatzweise ist eine Befähigungsüberprüfung möglich (FCL.740.A(b)(2)).",
+      "revalidation_expiring_met_one": "Alle Anforderungen erfüllt — läuft in {{days}} Tag ab.",
+      "revalidation_expiring_met_other": "Alle Anforderungen erfüllt — läuft in {{days}} Tagen ab.",
+      "revalidation_current": "Gültig — alle Verlängerungsanforderungen erfüllt.",
+      "recency_not_met": "Flugerfahrungsanforderungen nicht vollständig erfüllt.",
+      "recency_current": "Gültig — alle Flugerfahrungsanforderungen erfüllt.",
+      "ir_hours_and_check_not_met": "Weder die IFR-Stunden noch die Befähigungsüberprüfung sind erfüllt.",
+      "ir_hours_not_met": "IFR-Stunden nicht erfüllt.",
+      "ir_check_not_met": "Jährliche Befähigungsüberprüfung nicht absolviert.",
+      "ir_current": "Anforderungen an die IFR-Recency erfüllt.",
+      "ir_lapsed_safety_pilot": "IFR-Recency abgelaufen (über 6 Monate) — du kannst sie mit einem Safety Pilot wiedererlangen (§61.57(c)).",
+      "ir_expired_ipc": "IFR-Recency seit über 12 Monaten abgelaufen — ein Instrument Proficiency Check (IPC) ist erforderlich (§61.57(d)).",
+      "ir_not_applicable": "Diese Lizenz umfasst keine Instrumentenflugrechte (§61.315).",
+      "pax_not_current_one": "Nicht gültig für Passagierflüge — {{needed}} weitere Landung erforderlich.",
+      "pax_not_current_other": "Nicht gültig für Passagierflüge — {{needed}} weitere Landungen erforderlich.",
+      "pax_day_current_night_not_one": "Tag gültig, Nacht nicht gültig — {{needed}} weitere Nachtlandung erforderlich.",
+      "pax_day_current_night_not_other": "Tag gültig, Nacht nicht gültig — {{needed}} weitere Nachtlandungen erforderlich.",
+      "pax_current_day_night": "Gültig für Passagierflüge bei Tag und Nacht.",
+      "glider_not_current_one": "Nicht gültig — {{needed}} weiterer Start erforderlich.",
+      "glider_not_current_other": "Nicht gültig — {{needed}} weitere Starts erforderlich.",
+      "glider_current": "Gültig für Passagierflüge."
+    },
+    "pax": {
+      "evaluation_failed": "Passagier-Flugerfahrung konnte nicht ermittelt werden. Versuch es gleich noch einmal.",
+      "not_current_one": "Nicht gültig für Passagierflüge — {{needed}} weitere Landung in den letzten 90 Tagen erforderlich.",
+      "not_current_other": "Nicht gültig für Passagierflüge — {{needed}} weitere Landungen in den letzten 90 Tagen erforderlich.",
+      "current_day_no_night_privilege": "Gültig für Passagierflüge bei Tag — diese Lizenz umfasst keine Nachtflugberechtigung.",
+      "current_day_night_ir_waived": "Gültig für Passagierflüge bei Tag und Nacht — die Nachtanforderung entfällt bei gültiger IR (FCL.060(b)(2)(ii)).",
+      "current_day_night": "Gültig für Passagierflüge bei Tag und Nacht.",
+      "day_current_night_not_one": "Tag gültig, Nacht nicht gültig — {{needed}} weitere Nachtlandung erforderlich, oder eine gültige IR.",
+      "day_current_night_not_other": "Tag gültig, Nacht nicht gültig — {{needed}} weitere Nachtlandungen erforderlich, oder eine gültige IR.",
+      "current_day_privilege_separate": "Flugerfahrung erfüllt — die Passagierberechtigung muss separat nachgewiesen werden."
+    },
+    "flight_review": {
+      "evaluation_failed": "Status der Flugüberprüfung konnte nicht ermittelt werden.",
+      "none_on_record": "Keine Flugüberprüfung erfasst.",
+      "expired": "Abgelaufen — zuletzt absolviert am {{date}}.",
+      "expiring_one": "Läuft in {{days}} Tag ab — zuletzt absolviert am {{date}}.",
+      "expiring_other": "Läuft in {{days}} Tagen ab — zuletzt absolviert am {{date}}.",
+      "current": "Gültig — zuletzt absolviert am {{date}}."
+    },
+    "requirement": {
+      "progress": "{{current}} / {{required}} {{unit}}",
+      "prof_check_completed": "Absolviert am {{date}}",
+      "prof_check_missing": "Nicht absolviert"
+    },
+    "launch_method": {
+      "progress": "{{current}} / {{required}} Starts"
+    }
+  }
 }

@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar, Clock } from 'lucide-react';
 import type { ClassRatingCurrency, CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
+import { useCurrencyMessages } from '../../lib/currencyMessages';
 import { RequirementIcon } from '../ui/RequirementIcon';
 
 const STATUS_CONFIG: Record<CurrencyStatus, {
@@ -42,7 +43,7 @@ const STATUS_CONFIG: Record<CurrencyStatus, {
 };
 
 function RequirementBar({ req }: { req: CurrencyRequirement }) {
-  const { fmtDuration } = useFormatPrefs();
+  const { requirementName, requirementProgress } = useCurrencyMessages();
   const pct = req.required > 0 ? Math.min((req.current / req.required) * 100, 100) : 0;
   const barColor = req.met
     ? 'bg-green-500 dark:bg-green-400'
@@ -50,26 +51,24 @@ function RequirementBar({ req }: { req: CurrencyRequirement }) {
       ? 'bg-amber-500 dark:bg-amber-400'
       : 'bg-red-500 dark:bg-red-400';
 
-  const displayMessage = req.unit === 'minutes'
-    ? `${fmtDuration(req.current)} / ${fmtDuration(req.required)}`
-    : req.message;
+  const id = req.nameKey ?? req.name;
 
   return (
-    <div className="space-y-1" data-testid={`requirement-${req.name}`}>
+    <div className="space-y-1" data-testid={`requirement-${id}`}>
       <div className="flex justify-between items-center text-xs">
         <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
           <RequirementIcon met={req.met} />
-          {req.name}
+          {requirementName(req)}
         </span>
         <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
-          {displayMessage}
+          {requirementProgress(req)}
         </span>
       </div>
       <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ease-out ${barColor}`}
           style={{ width: `${pct}%` }}
-          data-testid={`progress-bar-${req.name}`}
+          data-testid={`progress-bar-${id}`}
         />
       </div>
     </div>
@@ -83,6 +82,7 @@ interface CurrencyCardProps {
 export function CurrencyCard({ rating }: CurrencyCardProps) {
   const { t } = useTranslation('currency');
   const { fmtDate } = useFormatPrefs();
+  const { currencyMessage } = useCurrencyMessages();
   const config = STATUS_CONFIG[rating.status];
   const StatusIcon = config.Icon;
   const label = t(`classTypes.${rating.classType}`, { defaultValue: rating.classType });
@@ -117,7 +117,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
 
       {/* Message */}
       <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
-        {rating.message}
+        {currencyMessage(rating)}
       </p>
 
       {/* Window-not-yet-open banner — shown for EASA FCL.740.A / FCL.625.A
@@ -144,7 +144,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
       {rating.requirements && rating.requirements.length > 0 && (
         <div className="space-y-2">
           {rating.requirements.map((req) => (
-            <RequirementBar key={req.name} req={req} />
+            <RequirementBar key={req.nameKey ?? req.name} req={req} />
           ))}
         </div>
       )}
@@ -160,7 +160,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
                 {lmc.method}
               </span>
               <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
-                {t('launchesCount', { current: lmc.launches, required: lmc.required })}
+                {currencyMessage(lmc, { current: lmc.launches, required: lmc.required })}
               </span>
             </div>
           ))}

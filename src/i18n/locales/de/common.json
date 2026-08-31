@@ -330,5 +330,12 @@
   },
   "actions": "Aktionen",
   "done": "Fertig",
-  "notes": "Anmerkungen"
+  "notes": "Anmerkungen",
+  "hints": {
+    "hint-enable-2fa": "Sichere dein Konto — aktiviere die Zwei-Faktor-Authentifizierung in den Profileinstellungen.",
+    "hint-add-first-flight": "Willkommen! Trage deinen ersten Flug ein, um loszulegen.",
+    "hint-add-aircraft": "Lege deine Luftfahrzeuge an, damit Kennzeichen beim Eintragen automatisch ausgefüllt werden.",
+    "hint-add-credentials": "Behalte Tauglichkeit und Sprachprüfung im Blick — lege Nachweise an, um an Abläufe erinnert zu werden."
+  },
+  "dismiss": "Ausblenden"
 }
