@@ -60,6 +60,49 @@ describe('FlightForm Instrument Tracking', () => {
     expect(screen.getByLabelText(/flight review/i)).toBeInTheDocument();
   });
 
+  it('fills IFR and PICUS time from the block times', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '08:05' } });
+    fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '09:30' } });
+    await user.click(screen.getByText('Instrument / IFR'));
+    await user.click(screen.getByText('Training & Currency'));
+
+    const buttons = screen.getAllByRole('button', { name: /use block time/i });
+    expect(buttons).toHaveLength(2);
+    buttons.forEach((b) => expect(b).toBeEnabled());
+
+    await user.click(buttons[0]);
+    expect(screen.getByLabelText(/^ifr time/i)).toHaveValue(85);
+    await user.click(buttons[1]);
+    expect(screen.getByLabelText(/^picus time/i)).toHaveValue(85);
+  });
+
+  it('wraps block time past midnight when filling', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '23:30' } });
+    fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '01:15' } });
+    await user.click(screen.getByText('Instrument / IFR'));
+
+    await user.click(screen.getAllByRole('button', { name: /use block time/i })[0]);
+    expect(screen.getByLabelText(/^ifr time/i)).toHaveValue(105);
+  });
+
+  it('disables the block time buttons until both block times are set', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '' } });
+    fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '' } });
+    await user.click(screen.getByText('Instrument / IFR'));
+    await user.click(screen.getByText('Training & Currency'));
+
+    screen.getAllByRole('button', { name: /use block time/i }).forEach((b) => expect(b).toBeDisabled());
+  });
+
   it('does not show instrument fields when Instrument / IFR section is collapsed', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 

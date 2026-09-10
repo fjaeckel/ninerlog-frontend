@@ -7,7 +7,7 @@ import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { useCreateFlight, useUpdateFlight, useFlight, useFlights } from '../../hooks/useFlights';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { useSearchContacts, useCreateContact } from '../../hooks/useContacts';
-import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
+import { formatDuration, blockMinutes, type TimeDisplayFormat } from '../../lib/duration';
 import { normalizeLocation } from '../../lib/airport';
 import { cn } from '../../lib/cn';
 import { extractApiError } from '../../lib/errors';
@@ -317,6 +317,25 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       setValue('onBlockTime', watchedOffBlock, { shouldValidate: true });
     }
   }, [watchedOffBlock, watchedOnBlock, setValue, isEditing]);
+
+  // Block minutes from the entered times; fills a duration field in one tap.
+  const currentBlockMinutes = blockMinutes(watchedOffBlock || '', watchedOnBlock || '');
+  const canUseBlockTime = currentBlockMinutes !== null && currentBlockMinutes > 0;
+  const fillWithBlockTime = (field: 'ifrTime' | 'picusTime') => {
+    if (!canUseBlockTime) return;
+    setValue(field, currentBlockMinutes, { shouldValidate: true, shouldDirty: true });
+  };
+  const blockTimeButton = (field: 'ifrTime' | 'picusTime') => (
+    <button
+      type="button"
+      onClick={() => fillWithBlockTime(field)}
+      disabled={!canUseBlockTime}
+      title={canUseBlockTime ? formatDuration(currentBlockMinutes, fmt) : t('form.useBlockTimeDisabled')}
+      className="link text-xs py-3.5 -my-3.5 whitespace-nowrap ml-auto disabled:opacity-50 disabled:pointer-events-none"
+    >
+      {t('form.useBlockTime')}
+    </button>
+  );
 
   // Quick-add aircraft handler
   const handleQuickAdd = async () => {
@@ -1039,7 +1058,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 min="0"
                 className="input"
               />
-              <p className="form-helper">{t('common:minutes')}</p>
+              <p className="form-helper flex flex-wrap items-baseline justify-between gap-x-2">
+                <span>{t('common:minutes')}</span>
+                {blockTimeButton('ifrTime')}
+              </p>
             </div>
             )}
             {!isSim && (
@@ -1217,7 +1239,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 min="0"
                 className="input"
               />
-              <p className="form-helper">{t('form.picusHelper')}</p>
+              <p className="form-helper flex flex-wrap items-baseline justify-between gap-x-2">
+                <span>{t('form.picusHelper')}</span>
+                {blockTimeButton('picusTime')}
+              </p>
             </div>
             )}
             {!isSim && (
