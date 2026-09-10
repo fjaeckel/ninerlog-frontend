@@ -21,6 +21,23 @@ export const TARGETS = [
     },
   },
   {
+    name: 'flights-modal-instrument',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#offBlockTime').fill('08:05');
+      await page.locator('#onBlockTime').fill('09:30');
+      await page.getByRole('button', { name: /instrument \/ ifr/i }).click();
+      await page.getByRole('button', { name: /training & currency|ausbildung & recency/i }).click();
+      await page.locator('#ifrTime').evaluate((el) => {
+        const panel = el.closest('.overflow-y-auto');
+        panel.scrollTop += el.getBoundingClientRect().top - panel.getBoundingClientRect().top - 120;
+      });
+      await page.waitForTimeout(300);
+    },
+  },
+  {
     name: 'flights-modal-simulator',
     path: '/flights',
     act: async (page) => {

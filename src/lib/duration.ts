@@ -108,3 +108,23 @@ export function minutesToDecimalHours(minutes: number): number {
 export function decimalHoursToMinutes(hours: number): number {
   return Math.round(hours * 60);
 }
+
+/**
+ * Block minutes between two "HH:MM" times; an on-block earlier than off-block
+ * wraps past midnight. Null when either time is missing or malformed.
+ */
+export function blockMinutes(offBlock: string, onBlock: string): number | null {
+  const parse = (s: string): number | null => {
+    const m = s.trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return null;
+    const h = parseInt(m[1], 10);
+    const min = parseInt(m[2], 10);
+    if (h > 23 || min > 59) return null;
+    return h * 60 + min;
+  };
+  const off = parse(offBlock);
+  const on = parse(onBlock);
+  if (off === null || on === null) return null;
+  const diff = on - off;
+  return diff < 0 ? diff + 24 * 60 : diff;
+}

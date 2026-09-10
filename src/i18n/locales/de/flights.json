@@ -320,6 +320,8 @@
     "fstdHelper": "FSTD-Typbezeichnung (EASA AMC1 Sp. 22 / FAA §61.51)",
     "multiPilotHelper": "Minuten auf Mehrpiloten-Flugzeug (EASA AMC1 Sp. 10)",
     "picusHelper": "Minuten als PIC under supervision (EASA FCL.030)",
+    "useBlockTime": "Blockzeit übernehmen",
+    "useBlockTimeDisabled": "Zuerst Off-Block- und On-Block-Zeit eingeben",
     "spicHelper": "Minuten als Student PIC (integrierter Lehrgang)",
     "examinerHelper": "Minuten als Prüfer bei einer Prüfung",
     "reliefHelper": "Minuten als Ablösepilot im Reiseflug (verstärkte Besatzung)",

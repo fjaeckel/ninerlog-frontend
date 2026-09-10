@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatDuration, formatColonHM, parseDuration, minutesToDecimalHours, decimalHoursToMinutes } from '../../lib/duration';
+import { formatDuration, formatColonHM, parseDuration, minutesToDecimalHours, decimalHoursToMinutes, blockMinutes } from '../../lib/duration';
 
 describe('formatDuration', () => {
   describe('hm format', () => {
@@ -106,5 +106,31 @@ describe('minutesToDecimalHours', () => {
 describe('decimalHoursToMinutes', () => {
   it('converts 1.5 hours to 90 minutes', () => {
     expect(decimalHoursToMinutes(1.5)).toBe(90);
+  });
+});
+
+describe('blockMinutes', () => {
+  it('returns the difference between off- and on-block', () => {
+    expect(blockMinutes('08:05', '09:30')).toBe(85);
+  });
+
+  it('wraps past midnight', () => {
+    expect(blockMinutes('23:30', '01:15')).toBe(105);
+  });
+
+  it('returns 0 for identical times', () => {
+    expect(blockMinutes('10:00', '10:00')).toBe(0);
+  });
+
+  it('accepts seconds-free single-digit hours', () => {
+    expect(blockMinutes('8:05', '9:05')).toBe(60);
+  });
+
+  it('returns null when a time is missing or malformed', () => {
+    expect(blockMinutes('', '09:30')).toBeNull();
+    expect(blockMinutes('08:05', '')).toBeNull();
+    expect(blockMinutes('08:65', '09:30')).toBeNull();
+    expect(blockMinutes('25:00', '09:30')).toBeNull();
+    expect(blockMinutes('abc', '09:30')).toBeNull();
   });
 });

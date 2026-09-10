@@ -320,6 +320,8 @@
     "fstdHelper": "FSTD type designation (EASA AMC1 Col 22 / FAA §61.51)",
     "multiPilotHelper": "Minutes on multi-pilot aircraft (EASA AMC1 Col 10)",
     "picusHelper": "Minutes as PIC under supervision (EASA FCL.030)",
+    "useBlockTime": "Use block time",
+    "useBlockTimeDisabled": "Enter off- and on-block times first",
     "spicHelper": "Minutes as student PIC (integrated course)",
     "examinerHelper": "Minutes conducting a check as examiner",
     "reliefHelper": "Minutes as cruise relief co-pilot (augmented crew)",
