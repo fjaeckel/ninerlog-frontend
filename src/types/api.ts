@@ -108,6 +108,15 @@ export interface Flight {
   ifrTime: number;
   landingsDay: number;
   landingsNight: number;
+  crossCountryTime?: number;
+  nightTimeOverride?: boolean;
+  crossCountryTimeOverride?: boolean;
+  takeoffsDayOverride?: boolean;
+  takeoffsNightOverride?: boolean;
+  landingsDayOverride?: boolean;
+  landingsNightOverride?: boolean;
+  sicTimeOverride?: boolean;
+  multiPilotTimeOverride?: boolean;
   remarks: string | null;
   instructorName: string | null;
   instructorComments: string | null;
@@ -133,6 +142,8 @@ export interface FlightCreate {
   dualTime?: number;
   ifrTime?: number;
   landings?: number;
+  nightTime?: number;
+  crossCountryTime?: number;
   remarks?: string | null;
   instructorName?: string | null;
   instructorComments?: string | null;
@@ -156,6 +167,10 @@ export interface FlightUpdate {
   dualTime?: number;
   ifrTime?: number;
   landings?: number;
+  nightTime?: number | null;
+  crossCountryTime?: number | null;
+  takeoffsDay?: number | null;
+  takeoffsNight?: number | null;
   remarks?: string | null;
 }
 

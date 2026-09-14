@@ -14,7 +14,7 @@ function item(overrides = {}): CustomRuleWithStatus {
     },
     evaluation: {
       status: 'expired', windowLabel: 'last 90 days', evaluatedAt: '',
-      requirements: [{ name: 'Night landings', met: false, current: 0, required: 3, unit: '', message: '0 / 3' }],
+      requirements: [{ name: 'Night landings', met: false, current: 0, required: 3, unit: '', messageKey: 'requirement.progress' }],
     },
   };
 }

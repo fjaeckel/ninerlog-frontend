@@ -51,6 +51,40 @@ test.describe('Flights', () => {
     await expect(flightTable(page).getByText('EDDF')).toBeVisible({ timeout: 10000 });
   });
 
+  test('should keep an entered night time and return it to auto on reset', async ({ page }) => {
+    await seedAircraft(page, auth.accessToken, { registration: 'D-FLT5' });
+    await page.getByRole('link', { name: 'Flights' }).first().click();
+    await page.getByRole('button', { name: 'Log Flight' }).click();
+    await expect(page.getByText('Log New Flight')).toBeVisible();
+
+    // Summer midday: derivation yields no night time, so 30 is visibly the pilot's.
+    await page.locator('#date').fill('2025-07-01');
+    await page.locator('#aircraftReg').fill('D-FLT5');
+    await page.locator('#departureIcao').fill('EDDF');
+    await page.locator('#arrivalIcao').fill('EDDM');
+    await page.locator('#offBlockTime').fill('09:00');
+    await page.locator('#onBlockTime').fill('10:30');
+    await page.locator('#landings').fill('1');
+    await page.locator('#nightTime').fill('30');
+    await expect(page.getByText('entered by you')).toBeVisible();
+    await page.locator('button[type="submit"]').filter({ hasText: 'Log Flight' }).click();
+
+    const row = flightTable(page).getByRole('row').filter({ hasText: 'D-FLT5' });
+    await expect(row).toBeVisible({ timeout: 10000 });
+    await row.click();
+    await expect(page).toHaveURL(/\/flights\/[0-9a-f-]+$/);
+    await expect(page.getByText('0h 30m').first()).toBeVisible({ timeout: 10000 });
+
+    await page.getByRole('button', { name: /edit flight/i }).click();
+    await expect(page.locator('#nightTime')).toHaveValue('30');
+    await page.getByRole('button', { name: 'Reset to auto' }).click();
+    await expect(page.locator('#nightTime')).toHaveValue('');
+    await page.locator('button[type="submit"]').filter({ hasText: 'Update Flight' }).click();
+
+    await expect(page.getByText('Edit Flight')).toBeHidden({ timeout: 10000 });
+    await expect(page.getByText('0h 30m')).toHaveCount(0);
+  });
+
   test('should search flights', async ({ page }) => {
     // Seeds its own flight.
     await seedAircraft(page, auth.accessToken, { registration: 'D-FLT4' });

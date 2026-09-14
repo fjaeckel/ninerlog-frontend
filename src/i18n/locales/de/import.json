@@ -69,6 +69,7 @@
     "isPic": "PIC",
     "isDual": "Dual",
     "nightTime": "Nachtflugzeit",
+    "crossCountryTime": "Überlandflugzeit",
     "ifrTime": "IFR-Zeit",
     "actualInstrumentTime": "Instrumentenflugzeit (IMC)",
     "simulatedInstrumentTime": "Simulierte Instrumentenflugzeit",

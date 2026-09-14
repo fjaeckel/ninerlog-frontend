@@ -37,6 +37,8 @@ const flightSchema = z.object({
   landings: z.number().int().min(0),
   takeoffsDay: z.number().int().min(0).optional(),
   takeoffsNight: z.number().int().min(0).optional(),
+  nightTime: z.number().int().min(0).optional(),
+  crossCountryTime: z.number().int().min(0).optional(),
   remarks: z.string().optional().or(z.literal('')),
   // New fields
   instructorName: z.string().optional().or(z.literal('')),
@@ -163,6 +165,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       landings: 1,
       takeoffsDay: undefined,
       takeoffsNight: undefined,
+      nightTime: undefined,
+      crossCountryTime: undefined,
       remarks: '',
       instructorName: '',
       instructorComments: '',
@@ -205,6 +209,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         landings: existingFlight.allLandings,
         takeoffsDay: existingFlight.takeoffsDay,
         takeoffsNight: existingFlight.takeoffsNight,
+        nightTime: existingFlight.nightTimeOverride ? existingFlight.nightTime : undefined,
+        crossCountryTime: existingFlight.crossCountryTimeOverride ? existingFlight.crossCountryTime : undefined,
         remarks: existingFlight.remarks || '',
         instructorName: existingFlight.instructorName || '',
         instructorComments: existingFlight.instructorComments || '',
@@ -337,6 +343,51 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     </button>
   );
 
+  type OverrideTimeField = 'nightTime' | 'crossCountryTime';
+
+  // A number overrides the derived value; an emptied field on a flight the
+  // pilot had overridden sends null so the server derives it again.
+  const overrideTimePayload = (field: OverrideTimeField, value: number | undefined) => {
+    if (value !== undefined) return { [field]: value };
+    if (isEditing && existingFlight?.[`${field}Override`]) return { [field]: null };
+    return {};
+  };
+
+  const overrideTimeHelper = (field: OverrideTimeField, autoHint: string) => {
+    if (watch(field) !== undefined) return t('form.minutesEntered');
+    if (isEditing && existingFlight && !existingFlight[`${field}Override`]) {
+      return t('form.minutesAutoValue', { value: formatDuration(existingFlight[field], fmt) });
+    }
+    return autoHint;
+  };
+
+  const overrideTimeInput = (field: OverrideTimeField, label: string, autoHint: string) => (
+    <div>
+      <label htmlFor={field} className="form-label">{label}</label>
+      <input
+        {...register(field, { setValueAs: (v: string) => (v === '' ? undefined : Number(v)) })}
+        type="number"
+        id={field}
+        min="0"
+        step="1"
+        className="input"
+        placeholder={t('form.autoPlaceholder')}
+      />
+      <p className="form-helper flex flex-wrap items-baseline justify-between gap-x-2">
+        <span>{overrideTimeHelper(field, autoHint)}</span>
+        {watch(field) !== undefined && (
+          <button
+            type="button"
+            onClick={() => setValue(field, undefined, { shouldDirty: true })}
+            className="link text-xs py-3.5 -my-3.5 whitespace-nowrap ml-auto"
+          >
+            {t('form.resetToAuto')}
+          </button>
+        )}
+      </p>
+    </div>
+  );
+
   // Quick-add aircraft handler
   const handleQuickAdd = async () => {
     if (!regUppercase || !quickAddMake || !quickAddModel) return;
@@ -434,6 +485,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             landings: data.landings,
             ...(data.takeoffsDay !== undefined && { takeoffsDay: data.takeoffsDay }),
             ...(data.takeoffsNight !== undefined && { takeoffsNight: data.takeoffsNight }),
+            ...overrideTimePayload('nightTime', data.nightTime),
+            ...overrideTimePayload('crossCountryTime', data.crossCountryTime),
             launchMethod: (data.launchMethod || null) as any,
           };
 
@@ -855,6 +908,17 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       </fieldset>
       )}
 
+      {/* Night & cross-country — derived unless the pilot enters a value */}
+      {!isSim && (
+      <fieldset>
+        <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.nightAndCrossCountry')}</legend>
+        <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0">
+          {overrideTimeInput('nightTime', t('fields.nightTime'), t('form.minutesAutoNight'))}
+          {overrideTimeInput('crossCountryTime', t('fields.crossCountryTime'), t('form.minutesAutoCrossCountry'))}
+        </div>
+      </fieldset>
+      )}
+
       {/* Launch Method — shown for glider/TMG aircraft */}
       {showLaunchMethod && (
         <fieldset>
@@ -992,21 +1056,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               </div>
             </div>
             <div>
-              <label className="form-label">{t('fields.crossCountryTime')}</label>
-              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-                {formatDuration(existingFlight.crossCountryTime, fmt)}h
-              </div>
-            </div>
-            <div>
               <label className="form-label">{t('fields.distance')}</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
                 {existingFlight.distance.toFixed(1)} NM
-              </div>
-            </div>
-            <div>
-              <label className="form-label">{t('fields.nightTime')}</label>
-              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-                {formatDuration(existingFlight.nightTime, fmt)}h
               </div>
             </div>
             <div>

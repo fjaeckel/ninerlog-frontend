@@ -3580,10 +3580,15 @@ export interface components {
              */
             dualTime: number;
             /**
-             * @description Night block time in minutes. Auto-calculated from departure/arrival times and airport sunset/sunrise data.
+             * @description Night block time in minutes. Auto-calculated from the block times and civil twilight at the departure location unless nightTimeOverride is true.
              * @example 30
              */
             nightTime: number;
+            /**
+             * @description True when nightTime was entered by the pilot. Recalculation keeps the entered value. Send nightTime: null on update to return to auto-calculation.
+             * @example false
+             */
+            nightTimeOverride: boolean;
             /**
              * @description Instrument block time in minutes
              * @example 60
@@ -3625,10 +3630,45 @@ export interface components {
              */
             soloTime: number;
             /**
-             * @description Cross-country time in minutes. Auto-calculated when departure ≠ arrival.
+             * @description Cross-country time in minutes. Auto-calculated as the full block time when departure ≠ arrival unless crossCountryTimeOverride is true.
              * @example 150
              */
             crossCountryTime: number;
+            /**
+             * @description True when crossCountryTime was entered by the pilot. Recalculation keeps the entered value. Send crossCountryTime: null on update to return to auto-calculation.
+             * @example false
+             */
+            crossCountryTimeOverride: boolean;
+            /**
+             * @description True when takeoffsDay was entered by the pilot rather than auto-calculated.
+             * @example false
+             */
+            takeoffsDayOverride: boolean;
+            /**
+             * @description True when takeoffsNight was entered by the pilot rather than auto-calculated.
+             * @example false
+             */
+            takeoffsNightOverride: boolean;
+            /**
+             * @description True when landingsDay was entered by the pilot rather than auto-calculated.
+             * @example false
+             */
+            landingsDayOverride: boolean;
+            /**
+             * @description True when landingsNight was entered by the pilot rather than auto-calculated.
+             * @example false
+             */
+            landingsNightOverride: boolean;
+            /**
+             * @description True when sicTime was declared by the pilot rather than derived from the crew list.
+             * @example false
+             */
+            sicTimeOverride: boolean;
+            /**
+             * @description True when multiPilotTime was declared by the pilot rather than derived from the crew list.
+             * @example false
+             */
+            multiPilotTimeOverride: boolean;
             /**
              * Format: float
              * @description Distance in nautical miles. Auto-calculated from airport coordinates.
@@ -3900,8 +3940,10 @@ export interface components {
             route?: string | null;
             /** @description Solo time in minutes. Auto-calculated by the server. */
             readonly soloTime?: number;
-            /** @description Cross-country time in minutes. Auto-calculated by the server. */
-            readonly crossCountryTime?: number;
+            /** @description Night time in minutes. Provide to override auto-calculation from civil twilight; omit to auto-calculate. Cannot exceed total time. */
+            nightTime?: number;
+            /** @description Cross-country time in minutes. Provide to override auto-calculation (full block time when departure ≠ arrival); omit to auto-calculate. Cannot exceed total time. */
+            crossCountryTime?: number;
             /**
              * Format: float
              * @description Distance in nautical miles. Auto-calculated by the server.
@@ -3980,16 +4022,21 @@ export interface components {
             ifrTime?: number;
             /** @description Total number of landings */
             landings?: number;
-            /** @description Number of day takeoffs. Provide to override auto-calculation. */
-            takeoffsDay?: number;
-            /** @description Number of night takeoffs. Provide to override auto-calculation. */
-            takeoffsNight?: number;
+            /** @description Number of day takeoffs. A number overrides auto-calculation; null returns the field to auto-calculation. */
+            takeoffsDay?: number | null;
+            /** @description Number of night takeoffs. A number overrides auto-calculation; null returns the field to auto-calculation. */
+            takeoffsNight?: number | null;
+            /** @description Night time in minutes. A number overrides auto-calculation; null returns the field to auto-calculation. Cannot exceed total time. */
+            nightTime?: number | null;
+            /** @description Cross-country time in minutes. A number overrides auto-calculation; null returns the field to auto-calculation. Cannot exceed total time. */
+            crossCountryTime?: number | null;
             /** @description Route waypoints as comma-separated ICAO codes */
             route?: string | null;
             remarks?: string | null;
             instructorName?: string | null;
             instructorComments?: string | null;
-            sicTime?: number;
+            /** @description Co-pilot time in minutes. A number declares the time; null returns the field to derivation from the crew list. */
+            sicTime?: number | null;
             dualGivenTime?: number;
             /** @description PIC under supervision time in minutes. Carved out of the derived function time. */
             picusTime?: number;
@@ -4012,8 +4059,8 @@ export interface components {
             launchMethod?: "winch" | "aerotow" | "self-launch" | null;
             /** @description Name of the PIC */
             picName?: string | null;
-            /** @description Multi-pilot time in minutes */
-            multiPilotTime?: number;
+            /** @description Multi-pilot time in minutes. A number declares the time; null returns the field to derivation from the crew list and aircraft. */
+            multiPilotTime?: number | null;
             /** @description Switches the entry between flight and FSTD session. Changing it clears the columns that do not apply to the new kind. */
             isSimulator?: boolean;
             /** @description FSTD type designation */
@@ -4964,11 +5011,6 @@ export interface components {
              */
             nightExpiresOn?: string | null;
             /**
-             * @deprecated
-             * @description DEPRECATED — English (German for UL) fallback text. Render messageKey with messageParams instead; this field is removed once the web and iOS clients have adopted the keys.
-             */
-            message?: string;
-            /**
              * @description Stable key identifying which statement is true, for client-side localisation. Catalogued in docs/CURRENCY_MESSAGES.md. Not an enum — an unrecognised key should fall back to `message`.
              * @example pax.current_day_night
              */
@@ -4984,16 +5026,6 @@ export interface components {
              * @example easa_pax
              */
             ruleDescriptionKey?: string;
-            /** @description Informational — whether the pilot meets additional requirements to carry passengers (LAPL 10h PIC, SPL 30 launches, etc.) */
-            passengerPrivilege?: {
-                /** @description Whether the pilot is eligible to carry passengers (based on total PIC hours/launches since license issue) */
-                eligible?: boolean;
-                /**
-                 * @description Human-readable explanation of passenger privilege status
-                 * @example Eligible to carry passengers (10h PIC completed)
-                 */
-                message?: string;
-            };
         };
         FlightReviewStatus: {
             /**
@@ -5011,11 +5043,6 @@ export interface components {
              * @enum {string}
              */
             status: "current" | "expiring" | "expired" | "unknown";
-            /**
-             * @deprecated
-             * @description DEPRECATED — English fallback text. Render messageKey with messageParams instead.
-             */
-            message?: string;
             /**
              * @description Stable key identifying which statement is true, for client-side localisation. Catalogued in docs/CURRENCY_MESSAGES.md.
              * @example flight_review.current
@@ -5065,11 +5092,6 @@ export interface components {
              *     window opens.
              */
             windowOpen?: boolean;
-            /**
-             * @deprecated
-             * @description DEPRECATED — English (German for UL) fallback text. Render messageKey with messageParams instead.
-             */
-            message?: string;
             /**
              * @description Stable key identifying which statement is true, for client-side localisation. Catalogued in docs/CURRENCY_MESSAGES.md.
              * @example rating.revalidation_current
@@ -5131,21 +5153,13 @@ export interface components {
             /** @description Whether the requirement is met */
             met: boolean;
             /**
-             * @deprecated
-             * @description DEPRECATED — English fallback text. Render messageKey from launches/required/method instead.
-             */
-            message?: string;
-            /**
              * @description Always `launch_method.progress`; the client renders launches/required/method.
              * @example launch_method.progress
              */
             messageKey?: string;
         };
         CurrencyRequirement: {
-            /**
-             * @deprecated
-             * @description DEPRECATED for regulatory requirements — English (German for UL) fallback for nameKey. Still authoritative for custom currency rules, whose names are author-supplied user data and carry no nameKey.
-             */
+            /** @description Author-supplied requirement name. Present only for custom currency rules, where the name is user data; regulatory requirements carry nameKey instead. */
             name?: string;
             /**
              * @description Stable key for the requirement name, for client-side localisation. Absent on custom currency rules, where `name` is user data and must be rendered as-is.
@@ -5167,15 +5181,10 @@ export interface components {
             /** @description Unit of measurement (e.g., "landings", "hours", "flights") */
             unit: string;
             /**
-             * @deprecated
-             * @description DEPRECATED — English fallback text. Render messageKey instead.
-             */
-            message?: string;
-            /**
              * @description Stable key for the progress text. `requirement.progress` (the common case) is rendered by the client from current/required/unit.
              * @example requirement.progress
              */
-            messageKey?: string;
+            messageKey: string;
             messageParams?: components["schemas"]["MessageParams"];
         };
         /**
@@ -5255,6 +5264,10 @@ export interface components {
         /**
          * @description Target flight log field for column mapping.
          *
+         *     A `nightTime` or `crossCountryTime` column is stored as the pilot's
+         *     own value with the matching override flag set (capped at block time)
+         *     instead of being re-derived.
+         *
          *     Landings can be mapped either as a day/night split (`landingsDay` +
          *     `landingsNight`, which are summed) or as a single `landingsTotal`
          *     column. When a file carries both — as ForeFlight and MyFlightbook do —
@@ -5271,7 +5284,7 @@ export interface components {
          *     Use `ignore` to skip a column during import.
          * @enum {string}
          */
-        ImportField: "date" | "aircraftReg" | "aircraftType" | "departureIcao" | "arrivalIcao" | "offBlockTime" | "onBlockTime" | "departureTime" | "arrivalTime" | "totalTime" | "isPic" | "isDual" | "nightTime" | "ifrTime" | "landingsDay" | "landingsNight" | "landingsTotal" | "remarks" | "route" | "approachesCount" | "holds" | "isIpc" | "isFlightReview" | "actualInstrumentTime" | "simulatedInstrumentTime" | "instructorName" | "instructorComments" | "dualGivenTime" | "person1" | "person2" | "person3" | "person4" | "person5" | "person6" | "ignore";
+        ImportField: "date" | "aircraftReg" | "aircraftType" | "departureIcao" | "arrivalIcao" | "offBlockTime" | "onBlockTime" | "departureTime" | "arrivalTime" | "totalTime" | "isPic" | "isDual" | "nightTime" | "crossCountryTime" | "ifrTime" | "landingsDay" | "landingsNight" | "landingsTotal" | "remarks" | "route" | "approachesCount" | "holds" | "isIpc" | "isFlightReview" | "actualInstrumentTime" | "simulatedInstrumentTime" | "instructorName" | "instructorComments" | "dualGivenTime" | "person1" | "person2" | "person3" | "person4" | "person5" | "person6" | "ignore";
         /**
          * @description One logbook export format NinerLog knows how to read, together with the
          *     steps for getting that file out of the source application.
@@ -5745,7 +5758,7 @@ export interface components {
             };
         };
         Announcement: {
-            /** @description Unique identifier (UUID for admin announcements, string key for hints) */
+            /** @description Unique identifier: a UUID for operator-authored announcements, a stable string key for hints. A hint's id doubles as its client-side localisation key — `message` is the English source text, to be used as a fallback. Operator announcements carry author-written text in `message` and are never translated. */
             id: string;
             /** @example Scheduled maintenance on Tuesday 8pm-10pm UTC */
             message: string;
