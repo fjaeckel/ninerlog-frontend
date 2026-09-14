@@ -49,10 +49,20 @@ jobs:
       # Cloned unauthenticated on purpose: ninerlog-api is public, and the
       # PROJECT_REPO_TOKEN this step used to hand actions/checkout is now
       # rejected by github.com with a 401.
+      #
+      # A pull request whose branch name also exists on ninerlog-api is one
+      # half of a coordinated change; it is tested against that branch, and
+      # against main once the API side has merged and its branch is gone.
       - name: Checkout API (for docker build)
         env:
           API_REF: ${{ inputs.api_ref || 'main' }}
+          HEAD_REF: ${{ github.head_ref }}
         run: |
+          if [ "$API_REF" = "main" ] && [ -n "$HEAD_REF" ] \
+             && git ls-remote --exit-code --heads \
+                  https://github.com/fjaeckel/ninerlog-api.git "$HEAD_REF" > /dev/null; then
+            API_REF="$HEAD_REF"
+          fi
           git clone --depth 1 --branch "$API_REF" \
             https://github.com/fjaeckel/ninerlog-api.git ninerlog-api
           git -C ninerlog-api log -1 --format='API at %h %s'

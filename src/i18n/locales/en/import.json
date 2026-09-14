@@ -69,6 +69,7 @@
     "isPic": "PIC",
     "isDual": "Dual",
     "nightTime": "Night Time",
+    "crossCountryTime": "Cross-Country Time",
     "ifrTime": "IFR Time",
     "actualInstrumentTime": "Actual Instrument Time",
     "simulatedInstrumentTime": "Simulated Instrument Time",

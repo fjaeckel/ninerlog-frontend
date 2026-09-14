@@ -48,6 +48,14 @@ export const TARGETS = [
     },
   },
   { name: 'flight-detail', path: '/flights/f1' },
+  {
+    name: 'flights-modal-edit',
+    path: '/flights/f1',
+    act: async (page) => {
+      await page.getByRole('button', { name: /edit flight|flug .*bearbeiten/i }).first().click();
+      await page.waitForTimeout(600);
+    },
+  },
   { name: 'flight-detail-simulator', path: '/flights/f6' },
   { name: 'aircraft', path: '/aircraft' },
   {

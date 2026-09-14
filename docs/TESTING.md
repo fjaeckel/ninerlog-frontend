@@ -136,6 +136,11 @@ cd ../ninerlog-frontend && npm run dev
 npm run test:e2e
 ```
 
+In CI (`.github/workflows/e2e.yml`) the API is built from source. A pull request
+whose branch name also exists on `ninerlog-api` is tested against that branch, so
+a change that spans both repositories can be verified before either side merges;
+every other run, and a manual run without `api_ref`, uses `main`.
+
 ### Viewing Test Reports
 
 After a test run, Playwright generates an HTML report:

@@ -36,6 +36,7 @@ const IMPORT_FIELDS = [
   { value: 'isPic', labelKey: 'fields.isPic' },
   { value: 'isDual', labelKey: 'fields.isDual' },
   { value: 'nightTime', labelKey: 'fields.nightTime' },
+  { value: 'crossCountryTime', labelKey: 'fields.crossCountryTime' },
   { value: 'ifrTime', labelKey: 'fields.ifrTime' },
   { value: 'actualInstrumentTime', labelKey: 'fields.actualInstrumentTime' },
   { value: 'simulatedInstrumentTime', labelKey: 'fields.simulatedInstrumentTime' },
