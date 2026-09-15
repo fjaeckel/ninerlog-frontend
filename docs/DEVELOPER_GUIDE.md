@@ -706,6 +706,13 @@ graph LR
   [lib/config.ts](../src/lib/config.ts), which prefers runtime `window.ENV`
   (injected by the Docker entrypoint) over Vite build-time env, so a single
   build runs in any environment.
+- **Legal documents:** `LEGAL_DOCS` in `lib/config.ts` (from `VITE_LEGAL_DOCS`)
+  lists which of `terms` / `privacy` the operator publishes. The Markdown is
+  fetched from `/legal/<id>[.<lang>].md` by `useLegalDocument` and rendered by
+  `pages/legal/LegalPage.tsx`; `components/ui/LegalLinks.tsx` renders the links
+  and is empty when nothing is configured. The Docker entrypoint detects the
+  files and nginx serves them — see the README's "Terms of Service & Privacy
+  Policy" section for the operator side.
 
 ### Conventions checklist for a new feature
 

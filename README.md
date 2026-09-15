@@ -87,6 +87,7 @@ src/
 | `/login` | Login | Public |
 | `/register` | Register | Public |
 | `/reset-password` | Password Reset | Public |
+| `/legal/:docId` | Terms of Service / Privacy Policy (operator-published) | Public |
 | `/dashboard` | Dashboard | Protected |
 | `/flights` | Flight Log | Protected |
 | `/flights/:flightId` | Flight Detail | Protected |
@@ -107,6 +108,38 @@ docker compose -f docker-compose.dev.yml up frontend
 # Production build
 docker build -t ninerlog-frontend .
 ```
+
+## Terms of Service & Privacy Policy
+
+An operator can publish a Terms of Service and a Privacy Policy to their users.
+Nothing ships by default; the links appear only once documents are provided.
+
+Write each document as Markdown (GitHub-flavoured) and mount the files into the
+frontend container at `/usr/share/nginx/html/legal/`:
+
+| File | Document |
+|---|---|
+| `legal/terms.md` | Terms of Service |
+| `legal/privacy.md` | Privacy Policy |
+| `legal/terms.de.md`, `legal/privacy.de.md` | Optional translations, picked by the user's UI language; the un-suffixed file is the fallback |
+
+```yaml
+# docker-compose.yml (frontend service)
+volumes:
+  - ./legal:/usr/share/nginx/html/legal:ro
+```
+
+On start the container detects which files exist and enables the matching
+documents (`VITE_LEGAL_DOCS` overrides the detection, e.g. `terms,privacy`).
+Published documents are reachable at `/legal/terms` and `/legal/privacy`, linked
+from the login and registration screens, the desktop sidebar and the mobile
+"More" menu; the registration form notes that creating an account means
+agreeing to them. Editing a file takes effect on the next page load — no restart
+needed, but adding or removing a file needs a container restart so the links
+follow.
+
+For local development put the same files under `public/legal/` (gitignored) and
+set `VITE_LEGAL_DOCS=terms,privacy` in `.env.local`.
 
 ## Documentation
 

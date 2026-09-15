@@ -538,3 +538,53 @@ export function bodyFor(pathname) {
   if (path.startsWith('/documents')) return EMPTY_PAGE;
   return null;
 }
+
+/** Markdown served for `/legal/<file>` — keyed by file name. */
+export const legalMarkdown = {
+  'terms.md': `# Terms of Service
+
+_Last updated: 1 January 2026_
+
+## 1. The service
+
+This NinerLog instance is operated by **Example Flying Club e.V.** for its members. By creating an account you agree to these terms.
+
+## 2. Your logbook
+
+- You own the flight records you enter.
+- You are responsible for their accuracy; a digital logbook is only as good as what you log.
+- Export your data at any time from the Export page.
+
+## 3. Acceptable use
+
+Do not share your account, attempt to access other members' logbooks, or use the service for anything other than keeping a personal pilot logbook.
+
+## 4. Availability
+
+The service is provided as-is. We aim for high availability but make no guarantee. Keep a backup.
+
+## 5. Contact
+
+Questions about these terms go to [ops@example.org](mailto:ops@example.org).
+`,
+  'privacy.md': `# Privacy Policy
+
+_Last updated: 1 January 2026_
+
+## What we store
+
+| Data | Why |
+|---|---|
+| Name and e-mail address | Your account and notifications |
+| Flight records, aircraft, licences | The logbook itself |
+| Session tokens | Keeping you signed in |
+
+## Where it lives
+
+All data is stored on a server in Frankfurt, Germany, operated by Example Flying Club e.V. No data is shared with third parties.
+
+## Your rights
+
+You may export or delete your account at any time from your profile. For anything else, write to [privacy@example.org](mailto:privacy@example.org).
+`,
+};

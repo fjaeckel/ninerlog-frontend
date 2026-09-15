@@ -3,6 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL: string;
   readonly VITE_ENV: string;
+  readonly VITE_LEGAL_DOCS?: string;
 }
 
 interface ImportMeta {

@@ -12,3 +12,6 @@ coverage/
 
 # Screenshot harness output (scripts/screenshots)
 .screenshots/
+
+# Local legal documents for `npm run dev` (see README, "Terms of Service & Privacy Policy")
+/public/legal/

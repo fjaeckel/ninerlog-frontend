@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthProviders, useRegister, useResendVerification } from '../../hooks/useAuth';
-import { APP_NAME } from '../../lib/config';
+import { APP_NAME, LEGAL_DOCS } from '../../lib/config';
 import { LogoMark } from '../../components/ui/Logo';
+import { LegalLinks } from '../../components/ui/LegalLinks';
+import { legalDocPath } from '../../lib/legal';
 import { PasswordStrengthMeter } from '../../components/ui/PasswordStrengthMeter';
 import { extractApiError, extractApiStatus } from '../../lib/errors';
 import { supportedLanguages, languageNames } from '../../i18n';
@@ -57,6 +59,16 @@ export default function RegisterPage() {
   useEffect(() => {
     if (providers.data?.mode === 'oidc') navigate('/login', { replace: true });
   }, [providers.data, navigate]);
+
+  const hasTerms = LEGAL_DOCS.includes('terms');
+  const hasPrivacy = LEGAL_DOCS.includes('privacy');
+  const legalNoticeKey = hasTerms && hasPrivacy
+    ? 'auth:register.legalNotice.both'
+    : hasTerms
+      ? 'auth:register.legalNotice.terms'
+      : hasPrivacy
+        ? 'auth:register.legalNotice.privacy'
+        : null;
 
   const detectedLanguage =
     supportedLanguages.find(
@@ -304,6 +316,19 @@ export default function RegisterPage() {
             {isSubmitting || registerMutation.isPending ? t('auth:register.creatingAccount') : t('auth:register.createAccount')}
           </button>
 
+          {legalNoticeKey && (
+            <p className="text-center text-xs text-slate-500 dark:text-slate-400" data-testid="legal-notice">
+              <Trans
+                t={t}
+                i18nKey={legalNoticeKey}
+                components={{
+                  terms: <Link to={legalDocPath('terms')} className="link" />,
+                  privacy: <Link to={legalDocPath('privacy')} className="link" />,
+                }}
+              />
+            </p>
+          )}
+
           <p className="text-center text-sm text-slate-500 dark:text-slate-400">
             {t('auth:register.haveAccount')}{' '}
             <Link
@@ -315,6 +340,8 @@ export default function RegisterPage() {
           </p>
         </form>
         )}
+
+        <LegalLinks />
       </div>
     </div>
   );

@@ -32,6 +32,7 @@ const CustomCurrencyBuilderPage = lazyWithRetry(() => import('./pages/currency/C
 const AdminPage = lazyWithRetry(() => import('./pages/admin/AdminPage'));
 const HelpPage = lazyWithRetry(() => import('./pages/help/HelpPage'));
 const SignPage = lazyWithRetry(() => import('./pages/SignPage'));
+const LegalPage = lazyWithRetry(() => import('./pages/legal/LegalPage'));
 
 function PageLoader() {
   return (
@@ -72,6 +73,7 @@ function App() {
         <Route path="/new-password" element={<NewPasswordPage />} />
         <Route path="/auth/callback" element={<OidcCallbackPage />} />
         <Route path="/sign" element={<SignPage />} />
+        <Route path="/legal/:docId" element={<LegalPage />} />
 
         {/* Protected routes */}
         <Route element={<Layout />}>

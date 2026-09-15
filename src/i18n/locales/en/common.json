@@ -362,5 +362,14 @@
     "hint-add-first-flight": "Welcome! Log your first flight to get started.",
     "hint-add-aircraft": "Add your aircraft to auto-fill registrations when logging flights.",
     "hint-add-credentials": "Track your medical and language proficiency — add credentials to get expiry reminders."
+  },
+  "legal": {
+    "navLabel": "Legal",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "backToApp": "Back to the app",
+    "backToLogin": "Back to sign in",
+    "unavailableTitle": "Document unavailable",
+    "unavailableMessage": "This document could not be loaded right now. Please try again later."
   }
 }

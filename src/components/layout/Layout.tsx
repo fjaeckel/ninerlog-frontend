@@ -14,6 +14,7 @@ import { ScrollToTop } from './ScrollToTop';
 import { UpdateIndicator } from './UpdateIndicator';
 import { LogoMark } from '../ui/Logo';
 import { ThemeSwitcher } from '../ui/ThemeSwitcher';
+import { LegalLinks } from '../ui/LegalLinks';
 import { OnboardingTour } from '../onboarding/OnboardingTour';
 import { APP_NAME } from '../../lib/config';
 
@@ -170,6 +171,7 @@ export default function Layout() {
             icon={<Bug className="w-5 h-5" />}
           />
           <SidebarItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} />
+          <LegalLinks className="justify-start px-3 pt-1" />
         </div>
       </aside>
 
@@ -251,6 +253,7 @@ export default function Layout() {
               <MoreMenuItem to="/people" label={t('nav:people')} icon={<Users className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
               <MoreMenuItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              <LegalLinks className="justify-start px-3 pt-2 border-t border-slate-200 dark:border-slate-700" />
             </nav>
           </div>
         </>

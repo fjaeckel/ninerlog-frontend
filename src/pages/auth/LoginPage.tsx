@@ -12,6 +12,7 @@ import { useAuthStore } from '../../stores/authStore';
 import i18n from '../../i18n';
 import { APP_NAME } from '../../lib/config';
 import { LogoMark } from '../../components/ui/Logo';
+import { LegalLinks } from '../../components/ui/LegalLinks';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -393,6 +394,8 @@ export default function LoginPage() {
         ) : (
           <LocalLogin />
         )}
+
+        <LegalLinks />
       </div>
     </div>
   );

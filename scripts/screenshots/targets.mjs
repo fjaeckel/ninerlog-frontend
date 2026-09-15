@@ -6,9 +6,19 @@
  *   empty      serve empty collections, to capture the empty state
  *   fail       serve 500s for the page's own list, to capture the error state
  *   anonymous  do not seed a session — for the public/auth routes
+ *   env        runtime `window.ENV` overrides served via /env-config.js
  *
  * Add a target whenever you add a screen.
  */
+const LEGAL_ENV = { VITE_LEGAL_DOCS: 'terms,privacy' };
+
+/** Opens the mobile "More" sheet; no-op on desktop, where the sidebar shows the same entries. */
+async function openMoreMenu(page) {
+  if ((page.viewportSize()?.width ?? 0) >= 1024) return;
+  await page.getByRole('button', { name: /more menu|mehr-menü/i }).first().click();
+  await page.waitForTimeout(500);
+}
+
 export const TARGETS = [
   { name: 'dashboard', path: '/dashboard' },
   { name: 'flights', path: '/flights' },
@@ -94,6 +104,11 @@ export const TARGETS = [
       await page.waitForTimeout(400);
     },
   },
+  {
+    name: 'more-menu',
+    path: '/dashboard',
+    act: openMoreMenu,
+  },
   { name: 'admin', path: '/admin' },
   {
     name: 'admin-users',
@@ -127,6 +142,15 @@ export const TARGETS = [
   { name: 'auth-register', path: '/register', anonymous: true },
   { name: 'auth-reset', path: '/reset-password', anonymous: true },
   { name: 'auth-new-password', path: '/new-password?token=demo-token', anonymous: true },
+
+  // Operator-published legal documents (VITE_LEGAL_DOCS set).
+  { name: 'legal-terms', path: '/legal/terms', anonymous: true, env: LEGAL_ENV },
+  { name: 'legal-privacy', path: '/legal/privacy', anonymous: true, env: LEGAL_ENV },
+  { name: 'legal-terms-signed-in', path: '/legal/terms', env: LEGAL_ENV },
+  { name: 'auth-login-legal', path: '/login', anonymous: true, env: LEGAL_ENV },
+  { name: 'auth-register-legal', path: '/register', anonymous: true, env: LEGAL_ENV },
+  { name: 'dashboard-legal', path: '/dashboard', env: LEGAL_ENV },
+  { name: 'more-menu-legal', path: '/dashboard', env: LEGAL_ENV, act: openMoreMenu },
 ];
 
 /** Paths whose list request is failed for a `fail` target. */
