@@ -10,3 +10,4 @@ export { FileDropzone } from './FileDropzone';
 export { PageWrapper, PageHeader } from './PageWrapper';
 export { Logo, LogoMark } from './Logo';
 export { PasswordStrengthMeter } from './PasswordStrengthMeter';
+export { LegalLinks } from './LegalLinks';

@@ -4,11 +4,26 @@ set -e
 # Inject runtime environment variables into JavaScript
 # This allows configuring the frontend without rebuilding the image
 
+# Legal documents: publish every /usr/share/nginx/html/legal/<id>.md that
+# exists (terms, privacy). A non-empty VITE_LEGAL_DOCS overrides the list.
+LEGAL_DIR=/usr/share/nginx/html/legal
+DETECTED_LEGAL_DOCS=""
+for doc in terms privacy; do
+  if [ -f "${LEGAL_DIR}/${doc}.md" ]; then
+    DETECTED_LEGAL_DOCS="${DETECTED_LEGAL_DOCS:+${DETECTED_LEGAL_DOCS},}${doc}"
+  fi
+done
+LEGAL_DOCS="${VITE_LEGAL_DOCS:-${DETECTED_LEGAL_DOCS}}"
+if [ -n "$LEGAL_DOCS" ]; then
+  echo "Legal documents published: ${LEGAL_DOCS}"
+fi
+
 cat > /usr/share/nginx/html/env-config.js << EOF
 window.ENV = {
   VITE_API_BASE_URL: "${VITE_API_BASE_URL:-/api/v1}",
   VITE_ENV: "${VITE_ENV:-production}",
-  VITE_APP_NAME: "${VITE_APP_NAME:-}"
+  VITE_APP_NAME: "${VITE_APP_NAME:-}",
+  VITE_LEGAL_DOCS: "${LEGAL_DOCS}"
 };
 EOF
 
@@ -91,6 +106,14 @@ server {
         add_header Cache-Control "no-cache, no-store, must-revalidate";
         add_header Pragma "no-cache";
         add_header Expires 0;
+    }
+
+    # Operator-published legal documents — see nginx.conf.
+    location ~ ^/legal/[a-z]+(\.[a-z]{2})?\.md\$ {
+        types { text/markdown md; }
+        default_type text/markdown;
+        add_header Cache-Control "no-cache";
+        try_files \$uri =404;
     }
 
     # Static assets with long cache

@@ -362,5 +362,14 @@
     "hint-add-first-flight": "Willkommen! Trage deinen ersten Flug ein, um loszulegen.",
     "hint-add-aircraft": "Lege deine Luftfahrzeuge an, damit Kennzeichen beim Eintragen automatisch ausgefüllt werden.",
     "hint-add-credentials": "Behalte Tauglichkeit und Sprachprüfung im Blick — lege Nachweise an, um an Abläufe erinnert zu werden."
+  },
+  "legal": {
+    "navLabel": "Rechtliches",
+    "terms": "Nutzungsbedingungen",
+    "privacy": "Datenschutzerklärung",
+    "backToApp": "Zurück zur App",
+    "backToLogin": "Zurück zur Anmeldung",
+    "unavailableTitle": "Dokument nicht verfügbar",
+    "unavailableMessage": "Dieses Dokument konnte gerade nicht geladen werden. Bitte später erneut versuchen."
   }
 }

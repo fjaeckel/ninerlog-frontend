@@ -21,7 +21,7 @@
 import { mkdirSync, rmSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { user, bodyFor } from './fixtures.mjs';
+import { user, bodyFor, legalMarkdown } from './fixtures.mjs';
 import { TARGETS, FAILING_PATHS, EMPTY_BODIES } from './targets.mjs';
 import { collectReport, formatReport, TARGET_MIN } from './audit.mjs';
 import { startDevServer, launchBrowser } from './lib.mjs';
@@ -116,6 +116,25 @@ async function shoot(browser, target, theme) {
     },
     [authStorage, onboardingStorage, theme, !!target.anonymous, LANG]
   );
+
+  if (target.env) {
+    await context.route('**/env-config.js', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/javascript',
+        body: `window.ENV = ${JSON.stringify(target.env)};`,
+      })
+    );
+  }
+
+  // Legal Markdown: the `.<lang>.md` variant 404s so the default file is used.
+  await context.route('**/legal/*.md', (route) => {
+    const file = new URL(route.request().url()).pathname.split('/').pop();
+    const body = legalMarkdown[file];
+    return body
+      ? route.fulfill({ status: 200, contentType: 'text/markdown; charset=utf-8', body })
+      : route.fulfill({ status: 404, contentType: 'text/plain', body: 'Not found' });
+  });
 
   await context.route('**/api/v1/**', async (route) => {
     const path = new URL(route.request().url()).pathname.replace(/^.*\/api\/v1/, '');
