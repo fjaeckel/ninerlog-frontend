@@ -5,7 +5,7 @@ set -e
 # This allows configuring the frontend without rebuilding the image
 
 # Legal documents: publish every /usr/share/nginx/html/legal/<id>.md that
-# exists (terms, privacy). VITE_LEGAL_DOCS overrides the detected list.
+# exists (terms, privacy). A non-empty VITE_LEGAL_DOCS overrides the list.
 LEGAL_DIR=/usr/share/nginx/html/legal
 DETECTED_LEGAL_DOCS=""
 for doc in terms privacy; do
@@ -13,7 +13,7 @@ for doc in terms privacy; do
     DETECTED_LEGAL_DOCS="${DETECTED_LEGAL_DOCS:+${DETECTED_LEGAL_DOCS},}${doc}"
   fi
 done
-LEGAL_DOCS="${VITE_LEGAL_DOCS-${DETECTED_LEGAL_DOCS}}"
+LEGAL_DOCS="${VITE_LEGAL_DOCS:-${DETECTED_LEGAL_DOCS}}"
 if [ -n "$LEGAL_DOCS" ]; then
   echo "Legal documents published: ${LEGAL_DOCS}"
 fi

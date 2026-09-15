@@ -130,7 +130,7 @@ volumes:
 ```
 
 On start the container detects which files exist and enables the matching
-documents (`VITE_LEGAL_DOCS` overrides the detection, e.g. `terms,privacy`).
+documents (a non-empty `VITE_LEGAL_DOCS` overrides the detection, e.g. `terms`).
 Published documents are reachable at `/legal/terms` and `/legal/privacy`, linked
 from the login and registration screens, the desktop sidebar and the mobile
 "More" menu; the registration form notes that creating an account means
