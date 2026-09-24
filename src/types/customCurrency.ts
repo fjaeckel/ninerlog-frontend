@@ -69,6 +69,8 @@ export const CLASS_TYPE_OPTIONS: { value: string; label: string }[] = [
   { value: 'SET_SEA', label: 'SET (Sea)' },
   { value: 'TMG', label: 'TMG' },
   { value: 'IR', label: 'Instrument Rating' },
+  { value: 'GLIDER', label: 'Glider' },
+  { value: 'ULTRALIGHT', label: 'Ultralight' },
   { value: 'OTHER', label: 'Other' },
 ];
 

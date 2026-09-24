@@ -10,7 +10,7 @@ import { DocumentFileStrip } from '../documents/DocumentFileStrip';
 
 const CLASS_TYPE_OPTIONS = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
-  'SET_LAND', 'SET_SEA', 'TMG', 'IR', 'OTHER',
+  'SET_LAND', 'SET_SEA', 'TMG', 'GLIDER', 'ULTRALIGHT', 'IR', 'OTHER',
 ] as const;
 
 function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {

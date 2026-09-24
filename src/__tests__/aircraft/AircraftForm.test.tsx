@@ -55,6 +55,13 @@ describe('AircraftForm', () => {
     expect(screen.getByText(/TMG/)).toBeInTheDocument();
   });
 
+  it('offers glider and ultralight as standard classes', () => {
+    renderWithProviders(<AircraftForm onClose={mockOnClose} />);
+
+    expect(screen.getByRole('option', { name: /^glider/i })).toHaveValue('GLIDER');
+    expect(screen.getByRole('option', { name: /^ultralight/i })).toHaveValue('ULTRALIGHT');
+  });
+
   it('shows add button in create mode', () => {
     renderWithProviders(<AircraftForm onClose={mockOnClose} />);
 

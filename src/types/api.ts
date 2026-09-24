@@ -418,7 +418,7 @@ export interface ContactCreate {
 
 // ============ Class Rating Types ============
 
-export type ClassType = 'SEP_LAND' | 'SEP_SEA' | 'MEP_LAND' | 'MEP_SEA' | 'SET_LAND' | 'SET_SEA' | 'TMG' | 'IR' | 'OTHER';
+export type ClassType = 'SEP_LAND' | 'SEP_SEA' | 'MEP_LAND' | 'MEP_SEA' | 'SET_LAND' | 'SET_SEA' | 'TMG' | 'IR' | 'OTHER' | 'GLIDER' | 'ULTRALIGHT';
 
 export interface ClassRating {
   id: string;

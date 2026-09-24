@@ -45,6 +45,17 @@ describe('LicenseCard', () => {
     expect(screen.getAllByText('EASA').length).toBeGreaterThanOrEqual(1);
   });
 
+  it('offers glider and ultralight class ratings', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(
+      <LicenseCard license={mockLicense} onEdit={mockOnEdit} onDelete={mockOnDelete} />
+    );
+
+    await user.click(screen.getByRole('button', { name: /add rating/i }));
+    expect(screen.getByRole('option', { name: 'Glider' })).toHaveValue('GLIDER');
+    expect(screen.getByRole('option', { name: 'Ultralight' })).toHaveValue('ULTRALIGHT');
+  });
+
   it('calls onEdit when edit button is clicked', async () => {
     const user = userEvent.setup();
     renderWithProviders(

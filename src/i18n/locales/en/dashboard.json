@@ -46,6 +46,8 @@
     "SET": "SET",
     "TMG": "TMG",
     "IR": "IR",
+    "GLIDER": "Glider",
+    "ULTRALIGHT": "Ultralight",
     "OTHER": "Other"
   },
   "recentFlights": "Recent Flights",

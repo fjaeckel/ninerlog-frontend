@@ -67,6 +67,8 @@
     "SET_SEA": "SET (See)",
     "TMG": "TMG",
     "IR": "Instrumentenberechtigung",
+    "GLIDER": "Segelflugzeug",
+    "ULTRALIGHT": "Ultraleicht",
     "OTHER": "Sonstige"
   },
   "expiresLabel": "Gültig bis: {{date}}",

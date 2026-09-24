@@ -130,6 +130,9 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
             <option value="Transport Canada" />
             <option value="CASA" />
             <option value="DGCA" />
+            <option value="LBA" />
+            <option value="DULV" />
+            <option value="DAeC" />
           </datalist>
           {errors.regulatoryAuthority && (
             <p className="form-error">{errors.regulatoryAuthority.message}</p>

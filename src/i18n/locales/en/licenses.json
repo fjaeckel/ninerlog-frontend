@@ -80,6 +80,8 @@
     "SET_SEA": "SET (Sea)",
     "TMG": "TMG",
     "IR": "IR",
+    "GLIDER": "Glider",
+    "ULTRALIGHT": "Ultralight",
     "OTHER": "Other"
   }
 }

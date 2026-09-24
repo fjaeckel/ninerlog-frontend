@@ -80,6 +80,8 @@
     "SET_SEA": "SET (See)",
     "TMG": "TMG",
     "IR": "IR",
+    "GLIDER": "Segelflugzeug",
+    "ULTRALIGHT": "Ultraleicht",
     "OTHER": "Sonstige"
   }
 }
