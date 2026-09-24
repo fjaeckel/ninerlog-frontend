@@ -67,7 +67,7 @@ describe('ExportPage', () => {
     );
   });
 
-  it('CSV export sends the Web Logbook format and shows the import hint', async () => {
+  it('CSV export sends the vsimakhin/web-logbook format and shows the import hint', async () => {
     const user = userEvent.setup();
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -81,6 +81,7 @@ describe('ExportPage', () => {
     expect(screen.queryByText(/Apply Web Logbook Mapping/)).not.toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText('CSV format'), 'weblogbook');
     expect(screen.getByText(/Apply Web Logbook Mapping/)).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'vsimakhin/web-logbook' })).toBeInTheDocument();
     await user.click(screen.getByText('Download CSV'));
 
     const url = mockFetch.mock.calls[0][0] as string;
