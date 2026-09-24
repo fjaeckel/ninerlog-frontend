@@ -44,7 +44,9 @@
     "patterns": "Patterns",
     "patternsHint": "When you fly, and how long your flights tend to be.",
     "records": "Records",
-    "recordsHint": "Personal bests and streaks."
+    "recordsHint": "Personal bests and streaks.",
+    "custom": "Custom reports",
+    "customHint": "Reports you saved from a flight search. Each uses its own time window."
   },
   "hero": {
     "totalTime": "Total block time",
@@ -265,5 +267,126 @@
       "JSON Backup — Complete data snapshot including aircraft fleet, licenses with class ratings, and credentials.",
       "Your data is yours — export anytime, no restrictions, no fees."
     ]
+  },
+  "custom": {
+    "metric": {
+      "flights": "Flights",
+      "totalTime": "Total time",
+      "picTime": "PIC time",
+      "dualTime": "Dual time",
+      "dualGivenTime": "Dual given",
+      "nightTime": "Night time",
+      "ifrTime": "IFR time",
+      "crossCountryTime": "Cross-country time",
+      "fstdTime": "FSTD time",
+      "landings": "Landings"
+    },
+    "metricShort": {
+      "flights": "Flights",
+      "totalTime": "Total",
+      "picTime": "PIC",
+      "dualTime": "Dual",
+      "dualGivenTime": "Dual given",
+      "nightTime": "Night",
+      "ifrTime": "IFR",
+      "crossCountryTime": "XC",
+      "fstdTime": "FSTD",
+      "landings": "Ldg"
+    },
+    "groupBy": {
+      "month": "Month",
+      "year": "Year",
+      "dayOfWeek": "Day of week",
+      "aircraftType": "Aircraft type",
+      "registration": "Registration",
+      "departure": "Departure",
+      "arrival": "Arrival",
+      "route": "Route"
+    },
+    "window": {
+      "all": "All time",
+      "lastMonths": "Last N months",
+      "yearToDate": "Year to date",
+      "range": "Date range",
+      "allLabel": "All time",
+      "lastMonthsLabel_one": "Last month",
+      "lastMonthsLabel_other": "Last {{count}} months",
+      "yearToDateLabel": "Year to date",
+      "rangeLabel": "{{from}} – {{to}}",
+      "fromLabel": "Since {{from}}",
+      "untilLabel": "Until {{to}}"
+    },
+    "filter": {
+      "aircraftRegValue": "Reg {{value}}",
+      "departureValue": "From {{value}}",
+      "arrivalValue": "To {{value}}",
+      "role": {
+        "pic": "PIC only",
+        "dual": "Dual only"
+      },
+      "logbook": "Separate logbook",
+      "remove": "Remove filter: {{filter}}"
+    },
+    "metricByGroup": "{{metric}} by {{groupBy}}",
+    "unknownGroup": "(none)",
+    "totals": "Total",
+    "otherGroups_one": "{{count}} more group not shown (included in totals)",
+    "otherGroups_other": "{{count}} more groups not shown (included in totals)",
+    "previewTotals_one": "{{count}} flight · {{metric}}: {{value}}",
+    "previewTotals_other": "{{count}} flights · {{metric}}: {{value}}",
+    "resultFailed": "This report could not be calculated.",
+    "listFailed": "Your custom reports could not be loaded.",
+    "exportFailed": "Export failed: {{message}}",
+    "deleteTitle": "Delete report?",
+    "deleteDescription": "“{{name}}” will be removed. Your flights are not affected.",
+    "empty": {
+      "title": "No custom reports yet",
+      "description": "Search or filter your flights, then choose “Save as report” on the Flights page to chart any metric by month, aircraft, route and more.",
+      "action": "Go to flights"
+    },
+    "actions": {
+      "menu": "Actions for {{name}}",
+      "exportCsv": "Export CSV",
+      "exportPdf": "Export PDF",
+      "edit": "Edit",
+      "showFlights": "Show flights",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "delete": "Delete"
+    },
+    "dialog": {
+      "createTitle": "Save as report",
+      "editTitle": "Edit report",
+      "name": "Name",
+      "namePlaceholder": "e.g. Night hours by aircraft",
+      "metric": "Metric",
+      "groupBy": "Group by",
+      "window": "Time window",
+      "months": "Months",
+      "from": "From",
+      "to": "To",
+      "limit": "Max. groups",
+      "filter": "Filter",
+      "query": "Search query",
+      "queryPlaceholder": "Search query, e.g. night>0 from:EDDF",
+      "activeFilters": "Active filters",
+      "preview": "Preview",
+      "previewLoading": "Updating preview",
+      "invalidDefinition": "Check the time window and group limit to see a preview.",
+      "saveReport": "Save report",
+      "savedTitle": "Report saved",
+      "savedDescription": "“{{name}}” is now on the Reports page under Custom reports.",
+      "viewInReports": "View in Reports"
+    },
+    "groupByInline": {
+      "month": "month",
+      "year": "year",
+      "dayOfWeek": "day of week",
+      "aircraftType": "aircraft type",
+      "registration": "registration",
+      "departure": "departure",
+      "arrival": "arrival",
+      "route": "route"
+    }
   }
 }

@@ -41,6 +41,7 @@
   "restoreSummaryCredentials": "Credentials",
   "restoreSummaryFlights": "Flights",
   "restoreSummaryCrew": "Crew members",
+  "restoreSummaryCustomReports": "Custom reports",
   "restoreAnother": "Restore another backup",
   "uploadCsvDescription": "Your logbook format is detected automatically. Maximum file size: 10 MB.",
   "supportedLogbooksTitle": "Coming from another logbook?",

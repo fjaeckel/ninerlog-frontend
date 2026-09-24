@@ -38,6 +38,14 @@ export const TARGETS = [
     },
   },
   {
+    name: 'flights-save-report',
+    path: '/flights?q=night%3E0&aircraftReg=D-EABC&function=pic&startDate=2026-01-01&endDate=2026-08-16',
+    act: async (page) => {
+      await page.getByRole('button', { name: /save as report|als bericht speichern/i }).first().click();
+      await page.waitForTimeout(1200);
+    },
+  },
+  {
     name: 'flights-modal-simulator',
     path: '/flights',
     act: async (page) => {
@@ -94,6 +102,30 @@ export const TARGETS = [
   { name: 'people', path: '/people' },
   { name: 'quicklog', path: '/quicklog' },
   { name: 'reports', path: '/reports' },
+  {
+    name: 'reports-custom',
+    path: '/reports#custom',
+    act: async (page) => {
+      await page.waitForTimeout(1500);
+    },
+  },
+  {
+    name: 'reports-custom-menu',
+    path: '/reports#custom',
+    act: async (page) => {
+      await page.getByRole('button', { name: /actions for hours per month|aktionen für hours per month/i }).first().click();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'reports-custom-edit',
+    path: '/reports#custom',
+    act: async (page) => {
+      await page.getByRole('button', { name: /actions for night time by aircraft|aktionen für night time by aircraft/i }).first().click();
+      await page.getByRole('menuitem', { name: /^(edit|bearbeiten)$/i }).click();
+      await page.waitForTimeout(1200);
+    },
+  },
   { name: 'map', path: '/map' },
   { name: 'export', path: '/export' },
   { name: 'import', path: '/import' },
@@ -138,6 +170,7 @@ export const TARGETS = [
   { name: 'empty-aircraft', path: '/aircraft', empty: true },
   { name: 'empty-licenses', path: '/licenses', empty: true },
   { name: 'empty-credentials', path: '/credentials', empty: true },
+  { name: 'empty-reports-custom', path: '/reports#custom', empty: true },
 
   // Error states — reached by failing the page's own list request.
   { name: 'error-flights', path: '/flights', fail: true },
@@ -160,4 +193,5 @@ export const EMPTY_BODIES = {
   '/licenses': [],
   '/credentials': [],
   '/contacts': [],
+  '/reports/custom': [],
 };

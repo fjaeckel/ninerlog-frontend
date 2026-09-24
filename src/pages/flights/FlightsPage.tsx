@@ -1,13 +1,15 @@
 import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowDown, ArrowRight, ArrowUp, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUp, BookmarkPlus, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { useFlights, useInfiniteFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
 import FlightForm from '../../components/flights/FlightForm';
 import FlightCard from '../../components/flights/FlightCard';
 import FlightSearchBar from '../../components/flights/FlightSearchBar';
+import { CustomReportDialog } from '../../components/reports/CustomReportDialog';
+import { definitionFromSearchParams } from '../../lib/customReports';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
@@ -152,6 +154,7 @@ export default function FlightsPage() {
     () => !!(startDate || endDate || aircraftReg || departureIcao || arrivalIcao || functionFilter)
   );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [showSaveReport, setShowSaveReport] = useState(false);
 
   // The search input keeps its own state; the URL is written after the debounce.
   const [search, setSearch] = useState(searchQuery);
@@ -396,6 +399,13 @@ export default function FlightsPage() {
             {t('flights:clearAll')}
           </button>
         )}
+        <button
+          onClick={() => setShowSaveReport(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-colors border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+        >
+          <BookmarkPlus className="w-4 h-4" aria-hidden="true" />
+          {t('flights:saveAsReport')}
+        </button>
         <div className="flex-1" />
         <span className="text-xs text-slate-500 dark:text-slate-400">{t('flights:sort')}</span>
         {(['date', 'totalTime', 'createdAt'] as const).map((field) => (
@@ -762,6 +772,14 @@ export default function FlightsPage() {
             </div>
           )}
         </>
+      )}
+
+      {showSaveReport && (
+        <CustomReportDialog
+          open
+          onClose={() => setShowSaveReport(false)}
+          initialDefinition={definitionFromSearchParams(searchParams)}
+        />
       )}
 
       {/* Delete Confirm Dialog */}

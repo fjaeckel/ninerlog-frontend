@@ -105,6 +105,7 @@ function DashboardTab() {
     { label: t('admin.dashboard.totalContacts'), value: data.totalContacts },
     { label: t('admin.dashboard.activeSessions'), value: data.activeSessions },
     { label: t('admin.dashboard.totalCredentials'), value: data.totalCredentials },
+    { label: t('admin.dashboard.totalCustomReports'), value: data.totalCustomReports },
     { label: t('admin.dashboard.totalImports'), value: data.totalImports },
     { label: t('admin.dashboard.flightsThisMonth'), value: data.flightsThisMonth },
     { label: t('admin.dashboard.newUsersWeek'), value: data.newUsersThisWeek },

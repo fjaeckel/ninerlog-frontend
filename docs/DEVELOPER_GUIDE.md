@@ -324,6 +324,7 @@ graph TB
     Inv --> S["['statistics'] / ['my-statistics']"]
     Inv --> C["['currency']"]
     Inv --> T["['stats'] / ['statsByClass'] / ['trends']"]
+    Inv --> R["['custom-reports','result'] / ['custom-reports','preview']"]
 ```
 
 When you add a query whose data derives from flights, **add its key to
@@ -362,6 +363,11 @@ it: `isImageFile()` decides, images get a thumbnail, and a PDF gets an icon tile
 bytes are **never** fetched. Pulling a PDF into a blob URL to show it in an `<iframe>`
 would walk straight back around the server's decision, so the only way a non-image leaves
 the API is `useDownloadDocumentFile`, on an explicit click.
+
+Server-rendered exports follow the same route: `useExportCustomReport`
+([hooks/useCustomReports.ts](../src/hooks/useCustomReports.ts)) fetches
+`/reports/custom/{id}/export` with `parseAs: 'blob'` and saves it under the name from the
+response's `Content-Disposition`.
 
 ---
 

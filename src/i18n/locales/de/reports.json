@@ -44,7 +44,9 @@
     "patterns": "Flugverhalten",
     "patternsHint": "Wann du fliegst und wie lang deine Flüge typischerweise sind.",
     "records": "Rekorde",
-    "recordsHint": "Persönliche Bestwerte und Serien."
+    "recordsHint": "Persönliche Bestwerte und Serien.",
+    "custom": "Eigene Berichte",
+    "customHint": "Berichte, die du aus einer Flugsuche gespeichert hast. Jeder nutzt seinen eigenen Zeitraum."
   },
   "hero": {
     "totalTime": "Gesamte Blockzeit",
@@ -265,5 +267,126 @@
       "JSON-Sicherung — Vollständige Momentaufnahme inklusive Flotte, Lizenzen mit Klassenberechtigungen und Nachweisen.",
       "Deine Daten gehören dir — jederzeit exportierbar, ohne Einschränkungen und ohne Gebühren."
     ]
+  },
+  "custom": {
+    "metric": {
+      "flights": "Flüge",
+      "totalTime": "Gesamtzeit",
+      "picTime": "PIC-Zeit",
+      "dualTime": "Doppelsteuer",
+      "dualGivenTime": "Als Fluglehrer",
+      "nightTime": "Nachtzeit",
+      "ifrTime": "IFR-Zeit",
+      "crossCountryTime": "Überlandzeit",
+      "fstdTime": "FSTD-Zeit",
+      "landings": "Landungen"
+    },
+    "metricShort": {
+      "flights": "Flüge",
+      "totalTime": "Gesamt",
+      "picTime": "PIC",
+      "dualTime": "Dual",
+      "dualGivenTime": "FI",
+      "nightTime": "Nacht",
+      "ifrTime": "IFR",
+      "crossCountryTime": "Überland",
+      "fstdTime": "FSTD",
+      "landings": "Ldg"
+    },
+    "groupBy": {
+      "month": "Monat",
+      "year": "Jahr",
+      "dayOfWeek": "Wochentag",
+      "aircraftType": "Muster",
+      "registration": "Kennzeichen",
+      "departure": "Abflugort",
+      "arrival": "Zielort",
+      "route": "Strecke"
+    },
+    "window": {
+      "all": "Gesamtzeitraum",
+      "lastMonths": "Letzte N Monate",
+      "yearToDate": "Seit Jahresbeginn",
+      "range": "Zeitraum",
+      "allLabel": "Gesamtzeitraum",
+      "lastMonthsLabel_one": "Letzter Monat",
+      "lastMonthsLabel_other": "Letzte {{count}} Monate",
+      "yearToDateLabel": "Seit Jahresbeginn",
+      "rangeLabel": "{{from}} – {{to}}",
+      "fromLabel": "Seit {{from}}",
+      "untilLabel": "Bis {{to}}"
+    },
+    "filter": {
+      "aircraftRegValue": "Kennz. {{value}}",
+      "departureValue": "Ab {{value}}",
+      "arrivalValue": "Nach {{value}}",
+      "role": {
+        "pic": "Nur PIC",
+        "dual": "Nur Dual"
+      },
+      "logbook": "Separates Flugbuch",
+      "remove": "Filter entfernen: {{filter}}"
+    },
+    "metricByGroup": "{{metric}} nach {{groupBy}}",
+    "unknownGroup": "(keine Angabe)",
+    "totals": "Summe",
+    "otherGroups_one": "{{count}} weitere Gruppe nicht angezeigt (in der Summe enthalten)",
+    "otherGroups_other": "{{count}} weitere Gruppen nicht angezeigt (in der Summe enthalten)",
+    "previewTotals_one": "{{count}} Flug · {{metric}}: {{value}}",
+    "previewTotals_other": "{{count}} Flüge · {{metric}}: {{value}}",
+    "resultFailed": "Dieser Bericht konnte nicht berechnet werden.",
+    "listFailed": "Deine eigenen Berichte konnten nicht geladen werden.",
+    "exportFailed": "Export fehlgeschlagen: {{message}}",
+    "deleteTitle": "Bericht löschen?",
+    "deleteDescription": "„{{name}}“ wird entfernt. Deine Flüge bleiben unverändert.",
+    "empty": {
+      "title": "Noch keine eigenen Berichte",
+      "description": "Suche oder filtere deine Flüge und wähle auf der Flugseite „Als Bericht speichern“, um jede Kennzahl nach Monat, Luftfahrzeug, Strecke und mehr auszuwerten.",
+      "action": "Zu den Flügen"
+    },
+    "actions": {
+      "menu": "Aktionen für {{name}}",
+      "exportCsv": "CSV exportieren",
+      "exportPdf": "PDF exportieren",
+      "edit": "Bearbeiten",
+      "showFlights": "Flüge anzeigen",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "delete": "Löschen"
+    },
+    "dialog": {
+      "createTitle": "Als Bericht speichern",
+      "editTitle": "Bericht bearbeiten",
+      "name": "Name",
+      "namePlaceholder": "z. B. Nachtstunden nach Luftfahrzeug",
+      "metric": "Kennzahl",
+      "groupBy": "Gruppieren nach",
+      "window": "Zeitraum",
+      "months": "Monate",
+      "from": "Von",
+      "to": "Bis",
+      "limit": "Max. Gruppen",
+      "filter": "Filter",
+      "query": "Suchanfrage",
+      "queryPlaceholder": "Suchanfrage, z. B. night>0 from:EDDF",
+      "activeFilters": "Aktive Filter",
+      "preview": "Vorschau",
+      "previewLoading": "Vorschau wird aktualisiert",
+      "invalidDefinition": "Prüfe Zeitraum und Gruppenlimit, um eine Vorschau zu sehen.",
+      "saveReport": "Bericht speichern",
+      "savedTitle": "Bericht gespeichert",
+      "savedDescription": "„{{name}}“ findest du jetzt auf der Berichtsseite unter Eigene Berichte.",
+      "viewInReports": "In Berichten ansehen"
+    },
+    "groupByInline": {
+      "month": "Monat",
+      "year": "Jahr",
+      "dayOfWeek": "Wochentag",
+      "aircraftType": "Muster",
+      "registration": "Kennzeichen",
+      "departure": "Abflugort",
+      "arrival": "Zielort",
+      "route": "Strecke"
+    }
   }
 }

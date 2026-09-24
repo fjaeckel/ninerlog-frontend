@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ReportsPage from '../../pages/reports/ReportsPage';
 import * as useAnalyticsHook from '../../hooks/useAnalytics';
+import * as useCustomReportsHook from '../../hooks/useCustomReports';
 import type { FlightAnalytics } from '../../hooks/useAnalytics';
 
 // Chart bodies stubbed; assertions target DOM the page owns (headings,
@@ -202,6 +203,11 @@ const mockUseAnalytics = (overrides: Partial<ReturnType<typeof useAnalyticsHook.
 describe('ReportsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(useCustomReportsHook, 'useCustomReports').mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: null,
+    } as never);
   });
 
   it('renders the loading state', () => {
@@ -231,9 +237,16 @@ describe('ReportsPage', () => {
   it('renders every section in the jump nav', () => {
     mockUseAnalytics();
     renderWithProviders(<ReportsPage />);
-    for (const label of ['Overview', 'Experience', 'Aircraft', 'Places', 'Instrument', 'Patterns', 'Records']) {
+    for (const label of ['Overview', 'Custom reports', 'Experience', 'Aircraft', 'Places', 'Instrument', 'Patterns', 'Records']) {
       expect(screen.getByRole('tab', { name: label })).toBeInTheDocument();
     }
+  });
+
+  it('renders the custom reports section with its empty state', () => {
+    mockUseAnalytics();
+    renderWithProviders(<ReportsPage />);
+    expect(screen.getByRole('heading', { name: 'Custom reports' })).toBeInTheDocument();
+    expect(screen.getByText('No custom reports yet')).toBeInTheDocument();
   });
 
   it('renders the headline stat tiles', () => {

@@ -378,5 +378,6 @@
   "passengerEntry": "Als Passagier mitgeflogen",
   "passengerHelper": "Sie wurden auf diesem Flug mitgenommen, statt ihn zu führen; er zählt daher zu keiner Summe, Statistik oder Währigkeit.",
   "logSession": "Sitzung eintragen",
-  "updateSession": "Sitzung aktualisieren"
+  "updateSession": "Sitzung aktualisieren",
+  "saveAsReport": "Als Bericht speichern"
 }

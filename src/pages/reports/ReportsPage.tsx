@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   BarChart3,
@@ -45,6 +46,7 @@ import {
   StatTile,
   type TableColumn,
 } from '../../components/reports/primitives';
+import { CustomReportsSection, CUSTOM_SECTION_ID } from '../../components/reports/CustomReportsSection';
 import {
   CumulativeHoursChart,
   MonthlyHoursChart,
@@ -58,6 +60,14 @@ export default function ReportsPage() {
   const { data, isLoading, isFetching, error } = useAnalytics(months);
   const { fmtDuration, fmtDate, dateFormatPref } = useFormatPrefs();
   const theme = useChartTheme();
+  const { hash } = useLocation();
+  const ready = !!data;
+
+  // Scroll to the section named in the URL hash once the page has rendered.
+  useEffect(() => {
+    if (!ready || !hash) return;
+    document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView({ block: 'start' });
+  }, [ready, hash]);
 
   const num = useMemo(
     () => (v: number, digits = 0) =>
@@ -68,6 +78,7 @@ export default function ReportsPage() {
 
   const sections: ReportSection[] = [
     { id: 'overview', label: t('sections.overview') },
+    { id: CUSTOM_SECTION_ID, label: t('sections.custom') },
     { id: 'experience', label: t('sections.experience') },
     { id: 'aircraft', label: t('sections.aircraft') },
     { id: 'places', label: t('sections.places') },
@@ -270,7 +281,12 @@ export default function ReportsPage() {
                 </ReportCard>
               </div>
             </ReportSectionBlock>
+          </div>
 
+          {/* ── Custom reports: each carries its own window ── */}
+          <CustomReportsSection />
+
+          <div className={isFetching ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
             {/* ── Experience ── */}
             <ReportSectionBlock
               id="experience"

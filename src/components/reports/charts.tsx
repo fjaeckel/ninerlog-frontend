@@ -288,3 +288,79 @@ export function PatternChart({
     </div>
   );
 }
+
+/** Y ticks in minutes at whole-hour steps, at most ~5 intervals up to `peakMinutes`. */
+function hourTicks(peakMinutes: number): number[] {
+  const peakHours = Math.max(peakMinutes / 60, 1);
+  const step = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000].find((s) => peakHours / s <= 5) ?? 1000;
+  const top = Math.ceil(peakHours / step) * step;
+  const ticks: number[] = [];
+  for (let h = 0; h <= top; h += step) ticks.push(h * 60);
+  return ticks;
+}
+
+/** A labelled value per bar, for custom reports over time groupings. One hue. */
+export interface ValueBarPoint {
+  key: string;
+  tick: string;
+  label: string;
+  value: number;
+}
+
+export function ValueBarChart({
+  data,
+  theme,
+  fmtValue,
+  durations,
+  seriesName,
+  emptyLabel,
+  height = 'h-64',
+}: {
+  data: ValueBarPoint[];
+  theme: ChartTheme;
+  fmtValue: (value: number) => string;
+  /** Values are minutes: the axis shows whole hours. */
+  durations: boolean;
+  seriesName: string;
+  emptyLabel: string;
+  height?: string;
+}) {
+  const peak = useMemo(() => Math.max(...data.map((d) => d.value), 0), [data]);
+  const ticks = useMemo(() => (durations ? hourTicks(peak) : undefined), [durations, peak]);
+  if (data.length === 0 || peak === 0) return <NoData label={emptyLabel} />;
+
+  return (
+    <div className={height}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 4 }}>
+          <CartesianGrid stroke={theme.grid} strokeWidth={1} vertical={false} />
+          <XAxis
+            dataKey="tick"
+            interval={tickInterval(data.length, 8)}
+            tick={{ fontSize: 11, fill: theme.tick }}
+            tickLine={false}
+            axisLine={{ stroke: theme.axis }}
+            minTickGap={8}
+          />
+          <YAxis
+            tickFormatter={durations ? toHours : undefined}
+            tick={{ fontSize: 11, fill: theme.tick }}
+            tickLine={false}
+            axisLine={false}
+            width={44}
+            unit={durations ? 'h' : undefined}
+            ticks={ticks}
+            domain={ticks ? [0, ticks[ticks.length - 1]] : undefined}
+            allowDecimals={false}
+          />
+          <Tooltip
+            {...tooltipStyles(theme)}
+            labelFormatter={(_v, payload) => (payload?.[0]?.payload as ValueBarPoint | undefined)?.label ?? ''}
+            formatter={(value: unknown) => [fmtValue(Number(value)), seriesName]}
+          />
+          <Bar dataKey="value" fill={theme.accent} radius={BAR_RADIUS} maxBarSize={BAR_MAX} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}

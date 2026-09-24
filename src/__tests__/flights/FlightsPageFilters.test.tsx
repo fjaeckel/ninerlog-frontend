@@ -7,6 +7,7 @@ import FlightsPage from '../../pages/flights/FlightsPage';
 import FlightDetailPage from '../../pages/flights/FlightDetailPage';
 import * as useFlightsHook from '../../hooks/useFlights';
 import * as useLicensesHook from '../../hooks/useLicenses';
+import * as useCustomReportsHook from '../../hooks/useCustomReports';
 
 const flight = {
   id: 'flight-1',
@@ -118,5 +119,26 @@ describe('FlightsPage filter persistence', () => {
     await user.click(screen.getByRole('button', { name: /back to flights/i }));
     expect(screen.getByTestId('location').textContent).toBe('/flights?q=night&page=2');
     expect(lastQuery()).toMatchObject({ q: 'night', page: 2 });
+  });
+
+  it('opens the save-as-report dialog pre-filled from the URL filters', async () => {
+    const user = userEvent.setup();
+    const preview = vi
+      .spyOn(useCustomReportsHook, 'useCustomReportPreview')
+      .mockReturnValue({ data: undefined, error: null, isFetching: false } as never);
+    renderAt('/flights?q=night&aircraftReg=D-EFGH&function=dual&startDate=2026-01-01&sortBy=totalTime');
+
+    await user.click(screen.getByRole('button', { name: 'Save as report' }));
+
+    expect(screen.getByRole('heading', { name: 'Save as report' })).toBeInTheDocument();
+    expect(preview).toHaveBeenLastCalledWith(
+      {
+        filter: { q: 'night', aircraftReg: 'D-EFGH', role: 'dual' },
+        window: { kind: 'range', startDate: '2026-01-01' },
+        groupBy: 'month',
+        metric: 'totalTime',
+      },
+      true
+    );
   });
 });

@@ -34,4 +34,13 @@ describe('invalidateFlightDependentQueries', () => {
       ]),
     );
   });
+
+  it('covers custom report results and previews', () => {
+    expect(FLIGHT_DEPENDENT_QUERY_KEYS).toEqual(
+      expect.arrayContaining([
+        ['custom-reports', 'result'],
+        ['custom-reports', 'preview'],
+      ]),
+    );
+  });
 });
