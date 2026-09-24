@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { useCreateLicense, useUpdateLicense, useLicenses } from '../../hooks/useLicenses';
 import { extractApiError } from '../../lib/errors';
 import { DocumentFileGallery } from '../documents/DocumentFileGallery';
+import { isGermanULAuthority, looksLikeULLicence } from '../../lib/ultralight';
+import { ULAuthorityHint } from './ULAuthorityHint';
 import type { LicenseCreate, LicenseUpdate } from '../../types/api';
 
 const licenseSchema = z.object({
@@ -74,6 +76,9 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchedFields]);
 
+  const showULAuthorityHint =
+    looksLikeULLicence(watchedFields.licenseType) && !isGermanULAuthority(watchedFields.regulatoryAuthority);
+
   const onSubmit = async (data: LicenseFormData) => {
     try {
       setApiError(null);
@@ -130,10 +135,14 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
             <option value="Transport Canada" />
             <option value="CASA" />
             <option value="DGCA" />
+            <option value="LBA" />
+            <option value="DULV" />
+            <option value="DAeC" />
           </datalist>
           {errors.regulatoryAuthority && (
             <p className="form-error">{errors.regulatoryAuthority.message}</p>
           )}
+          {showULAuthorityHint && <ULAuthorityHint className="mt-1" />}
         </div>
 
         <div>

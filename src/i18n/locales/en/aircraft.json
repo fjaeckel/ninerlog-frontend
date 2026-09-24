@@ -61,13 +61,15 @@
     "SET_SEA": "SET (Sea)",
     "SET": "SET",
     "TMG": "TMG",
+    "GLIDER": "Glider",
+    "ULTRALIGHT": "Ultralight",
     "OTHER": "Other"
   },
   "form": {
     "selectClass": "Select class",
     "customClass": "Custom →",
     "pickFromList": "← Pick from list",
-    "customClassPlaceholder": "e.g. ULTRALIGHT, GLIDER, GYROPLANE",
+    "customClassPlaceholder": "e.g. GYROPLANE, HELICOPTER, BALLOON",
     "notesPlaceholder": "Club aircraft, checkout required, etc.",
     "characteristics": "Characteristics",
     "multiPilotHelper": "Certificated for a minimum crew of two pilots. Co-pilot (SIC) time can only be logged on a multi-pilot aircraft.",
@@ -88,6 +90,8 @@
     "MEP_SEA": "MEP (Sea) — Multi Engine Piston",
     "SET_LAND": "SET (Land) — Single Engine Turboprop",
     "SET_SEA": "SET (Sea) — Single Engine Turboprop",
-    "TMG": "TMG — Touring Motor Glider"
+    "TMG": "TMG — Touring Motor Glider",
+    "GLIDER": "Glider — Sailplane",
+    "ULTRALIGHT": "Ultralight — Microlight"
   }
 }

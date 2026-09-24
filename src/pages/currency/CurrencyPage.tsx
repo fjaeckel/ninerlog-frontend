@@ -23,14 +23,6 @@ import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useCurrencyMessages } from '../../lib/currencyMessages';
 
-const CLASS_TYPE_LABELS: Record<string, string> = {
-  SEP_LAND: 'SEP (Land)', SEP_SEA: 'SEP (Sea)',
-  MEP_LAND: 'MEP (Land)', MEP_SEA: 'MEP (Sea)',
-  SET_LAND: 'SET (Land)', SET_SEA: 'SET (Sea)',
-  TMG: 'TMG', IR: 'Instrument Rating', OTHER: 'Other',
-};
-
-
 export default function CurrencyPage() {
   const { data: currencyStatus, isLoading: currencyLoading } = useAllCurrencyStatus();
   const { data: customRules } = useCustomCurrencies();
@@ -278,7 +270,7 @@ export default function CurrencyPage() {
               const nightOk = pax.nightStatus === 'current';
               const hasNight = pax.nightPrivilege !== false;
               const allOk = hasNight ? (dayOk && nightOk) : dayOk;
-              const classLabel = CLASS_TYPE_LABELS[pax.classType] || pax.classType;
+              const classLabel = t(`classTypes.${pax.classType}`, { defaultValue: pax.classType });
 
               return (
                 <div

@@ -119,6 +119,12 @@ export const aircraft = [
     defaultDepartureIcao: null, defaultArrivalIcao: null, isActive: false,
     notes: null, createdAt: iso('2024-02-01'), updatedAt: iso('2026-01-01'),
   },
+  {
+    id: 'a4', userId: 'u1', registration: 'D-5812', type: 'AS21', make: 'Schleicher', model: 'ASK 21',
+    aircraftClass: 'GLIDER', isComplex: false, isHighPerformance: false, isTailwheel: false, isMultiPilot: false,
+    defaultDepartureIcao: 'EDNY', defaultArrivalIcao: 'EDNY', isActive: true,
+    notes: null, createdAt: iso('2024-02-01'), updatedAt: iso('2026-01-01'),
+  },
 ];
 
 export const aircraftStats = {
@@ -145,6 +151,16 @@ export const licenses = [
     issueDate: '2021-09-02', issuingAuthority: 'FAA', requiresSeparateLogbook: true,
     createdAt: iso('2024-01-01'), updatedAt: iso('2026-01-01'),
   },
+  {
+    id: 'l3', userId: 'u1', regulatoryAuthority: 'EASA', licenseType: 'SPL', licenseNumber: 'DE.FCL.S.2231',
+    issueDate: '2016-04-09', issuingAuthority: 'LBA', requiresSeparateLogbook: false,
+    createdAt: iso('2024-01-01'), updatedAt: iso('2026-01-01'),
+  },
+  {
+    id: 'l4', userId: 'u1', regulatoryAuthority: 'DULV', licenseType: 'UL', licenseNumber: 'UL-77410',
+    issueDate: '2018-07-21', issuingAuthority: 'DULV', requiresSeparateLogbook: false,
+    createdAt: iso('2024-01-01'), updatedAt: iso('2026-01-01'),
+  },
 ];
 
 export const classRatings = {
@@ -153,6 +169,12 @@ export const classRatings = {
     { id: 'cr2', licenseId: 'l1', classType: 'TMG', issueDate: '2023-03-01', expiryDate: day(-20), notes: null, createdAt: iso('2023-03-01'), updatedAt: iso('2026-01-01') },
   ],
   l2: [],
+  l3: [
+    { id: 'cr3', licenseId: 'l3', classType: 'GLIDER', issueDate: '2016-04-09', expiryDate: null, notes: null, createdAt: iso('2016-04-09'), updatedAt: iso('2026-01-01') },
+  ],
+  l4: [
+    { id: 'cr4', licenseId: 'l4', classType: 'ULTRALIGHT', issueDate: '2018-07-21', expiryDate: null, notes: null, createdAt: iso('2018-07-21'), updatedAt: iso('2026-01-01') },
+  ],
 };
 
 export const credentials = [
@@ -188,6 +210,24 @@ export const currency = {
       requirements: [
         { name: 'Total time', met: false, current: 60, required: 720, unit: 'minutes', message: '1h 00m / 12h 00m' },
         { name: 'Take-offs & landings', met: false, current: 2, required: 12, unit: 'landings', message: '2 / 12' },
+      ],
+    },
+    {
+      classRatingId: 'cr3', classType: 'GLIDER', licenseId: 'l3', regulatoryAuthority: 'EASA', licenseType: 'SPL',
+      status: 'current', windowOpen: false, messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_spl',
+      requirements: [
+        { nameKey: 'requirement.pic_time', met: true, current: 390, required: 300, unit: 'minutes' },
+        { nameKey: 'requirement.launches', met: true, current: 15, required: 15, unit: 'launches' },
+        { nameKey: 'requirement.training_flight', met: true, current: 60, required: 60, unit: 'minutes' },
+      ],
+    },
+    {
+      classRatingId: 'cr4', classType: 'ULTRALIGHT', licenseId: 'l4', regulatoryAuthority: 'DULV', licenseType: 'UL',
+      status: 'expiring', windowOpen: false, messageKey: 'rating.recency_not_met', ruleDescriptionKey: 'ul_luftpersv',
+      requirements: [
+        { nameKey: 'requirement.total_time', met: false, current: 540, required: 720, unit: 'minutes' },
+        { nameKey: 'requirement.landings', met: true, current: 14, required: 12, unit: 'landings' },
+        { nameKey: 'requirement.refresher_training', met: true, current: 60, required: 60, unit: 'minutes' },
       ],
     },
   ],

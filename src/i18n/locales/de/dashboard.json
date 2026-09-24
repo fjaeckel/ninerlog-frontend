@@ -46,6 +46,8 @@
     "SET": "SET",
     "TMG": "TMG",
     "IR": "IR",
+    "GLIDER": "Segelflugzeug",
+    "ULTRALIGHT": "Ultraleicht",
     "OTHER": "Sonstige"
   },
   "recentFlights": "Letzte Flüge",

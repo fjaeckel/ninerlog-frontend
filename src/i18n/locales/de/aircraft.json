@@ -61,13 +61,15 @@
     "SET_LAND": "SET (Land)",
     "SET_SEA": "SET (See)",
     "TMG": "TMG",
+    "GLIDER": "Segelflugzeug",
+    "ULTRALIGHT": "Ultraleicht",
     "OTHER": "Sonstige"
   },
   "form": {
     "selectClass": "Klasse wählen",
     "customClass": "Eigene →",
     "pickFromList": "← Aus Liste wählen",
-    "customClassPlaceholder": "z. B. ULTRALIGHT, GLIDER, GYROPLANE",
+    "customClassPlaceholder": "z. B. GYROPLANE, HELICOPTER, BALLOON",
     "notesPlaceholder": "Vereinsflugzeug, Einweisung erforderlich usw.",
     "characteristics": "Eigenschaften",
     "multiPilotHelper": "Für eine Mindestbesatzung von zwei Piloten zugelassen. Kopilotenzeit (SIC) kann nur auf einem mehrpilotigen Luftfahrzeug erfasst werden.",
@@ -88,6 +90,8 @@
     "MEP_SEA": "MEP (See) — mehrmotorig, Kolbenmotor",
     "SET_LAND": "SET (Land) — einmotorig, Turboprop",
     "SET_SEA": "SET (See) — einmotorig, Turboprop",
-    "TMG": "TMG — Reisemotorsegler"
+    "TMG": "TMG — Reisemotorsegler",
+    "GLIDER": "Segelflugzeug",
+    "ULTRALIGHT": "Ultraleicht (UL)"
   }
 }

@@ -3248,7 +3248,7 @@ export interface components {
              */
             isMultiPilot: boolean;
             /**
-             * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, or any custom value)
+             * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, GLIDER, ULTRALIGHT, or any custom value). Matched case-insensitively against class rating types for currency.
              * @example SEP_LAND
              */
             aircraftClass?: string | null;
@@ -3327,7 +3327,7 @@ export interface components {
              */
             isMultiPilot: boolean;
             /**
-             * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, or any custom value)
+             * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, GLIDER, ULTRALIGHT, or any custom value). Matched case-insensitively against class rating types for currency.
              * @example SEP_LAND
              */
             aircraftClass?: string | null;
@@ -3365,7 +3365,7 @@ export interface components {
              */
             isMultiPilot?: boolean;
             /**
-             * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, or any custom value)
+             * @description Aircraft class (e.g., SEP_LAND, MEP_LAND, TMG, GLIDER, ULTRALIGHT, or any custom value). Matched case-insensitively against class rating types for currency.
              * @example SEP_LAND
              */
             aircraftClass?: string | null;
@@ -4994,7 +4994,7 @@ export interface components {
              */
             nightRequired: number;
             /**
-             * @description Whether this license type has night flying privileges. false for Sport, Recreational, Glider (FAA), SPL, LAPL (EASA), UL.
+             * @description Whether this license type has night flying privileges. false for Sport, Recreational, Glider (FAA), SPL, LAPL(S), LAPL, LAPL(A) (EASA, case-insensitive), UL.
              * @example true
              */
             nightPrivilege?: boolean;
@@ -5195,9 +5195,11 @@ export interface components {
          *     - TMG: Touring Motor Glider
          *     - IR: Instrument Rating
          *     - OTHER: Other rating type
+         *     - GLIDER: Sailplane / glider (EASA FCL.140.S recency, FAA glider launches)
+         *     - ULTRALIGHT: Ultralight / microlight (LuftPersV §45 recency)
          * @enum {string}
          */
-        ClassType: "SEP_LAND" | "SEP_SEA" | "MEP_LAND" | "MEP_SEA" | "SET_LAND" | "SET_SEA" | "TMG" | "IR" | "OTHER";
+        ClassType: "SEP_LAND" | "SEP_SEA" | "MEP_LAND" | "MEP_SEA" | "SET_LAND" | "SET_SEA" | "TMG" | "IR" | "OTHER" | "GLIDER" | "ULTRALIGHT";
         ClassRating: {
             /** Format: uuid */
             id: string;

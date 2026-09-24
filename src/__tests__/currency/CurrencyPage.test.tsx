@@ -69,6 +69,36 @@ describe('CurrencyPage', () => {
     expect(screen.getByText('Requires 12h total + 6h PIC...')).toBeInTheDocument();
   });
 
+  it('labels glider and ultralight ratings and passenger currency', () => {
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
+      data: {
+        ratings: [
+          {
+            classRatingId: 'cr-g', classType: 'GLIDER', licenseId: 'lic-g',
+            regulatoryAuthority: 'EASA', licenseType: 'SPL', status: 'current', requirements: [],
+          },
+          {
+            classRatingId: 'cr-u', classType: 'ULTRALIGHT', licenseId: 'lic-u',
+            regulatoryAuthority: 'DULV', licenseType: 'UL', status: 'current', requirements: [],
+          },
+        ],
+        passengerCurrency: [
+          {
+            classType: 'GLIDER', regulatoryAuthority: 'EASA', dayStatus: 'current', nightStatus: 'unknown',
+            dayLandings: 5, nightLandings: 0, dayRequired: 3, nightRequired: 1, nightPrivilege: false,
+          },
+        ],
+      },
+      isLoading: false, error: null,
+    } as any);
+    vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
+
+    renderWithProviders(<CurrencyPage />);
+    expect(screen.getAllByText('Glider').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText('Ultralight')).toBeInTheDocument();
+    expect(screen.queryByText('GLIDER')).not.toBeInTheDocument();
+  });
+
   it('shows license header with rating count', () => {
     vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
       data: {
