@@ -67,6 +67,27 @@ export const TARGETS = [
     },
   },
   { name: 'licenses', path: '/licenses' },
+  {
+    name: 'licenses-modal-ul',
+    path: '/licenses',
+    act: async (page) => {
+      await page.getByRole('button', { name: /add license|lizenz hinzufügen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#regulatoryAuthority').fill('EASA');
+      await page.locator('#licenseType').fill('UL');
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'licenses-rating-ul',
+    path: '/licenses',
+    act: async (page) => {
+      await page.getByRole('button', { name: /add rating|berechtigung hinzufügen/i }).first().click();
+      await page.waitForTimeout(300);
+      await page.locator('select').first().selectOption('ULTRALIGHT');
+      await page.waitForTimeout(300);
+    },
+  },
   { name: 'credentials', path: '/credentials' },
   { name: 'currency', path: '/currency' },
   { name: 'currency-builder', path: '/currency/builder' },

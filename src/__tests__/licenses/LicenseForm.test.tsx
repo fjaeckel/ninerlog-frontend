@@ -55,6 +55,19 @@ describe('LicenseForm', () => {
     expect(screen.getByLabelText(/issue date/i)).toBeInTheDocument();
   });
 
+  it.each([
+    ['EASA', 'UL', true],
+    ['DULV', 'UL', false],
+    ['EASA', 'PPL', false],
+  ])('shows the UL authority hint for %s / %s: %s', async (authority, licenseType, shown) => {
+    const user = userEvent.setup();
+    renderWithProviders(<LicenseForm onClose={mockOnClose} />);
+
+    await user.type(screen.getByLabelText(/regulatory authority/i), authority);
+    await user.type(screen.getByLabelText(/license type/i), licenseType);
+    expect(screen.queryByTestId('ul-authority-hint') !== null).toBe(shown);
+  });
+
   it('validates required fields', async () => {
     const user = userEvent.setup();
     renderWithProviders(<LicenseForm onClose={mockOnClose} />);

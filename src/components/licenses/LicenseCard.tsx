@@ -7,6 +7,8 @@ import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateC
 import { extractApiError } from '../../lib/errors';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { DocumentFileStrip } from '../documents/DocumentFileStrip';
+import { isGermanULAuthority } from '../../lib/ultralight';
+import { ULAuthorityHint } from './ULAuthorityHint';
 
 const CLASS_TYPE_OPTIONS = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
@@ -298,6 +300,9 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                     className="input input-sm mt-0.5"
                   />
                 </div>
+                {newClassType === 'ULTRALIGHT' && !isGermanULAuthority(license.regulatoryAuthority) && (
+                  <ULAuthorityHint className="sm:col-span-3" />
+                )}
                 <div className="sm:col-span-3 flex gap-2 pt-1">
                   <button
                     onClick={handleAddRating}

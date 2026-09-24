@@ -51,7 +51,8 @@
     "regulatoryAuthorityPlaceholder": "e.g. EASA",
     "licenseTypePlaceholder": "e.g. PPL",
     "issuingAuthorityPlaceholder": "LBA (Germany)",
-    "failedToSave": "Failed to save license. Please try again."
+    "failedToSave": "Failed to save license. Please try again.",
+    "ulAuthorityHint": "Ultralight recency (LuftPersV §45) is only tracked for LBA, DULV or DAeC. With another authority, ultralight ratings are tracked by expiry date only."
   },
   "card": {
     "regulatoryAuthority": "Regulatory Authority",

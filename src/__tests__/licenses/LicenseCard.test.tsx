@@ -56,6 +56,25 @@ describe('LicenseCard', () => {
     expect(screen.getByRole('option', { name: 'Ultralight' })).toHaveValue('ULTRALIGHT');
   });
 
+  it.each([
+    ['EASA', true],
+    ['DULV', false],
+  ])('shows the UL authority hint for an ULTRALIGHT rating under %s: %s', async (authority, shown) => {
+    const user = userEvent.setup();
+    renderWithProviders(
+      <LicenseCard
+        license={{ ...mockLicense, regulatoryAuthority: authority, licenseType: 'UL' }}
+        onEdit={mockOnEdit}
+        onDelete={mockOnDelete}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /add rating/i }));
+    expect(screen.queryByTestId('ul-authority-hint')).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByRole('combobox'), 'ULTRALIGHT');
+    expect(screen.queryByTestId('ul-authority-hint') !== null).toBe(shown);
+  });
+
   it('calls onEdit when edit button is clicked', async () => {
     const user = userEvent.setup();
     renderWithProviders(
