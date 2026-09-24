@@ -80,6 +80,7 @@ const mockAnalytics: FlightAnalytics = {
     actualInstrumentMinutes: 20,
     simulatedInstrumentMinutes: 0,
     crossCountryMinutes: 500,
+    crossCountryPicMinutes: 300,
     multiPilotMinutes: 0,
     simulatedFlightMinutes: 0,
     groundTrainingMinutes: 0,
@@ -271,6 +272,15 @@ describe('ReportsPage', () => {
     expect(within(cardBody('Most visited airports')).getByText('EDNY')).toBeInTheDocument();
     expect(within(cardBody('Approach types')).getByText('ILS')).toBeInTheDocument();
     expect(within(cardBody('Most flown routes')).getByText('EDNY → LSZH')).toBeInTheDocument();
+  });
+
+  it('renders cross country as PIC in the time breakdown', () => {
+    mockUseAnalytics();
+    renderWithProviders(<ReportsPage />);
+
+    const breakdown = screen.getByText('Time breakdown').closest('section') as HTMLElement;
+    expect(within(breakdown).getByText('Cross country as PIC')).toBeInTheDocument();
+    expect(within(breakdown).getByText('5h 0m')).toBeInTheDocument();
   });
 
   it('resolves country codes to names', () => {
