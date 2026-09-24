@@ -278,6 +278,7 @@ export const adminStats = {
   totalUsers: 128, totalFlights: 9421, totalSimulatorSessions: 486, totalPassengerFlights: 132,
   totalAircraft: 312, totalContacts: 517, activeSessions: 194, totalCredentials: 244,
   totalImports: 87, flightsThisMonth: 216, newUsersThisWeek: 6, lockedAccounts: 2, disabledAccounts: 1,
+  totalCustomReports: 57,
   importsByFormat: { FOREFLIGHT_CSV: 31, LOGTEN_CSV: 18, MYFLIGHTBOOK_CSV: 14,
     VEREINSFLIEGER_EXTENDED_CSV: 9, SKYDEMON_CSV: 7, CSV: 5, VEREINSFLIEGER_CSV: 3 },
   cloudBackupDestinations: { total: 34, byProvider: { s3: 18, webdav: 9, dropbox: 7 } },
@@ -542,6 +543,55 @@ export const importTemplates = {
   ],
 };
 
+const reportRow = (key, label, flights, totalTime, extra = {}) => ({
+  key, label, flights, totalTime,
+  picTime: Math.round(totalTime * 0.8), dualTime: Math.round(totalTime * 0.2), dualGivenTime: 0,
+  nightTime: Math.round(totalTime * 0.1), ifrTime: Math.round(totalTime * 0.05),
+  crossCountryTime: Math.round(totalTime * 0.4), fstdTime: 0, landings: flights + 1,
+  value: totalTime,
+  ...extra,
+});
+const sumRows = (rows) => {
+  const keys = ['flights', 'totalTime', 'picTime', 'dualTime', 'dualGivenTime', 'nightTime', 'ifrTime', 'crossCountryTime', 'fstdTime', 'landings'];
+  return Object.fromEntries(keys.map((k) => [k, rows.reduce((a, r) => a + r[k], 0)]));
+};
+
+export const customReports = [
+  {
+    id: 'cr1', name: 'Hours per month', position: 0, createdAt: shift(-40), updatedAt: shift(-40),
+    definition: { filter: {}, window: { kind: 'lastMonths', months: 12 }, groupBy: 'month', metric: 'totalTime' },
+  },
+  {
+    id: 'cr2', name: 'Night time by aircraft', position: 1, createdAt: shift(-20), updatedAt: shift(-20),
+    definition: { filter: { q: 'night>0', role: 'pic' }, window: { kind: 'all' }, groupBy: 'registration', metric: 'nightTime', limit: 3 },
+  },
+  {
+    id: 'cr3', name: 'EDDF departures by weekday', position: 2, createdAt: shift(-5), updatedAt: shift(-5),
+    definition: { filter: { departureIcao: 'EDDF' }, window: { kind: 'yearToDate' }, groupBy: 'dayOfWeek', metric: 'flights' },
+  },
+];
+
+const monthlyRows = Array.from({ length: 12 }, (_, i) => {
+  const d = new Date(Date.UTC(2025, 8 + i, 1));
+  const key = d.toISOString().slice(0, 7);
+  const minutes = [320, 180, 90, 0, 60, 150, 240, 410, 380, 520, 610, 290][i];
+  return reportRow(key, key, Math.round(minutes / 70), minutes);
+});
+const registrationRows = [
+  reportRow('D-EABC', 'D-EABC', 9, 0, { nightTime: 540, value: 540 }),
+  reportRow('D-EFGH', 'D-EFGH', 4, 0, { nightTime: 210, value: 210 }),
+  reportRow('', '', 2, 0, { nightTime: 75, value: 75 }),
+];
+const weekdayRows = [3, 1, 0, 2, 4, 7, 5].map((n, i) =>
+  reportRow(String(i + 1), ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][i], n, n * 65, { value: n })
+);
+
+export const customReportResults = {
+  cr1: { groupBy: 'month', metric: 'totalTime', startDate: '2025-09-01', endDate: '2026-08-31', rows: monthlyRows, totals: sumRows(monthlyRows), otherGroups: 0, generatedAt: iso(TODAY) },
+  cr2: { groupBy: 'registration', metric: 'nightTime', rows: registrationRows, totals: { ...sumRows(registrationRows), nightTime: 905 }, otherGroups: 2, generatedAt: iso(TODAY) },
+  cr3: { groupBy: 'dayOfWeek', metric: 'flights', startDate: '2026-01-01', endDate: '2026-08-16', rows: weekdayRows, totals: sumRows(weekdayRows), otherGroups: 0, generatedAt: iso(TODAY) },
+};
+
 const EMPTY_PAGE = { data: [], pagination: { page: 1, pageSize: 20, total: 0, totalPages: 0 } };
 
 const ROUTES = {
@@ -573,6 +623,8 @@ const ROUTES = {
     { icao: 'LOWI', name: 'Innsbruck', latitude: 47.260, longitude: 11.344, totalFlights: 11, departures: 5, arrivals: 6 },
   ],
   '/reports/analytics': analytics,
+  '/reports/custom': customReports,
+  '/reports/custom/preview': customReportResults.cr1,
   '/imports': imports,
   '/imports/templates': importTemplates,
   '/backups/destinations': backupDestinations,
@@ -606,6 +658,8 @@ export function bodyFor(pathname) {
   if (/^\/licenses\/[^/]+\/statistics$/.test(path)) return statistics;
   const flightMatch = path.match(/^\/flights\/([^/]+)$/);
   if (flightMatch) return flights.find((f) => f.id === flightMatch[1]) ?? flights[0];
+  const reportResultMatch = path.match(/^\/reports\/custom\/([^/]+)\/result$/);
+  if (reportResultMatch) return customReportResults[reportResultMatch[1]] ?? customReportResults.cr1;
   if (path.startsWith('/documents')) return EMPTY_PAGE;
   return null;
 }

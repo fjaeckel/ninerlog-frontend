@@ -41,6 +41,7 @@
   "restoreSummaryCredentials": "Nachweise",
   "restoreSummaryFlights": "Flüge",
   "restoreSummaryCrew": "Crew-Mitglieder",
+  "restoreSummaryCustomReports": "Eigene Berichte",
   "restoreAnother": "Weitere Sicherung wiederherstellen",
   "uploadCsvDescription": "Das Format deines Flugbuchs wird automatisch erkannt. Maximale Dateigröße: 10 MB.",
   "supportedLogbooksTitle": "Kommst du von einem anderen Flugbuch?",

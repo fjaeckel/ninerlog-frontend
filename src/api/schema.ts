@@ -1871,8 +1871,8 @@ export interface paths {
          * Export full data backup as JSON
          * @description Exports everything the user owns as a JSON backup file: flights (with
          *     crew), aircraft, licences and class ratings, credentials, contacts,
-         *     custom currency rules, notification preferences and the carried-forward
-         *     hours baseline.
+         *     custom currency rules, custom reports, notification preferences and the
+         *     carried-forward hours baseline.
          *
          *     This is the same payload a cloud backup run writes, and
          *     `POST /imports/json` restores every section of it.
@@ -1900,8 +1900,8 @@ export interface paths {
          * @description Restore a previously exported NinerLog JSON backup into the authenticated
          *     user's account. Recreates every section the backup carries: aircraft,
          *     licences, class ratings, credentials, flights and crew members,
-         *     contacts, custom currency rules, notification preferences and the
-         *     carried-forward hours baseline. New UUIDs are assigned so the backup can
+         *     contacts, custom currency rules, custom reports, notification
+         *     preferences and the carried-forward hours baseline. New UUIDs are assigned so the backup can
          *     be restored into any NinerLog installation (including the one it was
          *     exported from).
          *
@@ -1914,7 +1914,10 @@ export interface paths {
          *     the existing aircraft is referenced by imported flights); contacts whose
          *     name the account already holds are skipped the same way. Custom currency
          *     rules are revalidated on restore and count against the per-account
-         *     limit; a rule's sharing state is never carried over.
+         *     limit; a rule's sharing state is never carried over. Custom reports are
+         *     revalidated the same way and appended after existing ones; a report
+         *     scoped to a licence is re-pointed at that licence's restored copy, and
+         *     loses the licence scope if the backup does not carry the licence.
          */
         post: operations["importDataJSON"];
         delete?: never;
@@ -2017,6 +2020,146 @@ export interface paths {
          *     `totals` also includes the user's initial-hours snapshot whenever the timeframe reaches back to its cutoff date, so it matches `GET /users/me/statistics`; the contribution is reported separately in `baseline`.
          */
         get: operations["getFlightAnalytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/custom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the caller's custom reports
+         * @description Returns every saved custom report the caller owns, in display order
+         *     (`position`, then creation time). Results are not included; fetch them
+         *     per report from `/reports/custom/{reportId}/result`.
+         */
+        get: operations["listCustomReports"];
+        put?: never;
+        /**
+         * Save a custom report
+         * @description Saves a flight filter plus a grouping and a metric as a named report,
+         *     appended after the caller's existing reports. An account may hold at
+         *     most 100 custom reports.
+         */
+        post: operations["createCustomReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/custom/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Evaluate an unsaved custom report definition
+         * @description Runs a definition against the caller's flights without storing it, so
+         *     a report can be tried out while it is being built. Subject to the
+         *     `expensive` rate limit (15/min).
+         */
+        post: operations["previewCustomReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/custom/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Reorder the caller's custom reports
+         * @description Sets the display order of the caller's custom reports. `reportIds` must
+         *     list every report the caller owns exactly once.
+         */
+        put: operations["reorderCustomReports"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/custom/{reportId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a custom report */
+        get: operations["getCustomReport"];
+        /**
+         * Update a custom report
+         * @description Replaces the report's name and definition. Its position is kept.
+         */
+        put: operations["updateCustomReport"];
+        post?: never;
+        /** Delete a custom report */
+        delete: operations["deleteCustomReport"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/custom/{reportId}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Evaluate a saved custom report
+         * @description Aggregates the caller's flights matching the report's filter, grouped
+         *     by `groupBy`. Every row carries all metrics; `value` repeats the
+         *     report's chosen `metric` for charting. Time metrics count only rows
+         *     that are flight time (FSTD sessions and passenger flights are
+         *     excluded); `fstdTime` sums FSTD session time separately.
+         */
+        get: operations["getCustomReportResult"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/custom/{reportId}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export a saved custom report as CSV or PDF
+         * @description Downloads one report on its own: CSV carries one row per group with
+         *     every metric (durations as H:MM) plus a totals row; PDF carries the
+         *     filter summary, a bar chart of the report's metric, and the same
+         *     table. Subject to the `expensive` rate limit (15/min).
+         */
+        get: operations["exportCustomReport"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5651,6 +5794,11 @@ export interface components {
              * @example 3
              */
             customCurrencyRulesImported: number;
+            /**
+             * @description Saved custom reports restored, appended after the account's existing reports.
+             * @example 2
+             */
+            customReportsImported: number;
             /** @description Whether the backup carried notification preferences that were applied */
             notificationPreferencesImported: boolean;
             /** @description Whether the backup carried a carried-forward hours baseline that was applied */
@@ -5743,6 +5891,8 @@ export interface components {
             disabledAccounts: number;
             /** @description Live sessions across all users. A session is live while it holds an unrevoked, unexpired refresh token, so this counts signed-in devices rather than users. */
             activeSessions: number;
+            /** @description Saved custom reports across all users. */
+            totalCustomReports: number;
             /** @description Counts of user-configured cloud backup destinations. */
             cloudBackupDestinations: {
                 /** @description Total number of cloud backup destinations configured across all users. */
@@ -6803,6 +6953,141 @@ export interface components {
             definition: components["schemas"]["CustomCurrencyRuleBody"];
             shareToken: string;
         };
+        /**
+         * @description Dimension the report groups flights by. `month` keys are `YYYY-MM`,
+         *     `year` keys `YYYY`, `dayOfWeek` keys ISO weekday numbers `1` (Monday)
+         *     to `7`, `route` keys `DEP-ARR`. Time groupings are chronological and
+         *     gap-filled across the report window; the others are ranked by `value`.
+         * @enum {string}
+         */
+        CustomReportGroupBy: "month" | "year" | "dayOfWeek" | "aircraftType" | "registration" | "departure" | "arrival" | "route";
+        /**
+         * @description Metric charted by a report. Durations are integer minutes.
+         * @enum {string}
+         */
+        CustomReportMetric: "flights" | "totalTime" | "picTime" | "dualTime" | "dualGivenTime" | "nightTime" | "ifrTime" | "crossCountryTime" | "fstdTime" | "landings";
+        /**
+         * @description Date window. `all` has no bound; `lastMonths` covers the current
+         *     calendar month and the `months - 1` before it; `yearToDate` starts on
+         *     1 January of the current year; `range` uses `startDate` and/or
+         *     `endDate` (inclusive, either may be omitted). Relative windows are
+         *     resolved in UTC each time the report runs.
+         */
+        CustomReportWindow: {
+            /** @enum {string} */
+            kind: "all" | "lastMonths" | "yearToDate" | "range";
+            /** @description Required when `kind` is `lastMonths` */
+            months?: number;
+            /** Format: date */
+            startDate?: string;
+            /** Format: date */
+            endDate?: string;
+        };
+        /**
+         * @description Flight filter, using the same semantics as the matching `GET /flights`
+         *     query parameters. `role` corresponds to `isPic=true` / `isDual=true`.
+         */
+        CustomReportFilter: {
+            /** @description Advanced search query, as `GET /flights?q=` */
+            q?: string;
+            aircraftReg?: string;
+            departureIcao?: string;
+            arrivalIcao?: string;
+            /** @enum {string} */
+            role?: "pic" | "dual";
+            /**
+             * Format: uuid
+             * @description Restrict to aircraft whose class matches the licence's class ratings
+             */
+            logbookLicenseId?: string;
+        };
+        CustomReportDefinition: {
+            filter: components["schemas"]["CustomReportFilter"];
+            window: components["schemas"]["CustomReportWindow"];
+            groupBy: components["schemas"]["CustomReportGroupBy"];
+            metric: components["schemas"]["CustomReportMetric"];
+            /**
+             * @description Maximum number of groups returned for ranked groupings (default
+             *     20). Ignored for time groupings.
+             */
+            limit?: number;
+        };
+        CustomReport: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            definition: components["schemas"]["CustomReportDefinition"];
+            /** @description Display order, ascending */
+            position: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CustomReportInput: {
+            /** @example Night hours by aircraft */
+            name: string;
+            definition: components["schemas"]["CustomReportDefinition"];
+        };
+        CustomReportPreviewRequest: {
+            definition: components["schemas"]["CustomReportDefinition"];
+        };
+        CustomReportOrderRequest: {
+            reportIds: string[];
+        };
+        /** @description Aggregates of one group, or of every matching flight. Durations in minutes. */
+        CustomReportTotals: {
+            /** @description Matching entries that count as flight time */
+            flights: number;
+            totalTime: number;
+            picTime: number;
+            dualTime: number;
+            dualGivenTime: number;
+            nightTime: number;
+            ifrTime: number;
+            crossCountryTime: number;
+            /** @description FSTD session time of matching simulator entries */
+            fstdTime: number;
+            landings: number;
+        };
+        CustomReportRow: {
+            /** @description Group key (see `CustomReportGroupBy`); empty when the flights carry no value for the dimension */
+            key: string;
+            /** @description English display label for the key */
+            label: string;
+            /** @description The report's `metric` for this group */
+            value: number;
+            flights: number;
+            totalTime: number;
+            picTime: number;
+            dualTime: number;
+            dualGivenTime: number;
+            nightTime: number;
+            ifrTime: number;
+            crossCountryTime: number;
+            fstdTime: number;
+            landings: number;
+        };
+        CustomReportResult: {
+            groupBy: components["schemas"]["CustomReportGroupBy"];
+            metric: components["schemas"]["CustomReportMetric"];
+            /**
+             * Format: date
+             * @description Resolved window start; absent when unbounded
+             */
+            startDate?: string;
+            /**
+             * Format: date
+             * @description Resolved window end; absent when unbounded
+             */
+            endDate?: string;
+            rows: components["schemas"]["CustomReportRow"][];
+            totals: components["schemas"]["CustomReportTotals"];
+            /** @description Groups left out by `limit`; they still count toward `totals` */
+            otherGroups: number;
+            /** Format: date-time */
+            generatedAt: string;
+        };
         /** @description Writable fields of a custom currency rule. */
         CustomCurrencyRuleInput: {
             /** @example Night landings */
@@ -7011,6 +7296,8 @@ export interface components {
         UpdatedSince: string;
         /** @description Custom currency rule UUID */
         CustomCurrencyRuleId: string;
+        /** @description Custom report UUID */
+        CustomReportId: string;
         /** @description Opaque share token minted when sharing was enabled for a rule */
         CustomCurrencyShareToken: string;
     };
@@ -10626,6 +10913,239 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    listCustomReports: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's custom reports */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    createCustomReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomReportInput"];
+            };
+        };
+        responses: {
+            /** @description Report saved */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    previewCustomReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomReportPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Result of the submitted definition */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReportResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    reorderCustomReports: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomReportOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description The caller's custom reports in their new order */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"][];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getCustomReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Custom report UUID */
+                reportId: components["parameters"]["CustomReportId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The report */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateCustomReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Custom report UUID */
+                reportId: components["parameters"]["CustomReportId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomReportInput"];
+            };
+        };
+        responses: {
+            /** @description Report updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReport"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteCustomReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Custom report UUID */
+                reportId: components["parameters"]["CustomReportId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Report deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getCustomReportResult: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Custom report UUID */
+                reportId: components["parameters"]["CustomReportId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The report's current result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomReportResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    exportCustomReport: {
+        parameters: {
+            query: {
+                /** @description File format */
+                format: "csv" | "pdf";
+            };
+            header?: never;
+            path: {
+                /** @description Custom report UUID */
+                reportId: components["parameters"]["CustomReportId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description File download */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                    "application/pdf": string;
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
     listContacts: {

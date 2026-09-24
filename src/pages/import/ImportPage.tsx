@@ -333,6 +333,11 @@ export default function ImportPage() {
               value={jsonResult.crewMembersImported}
               color="green"
             />
+            <SummaryCard
+              label={t('restoreSummaryCustomReports')}
+              value={jsonResult.customReportsImported}
+              color="green"
+            />
           </div>
 
           <button onClick={handleReset} className="btn-primary">
