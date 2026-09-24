@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar, Clock } from 'lucide-react';
-import type { ClassRatingCurrency, CurrencyRequirement, CurrencyStatus } from '../../types/api';
+import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar, Clock, Layers } from 'lucide-react';
+import type { ClassRatingCurrency, ClassType, CurrencyRequirement, CurrencyStatus } from '../../types/api';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useCurrencyMessages } from '../../lib/currencyMessages';
 import { RequirementIcon } from '../ui/RequirementIcon';
@@ -75,6 +75,8 @@ function RequirementBar({ req }: { req: CurrencyRequirement }) {
   );
 }
 
+const AEROPLANE_AND_TMG_CLASSES: ClassType[] = ['SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA', 'SET_LAND', 'SET_SEA', 'TMG'];
+
 interface CurrencyCardProps {
   rating: ClassRatingCurrency;
 }
@@ -86,6 +88,10 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
   const config = STATUS_CONFIG[rating.status];
   const StatusIcon = config.Icon;
   const label = t(`classTypes.${rating.classType}`, { defaultValue: rating.classType });
+  const counted = rating.countedClasses ?? [];
+  const countedText = AEROPLANE_AND_TMG_CLASSES.every((ct) => counted.includes(ct))
+    ? t('countedClassesAeroplanes')
+    : counted.map((ct) => t(`classTypes.${ct}`, { defaultValue: ct })).join(' + ');
 
   return (
     <div
@@ -119,6 +125,17 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
       <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
         {currencyMessage(rating)}
       </p>
+
+      {/* Aircraft classes pooled toward this rating */}
+      {counted.length > 1 && (
+        <p
+          className="-mt-2 mb-3 text-xs text-slate-500 dark:text-slate-400 inline-flex items-start gap-1.5"
+          data-testid="currency-counted-classes"
+        >
+          <Layers className="w-3.5 h-3.5 mt-px shrink-0" aria-hidden="true" />
+          {t('countedClassesLabel', { classes: countedText })}
+        </p>
+      )}
 
       {/* Window-not-yet-open banner — shown for EASA FCL.740.A / FCL.625.A
           ratings during the first ~12 months after revalidation, when flight

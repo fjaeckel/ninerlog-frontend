@@ -74,6 +74,8 @@
   "expiresLabel": "Gültig bis: {{date}}",
   "windowOpensLabel": "Erfahrungszeitraum beginnt am {{date}}",
   "windowClosedHint": "Kürzlich verlängert — Flüge vor diesem Datum zählen nicht für die nächste Verlängerung.",
+  "countedClassesLabel": "Zählt Flüge auf: {{classes}}",
+  "countedClassesAeroplanes": "allen Flugzeugen und TMG",
   "expiryBanner": {
     "headingExpired": "Handlungsbedarf, um wieder fliegen zu dürfen",
     "headingExpiring": "Verlängerung steht an",
@@ -101,10 +103,10 @@
     }
   },
   "ruleDescriptions": {
-    "easa_sep_tmg": "Erfordert 12h Gesamtflugzeit + 6h als PIC + 12 Starts & Landungen + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum der Berechtigung (EASA FCL.740.A(b)(1))",
+    "easa_sep_tmg": "Erfordert 12h Gesamtflugzeit + 6h als PIC + 12 Starts & Landungen + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum der Berechtigung; wer SEP (Land) und TMG besitzt, kann Flüge beider Klassen kombinieren (EASA FCL.740.A(b)(1))",
     "easa_mep_set": "Erfordert Befähigungsüberprüfung oder 10 Streckenabschnitte + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum (EASA FCL.740.A(b)(2))",
     "easa_ir": "Erfordert 10h IFR-Flugzeit + jährliche Befähigungsüberprüfung innerhalb der 12 Monate vor dem Ablaufdatum (EASA FCL.625.A)",
-    "easa_lapl": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer in den letzten 24 Monaten (EASA FCL.140.A)",
+    "easa_lapl": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer auf Flugzeugen oder TMG in den letzten 24 Monaten, oder eine LAPL(A)-Befähigungsüberprüfung; wer SEP (Land) und SEP (See) besitzt, braucht je Klasse 1h und 6 Starts & Landungen (EASA FCL.140.A)",
     "easa_spl": "Erfordert 5h PIC-Flugzeit + 15 Starts + 2 Übungsflüge mit Fluglehrer in den letzten 24 Monaten (EASA FCL.140.S)",
     "easa_spl_tmg": "Erfordert 12h Flugzeit + 12 Starts & Landungen auf TMG in den letzten 24 Monaten (EASA FCL.140.S(b)(2))",
     "easa_pax": "3 Starts & Landungen (Tag) und 1 Start & Landung bei Nacht auf demselben Muster bzw. in derselben Klasse in den vorangegangenen 90 Tagen für die Passagiermitnahme; die Nachtanforderung entfällt bei gültiger IR (EASA FCL.060(b))",
@@ -171,7 +173,11 @@
     "holds": "Holdings",
     "route_sectors": "Streckenabschnitte",
     "launches": "Starts",
-    "launches_and_landings": "Starts & Landungen"
+    "launches_and_landings": "Starts & Landungen",
+    "sep_land_time": "Flugzeit auf SEP (Land)",
+    "sep_land_landings": "Landungen auf SEP (Land)",
+    "sep_sea_time": "Flugzeit auf SEP (See)",
+    "sep_sea_landings": "Landungen auf SEP (See)"
   },
   "passengerExpiry": {
     "day": "Tag gültig bis {{date}}",

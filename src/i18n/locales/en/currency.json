@@ -74,6 +74,8 @@
   "expiresLabel": "Expires: {{date}}",
   "windowOpensLabel": "Experience window opens {{date}}",
   "windowClosedHint": "Recently revalidated — flights logged before this date don't count toward the next revalidation.",
+  "countedClassesLabel": "Counts flights on: {{classes}}",
+  "countedClassesAeroplanes": "all aeroplanes and TMG",
   "expiryBanner": {
     "headingExpired": "Action needed to fly again",
     "headingExpiring": "Renewal coming up",
@@ -101,10 +103,10 @@
     }
   },
   "ruleDescriptions": {
-    "easa_sep_tmg": "Requires 12h total flight time + 6h as PIC + 12 takeoffs & landings + 1h refresher training with instructor within the 12 months preceding the expiry date of the rating (EASA FCL.740.A(b)(1))",
+    "easa_sep_tmg": "Requires 12h total flight time + 6h as PIC + 12 takeoffs & landings + 1h refresher training with instructor within the 12 months preceding the expiry date of the rating; holders of both SEP (Land) and TMG ratings may combine flights in either class (EASA FCL.740.A(b)(1))",
     "easa_mep_set": "Requires proficiency check, or 10 route sectors + 1h refresher training with instructor within the 12 months preceding the expiry date (EASA FCL.740.A(b)(2))",
     "easa_ir": "Requires 10h IFR flight time + annual proficiency check within the 12 months preceding the expiry date (EASA FCL.625.A)",
-    "easa_lapl": "Requires 12h flight time + 12 takeoffs & landings + 1h training flight with instructor within the last 24 months (EASA FCL.140.A)",
+    "easa_lapl": "Requires 12h flight time + 12 takeoffs & landings + 1h training flight with instructor on aeroplanes or TMG within the last 24 months, or a LAPL(A) proficiency check; holders of SEP (Land) and SEP (Sea) need 1h and 6 takeoffs & landings in each (EASA FCL.140.A)",
     "easa_spl": "Requires 5h PIC flight time + 15 launches + 2 training flights with instructor within the last 24 months (EASA FCL.140.S)",
     "easa_spl_tmg": "Requires 12h flight time + 12 takeoffs & landings on TMG within the last 24 months (EASA FCL.140.S(b)(2))",
     "easa_pax": "3 takeoffs & landings (day) and 1 takeoff & landing at night in same type/class within preceding 90 days to carry passengers; the night requirement is waived for pilots holding a valid IR (EASA FCL.060(b))",
@@ -171,7 +173,11 @@
     "holds": "Holding Procedures",
     "route_sectors": "Route Sectors",
     "launches": "Launches",
-    "launches_and_landings": "Launches & Landings"
+    "launches_and_landings": "Launches & Landings",
+    "sep_land_time": "Time on SEP (Land)",
+    "sep_land_landings": "Landings on SEP (Land)",
+    "sep_sea_time": "Time on SEP (Sea)",
+    "sep_sea_landings": "Landings on SEP (Sea)"
   },
   "passengerExpiry": {
     "day": "Day current until {{date}}",

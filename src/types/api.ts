@@ -316,6 +316,8 @@ export interface ClassRatingCurrency {
   progress?: CurrencyProgress;
   requirements?: CurrencyRequirement[];
   launchMethodCurrency?: LaunchMethodCurrency[];
+  /** Aircraft classes whose flights count toward this rating, when more than its own class (EASA LAPL(A), SEP(land)+TMG). */
+  countedClasses?: ClassType[];
 }
 
 export interface LaunchMethodCurrency {

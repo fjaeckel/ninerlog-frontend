@@ -5136,6 +5136,17 @@ export interface components {
             requirements?: components["schemas"]["CurrencyRequirement"][];
             /** @description SPL launch method currency per FCL.140.S(b)(1) — 5 launches per method in 24 months */
             launchMethodCurrency?: components["schemas"]["LaunchMethodCurrency"][];
+            /**
+             * @description Aircraft classes whose flights count toward this rating, present only when that is more
+             *     than the rating's own class — EASA LAPL(A) pools every aeroplane class and TMG
+             *     (FCL.140.A); a license holding both SEP_LAND and TMG ratings pools those two
+             *     (FCL.740.A(b)(1)).
+             * @example [
+             *       "SEP_LAND",
+             *       "TMG"
+             *     ]
+             */
+            countedClasses?: components["schemas"]["ClassType"][];
         };
         LaunchMethodCurrency: {
             /**

@@ -320,4 +320,37 @@ describe('CurrencyCard', () => {
     render(<CurrencyCard rating={inWindow} />);
     expect(screen.queryByTestId('currency-window-closed')).not.toBeInTheDocument();
   });
+
+  it('lists the pooled classes when countedClasses is set', () => {
+    render(<CurrencyCard rating={{ ...baseRating, countedClasses: ['SEP_LAND', 'TMG'] }} />);
+    expect(screen.getByTestId('currency-counted-classes')).toHaveTextContent('Counts flights on: SEP (Land) + TMG');
+  });
+
+  it('summarises the full LAPL(A) aeroplane pool', () => {
+    const lapl: ClassRatingCurrency = {
+      ...baseRating,
+      licenseType: 'LAPL(A)',
+      countedClasses: ['SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA', 'SET_LAND', 'SET_SEA', 'TMG'],
+    };
+    render(<CurrencyCard rating={lapl} />);
+    expect(screen.getByTestId('currency-counted-classes')).toHaveTextContent('Counts flights on: all aeroplanes and TMG');
+  });
+
+  it('omits the counted classes line without countedClasses', () => {
+    render(<CurrencyCard rating={baseRating} />);
+    expect(screen.queryByTestId('currency-counted-classes')).not.toBeInTheDocument();
+  });
+
+  it('renders the FCL.140.A(b) land/sea requirement names', () => {
+    const rating: ClassRatingCurrency = {
+      ...baseRating,
+      requirements: [
+        { nameKey: 'requirement.sep_sea_time', met: false, current: 30, required: 60, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.sep_sea_landings', met: false, current: 2, required: 6, unit: 'landings', messageKey: 'requirement.progress' },
+      ],
+    };
+    render(<CurrencyCard rating={rating} />);
+    expect(screen.getByText('Time on SEP (Sea)')).toBeInTheDocument();
+    expect(screen.getByText('Landings on SEP (Sea)')).toBeInTheDocument();
+  });
 });
