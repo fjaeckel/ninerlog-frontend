@@ -67,6 +67,26 @@ describe('ExportPage', () => {
     );
   });
 
+  it('CSV export sends the Web Logbook format and shows the import hint', async () => {
+    const user = userEvent.setup();
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      blob: () => Promise.resolve(new Blob(['test'], { type: 'text/csv' })),
+    });
+    global.fetch = mockFetch;
+    global.URL.createObjectURL = vi.fn(() => 'blob:test');
+    global.URL.revokeObjectURL = vi.fn();
+
+    renderWithProviders(<ExportPage />);
+    expect(screen.queryByText(/Apply Web Logbook Mapping/)).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText('CSV format'), 'weblogbook');
+    expect(screen.getByText(/Apply Web Logbook Mapping/)).toBeInTheDocument();
+    await user.click(screen.getByText('Download CSV'));
+
+    const url = mockFetch.mock.calls[0][0] as string;
+    expect(url).toContain('/exports/csv?format=weblogbook');
+  });
+
   it('JSON export button triggers download', async () => {
     const user = userEvent.setup();
     const mockFetch = vi.fn().mockResolvedValue({

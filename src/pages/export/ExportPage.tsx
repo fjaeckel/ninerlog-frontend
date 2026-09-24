@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, DatabaseBackup, FileSpreadsheet, FileText, Upload } from 'lucide-react';
-import { exportFlightsCSV, exportDataJSON, exportFlightsPDF } from '../../hooks/useExport';
+import { exportFlightsCSV, exportDataJSON, exportFlightsPDF, type CSVExportFormat } from '../../hooks/useExport';
 import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 
 export default function ExportPage() {
@@ -13,7 +13,7 @@ export default function ExportPage() {
   const [pdfPageSize, setPdfPageSize] = useState<'a4' | 'a5' | 'letter'>('a4');
   const [pdfLayout, setPdfLayout] = useState<'spread' | 'single'>('spread');
   const [pdfRowsPerPage, setPdfRowsPerPage] = useState<string>('');
-  const [csvFormat, setCsvFormat] = useState<'standard' | 'easa' | 'faa'>('standard');
+  const [csvFormat, setCsvFormat] = useState<CSVExportFormat>('standard');
 
   const handleExport = async (format: 'csv' | 'json' | 'pdf') => {
     setExporting(format);
@@ -55,13 +55,18 @@ export default function ExportPage() {
           <div className="flex-1" />
           <select
             value={csvFormat}
-            onChange={(e) => setCsvFormat(e.target.value as 'standard' | 'easa' | 'faa')}
+            onChange={(e) => setCsvFormat(e.target.value as CSVExportFormat)}
             className="input mb-3 text-sm"
+            aria-label={t('export.csvFormat')}
           >
             <option value="standard">{t('export.standardCsv')}</option>
             <option value="easa">{t('export.easaLogbook')}</option>
             <option value="faa">{t('export.faaLogbook')}</option>
+            <option value="weblogbook">{t('export.webLogbookCsv')}</option>
           </select>
+          {csvFormat === 'weblogbook' && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t('export.webLogbookHint')}</p>
+          )}
           <button
             onClick={() => handleExport('csv')}
             disabled={exporting === 'csv'}

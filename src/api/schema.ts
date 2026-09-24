@@ -1822,7 +1822,7 @@ export interface paths {
         };
         /**
          * Export flights as CSV
-         * @description Export all flight data as a CSV file. Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), and standard (ForeFlight-compatible) formats.
+         * @description Export all flight data as a CSV file. Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), standard (ForeFlight-compatible), and weblogbook (the column layout of Web Logbook's own CSV export, so its "Apply Web Logbook Mapping" import profile maps every column in one click) formats.
          */
         get: operations["exportFlightsCSV"];
         put?: never;
@@ -5410,13 +5410,14 @@ export interface components {
          *     - VEREINSFLIEGER_CSV: Vereinsflieger club flight list, standard export (German headers, airborne times only)
          *     - VEREINSFLIEGER_EXTENDED_CSV: Vereinsflieger club flight list, extended export (adds off-block/on-block and block minutes)
          *     - SKYDEMON_CSV: SkyDemon logbook export
+         *     - WEB_LOGBOOK_CSV: Web Logbook (vsimakhin/web-logbook) logbook CSV export, also written by NinerLog's weblogbook CSV layout
          *     - EASA_CSV: generic EASA AMC1 FCL.050 column layout
          *     - FAA_CSV: generic FAA/ASA column layout
          *     - XLS: Microsoft Excel 97-2003 workbook
          *     - XLSX: Microsoft Excel 2007+ workbook (Open XML)
          * @enum {string}
          */
-        ImportFormat: "CSV" | "FOREFLIGHT_CSV" | "NINERLOG_CSV" | "LOGTEN_CSV" | "MYFLIGHTBOOK_CSV" | "CAPZLOG_CSV" | "FLYLOG_CSV" | "WADER_CSV" | "VEREINSFLIEGER_CSV" | "VEREINSFLIEGER_EXTENDED_CSV" | "SKYDEMON_CSV" | "EASA_CSV" | "FAA_CSV" | "XLS" | "XLSX";
+        ImportFormat: "CSV" | "FOREFLIGHT_CSV" | "NINERLOG_CSV" | "LOGTEN_CSV" | "MYFLIGHTBOOK_CSV" | "CAPZLOG_CSV" | "FLYLOG_CSV" | "WADER_CSV" | "VEREINSFLIEGER_CSV" | "VEREINSFLIEGER_EXTENDED_CSV" | "SKYDEMON_CSV" | "WEB_LOGBOOK_CSV" | "EASA_CSV" | "FAA_CSV" | "XLS" | "XLSX";
         /**
          * @description Target flight log field for column mapping.
          *
@@ -10670,8 +10671,8 @@ export interface operations {
     exportFlightsCSV: {
         parameters: {
             query?: {
-                /** @description CSV column format — easa, faa, or standard (ForeFlight-compatible default) */
-                format?: "easa" | "faa" | "standard";
+                /** @description CSV column format — easa, faa, weblogbook (Web Logbook import), or standard (ForeFlight-compatible default) */
+                format?: "easa" | "faa" | "standard" | "weblogbook";
             };
             header?: never;
             path?: never;
