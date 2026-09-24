@@ -37,7 +37,7 @@ const empty: FlightAnalytics = {
     spicMinutes: 0,
     examinerMinutes: 0,
     reliefMinutes: 0,
-    actualInstrumentMinutes: 0, simulatedInstrumentMinutes: 0, crossCountryMinutes: 0,
+    actualInstrumentMinutes: 0, simulatedInstrumentMinutes: 0, crossCountryMinutes: 0, crossCountryPicMinutes: 0,
     multiPilotMinutes: 0, simulatedFlightMinutes: 0, groundTrainingMinutes: 0,
     landingsDay: 1, landingsNight: 0, takeoffsDay: 1, takeoffsNight: 0,
     approaches: 0, holds: 0, distanceNm: 0, distinctRegistrations: 1, distinctTypes: 1,

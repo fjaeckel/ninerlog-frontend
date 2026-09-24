@@ -6437,6 +6437,12 @@ export interface components {
             /** @description Hood/simulated instrument time in an aircraft. */
             simulatedInstrumentMinutes: number;
             crossCountryMinutes: number;
+            /**
+             * @description Cross-country time flown as PIC — per flight the smaller of PIC and
+             *     cross-country time, summed. Logged flights only; the initial-hours
+             *     snapshot does not record this split.
+             */
+            crossCountryPicMinutes: number;
             /** @description EASA AMC1 FCL.050 column 10. */
             multiPilotMinutes: number;
             /** @description FSTD/simulator time. Not included in totalMinutes. */

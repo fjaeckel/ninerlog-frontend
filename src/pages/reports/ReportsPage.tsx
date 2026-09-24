@@ -295,6 +295,7 @@ export default function ReportsPage() {
                         ['role.night', totals.nightMinutes],
                         ['role.ifr', totals.ifrMinutes],
                         ['role.crossCountry', totals.crossCountryMinutes],
+                        ['role.crossCountryPic', totals.crossCountryPicMinutes],
                       ] as const
                     )
                       .filter(([, v]) => v > 0)
