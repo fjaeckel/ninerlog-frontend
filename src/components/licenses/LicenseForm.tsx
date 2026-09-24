@@ -154,6 +154,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
             <option value="ATPL" />
             <option value="SPL" />
             <option value="LAPL" />
+            <option value="LAPL(A)" />
             <option value="UL" />
             <option value="IR" />
           </datalist>
