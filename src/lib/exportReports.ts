@@ -85,6 +85,7 @@ export function exportAnalyticsToCSV(a: FlightAnalytics) {
       ['Actual instrument', fmt(t.actualInstrumentMinutes)],
       ['Simulated instrument', fmt(t.simulatedInstrumentMinutes)],
       ['Cross country', fmt(t.crossCountryMinutes)],
+      ['Cross country as PIC', fmt(t.crossCountryPicMinutes)],
       ['Simulator', fmt(t.simulatedFlightMinutes)],
       ['Ground training', fmt(t.groundTrainingMinutes)],
       ['Landings day', t.landingsDay],
@@ -283,6 +284,7 @@ ${table(
       ['Actual instrument', t.actualInstrumentMinutes],
       ['Simulated instrument', t.simulatedInstrumentMinutes],
       ['Cross country', t.crossCountryMinutes],
+      ['Cross country as PIC', t.crossCountryPicMinutes],
       ['Simulator', t.simulatedFlightMinutes],
     ] as [string, number][]
   )
