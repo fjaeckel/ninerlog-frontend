@@ -4994,7 +4994,7 @@ export interface components {
              */
             nightRequired: number;
             /**
-             * @description Whether this license type has night flying privileges. false for Sport, Recreational, Glider (FAA), SPL, LAPL (EASA), UL.
+             * @description Whether this license type has night flying privileges. false for Sport, Recreational, Glider (FAA), SPL, LAPL(S), LAPL, LAPL(A) (EASA, case-insensitive), UL.
              * @example true
              */
             nightPrivilege?: boolean;
