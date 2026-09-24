@@ -161,6 +161,11 @@ export const licenses = [
     issueDate: '2018-07-21', issuingAuthority: 'DULV', requiresSeparateLogbook: false,
     createdAt: iso('2024-01-01'), updatedAt: iso('2026-01-01'),
   },
+  {
+    id: 'l5', userId: 'u1', regulatoryAuthority: 'EASA', licenseType: 'LAPL(A)', licenseNumber: 'DE.FCL.L.5521',
+    issueDate: '2022-05-03', issuingAuthority: 'LBA', requiresSeparateLogbook: false,
+    createdAt: iso('2024-01-01'), updatedAt: iso('2026-01-01'),
+  },
 ];
 
 export const classRatings = {
@@ -174,6 +179,10 @@ export const classRatings = {
   ],
   l4: [
     { id: 'cr4', licenseId: 'l4', classType: 'ULTRALIGHT', issueDate: '2018-07-21', expiryDate: null, notes: null, createdAt: iso('2018-07-21'), updatedAt: iso('2026-01-01') },
+  ],
+  l5: [
+    { id: 'cr5', licenseId: 'l5', classType: 'SEP_LAND', issueDate: '2022-05-03', expiryDate: null, notes: null, createdAt: iso('2022-05-03'), updatedAt: iso('2026-01-01') },
+    { id: 'cr6', licenseId: 'l5', classType: 'TMG', issueDate: '2023-08-12', expiryDate: null, notes: null, createdAt: iso('2023-08-12'), updatedAt: iso('2026-01-01') },
   ],
 };
 
@@ -189,11 +198,20 @@ export const statistics = {
   soloMinutes: 900, crossCountryMinutes: 3200,
 };
 
+const LAPL_POOL = ['SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA', 'SET_LAND', 'SET_SEA', 'TMG'];
+const LAPL_REQS = [
+  { nameKey: 'requirement.total_time', met: true, current: 810, required: 720, unit: 'minutes', messageKey: 'requirement.progress' },
+  { nameKey: 'requirement.landings', met: true, current: 17, required: 12, unit: 'landings', messageKey: 'requirement.progress' },
+  { nameKey: 'requirement.training_flight', met: true, current: 60, required: 60, unit: 'minutes', messageKey: 'requirement.progress' },
+  { nameKey: 'requirement.proficiency_check', met: false, current: 0, required: 1, unit: 'check', messageKey: 'requirement.prof_check_missing' },
+];
+
 export const currency = {
   ratings: [
     {
       classRatingId: 'cr1', classType: 'SEP_LAND', licenseId: 'l1', regulatoryAuthority: 'EASA', licenseType: 'PPL(A)',
       status: 'expiring', expiryDate: day(45), windowOpensAt: day(-320), windowOpen: true,
+      countedClasses: ['SEP_LAND', 'TMG'],
       message: 'Revalidation window open — 6 h 20 m of 12 h flown.',
       ruleDescription: 'EASA FCL.740.A — 12 h, 12 take-offs and landings, 1 h training flight.',
       requirements: [
@@ -206,6 +224,7 @@ export const currency = {
     {
       classRatingId: 'cr2', classType: 'TMG', licenseId: 'l1', regulatoryAuthority: 'EASA', licenseType: 'PPL(A)',
       status: 'expired', expiryDate: day(-20),
+      countedClasses: ['SEP_LAND', 'TMG'],
       message: 'Rating expired — renewal requires a proficiency check.',
       requirements: [
         { name: 'Total time', met: false, current: 60, required: 720, unit: 'minutes', message: '1h 00m / 12h 00m' },
@@ -229,6 +248,18 @@ export const currency = {
         { nameKey: 'requirement.landings', met: true, current: 14, required: 12, unit: 'landings' },
         { nameKey: 'requirement.refresher_training', met: true, current: 60, required: 60, unit: 'minutes' },
       ],
+    },
+    {
+      classRatingId: 'cr5', classType: 'SEP_LAND', licenseId: 'l5', regulatoryAuthority: 'EASA', licenseType: 'LAPL(A)',
+      status: 'current', windowOpen: false, messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_lapl',
+      countedClasses: LAPL_POOL,
+      requirements: LAPL_REQS,
+    },
+    {
+      classRatingId: 'cr6', classType: 'TMG', licenseId: 'l5', regulatoryAuthority: 'EASA', licenseType: 'LAPL(A)',
+      status: 'current', windowOpen: false, messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_lapl',
+      countedClasses: LAPL_POOL,
+      requirements: LAPL_REQS,
     },
   ],
   passengerCurrency: [

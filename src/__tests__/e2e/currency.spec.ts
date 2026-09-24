@@ -25,6 +25,14 @@ test.describe('Currency Page', () => {
     await expect(page.getByRole('heading', { name: /rating.*currency/i })).toBeVisible({ timeout: 10000 });
   });
 
+  test('should show pooled aircraft classes for a LAPL(A) rating', async ({ page }) => {
+    const license = await seedLicense(page, auth.accessToken, { licenseType: 'LAPL(A)', licenseNumber: `LAPL-${Date.now()}` });
+    await seedClassRating(page, auth.accessToken, license.id, { classType: 'SEP_LAND', expiryDate: null });
+    await seedClassRating(page, auth.accessToken, license.id, { classType: 'TMG', expiryDate: null });
+    await page.getByRole('link', { name: 'Currency' }).first().click();
+    await expect(page.getByTestId('currency-counted-classes').first()).toContainText('all aeroplanes and TMG', { timeout: 10000 });
+  });
+
   test('should show credentials section', async ({ page }) => {
     await seedCredential(page, auth.accessToken);
     await page.getByRole('link', { name: 'Currency' }).first().click();
