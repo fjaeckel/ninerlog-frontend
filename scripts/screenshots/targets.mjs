@@ -128,6 +128,14 @@ export const TARGETS = [
   },
   { name: 'map', path: '/map' },
   { name: 'export', path: '/export' },
+  {
+    name: 'export-weblogbook',
+    path: '/export',
+    act: async (page) => {
+      await page.getByLabel(/^csv format$|^csv-format$/i).selectOption('weblogbook');
+      await page.waitForTimeout(200);
+    },
+  },
   { name: 'import', path: '/import' },
   { name: 'help', path: '/help' },
   { name: 'profile', path: '/profile' },

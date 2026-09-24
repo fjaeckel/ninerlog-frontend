@@ -16,7 +16,9 @@ async function downloadFile(url: string, filename: string) {
   URL.revokeObjectURL(blobUrl);
 }
 
-export const exportFlightsCSV = (format?: 'standard' | 'easa' | 'faa') => {
+export type CSVExportFormat = 'standard' | 'easa' | 'faa' | 'weblogbook';
+
+export const exportFlightsCSV = (format?: CSVExportFormat) => {
   const params = format && format !== 'standard' ? `?format=${format}` : '';
   return downloadFile(`${API_BASE}/exports/csv${params}`, `ninerlog_flights_${new Date().toISOString().slice(0, 10)}.csv`);
 };
