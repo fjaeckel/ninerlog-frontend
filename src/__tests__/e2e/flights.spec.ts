@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { createTestUser, injectAuth, seedFlight, seedAircraft, type AuthContext } from './helpers';
+import { apiCall, createTestUser, injectAuth, seedFlight, seedAircraft, type AuthContext } from './helpers';
 
 /**
  * Both flight-list layouts stay in the DOM (card list `lg:hidden`, table
@@ -83,6 +83,34 @@ test.describe('Flights', () => {
 
     await expect(page.getByText('Edit Flight')).toBeHidden({ timeout: 10000 });
     await expect(page.getByText('0h 30m')).toHaveCount(0);
+  });
+
+  test('should change a crew role in place on an unsigned flight', async ({ page }) => {
+    await seedAircraft(page, auth.accessToken, { registration: 'D-FLT6' });
+    const flight = await seedFlight(page, auth.accessToken, {
+      aircraftReg: 'D-FLT6',
+      crewMembers: [{ name: 'Imported Teacher', role: 'Student' }],
+    });
+
+    await page.goto(`/flights/${flight.id}`);
+    const rolePill = page.getByRole('combobox', { name: 'Role of Imported Teacher' });
+    await expect(rolePill).toHaveValue('Student', { timeout: 10000 });
+    await rolePill.selectOption('Instructor');
+    await expect(page.getByText('Saved')).toBeVisible({ timeout: 10000 });
+
+    const saved = await apiCall(page, 'GET', `/flights/${flight.id}`, undefined, auth.accessToken);
+    expect(saved.crewMembers).toEqual([expect.objectContaining({ name: 'Imported Teacher', role: 'Instructor' })]);
+    expect(saved.instructorName).toBe('Imported Teacher');
+    expect(saved.dualTime).toBe(120);
+
+    await page.getByRole('button', { name: 'Change name of Imported Teacher' }).click();
+    const nameInput = page.getByRole('combobox', { name: 'Name of Imported Teacher' });
+    await nameInput.fill('Real Teacher');
+    await nameInput.press('Enter');
+    await expect(page.getByText('Saved')).toBeVisible({ timeout: 10000 });
+
+    await page.reload();
+    await expect(page.getByRole('combobox', { name: 'Role of Real Teacher' })).toHaveValue('Instructor', { timeout: 10000 });
   });
 
   test('should search flights', async ({ page }) => {

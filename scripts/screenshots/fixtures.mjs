@@ -90,9 +90,21 @@ const simulatorSession = (i, type, minutes, fstdType, offset) => ({
 });
 
 export const flights = [
-  flight(1, 'EDDF', 'EDDH', 'D-EABC', 'C172', 95, -2),
+  {
+    ...flight(1, 'EDDF', 'EDDH', 'D-EABC', 'C172', 95, -2),
+    crewMembers: [
+      { id: 'cm1', flightId: 'f1', contactId: 'p1', name: 'Amelia Earhart', role: 'Student' },
+      { id: 'cm2', flightId: 'f1', contactId: null, name: 'Bessie Coleman', role: 'Passenger' },
+    ],
+  },
   simulatorSession(6, 'A320', 120, 'FFS A320', -3),
-  flight(2, 'EDDH', 'EDDF', 'D-EABC', 'C172', 88, -5),
+  {
+    ...flight(2, 'EDDH', 'EDDF', 'D-EABC', 'C172', 88, -5),
+    signatureId: 'sig1',
+    crewMembers: [
+      { id: 'cm3', flightId: 'f2', contactId: null, name: 'Jacqueline Cochran', role: 'Instructor' },
+    ],
+  },
   { ...flight(7, 'EDDF', 'EDDM', 'D-EFGH', 'PA28', 70, -8), isPassenger: true, picTime: 0, totalTime: 70 },
   flight(3, 'EDMO', 'LOWI', 'D-EFGH', 'PA28', 145, -11),
   flight(4, 'LOWI', 'EDMO', 'D-EFGH', 'PA28', 152, -12),

@@ -440,6 +440,63 @@ describe('FlightForm', () => {
     });
   });
 
+  const flightWithCrew = {
+    id: 'flight-1', userId: 'user-1', date: '2026-01-15',
+    aircraftReg: 'D-EFGH', aircraftType: 'C172',
+    departureIcao: 'EDDF', arrivalIcao: 'EDDH',
+    offBlockTime: '14:15:00', onBlockTime: '16:10:00',
+    totalTime: 115, isPic: true, isDual: false, picTime: 115, dualTime: 0,
+    nightTime: 0, crossCountryTime: 115, ifrTime: 0,
+    landingsDay: 1, landingsNight: 0, allLandings: 1,
+    takeoffsDay: 1, takeoffsNight: 0, soloTime: 0, distance: 185.3,
+    remarks: null, createdAt: '', updatedAt: '',
+    crewMembers: [
+      { id: 'cm-1', flightId: 'flight-1', contactId: 'c-1', name: 'Anna Imported', role: 'Student' },
+    ],
+  };
+
+  it('changes the role of a crew member in place and saves it', async () => {
+    const user = userEvent.setup();
+    mockUpdate.mutateAsync.mockResolvedValueOnce({});
+    vi.spyOn(useFlightsHook, 'useFlight').mockReturnValue({ data: flightWithCrew, isLoading: false, error: null } as any);
+
+    renderWithProviders(<FlightForm flightId="flight-1" onClose={mockOnClose} />);
+
+    const rolePill = await screen.findByRole('combobox', { name: 'Role of Anna Imported' });
+    await user.selectOptions(rolePill, 'Instructor');
+    expect(screen.getAllByText('Anna Imported')).toHaveLength(1);
+
+    fireEvent.submit(screen.getByRole('button', { name: /update flight/i }).closest('form')!);
+
+    await waitFor(() => {
+      expect(mockUpdate.mutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            crewMembers: [{ contactId: 'c-1', name: 'Anna Imported', role: 'Instructor' }],
+            instructorName: 'Anna Imported',
+          }),
+        })
+      );
+    });
+  });
+
+  it('sends an empty crew when the last person is removed from an existing flight', async () => {
+    const user = userEvent.setup();
+    mockUpdate.mutateAsync.mockResolvedValueOnce({});
+    vi.spyOn(useFlightsHook, 'useFlight').mockReturnValue({ data: flightWithCrew, isLoading: false, error: null } as any);
+
+    renderWithProviders(<FlightForm flightId="flight-1" onClose={mockOnClose} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Remove Anna Imported' }));
+    fireEvent.submit(screen.getByRole('button', { name: /update flight/i }).closest('form')!);
+
+    await waitFor(() => {
+      expect(mockUpdate.mutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ crewMembers: [] }) })
+      );
+    });
+  });
+
   it('calls onClose when cancel is clicked', async () => {
     const user = userEvent.setup();
     renderWithProviders(<FlightForm onClose={mockOnClose} />);

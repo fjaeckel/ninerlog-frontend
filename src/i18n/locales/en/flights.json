@@ -372,6 +372,23 @@
     "SafetyPilot": "Safety Pilot",
     "Examiner": "Examiner"
   },
+  "crewEditor": {
+    "hint": "Tap a role or a name to change it. Changes save right away and recalculate the flight times.",
+    "empty": "No one else on board yet. Add a person to log dual, SIC or instructor time.",
+    "lockedHint": "Locked by the instructor signature. Void the signature to change the crew.",
+    "roleOf": "Role of {{name}}",
+    "nameOf": "Name of {{name}}",
+    "editName": "Change name of {{name}}",
+    "saveName": "Save name",
+    "cancelEdit": "Cancel",
+    "remove": "Remove {{name}}",
+    "newPersonName": "Name of the person to add",
+    "newPersonRole": "Role of the person to add",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "undo": "Undo",
+    "saveFailed": "The crew could not be saved."
+  },
   "simulatorBadge": "SIM",
   "simulatorEntry": "Simulator session",
   "passengerBadge": "PAX",
