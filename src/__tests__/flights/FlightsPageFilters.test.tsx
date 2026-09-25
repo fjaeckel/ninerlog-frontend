@@ -8,6 +8,7 @@ import FlightDetailPage from '../../pages/flights/FlightDetailPage';
 import * as useFlightsHook from '../../hooks/useFlights';
 import * as useLicensesHook from '../../hooks/useLicenses';
 import * as useCustomReportsHook from '../../hooks/useCustomReports';
+import * as useExportHook from '../../hooks/useExport';
 
 const flight = {
   id: 'flight-1',
@@ -119,6 +120,32 @@ describe('FlightsPage filter persistence', () => {
     await user.click(screen.getByRole('button', { name: /back to flights/i }));
     expect(screen.getByTestId('location').textContent).toBe('/flights?q=night&page=2');
     expect(lastQuery()).toMatchObject({ q: 'night', page: 2 });
+  });
+
+  it('exports every flight of the current search as CSV, without the page', async () => {
+    const user = userEvent.setup();
+    const exportSpy = vi.spyOn(useExportHook, 'exportFlightSearchCSV').mockResolvedValue(undefined);
+    renderAt('/flights?q=night&aircraftReg=D-EFGH&function=pic&sortBy=totalTime&page=3');
+
+    await user.click(screen.getByRole('button', { name: 'Export as CSV' }));
+
+    expect(exportSpy).toHaveBeenCalledWith({
+      q: 'night',
+      aircraftReg: 'D-EFGH',
+      isPic: true,
+      sortBy: 'totalTime',
+      sortOrder: 'desc',
+    });
+  });
+
+  it('reports a failed CSV export', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(useExportHook, 'exportFlightSearchCSV').mockRejectedValue(new Error('Export failed'));
+    renderAt('/flights');
+
+    await user.click(screen.getByRole('button', { name: 'Export as CSV' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Export failed. Please try again.');
   });
 
   it('opens the save-as-report dialog pre-filled from the URL filters', async () => {

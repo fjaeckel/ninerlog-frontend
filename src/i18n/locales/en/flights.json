@@ -379,5 +379,8 @@
   "passengerHelper": "You were carried on this flight rather than crewing it, so it counts towards no total, statistic or currency.",
   "logSession": "Log Session",
   "updateSession": "Update Session",
-  "saveAsReport": "Save as report"
+  "saveAsReport": "Save as report",
+  "exportCsv": "Export as CSV",
+  "exportingCsv": "Exporting…",
+  "exportCsvFailed": "Export failed. Please try again."
 }

@@ -1,5 +1,8 @@
 import { useAuthStore } from '../stores/authStore';
 import { API_BASE_URL as API_BASE } from '../lib/config';
+import type { operations } from '../api/schema';
+
+export type FlightSearchCSVQuery = Omit<NonNullable<operations['exportFlightsCSV']['parameters']['query']>, 'totals'>;
 
 async function downloadFile(url: string, filename: string) {
   const token = useAuthStore.getState().accessToken;
@@ -21,6 +24,19 @@ export type CSVExportFormat = 'standard' | 'easa' | 'faa' | 'weblogbook';
 export const exportFlightsCSV = (format?: CSVExportFormat) => {
   const params = format && format !== 'standard' ? `?format=${format}` : '';
   return downloadFile(`${API_BASE}/exports/csv${params}`, `ninerlog_flights_${new Date().toISOString().slice(0, 10)}.csv`);
+};
+
+/** Every flight matching a `GET /flights` search, with a totals row. */
+export const exportFlightSearchCSV = (query: FlightSearchCSVQuery) => {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== '') params.set(key, String(value));
+  }
+  params.set('totals', 'true');
+  return downloadFile(
+    `${API_BASE}/exports/csv?${params.toString()}`,
+    `ninerlog_flights_search_${new Date().toISOString().slice(0, 10)}.csv`
+  );
 };
 
 export const exportDataJSON = () =>
