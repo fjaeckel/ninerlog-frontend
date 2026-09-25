@@ -1822,7 +1822,7 @@ export interface paths {
         };
         /**
          * Export flights as CSV
-         * @description Export all flight data as a CSV file. Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), standard (ForeFlight-compatible), and weblogbook (the column layout of vsimakhin/web-logbook's own CSV export, so its "Apply Web Logbook Mapping" import profile maps every column in one click) formats.
+         * @description Export flight data as a CSV file — every flight, or every flight matching the `GET /flights` filters given (never paginated). Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), standard (ForeFlight-compatible), and weblogbook (the column layout of vsimakhin/web-logbook's own CSV export, so its "Apply Web Logbook Mapping" import profile maps every column in one click) formats.
          */
         get: operations["exportFlightsCSV"];
         put?: never;
@@ -10673,6 +10673,37 @@ export interface operations {
             query?: {
                 /** @description CSV column format — easa, faa, weblogbook (vsimakhin/web-logbook import), or standard (ForeFlight-compatible default) */
                 format?: "easa" | "faa" | "standard" | "weblogbook";
+                /** @description Only flights on or after this date, as `GET /flights` */
+                startDate?: string;
+                /** @description Only flights on or before this date, as `GET /flights` */
+                endDate?: string;
+                /** @description Aircraft registration filter, as `GET /flights` */
+                aircraftReg?: string;
+                /** @description Departure location filter, as `GET /flights` */
+                departureIcao?: string;
+                /** @description Arrival location filter, as `GET /flights` */
+                arrivalIcao?: string;
+                /** @description PIC flights only, as `GET /flights` */
+                isPic?: boolean;
+                /** @description Dual instruction flights only, as `GET /flights` */
+                isDual?: boolean;
+                /** @description Free-text search, as `GET /flights` */
+                search?: string;
+                /** @description Advanced search query, same syntax as `GET /flights?q=`. An invalid query returns 400. */
+                q?: string;
+                /** @description Sort field, as `GET /flights`. When omitted, rows are chronological (oldest first). */
+                sortBy?: "date" | "totalTime" | "createdAt";
+                /** @description Sort order for `sortBy` */
+                sortOrder?: "asc" | "desc";
+                /** @description Separate-logbook license filter, as `GET /flights` */
+                logbookLicenseId?: string;
+                /**
+                 * @description Append a totals row after the last flight: the flight count and the
+                 *     sum of every time, count and distance column, in the row format.
+                 *     The totals row is not a flight, so a file exported with it is not
+                 *     meant for re-import.
+                 */
+                totals?: boolean;
             };
             header?: never;
             path?: never;
@@ -10689,6 +10720,7 @@ export interface operations {
                     "text/csv": string;
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
         };
     };

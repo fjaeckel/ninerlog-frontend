@@ -1,7 +1,7 @@
 import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowDown, ArrowRight, ArrowUp, BookmarkPlus, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUp, BookmarkPlus, FileSpreadsheet, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { useFlights, useInfiniteFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
@@ -10,6 +10,7 @@ import FlightCard from '../../components/flights/FlightCard';
 import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { CustomReportDialog } from '../../components/reports/CustomReportDialog';
 import { definitionFromSearchParams } from '../../lib/customReports';
+import { exportFlightSearchCSV } from '../../hooks/useExport';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
@@ -155,6 +156,8 @@ export default function FlightsPage() {
   );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [showSaveReport, setShowSaveReport] = useState(false);
+  const [exportingCsv, setExportingCsv] = useState(false);
+  const [exportCsvError, setExportCsvError] = useState(false);
 
   // The search input keeps its own state; the URL is written after the debounce.
   const [search, setSearch] = useState(searchQuery);
@@ -214,6 +217,22 @@ export default function FlightsPage() {
     ...(functionFilter === 'pic' ? { isPic: true } : {}),
     ...(functionFilter === 'dual' ? { isDual: true } : {}),
     ...(logbookLicenseId ? { logbookLicenseId } : {}),
+  };
+
+  // The search without the page: the export carries every match.
+  const exportCsv = async () => {
+    const query = { ...params };
+    delete query.page;
+    delete query.pageSize;
+    setExportingCsv(true);
+    setExportCsvError(false);
+    try {
+      await exportFlightSearchCSV(query);
+    } catch {
+      setExportCsvError(true);
+    } finally {
+      setExportingCsv(false);
+    }
   };
 
   const activeFilterCount = [startDate, endDate, aircraftReg, departureIcao, arrivalIcao, functionFilter].filter(Boolean).length;
@@ -406,6 +425,19 @@ export default function FlightsPage() {
           <BookmarkPlus className="w-4 h-4" aria-hidden="true" />
           {t('flights:saveAsReport')}
         </button>
+        <button
+          onClick={exportCsv}
+          disabled={exportingCsv}
+          className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-colors border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+        >
+          <FileSpreadsheet className="w-4 h-4" aria-hidden="true" />
+          {exportingCsv ? t('flights:exportingCsv') : t('flights:exportCsv')}
+        </button>
+        {exportCsvError && (
+          <span role="alert" className="text-xs text-red-600 dark:text-red-400">
+            {t('flights:exportCsvFailed')}
+          </span>
+        )}
         <div className="flex-1" />
         <span className="text-xs text-slate-500 dark:text-slate-400">{t('flights:sort')}</span>
         {(['date', 'totalTime', 'createdAt'] as const).map((field) => (

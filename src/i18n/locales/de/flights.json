@@ -379,5 +379,8 @@
   "passengerHelper": "Sie wurden auf diesem Flug mitgenommen, statt ihn zu führen; er zählt daher zu keiner Summe, Statistik oder Währigkeit.",
   "logSession": "Sitzung eintragen",
   "updateSession": "Sitzung aktualisieren",
-  "saveAsReport": "Als Bericht speichern"
+  "saveAsReport": "Als Bericht speichern",
+  "exportCsv": "Als CSV exportieren",
+  "exportingCsv": "Wird exportiert…",
+  "exportCsvFailed": "Export fehlgeschlagen. Bitte erneut versuchen."
 }
