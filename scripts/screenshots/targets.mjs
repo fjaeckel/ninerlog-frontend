@@ -64,7 +64,26 @@ export const TARGETS = [
       await page.waitForTimeout(600);
     },
   },
+  {
+    name: 'flights-modal-edit-crew',
+    path: '/flights/f1',
+    act: async (page) => {
+      await page.getByRole('button', { name: /edit flight|flug .*bearbeiten/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.getByRole('dialog').getByRole('combobox', { name: /role of amelia|rolle von amelia/i }).scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+    },
+  },
   { name: 'flight-detail-simulator', path: '/flights/f6' },
+  { name: 'flight-detail-signed', path: '/flights/f2' },
+  {
+    name: 'flight-detail-crew-rename',
+    path: '/flights/f1',
+    act: async (page) => {
+      await page.getByRole('button', { name: /change name of amelia|namen von amelia/i }).first().click();
+      await page.waitForTimeout(300);
+    },
+  },
   { name: 'aircraft', path: '/aircraft' },
   {
     name: 'aircraft-modal',

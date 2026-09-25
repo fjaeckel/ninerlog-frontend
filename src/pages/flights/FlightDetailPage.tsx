@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { FormModal } from '../../components/ui/FormModal';
 import { PageWrapper } from '../../components/ui/PageWrapper';
 import { SignatureSection } from '../../components/flights/SignatureSection';
+import { FlightCrewCard } from '../../components/flights/FlightCrewCard';
 import {
   FLIGHT_FUNCTION_BADGE,
   flightFunctionKind,
@@ -401,22 +402,7 @@ export default function FlightDetailPage() {
         </div>
 
         {/* Crew Members */}
-        {flight.crewMembers && flight.crewMembers.length > 0 && (
-          <div className="card mb-4 break-inside-avoid">
-            <h2 className="section-title mb-3">{t('sections.crew')}</h2>
-            <ul className="space-y-2">
-              {flight.crewMembers.map((member) => (
-                <li
-                  key={member.id}
-                  className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-700/30"
-                >
-                  <span className="badge-info text-xs">{member.role}</span>
-                  <span className="font-medium text-slate-700 dark:text-slate-200">{member.name}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <FlightCrewCard flight={flight} />
       </div>
 
       {/* Metadata */}

@@ -372,6 +372,23 @@
     "SafetyPilot": "Sicherheitspilot",
     "Examiner": "Prüfer"
   },
+  "crewEditor": {
+    "hint": "Tippe auf eine Rolle oder einen Namen, um sie zu ändern. Änderungen werden sofort gespeichert und die Flugzeiten neu berechnet.",
+    "empty": "Noch niemand sonst an Bord. Füge eine Person hinzu, um Doppelsteuer-, SIC- oder Fluglehrerzeit zu erfassen.",
+    "lockedHint": "Durch die Fluglehrer-Unterschrift gesperrt. Widerrufe die Unterschrift, um die Besatzung zu ändern.",
+    "roleOf": "Rolle von {{name}}",
+    "nameOf": "Name von {{name}}",
+    "editName": "Namen von {{name}} ändern",
+    "saveName": "Namen speichern",
+    "cancelEdit": "Abbrechen",
+    "remove": "{{name}} entfernen",
+    "newPersonName": "Name der hinzuzufügenden Person",
+    "newPersonRole": "Rolle der hinzuzufügenden Person",
+    "saving": "Speichert…",
+    "saved": "Gespeichert",
+    "undo": "Rückgängig",
+    "saveFailed": "Die Besatzung konnte nicht gespeichert werden."
+  },
   "simulatorBadge": "SIM",
   "simulatorEntry": "Simulatorsitzung",
   "passengerBadge": "PAX",

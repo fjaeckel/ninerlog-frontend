@@ -6,14 +6,16 @@ import { z } from 'zod';
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { useCreateFlight, useUpdateFlight, useFlight, useFlights } from '../../hooks/useFlights';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
-import { useSearchContacts, useCreateContact } from '../../hooks/useContacts';
+import { useCreateContact } from '../../hooks/useContacts';
 import { formatDuration, blockMinutes, type TimeDisplayFormat } from '../../lib/duration';
 import { normalizeLocation } from '../../lib/airport';
 import { cn } from '../../lib/cn';
 import { extractApiError } from '../../lib/errors';
 import { useAuthStore } from '../../stores/authStore';
 import type { Aircraft } from '../../hooks/useAircraft';
-import type { CrewRole, FlightCrewMemberInput } from '../../types/api';
+import type { FlightCrewMemberInput } from '../../types/api';
+import { CrewEditor } from './CrewEditor';
+import { crewDerivedNames, toCrewInputs } from './crewRoles';
 
 /** Returns the current UTC time as "HH:MM". Used to pre-fill Off-Block on new flights. */
 const getCurrentUtcTime = (): string => {
@@ -128,15 +130,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
   // Crew members state
   const [crewMembers, setCrewMembers] = useState<FlightCrewMemberInput[]>([]);
-  const [crewNameInput, setCrewNameInput] = useState('');
-  const [crewRoleInput, setCrewRoleInput] = useState<CrewRole>('Passenger');
 
   // Structured approaches state
   interface ApproachInput { type: string; airport: string; runway: string }
   const APPROACH_TYPES = ['ILS', 'LOC', 'VOR', 'RNAV/GPS', 'NDB', 'LDA', 'SDF', 'PAR', 'ASR', 'Visual', 'Circling', 'Other'] as const;
   const [approaches, setApproaches] = useState<ApproachInput[]>([]);
-  const [crewSearch, setCrewSearch] = useState('');
-  const { data: contactResults } = useSearchContacts(crewSearch);
   const createContact = useCreateContact();
 
   const {
@@ -235,11 +233,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       });
       // Load existing crew members
       if (existingFlight.crewMembers) {
-        setCrewMembers(existingFlight.crewMembers.map((m: { contactId?: string | null; name: string; role: string }) => ({
-          contactId: m.contactId || null,
-          name: m.name,
-          role: m.role as CrewRole,
-        })));
+        setCrewMembers(toCrewInputs(existingFlight.crewMembers));
       }
       // Load existing approaches
       if (existingFlight.approaches && existingFlight.approaches.length > 0) {
@@ -440,7 +434,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         aircraftType: data.aircraftType.toUpperCase(),
         remarks: data.remarks || null,
         // Auto-derive instructor & PIC names from crew (single source of truth: Crew section).
-        instructorName: crewMembers.find((m) => m.role === 'Instructor')?.name ?? null,
+        instructorName: crewDerivedNames(crewMembers).instructorName,
         instructorComments: data.instructorComments || null,
         simulatedFlightTime: data.simulatedFlightTime,
         groundTrainingTime: data.groundTrainingTime,
@@ -454,10 +448,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isIpc: data.isIpc,
         isFlightReview: data.isFlightReview,
         isProficiencyCheck: data.isProficiencyCheck,
-        picName: crewMembers.find((m) => m.role === 'PIC')?.name ?? null,
+        picName: crewDerivedNames(crewMembers).picName,
         fstdType: data.fstdType || null,
         endorsements: data.endorsements || null,
-        crewMembers: crewMembers.length > 0 ? crewMembers : undefined,
+        crewMembers: isEditing || crewMembers.length > 0 ? crewMembers : undefined,
       };
 
       // A training device is not flown between places: the API rejects the
@@ -940,76 +934,12 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           {crewMembers.length > 0 && <span className="badge-info text-xs">{crewMembers.length}</span>}
         </legend>
         <div className="space-y-3">
-          {/* Crew list */}
-          {crewMembers.map((member, idx) => (
-            <div key={idx} className="flex items-center gap-2 text-sm bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2">
-              <span className="badge-info text-xs">{member.role}</span>
-              <span className="flex-1 font-medium text-slate-700 dark:text-slate-200">{member.name}</span>
-              <button
-                type="button"
-                onClick={() => setCrewMembers((prev) => prev.filter((_, i) => i !== idx))}
-                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400"
-                aria-label={`Remove ${member.name}`}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-
-          {/* Add crew member */}
-          <div className="flex flex-wrap gap-2">
-            <div className="flex-1 min-w-[150px] relative">
-              <input
-                type="text"
-                value={crewNameInput}
-                onChange={(e) => { setCrewNameInput(e.target.value); setCrewSearch(e.target.value); }}
-                placeholder={t('form.personName')}
-                className="input text-sm"
-              />
-              {contactResults && contactResults.length > 0 && crewNameInput.length >= 2 && (
-                <div className="absolute z-20 top-full left-0 right-0 mt-1 max-h-32 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg">
-                  {contactResults.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      className="w-full text-left px-3 py-1.5 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                      onClick={() => { setCrewNameInput(c.name); setCrewSearch(''); }}
-                    >
-                      {c.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <select
-              value={crewRoleInput}
-              onChange={(e) => setCrewRoleInput(e.target.value as CrewRole)}
-              className="input text-sm w-auto"
-            >
-              <option value="PIC">{t('crewRoles.PIC')}</option>
-              <option value="SIC">{t('crewRoles.SIC')}</option>
-              <option value="Instructor">{t('crewRoles.Instructor')}</option>
-              <option value="Student">{t('crewRoles.Student')}</option>
-              <option value="Passenger">{t('crewRoles.Passenger')}</option>
-              <option value="SafetyPilot">{t('crewRoles.SafetyPilot')}</option>
-              <option value="Examiner">{t('crewRoles.Examiner')}</option>
-            </select>
-            <button
-              type="button"
-              disabled={!crewNameInput.trim()}
-              onClick={() => {
-                if (crewNameInput.trim()) {
-                  setCrewMembers((prev) => [...prev, { name: crewNameInput.trim(), role: crewRoleInput, contactId: null }]);
-                  createContact.mutate({ name: crewNameInput.trim() });
-                  setCrewNameInput('');
-                  setCrewSearch('');
-                }
-              }}
-              className="btn-secondary btn-sm text-xs"
-            >
-              <Plus className="w-3.5 h-3.5" /> {t('common:add')}
-            </button>
-          </div>
+          <CrewEditor
+            crew={crewMembers}
+            onChange={setCrewMembers}
+            onPersonAdded={(name) => createContact.mutate({ name })}
+            disabled={isLocked}
+          />
 
           {/* Instructor comments — only shown when an instructor is on board */}
           {crewMembers.some((m) => m.role === 'Instructor') && (
