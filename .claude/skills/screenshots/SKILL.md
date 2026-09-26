@@ -61,7 +61,9 @@ the table.
 
 Output lands in `.screenshots/<label>/` — gitignored, wiped at the start of each run for that label.
 
-If you changed the tree before capturing `before`, get it back with `git stash` or `git checkout main -- <files>`, capture, then restore.
+If you changed the tree before capturing `before`, commit your work to a WIP commit, capture `before` from a clean checkout of the base (`git worktree add` or `git checkout <base> -- <files>`), then restore. **Never use `git stash`**: the stash stack is shared by every worktree of the repo, so a parallel session's `pop` can take your changes and hand you theirs.
+
+**Parallel worktrees:** the harness reuses whatever dev server already listens on :5173, even one serving another worktree. When more than one checkout is active, start your own server on a free port and point the harness at it: `npx vite --port 5199` in your worktree, then `SHOT_BASE_URL=http://localhost:5199 npm run shots -- <label>`.
 
 ## What the harness is
 
