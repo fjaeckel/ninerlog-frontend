@@ -308,7 +308,7 @@ export function tally(flights, aircraftByReg, match, sinceDays) {
   const since = day(-sinceDays);
   const out = {
     flights: 0, minutes: 0, pic: 0, picOrDual: 0, dual: 0, landings: 0, launches: 0,
-    trainingFlights: 0, longestTraining: 0, instructorMinutes: 0, ifr: 0, byMethod: {}, perFlight: [],
+    trainingFlights: 0, longestTraining: 0, instructorMinutes: 0, ifr: 0, dualGiven: 0, byMethod: {}, perFlight: [],
   };
   for (const f of flights) {
     if (f.isSimulator || f.isPassenger || f.date < since) continue;
@@ -320,12 +320,13 @@ export function tally(flights, aircraftByReg, match, sinceDays) {
     out.picOrDual += f.picTime + f.dualTime;
     out.landings += f.allLandings;
     out.ifr += f.ifrTime;
+    out.dualGiven += f.dualGivenTime;
     out.launches += f.allLandings;
     if (f.launchMethod) out.byMethod[f.launchMethod] = (out.byMethod[f.launchMethod] ?? 0) + f.allLandings;
     out.perFlight.push({
       date: f.date, flights: 1, minutes: f.totalTime, pic: f.picTime, dual: f.dualTime, picOrDual: f.picTime + f.dualTime,
       landings: f.allLandings, launches: f.allLandings, trainingFlights: f.dualTime > 0 ? 1 : 0, instructorMinutes: f.dualTime,
-      method: f.launchMethod ?? null,
+      ifr: f.ifrTime, dualGiven: f.dualGivenTime, method: f.launchMethod ?? null,
     });
     if (f.dualTime > 0) {
       out.trainingFlights++;
@@ -363,7 +364,7 @@ export function paxExpiresOn(flights, aircraftByReg, match, required = 3, picOnl
  * from the persona's flights.
  */
 export function easaPax(classType, flights, aircraftByReg, match, opts = {}) {
-  const { authority = 'EASA', nightPrivilege = false, irWaiver = false, ruleDescriptionKey = 'easa_pax', picOnly = false } = opts;
+  const { authority = 'EASA', nightPrivilege = false, irWaiver = false, ruleDescriptionKey = 'easa_pax', picOnly = false, spl115IssueDate = null } = opts;
   const n = paxLandings(flights, aircraftByReg, match, picOnly);
   const dayOk = n.day >= 3;
   const nightOk = irWaiver || n.night >= 1;
@@ -383,38 +384,108 @@ export function easaPax(classType, flights, aircraftByReg, match, opts = {}) {
     dayExpiresOn: paxExpiresOn(flights, aircraftByReg, match, 3, picOnly),
     nightExpiresOn: null,
     messageKey, ...(messageParams ? { messageParams } : {}), ruleDescriptionKey,
+    ...(spl115IssueDate ? { requirements: spl115Rows(flights, aircraftByReg, spl115IssueDate) } : {}),
   };
 }
 
-/** German UL §45a passenger currency for one kind. */
-export function ulPax(ulKind, flights, aircraftByReg, authority = 'DULV') {
+/** SFCL.115(a)(2) passenger prerequisites since licence issue: 10 h or 30 launches as PIC on sailplanes and TMGs. */
+export function spl115Rows(flights, aircraftByReg, issueDate) {
+  const t = tally(flights, aircraftByReg, (f, ac) => ['GLIDER', 'TMG'].includes(ac?.aircraftClass) && f.picTime > 0, daysAgo(issueDate));
+  return [
+    req('requirement.pax_prerequisite_time', t.pic, 600, 'minutes'),
+    req('requirement.pax_prerequisite_launches', t.launches, 30, 'launches'),
+    untracked('requirement.pax_competence_flight', 'flight'),
+  ];
+}
+
+/**
+ * German UL §45a passenger currency for one kind. With `authorised` a current
+ * UL_PASSENGER_AUTH privilege (§84a) is on the licence; without it the entry
+ * carries the progress toward the authorisation.
+ */
+export function ulPax(ulKind, flights, aircraftByReg, authority = 'DULV', { authorised = false } = {}) {
   const match = (f, ac) => ac?.aircraftClass === 'ULTRALIGHT' && ac.ulKind === ulKind;
   const n = paxLandings(flights, aircraftByReg, match, false);
   const ok = n.day >= 3;
+  let dayStatus = ok ? 'current' : 'expired';
+  let messageKey = ok ? 'pax.current_day_no_night_privilege' : 'pax.not_current';
+  if (ok && !authorised) [dayStatus, messageKey] = ['unknown', 'pax.ul_authorisation_missing'];
   return {
     classType: 'ULTRALIGHT', ulKind, regulatoryAuthority: authority,
-    dayStatus: ok ? 'current' : 'expired', nightStatus: 'unknown',
+    dayStatus, nightStatus: 'unknown',
     dayLandings: n.day, nightLandings: 0, dayRequired: 3, nightRequired: 0, nightPrivilege: false,
     dayExpiresOn: paxExpiresOn(flights, aircraftByReg, match, 3, false), nightExpiresOn: null,
-    messageKey: ok ? 'pax.current_day_privilege_separate' : 'pax.not_current',
+    messageKey,
     ...(ok ? {} : { messageParams: { needed: 3 - n.day } }),
     ruleDescriptionKey: 'ul_pax',
+    ...(authorised ? {} : { requirements: ulAuthorisationRows(flights, aircraftByReg, match) }),
   };
 }
 
+/** LuftPersV §84a progress: 5 cross-country flights with an instructor, 2 with an intermediate landing, 200 km. */
+function ulAuthorisationRows(flights, aircraftByReg, match) {
+  const xc = flights.filter((f) => !f.isSimulator && !f.isPassenger && f.dualTime > 0 && f.crossCountryTime > 0 && match(f, aircraftByReg[f.aircraftReg]));
+  const km = Math.round(xc.reduce((a, f) => a + (f.distance ?? 0), 0) * 1.852);
+  return [
+    req('requirement.ul_xc_flights', xc.length, 5, 'flights'),
+    req('requirement.ul_xc_landing_flights', xc.filter((f) => f.allLandings >= 2).length, 2, 'flights'),
+    req('requirement.ul_xc_distance', km, 200, 'km'),
+  ];
+}
+
 /** A sailplane launch-method row set: every method ever logged on the class, counted over 24 months. */
-export function launchMethodRows(flights, aircraftByReg, match, extraSelfLaunch = 0) {
+export function launchMethodRows(flights, aircraftByReg, match, extraSelfLaunch = 0, trained = []) {
   const ever = tally(flights, aircraftByReg, match, 100 * 365).byMethod;
   const window = tally(flights, aircraftByReg, match, 730);
   const recent = window.byMethod;
   return ['winch', 'car', 'aerotow', 'self-launch', 'bungee']
-    .filter((m) => ever[m])
+    .filter((m) => ever[m] || trained.includes(m))
     .map((m) => {
       const launches = (recent[m] ?? 0) + (m === 'self-launch' ? extraSelfLaunch : 0);
       const required = m === 'bungee' ? 2 : 5;
       const own = { perFlight: window.perFlight.filter((c) => c.method === m) };
-      return launchRow(m, launches, launches >= required ? projectUntil(own, 'launches', required) : null);
+      return { ...launchRow(m, launches, launches >= required ? projectUntil(own, 'launches', required) : null), trained: trained.includes(m) };
     });
+}
+
+// ── Licence privileges ───────────────────────────────────────────────────────
+export function privilege(id, licenseId, kind, extra = {}) {
+  return {
+    id, licenseId, kind, createdAt: iso('2025-03-01'), updatedAt: iso('2026-03-01'),
+    ...extra,
+  };
+}
+
+/** An informational row NinerLog cannot count (`requirement.untracked`). */
+export const untracked = (nameKey, unit) => ({ nameKey, met: false, current: 0, required: 1, unit, messageKey: 'requirement.untracked' });
+
+/** A privilege recency row over `t[field]`; unmet rows carry `remedyKey`, met rows `validUntil`. */
+export const privilegeReq = (nameKey, t, field, required, unit, months, remedyKey = 'remedy.fly_more') => {
+  const current = t[field];
+  const met = current >= required;
+  return {
+    nameKey, met, current, required, unit, messageKey: 'requirement.progress',
+    ...(met
+      ? { validUntil: projectUntil(t, field, required, months) }
+      : { remedyKey, remedyParams: { missing: required - current, unit } }),
+  };
+};
+
+/**
+ * `PrivilegeCurrency` for a privilege: expired past `expiresOn`, otherwise
+ * current when any counted row is met (or there are none), else lapsed.
+ */
+export function privilegeCurrency(p, ruleDescriptionKey, requirements = null) {
+  const params = p.expiresOn ? { messageParams: { date: p.expiresOn } } : {};
+  const base = { privilegeId: p.id, licenseId: p.licenseId, kind: p.kind, ...(p.detail ? { detail: p.detail } : {}), ruleDescriptionKey };
+  if (p.expiresOn && p.expiresOn < day(0)) return { ...base, status: 'expired', messageKey: 'privilege.expired', ...params };
+  if (!requirements) return { ...base, status: 'current', messageKey: 'privilege.valid', ...params };
+  const met = requirements.filter((r) => r.messageKey !== 'requirement.untracked').some((r) => r.met);
+  return {
+    ...base, requirements, ...params,
+    status: met ? 'current' : 'lapsed',
+    messageKey: met ? 'privilege.recency_current' : 'privilege.recency_not_met',
+  };
 }
 
 // ── Pilot profile (GET /users/me/pilot-profile) ──────────────────────────────
@@ -1051,6 +1122,8 @@ export function buildFixtureSet(persona) {
     if (path === '/currency/readiness') return deriveReadiness(currency, aircraft, persona.credentials ?? [], search);
     const ratingsMatch = path.match(/^\/licenses\/([^/]+)\/(?:class-)?ratings$/);
     if (ratingsMatch) return classRatings[ratingsMatch[1]] ?? [];
+    const privilegesMatch = path.match(/^\/licenses\/([^/]+)\/privileges$/);
+    if (privilegesMatch) return (persona.privileges ?? []).filter((p) => p.licenseId === privilegesMatch[1]);
     if (/^\/licenses\/[^/]+\/currency$/.test(path)) return currency;
     if (/^\/licenses\/[^/]+\/statistics$/.test(path)) return statistics;
     if (/^\/flights\/[^/]+\/signatures$/.test(path)) return [];

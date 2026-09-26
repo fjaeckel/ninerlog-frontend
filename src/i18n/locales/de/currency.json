@@ -39,7 +39,8 @@
     "unknown": "Unbekannt",
     "attention": "Achtung",
     "valid": "Gültig",
-    "dayOnly": "Nur tagsüber"
+    "dayOnly": "Nur tagsüber",
+    "authorisationMissing": "Berechtigung fehlt"
   },
   "expiresIn": "Läuft in {{days}} Tagen ab",
   "expiredAgo": "Vor {{days}} Tagen abgelaufen",
@@ -133,7 +134,15 @@
     "ul_trike_dulv": "Erfordert 12h als verantwortlicher Pilot auf Trikes in 24 Monaten (DULV, LuftPersV §45 Abs. 4)",
     "ul_trike_daec": "Erfordert 12h mit 12 Starts & Landungen auf Trikes in 24 Monaten sowie ein Sicherheits-/Performance-Training, das nicht erfasst wird (DAeC, LuftPersV §45 Abs. 4)",
     "ul_powered_paraglider": "Erfordert 30 Starts & Landungen mit Motorschirm oder Motorschirm-Trike in 24 Monaten (DULV/DAeC, LuftPersV §45 Abs. 4)",
-    "ul_sailplane": "Erfordert 5 Starts & Landungen mit UL-Segelflugzeugen in 12 Monaten (DAeC, LuftPersV §45 Abs. 4)"
+    "ul_sailplane": "Erfordert 5 Starts & Landungen mit UL-Segelflugzeugen in 12 Monaten (DAeC, LuftPersV §45 Abs. 4)",
+    "privilege_expiry": "Keine fortlaufende Flugerfahrung erforderlich; gültig bis zum Ablaufdatum, sofern eines eingetragen ist.",
+    "sfcl_155_launch_method": "Startart, in der du ausgebildet wurdest (SFCL.155(a)); ihre Flugpraxis steht unter „Flugpraxis je Startart“ bei der Segelflugberechtigung.",
+    "sfcl_205_towing": "Erfordert 5 Schlepps in den letzten 24 Monaten; sonst die fehlenden Schlepps mit Fluglehrer oder unter dessen Aufsicht fliegen (EASA SFCL.205(c))",
+    "sfcl_205_banner_towing": "Erfordert 5 Schlepps (Banner oder Segelflugzeug) in den letzten 24 Monaten; sonst die fehlenden Schlepps mit Fluglehrer oder unter dessen Aufsicht fliegen (EASA SFCL.205(c))",
+    "faa_61_69_towing": "Erfordert 3 Schlepps oder 3 F-Schlepps als PIC eines Segelflugzeugs in den vorangegangenen 24 Kalendermonaten (14 CFR 61.69(a)(5))",
+    "sfcl_215_cloud_flying": "Erfordert 1 h Flugzeit oder 5 Flüge als PIC in Ausübung der Wolkenflugberechtigung auf Segelflugzeugen — als IFR-Zeit erfasst — in den letzten 24 Monaten; sonst die fehlende Erfahrung mit Fluglehrer oder unter dessen Aufsicht fliegen (EASA SFCL.215)",
+    "sfcl_360_fi_s": "Erfordert 30 h oder 60 Starts Flugausbildung auf Segelflugzeugen einschließlich TMG in den letzten 3 Jahren sowie eine Auffrischungsschulung, die nicht erfasst wird (EASA SFCL.360)",
+    "dulv_ul_towing": "Erfordert 10 Schlepps auf Luftsportgeräten dieser UL-Art in den letzten 24 Monaten (DULV-Schleppberechtigung)"
   },
   "landingsOf": "{{current}} / {{required}} Landungen",
   "customCurrency": {
@@ -164,8 +173,8 @@
     "SEC_CLEARANCE_ZUP": "Deutsche ZÜP — Gültigkeit je nach ausstellender Behörde",
     "SEC_CLEARANCE_ZUBB": "Deutsche ZUBB — üblicherweise 5 Jahre gültig"
   },
-  "ratingCount_one": "{{count}} Berechtigung",
-  "ratingCount_other": "{{count}} Berechtigungen",
+  "ratingCount_one": "{{count}} Klassenberechtigung",
+  "ratingCount_other": "{{count}} Klassenberechtigungen",
   "licenseFallback": "Lizenz",
   "units": {
     "approaches": "Anflüge",
@@ -175,7 +184,13 @@
     "landings": "Landungen",
     "launches": "Starts",
     "minutes": "Minuten",
-    "sectors": "Streckenabschnitte"
+    "sectors": "Streckenabschnitte",
+    "tows": "Schlepps",
+    "km": "km",
+    "training": "Schulung",
+    "flight": "Flug",
+    "check": "Prüfung",
+    "review": "Überprüfung"
   },
   "requirement": {
     "total_time": "Gesamtflugzeit",
@@ -200,7 +215,20 @@
     "tmg_time": "Flugzeit auf TMG",
     "tmg_landings": "Starts & Landungen auf TMG",
     "tmg_training_flight": "Übungsflug auf TMG (mind. 1 h)",
-    "flight_review": "Flugüberprüfung"
+    "flight_review": "Flugüberprüfung",
+    "tows": "Schlepps als Schlepppilot",
+    "towed_glider_flights": "F-Schlepps als PIC im Segelflugzeug",
+    "cloud_flying_time": "Wolkenflugzeit (IFR, PIC)",
+    "cloud_flying_flights": "Wolkenflüge (PIC)",
+    "instruction_time": "Ausbildungszeit als Fluglehrer",
+    "instruction_launches": "Starts mit Ausbildung",
+    "fi_refresher": "FI(S)-Auffrischungsschulung",
+    "pax_prerequisite_time": "PIC-Zeit seit Lizenzerteilung",
+    "pax_prerequisite_launches": "PIC-Starts seit Lizenzerteilung",
+    "pax_competence_flight": "Übungsflug für die Passagiermitnahme",
+    "ul_xc_flights": "Überlandflüge mit Fluglehrer",
+    "ul_xc_landing_flights": "Überlandflüge mit Zwischenlandung",
+    "ul_xc_distance": "Überlandstrecke"
   },
   "requirementLongest": "längster: {{current}} / {{required}}",
   "passengerExpiry": {
@@ -250,7 +278,8 @@
       "day_current_night_not_one": "Tag gültig, Nacht nicht gültig — {{needed}} weitere Nachtlandung erforderlich, oder eine gültige IR.",
       "day_current_night_not_other": "Tag gültig, Nacht nicht gültig — {{needed}} weitere Nachtlandungen erforderlich, oder eine gültige IR.",
       "current_day_privilege_separate": "Flugerfahrung erfüllt — die Passagierberechtigung muss separat nachgewiesen werden.",
-      "gpl_experience_not_met": "Passagiere erst nach 10 h als PIC auf Tragschraubern seit Ausstellung der GPL — noch {{needed}} min (FCL.205.G(a)(2))."
+      "gpl_experience_not_met": "Passagiere erst nach 10 h als PIC auf Tragschraubern seit Ausstellung der GPL — noch {{needed}} min (FCL.205.G(a)(2)).",
+      "ul_authorisation_missing": "Starts und Landungen erfüllt, aber auf deiner Lizenz ist keine Passagierberechtigung (LuftPersV §84a) eingetragen."
     },
     "flight_review": {
       "evaluation_failed": "Status der Flugüberprüfung konnte nicht ermittelt werden.",
@@ -263,7 +292,8 @@
     "requirement": {
       "progress": "{{current}} / {{required}} {{unit}}",
       "prof_check_completed": "Absolviert am {{date}}",
-      "prof_check_missing": "Nicht absolviert"
+      "prof_check_missing": "Nicht absolviert",
+      "untracked": "Nicht erfasst — bitte selbst prüfen"
     },
     "launch_method": {
       "progress": "{{current}} / {{required}} Starts"
@@ -273,12 +303,20 @@
       "training_flight": "Einen Übungsflug von mindestens 1 h mit Fluglehrer fliegen",
       "proficiency_check": "Eine Befähigungsüberprüfung bei einem Prüfer ablegen",
       "launch_method_dual_one": "Noch 1 Start im Doppelsitzer oder unter Aufsicht ({{method}})",
-      "launch_method_dual_other": "Noch {{count}} Starts im Doppelsitzer oder unter Aufsicht ({{method}})"
+      "launch_method_dual_other": "Noch {{count}} Starts im Doppelsitzer oder unter Aufsicht ({{method}})",
+      "privilege_with_instructor": "Noch {{amount}} mit Fluglehrer oder unter dessen Aufsicht fliegen"
     },
     "readiness": {
       "launch_method_current": "Gültig bis {{date}}",
       "credential_valid": "Gültig bis {{date}}",
       "credential_expired": "Abgelaufen am {{date}}"
+    },
+    "privilege": {
+      "valid": "Gültig — keine fortlaufende Flugerfahrung erforderlich.",
+      "expired": "Abgelaufen.",
+      "recency_current": "Gültig — fortlaufende Flugerfahrung erfüllt.",
+      "recency_not_met": "Fortlaufende Flugerfahrung nicht erfüllt — die Berechtigung darf erst wieder ausgeübt werden, wenn sie erfüllt ist.",
+      "evaluation_failed": "Flugerfahrung konnte nicht ermittelt werden. Versuch es gleich noch einmal."
     }
   },
   "remedyAmount": {
@@ -292,7 +330,11 @@
     "approaches_one": "1 Instrumentenanflug",
     "approaches_other": "{{count}} Instrumentenanflüge",
     "holds_one": "1 Holding",
-    "holds_other": "{{count}} Holdings"
+    "holds_other": "{{count}} Holdings",
+    "tows_one": "1 Schlepp",
+    "tows_other": "{{count}} Schlepps",
+    "km_one": "{{count}} km",
+    "km_other": "{{count}} km"
   },
   "remedyUnrecognised": "Die fehlende Flugerfahrung nachholen, um dies wiederherzustellen.",
   "remedyLabel": "Zum Wiederherstellen",
@@ -323,5 +365,17 @@
     "title": "Um wieder zu fliegen",
     "subtitle": "Was jede abgelaufene Berechtigung und Startart wiederherstellt.",
     "orAlternative": "Alternativ:"
+  },
+  "privilegesTitle": "Berechtigungen",
+  "privilegeCount_one": "{{count}} Berechtigung",
+  "privilegeCount_other": "{{count}} Berechtigungen",
+  "launchMethodTrained": "ausgebildet",
+  "launchMethodUntrainedHint": "Geflogen, aber auf der Lizenz ist keine Ausbildung in dieser Startart eingetragen (SFCL.155(a)).",
+  "addUlPassengerAuthorisation": "Passagierberechtigung eintragen",
+  "paxRequirementsTitle": {
+    "default": "Voraussetzungen für die Passagiermitnahme",
+    "easa_spl_pax": "Voraussetzungen seit Lizenzerteilung (SFCL.115(a)(2))",
+    "easa_spl_tmg_pax": "Voraussetzungen seit Lizenzerteilung (SFCL.115(a)(2))",
+    "ul_pax": "Auf dem Weg zur Passagierberechtigung (LuftPersV §84a)"
   }
 }

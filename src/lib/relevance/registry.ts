@@ -99,6 +99,18 @@ export const FEATURES = defineFeatures([
   { id: 'classPicker.gyroplane', kind: 'picker', serves: ['GYROPLANE'] },
   { id: 'classPicker.ir', kind: 'picker', serves: ['IFR'] },
 
+  // Licence privileges
+  {
+    id: 'license.privileges',
+    kind: 'section',
+    serves: ['SAILPLANE', 'TMG', 'ULTRALIGHT', 'INSTRUCTOR'],
+    hasData: positive('privileges'),
+  },
+  { id: 'privilegePicker.sailplane', kind: 'picker', serves: ['SAILPLANE'] },
+  { id: 'privilegePicker.tmg', kind: 'picker', serves: ['TMG', 'SAILPLANE'] },
+  { id: 'privilegePicker.ultralight', kind: 'picker', serves: ['ULTRALIGHT'] },
+  { id: 'privilegePicker.instructor', kind: 'picker', serves: ['INSTRUCTOR'] },
+
   // Flights table, automatic column mode
   { id: 'column.offOnBlock', kind: 'column', serves: POWERED, hasData: anyTrue('hasValue') },
   { id: 'column.nightTime', kind: 'column', serves: POWERED },

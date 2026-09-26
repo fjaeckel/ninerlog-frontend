@@ -394,5 +394,20 @@
     "HELICOPTER": "Ultralight helicopter",
     "POWERED_PARAGLIDER": "Powered paraglider",
     "SAILPLANE": "Ultralight sailplane"
+  },
+  "privilegeKinds": {
+    "SAILPLANE_TOWING": "Sailplane towing",
+    "BANNER_TOWING": "Banner towing",
+    "CLOUD_FLYING": "Cloud flying",
+    "AEROBATIC_BASIC": "Aerobatics (basic)",
+    "AEROBATIC_ADVANCED": "Aerobatics (advanced)",
+    "TMG_NIGHT": "TMG night",
+    "FI_S": "FI(S)",
+    "BI_S": "BI(S)",
+    "FE_S": "FE(S)",
+    "UL_PASSENGER_AUTH": "Passenger authorisation (UL)",
+    "UL_TOWING": "UL towing",
+    "UL_TYPE_BRIEFING": "Type briefing",
+    "LAUNCH_METHOD_TRAINED": "Launch method trained"
   }
 }

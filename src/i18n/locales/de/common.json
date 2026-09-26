@@ -394,5 +394,20 @@
     "HELICOPTER": "UL-Hubschrauber",
     "POWERED_PARAGLIDER": "Motorschirm",
     "SAILPLANE": "UL-Segelflugzeug"
+  },
+  "privilegeKinds": {
+    "SAILPLANE_TOWING": "Segelflugzeugschlepp",
+    "BANNER_TOWING": "Bannerschlepp",
+    "CLOUD_FLYING": "Wolkenflug",
+    "AEROBATIC_BASIC": "Kunstflug (Basis)",
+    "AEROBATIC_ADVANCED": "Kunstflug (erweitert)",
+    "TMG_NIGHT": "TMG-Nachtflug",
+    "FI_S": "FI(S)",
+    "BI_S": "BI(S)",
+    "FE_S": "FE(S)",
+    "UL_PASSENGER_AUTH": "Passagierberechtigung (UL)",
+    "UL_TOWING": "UL-Schleppberechtigung",
+    "UL_TYPE_BRIEFING": "Einweisung",
+    "LAUNCH_METHOD_TRAINED": "Startart ausgebildet"
   }
 }

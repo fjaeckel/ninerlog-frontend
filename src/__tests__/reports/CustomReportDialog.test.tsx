@@ -29,6 +29,7 @@ vi.mock('recharts', () => {
 const row = (key: string, value: number) => ({
   key, label: key, value, flights: 2, totalTime: value, picTime: 0, dualTime: 0, dualGivenTime: 0,
   nightTime: 0, ifrTime: 0, crossCountryTime: 0, fstdTime: 0, landings: 3,
+  launches: 0, outlandings: 0, towFlights: 0,
 });
 const RESULT: CustomReportResult = {
   groupBy: 'month',

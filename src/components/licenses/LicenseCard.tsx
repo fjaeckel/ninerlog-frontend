@@ -1,50 +1,24 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Pencil, Plus, Trash2 } from 'lucide-react';
 import { License } from '../../stores/licenseStore';
-import { isPast, differenceInDays } from 'date-fns';
 import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateClassRating } from '../../hooks/useClassRatings';
 import { extractApiError } from '../../lib/errors';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { DocumentFileStrip } from '../documents/DocumentFileStrip';
 import { isGermanULAuthority, UL_RATING_KINDS, type ULRatingKind } from '../../lib/ultralight';
 import { ULAuthorityHint } from './ULAuthorityHint';
-import { ClassOptions, useClassGroups } from '../relevance';
+import { ClassOptions, FoldDrawer, Folded, useClassGroups } from '../relevance';
+import { useRelevance } from '../../lib/relevance';
+import { useLicencePrivileges } from '../../hooks/useLicencePrivileges';
+import type { LicencePrivilegeKind } from '../../lib/privileges';
+import { ExpiryBadge } from './ExpiryBadge';
+import { LicencePrivileges } from './LicencePrivileges';
 
 const CLASS_TYPE_OPTIONS = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
   'SET_LAND', 'SET_SEA', 'TMG', 'GLIDER', 'ULTRALIGHT', 'GYROPLANE', 'IR', 'OTHER',
 ] as const;
-
-function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
-  const { t } = useTranslation('licenses');
-  const { fmtDate } = useFormatPrefs();
-  if (!expiryDate) {
-    return <span className="text-xs text-slate-500 dark:text-slate-400">{t('card.noExpiry')}</span>;
-  }
-  const expiry = new Date(expiryDate);
-  const expired = isPast(expiry);
-  const daysLeft = differenceInDays(expiry, new Date());
-  const formatted = fmtDate(expiryDate);
-
-  if (expired) {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs">
-        <span className="font-medium text-red-600 dark:text-red-400">{formatted}</span>
-        <span className="badge-expired text-xs">{t('card.expired')}</span>
-      </span>
-    );
-  }
-  if (daysLeft <= 30) {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs">
-        <span className="font-medium text-amber-600 dark:text-amber-400">{formatted}</span>
-        <span className="badge-expiring text-xs">{t('card.expiresInDays', { days: daysLeft })}</span>
-      </span>
-    );
-  }
-  return <span className="text-xs font-medium text-green-600 dark:text-green-400">{formatted}</span>;
-}
 
 function ULKindSelect({ value, onChange }: { value: ULRatingKind | ''; onChange: (k: ULRatingKind | '') => void }) {
   const { t } = useTranslation('licenses');
@@ -74,10 +48,18 @@ interface LicenseCardProps {
   onDelete: () => void;
   /** Class rating to open in edit mode once ratings load. */
   editRatingId?: string | null;
+  /** Opens the privilege form with this kind preselected. */
+  addPrivilegeKind?: LicencePrivilegeKind | null;
 }
 
-export default function LicenseCard({ license, onEdit, onDelete, editRatingId }: LicenseCardProps) {
+export default function LicenseCard({ license, onEdit, onDelete, editRatingId, addPrivilegeKind }: LicenseCardProps) {
   const { t } = useTranslation('licenses');
+  const privilegesQuery = useLicencePrivileges(license.id);
+  const privilegeRecord = useMemo(
+    () => ({ privileges: privilegesQuery.data?.length ?? 0 }),
+    [privilegesQuery.data?.length],
+  );
+  const privilegesRelevance = useRelevance('license.privileges', { record: privilegeRecord });
   const { fmtDate } = useFormatPrefs();
   const { data: classRatings, isLoading: ratingsLoading } = useClassRatings(license.id);
   const createRating = useCreateClassRating();
@@ -150,6 +132,9 @@ export default function LicenseCard({ license, onEdit, onDelete, editRatingId }:
   useEffect(() => {
     if (openedRatingId) cardRef.current?.scrollIntoView?.({ block: 'center' });
   }, [openedRatingId]);
+  useEffect(() => {
+    if (addPrivilegeKind) cardRef.current?.scrollIntoView?.({ block: 'center' });
+  }, [addPrivilegeKind]);
 
   const handleUpdateRating = async () => {
     if (!editingRatingId || !newIssueDate || (editingRating?.classType === 'ULTRALIGHT' && !newULKind)) return;
@@ -170,6 +155,16 @@ export default function LicenseCard({ license, onEdit, onDelete, editRatingId }:
       setRatingError(extractApiError(err, t('card.failedToUpdate')));
     }
   };
+
+  const privilegesSection = (
+    <LicencePrivileges
+      licenseId={license.id}
+      privileges={privilegesQuery.data}
+      isLoading={privilegesQuery.isLoading}
+      isError={privilegesQuery.isError}
+      initialAddKind={addPrivilegeKind}
+    />
+  );
 
   return (
     <div ref={cardRef} className="card transition-shadow hover:shadow-md">
@@ -386,6 +381,15 @@ export default function LicenseCard({ license, onEdit, onDelete, editRatingId }:
               </div>
             )}
           </div>
+
+          {/* Privileges */}
+          {privilegesRelevance.visible || addPrivilegeKind ? (
+            privilegesSection
+          ) : (
+            <FoldDrawer label={() => t('privileges.folded')} className="mt-0">
+              <Folded reason={privilegesRelevance.reason}>{privilegesSection}</Folded>
+            </FoldDrawer>
+          )}
         </div>
 
         {/* Actions */}

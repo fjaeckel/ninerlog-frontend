@@ -60,7 +60,7 @@
     "issued": "Ausgestellt",
     "separateLogbook": "Separates Flugbuch",
     "noClassRatings": "Keine Klassenberechtigungen",
-    "addRating": "Berechtigung hinzufügen",
+    "addRating": "Klassenberechtigung hinzufügen",
     "classType": "Klassentyp",
     "expiryDateOptional": "Ablaufdatum (optional)",
     "failedToAdd": "Klassenberechtigung konnte nicht hinzugefügt werden.",
@@ -88,5 +88,39 @@
     "ULTRALIGHT": "UL",
     "GYROPLANE": "Tragschrauber",
     "OTHER": "Sonstige"
+  },
+  "privileges": {
+    "title": "Berechtigungen",
+    "add": "Berechtigung hinzufügen",
+    "none": "Keine Berechtigungen eingetragen",
+    "folded": "Berechtigungen und Eintragungen",
+    "moreKinds": "Weitere Berechtigungen",
+    "kind": "Berechtigung",
+    "issuedOnOptional": "Ausstellungsdatum (optional)",
+    "expiresOnOptional": "Ablaufdatum (optional)",
+    "notes": "Notizen (optional)",
+    "edit": "Berechtigung bearbeiten",
+    "remove": "Berechtigung entfernen",
+    "failedToSave": "Berechtigung konnte nicht gespeichert werden.",
+    "failedToDelete": "Berechtigung konnte nicht gelöscht werden.",
+    "loadFailed": "Berechtigungen konnten nicht geladen werden.",
+    "detailLabel": {
+      "launchMethod": "Startart",
+      "ulKind": "UL-Art",
+      "aircraftType": "Einweisung auf Muster",
+      "free": "Details (optional)"
+    },
+    "detailPlaceholder": {
+      "launchMethod": "Startart wählen",
+      "ulKind": "UL-Art wählen",
+      "aircraftType": "z. B. C42 B"
+    },
+    "errors": {
+      "detailRequired": "Für diese Berechtigung ist eine Angabe erforderlich.",
+      "detailInvalid": "Bitte einen Wert aus der Liste wählen.",
+      "detailTooLong": "Die Angabe darf höchstens 100 Zeichen lang sein.",
+      "expiryBeforeIssue": "Das Ablaufdatum darf nicht vor dem Ausstellungsdatum liegen.",
+      "notesTooLong": "Notizen dürfen höchstens 1000 Zeichen lang sein."
+    }
   }
 }

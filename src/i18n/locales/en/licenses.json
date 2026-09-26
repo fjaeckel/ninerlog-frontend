@@ -88,5 +88,39 @@
     "ULTRALIGHT": "Ultralight",
     "GYROPLANE": "Gyroplane",
     "OTHER": "Other"
+  },
+  "privileges": {
+    "title": "Privileges",
+    "add": "Add privilege",
+    "none": "No privileges recorded",
+    "folded": "Privileges and endorsements",
+    "moreKinds": "More privileges",
+    "kind": "Privilege",
+    "issuedOnOptional": "Issue date (optional)",
+    "expiresOnOptional": "Expiry date (optional)",
+    "notes": "Notes (optional)",
+    "edit": "Edit privilege",
+    "remove": "Remove privilege",
+    "failedToSave": "Failed to save privilege.",
+    "failedToDelete": "Failed to delete privilege.",
+    "loadFailed": "Privileges could not be loaded.",
+    "detailLabel": {
+      "launchMethod": "Launch method",
+      "ulKind": "Ultralight kind",
+      "aircraftType": "Type briefing on aircraft type",
+      "free": "Detail (optional)"
+    },
+    "detailPlaceholder": {
+      "launchMethod": "Select launch method",
+      "ulKind": "Select ultralight kind",
+      "aircraftType": "e.g. C42 B"
+    },
+    "errors": {
+      "detailRequired": "This privilege needs a detail.",
+      "detailInvalid": "Choose a value from the list.",
+      "detailTooLong": "The detail may be at most 100 characters.",
+      "expiryBeforeIssue": "The expiry date cannot be before the issue date.",
+      "notesTooLong": "Notes may be at most 1000 characters."
+    }
   }
 }

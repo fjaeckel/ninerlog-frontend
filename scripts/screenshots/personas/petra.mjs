@@ -5,7 +5,8 @@
  */
 import {
   makeUser, aircraftRecord, licence, classRating, credential, flight, rng, between, pick, weekends, addTime, day, daysAgo, iso,
-  tally, req, profCheck, recencyStatus, easaPax, launchMethodRows, distanceNm
+  tally, req, profCheck, recencyStatus, easaPax, launchMethodRows, distanceNm,
+  privilege, privilegeReq, privilegeCurrency, untracked
 } from './build.mjs';
 
 const user = makeUser({ id: 'u1', email: 'petra.lindner@example.com', name: 'Dr. Petra Lindner', createdAt: iso('2024-11-02') });
@@ -29,16 +30,15 @@ const licenses = [
   licence('l3', 'EASA', 'FI(S)', 'DE.SFCL.FI.0412', '2016-03-19', 'LBA'),
 ];
 const classRatings = {
-  l1: [
-    classRating('cr1', 'l1', 'GLIDER', '2006-07-21'),
-    classRating('cr2', 'l1', 'OTHER', '2014-05-30', { notes: 'Cloud flying rating (SFCL.215)' }),
-  ],
-  l2: [
-    classRating('cr3', 'l2', 'SEP_LAND', '2012-09-14', { expiryDate: SEP_EXPIRY }),
-    classRating('cr4', 'l2', 'OTHER', '2013-06-01', { notes: 'Sailplane towing (FCL.805)' }),
-  ],
+  l1: [classRating('cr1', 'l1', 'GLIDER', '2006-07-21')],
+  l2: [classRating('cr3', 'l2', 'SEP_LAND', '2012-09-14', { expiryDate: SEP_EXPIRY })],
   l3: [],
 };
+const privileges = [
+  privilege('pv1', 'l2', 'SAILPLANE_TOWING', { issuedOn: '2013-06-01', notes: 'Club DR400 D-EPTW' }),
+  privilege('pv2', 'l1', 'CLOUD_FLYING', { issuedOn: '2014-05-30' }),
+  privilege('pv3', 'l3', 'FI_S', { issuedOn: '2016-03-19' }),
+];
 const credentials = [credential('c1', 'EASA_CLASS2_MEDICAL', 'MED-77120', '2025-06-02', '2027-06-02', 'AeMC Nürnberg')];
 const STUDENTS = ['Felix Roth', 'Lea Schubert', 'Noah Kraus'];
 const contacts = STUDENTS.map((name, i) => ({ id: `p${i + 1}`, userId: 'u1', name, email: null, phone: null, notes: 'Student', createdAt: iso('2025-04-01'), updatedAt: iso('2025-04-01') }));
@@ -63,7 +63,7 @@ function season(seed, from, to) {
       let t = '10:30';
       for (let k = 0, n = between(rand, 5, 8); k < n; k++) {
         const minutes = between(rand, 12, 18);
-        out.push(flight({ date, reg: 'D-EPTW', type: 'DR40', from: 'EDQD', to: 'EDQD', offBlock: addTime(t, -4), onBlock: addTime(t, minutes + 3), depTime: t, minutes: minutes + 7, remarks: 'Glider tow' }));
+        out.push({ ...flight({ date, reg: 'D-EPTW', type: 'DR40', from: 'EDQD', to: 'EDQD', offBlock: addTime(t, -4), onBlock: addTime(t, minutes + 3), depTime: t, minutes: minutes + 7, remarks: 'Glider tow' }), isTowFlight: true });
         t = addTime(t, minutes + between(rand, 20, 40));
       }
     } else if (r < 0.58) {
@@ -104,9 +104,10 @@ function currency(fl, acByReg) {
     req('requirement.refresher_training', sep.instructorMinutes, 60, 'minutes'),
   ];
   const sepMet = sepReqs.every((r) => r.met);
-  const other = (id, licenseId, licenseType) => ({
-    classRatingId: id, classType: 'OTHER', licenseId, regulatoryAuthority: 'EASA', licenseType, status: 'unknown', messageKey: 'rating.no_expiry_date',
-  });
+  const tows = tally(fl, acByReg, (f, ac) => f.isTowFlight && ac?.aircraftClass !== 'ULTRALIGHT', 730);
+  const cloud = tally(fl, acByReg, (f, ac) => isGlider(f, ac) && f.picTime > 0 && f.ifrTime > 0, 730);
+  const instruction = tally(fl, acByReg, (f, ac) => ['GLIDER', 'TMG'].includes(ac?.aircraftClass) && f.dualGivenTime > 0, 1096);
+  const [towing, cloudFlying, fis] = privileges;
   return {
     ratings: [
       {
@@ -114,25 +115,37 @@ function currency(fl, acByReg) {
         ...recencyStatus(spl), windowOpen: false, ruleDescriptionKey: 'easa_spl', countedClasses: ['GLIDER', 'TMG'],
         requirements: spl, launchMethodCurrency: launchMethodRows(fl, acByReg, isGlider),
       },
-      other('cr2', 'l1', 'SPL'),
       {
         classRatingId: 'cr3', classType: 'SEP_LAND', licenseId: 'l2', regulatoryAuthority: 'EASA', licenseType: 'PPL(A)',
         status: sepMet ? 'current' : 'expiring', messageKey: sepMet ? 'rating.revalidation_current' : 'rating.revalidation_not_met',
         expiryDate: SEP_EXPIRY, windowOpensAt: '2026-03-04', windowOpen: true, ruleDescriptionKey: 'easa_sep_tmg',
         countedClasses: ['SEP_LAND', 'TMG'], creditedUltralightKinds: ['THREE_AXIS', 'THREE_AXIS_MOTORGLIDER'], requirements: sepReqs,
       },
-      other('cr4', 'l2', 'PPL(A)'),
     ],
     passengerCurrency: [
-      easaPax('GLIDER', fl, acByReg, isGlider, { picOnly: true, ruleDescriptionKey: 'easa_spl_pax' }),
+      easaPax('GLIDER', fl, acByReg, isGlider, { picOnly: true, ruleDescriptionKey: 'easa_spl_pax', spl115IssueDate: '2006-07-21' }),
       easaPax('SEP_LAND', fl, acByReg, isSEP, { nightPrivilege: true }),
+    ],
+    privileges: [
+      privilegeCurrency(cloudFlying, 'sfcl_215_cloud_flying', [
+        privilegeReq('requirement.cloud_flying_time', cloud, 'ifr', 60, 'minutes', 24, 'remedy.privilege_with_instructor'),
+        privilegeReq('requirement.cloud_flying_flights', cloud, 'flights', 5, 'flights', 24, 'remedy.privilege_with_instructor'),
+      ]),
+      privilegeCurrency(towing, 'sfcl_205_towing', [
+        privilegeReq('requirement.tows', tows, 'launches', 5, 'tows', 24, 'remedy.privilege_with_instructor'),
+      ]),
+      privilegeCurrency(fis, 'sfcl_360_fi_s', [
+        privilegeReq('requirement.instruction_time', instruction, 'dualGiven', 1800, 'minutes', 36),
+        privilegeReq('requirement.instruction_launches', instruction, 'launches', 60, 'launches', 36),
+        untracked('requirement.fi_refresher', 'training'),
+      ]),
     ],
   };
 }
 
 export default {
   id: 'petra',
-  user, aircraft, licenses, classRatings, credentials, contacts, flights, currency, airports,
+  user, aircraft, licenses, classRatings, privileges, credentials, contacts, flights, currency, airports,
   profileSettings: { disciplines: Object.fromEntries(['SAILPLANE', 'AEROPLANE', 'INSTRUCTOR'].map((d) => [d, { acknowledgedAt: iso('2024-11-02T18:00:00Z') }])) },
   expectedDisciplines: { SAILPLANE: 'active', AEROPLANE: 'active', INSTRUCTOR: 'active' },
   shotAircraft: ['D-KXYZ', 'D-EPTW'],

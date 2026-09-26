@@ -12,6 +12,7 @@ import { FormModal } from '../../components/ui/FormModal';
 import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import HelpLink from '../../components/ui/HelpLink';
+import { PRIVILEGE_KINDS, type LicencePrivilegeKind } from '../../lib/privileges';
 
 export default function LicensesPage() {
   const { data: licenses, isLoading, error } = useLicenses();
@@ -22,6 +23,11 @@ export default function LicensesPage() {
   const { t } = useTranslation('licenses');
   const [searchParams] = useSearchParams();
   const editRatingId = searchParams.get('editRating');
+  const addPrivilegeParam = searchParams.get('addPrivilege');
+  const addPrivilegeKind = addPrivilegeParam && (PRIVILEGE_KINDS as readonly string[]).includes(addPrivilegeParam)
+    ? (addPrivilegeParam as LicencePrivilegeKind)
+    : null;
+  const addPrivilegeLicence = searchParams.get('licence');
 
   const handleDelete = async (id: string) => {
     setDeleteTarget(id);
@@ -99,6 +105,7 @@ export default function LicensesPage() {
               onEdit={() => handleEdit(license.id)}
               onDelete={() => handleDelete(license.id)}
               editRatingId={editRatingId}
+              addPrivilegeKind={addPrivilegeKind && (addPrivilegeLicence ?? licenses[0]?.id) === license.id ? addPrivilegeKind : null}
             />
           ))}
         </div>
