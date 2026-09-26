@@ -1,4 +1,4 @@
-import type { Disciplines } from '../../hooks/usePilotProfile';
+import { DISCIPLINES, type Disciplines } from '../../hooks/usePilotProfile';
 import type { FeatureDef, RelevanceCtx } from './registry';
 
 /** Why an element is shown or folded, as data; `useRelevance` localises it. */
@@ -21,12 +21,19 @@ export interface RelevanceDecision {
   cause: RelevanceCause;
 }
 
+/** Whether any known discipline is active or training. */
+const hasAnyDiscipline = (d: Disciplines) =>
+  DISCIPLINES.some((x) => {
+    const s = d.status(x);
+    return s === 'active' || s === 'training';
+  });
+
 const shown = (cause: RelevanceCause): RelevanceDecision => ({ visible: true, folded: false, cause });
 
 /**
  * Decides whether a feature is shown or folded.
- * Order: unknown feature, `all`, data on the record, everything mode, profile unavailable,
- * selected aircraft (when the feature matches aircraft), then the pilot's disciplines.
+ * Order: unknown feature, `all`, data on the record, everything mode, profile unavailable
+ * or without any active or training discipline, selected aircraft (when the feature matches aircraft), then the pilot's disciplines.
  */
 export function resolveRelevance(
   def: FeatureDef | undefined,
@@ -37,7 +44,7 @@ export function resolveRelevance(
   if (def.serves === 'all') return shown({ kind: 'all' });
   if (def.hasData?.(ctx)) return shown({ kind: 'hasData' });
   if (d.mode === 'everything') return shown({ kind: 'everything' });
-  if (!d.isReady) return shown({ kind: 'failOpen' });
+  if (!d.isReady || !hasAnyDiscipline(d)) return shown({ kind: 'failOpen' });
   if (ctx.aircraft && def.aircraftMatch) {
     const match = def.aircraftMatch(ctx.aircraft);
     return { visible: match, folded: !match, cause: { kind: 'aircraft', match } };

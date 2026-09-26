@@ -22,7 +22,8 @@ import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, landingsText, FLIGHT_FUNCTION_BADGE } from '../../components/flights/flightTableColumns';
+import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, hasLaunchMethod, landingsText, FLIGHT_FUNCTION_BADGE } from '../../components/flights/flightTableColumns';
+import { useFlightColumnRelevance } from '../../hooks/useFlightColumnRelevance';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
 import type { components, operations } from '../../api/schema';
@@ -272,11 +273,15 @@ export default function FlightsPage() {
     [isWide, data, infinite.data]
   );
   // Optional table columns for this page.
-  const columns = useMemo(() => selectFlightColumns(flights, columnPrefs), [flights, columnPrefs]);
+  const columnRelevance = useFlightColumnRelevance();
+  const columns = useMemo(
+    () => selectFlightColumns(flights, columnPrefs, columnRelevance),
+    [flights, columnPrefs, columnRelevance]
+  );
   // One set of time columns for every card on the page.
   const cardColumns = useMemo(
-    () => selectFlightCardColumns(flights, columnPrefs),
-    [flights, columnPrefs]
+    () => selectFlightCardColumns(flights, columnPrefs, columnRelevance),
+    [flights, columnPrefs, columnRelevance]
   );
   // A flight's 0-based position in the whole list, for previous/next on its page.
   const listOffset = isWide ? (page - 1) * FLIGHT_LIST_PAGE_SIZE : 0;
@@ -390,6 +395,7 @@ export default function FlightsPage() {
     columns.time.length +
     columns.details.length +
     (columns.offOnBlock ? 1 : 0) +
+    (columns.launch ? 1 : 0) +
     (columns.function ? 1 : 0) +
     (columns.landings ? 1 : 0) +
     (columns.remarksRevealClass ? 1 : 0);
@@ -717,6 +723,9 @@ export default function FlightsPage() {
                   <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableDate')}</th>
                   <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableRoute')}</th>
                   <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableAircraft')}</th>
+                  {columns.launch && (
+                    <th title={t('flights:fields.launchMethod')} className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLaunch')}</th>
+                  )}
                   {columns.offOnBlock && (
                     <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableOffOnBlock')}</th>
                   )}
@@ -812,6 +821,16 @@ export default function FlightsPage() {
                       <span className="font-medium">{flight.aircraftReg}</span>
                       <span className="text-slate-400 dark:text-slate-500 ml-1">({flight.aircraftType})</span>
                     </td>
+                    {columns.launch && (
+                      <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300" data-testid="launch-cell">
+                        {hasLaunchMethod(flight)
+                          ? t('flights:launchCell', {
+                              method: t(`flights:launchMethods.${flight.launchMethod === 'self-launch' ? 'selfLaunch' : flight.launchMethod}`),
+                              count: flight.launches ?? 1,
+                            })
+                          : '—'}
+                      </td>
+                    )}
                     {columns.offOnBlock && (
                       <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono tabular-nums text-xs">
                         {fmtTimeOfDay(flight.offBlockTime) || '—'} / {fmtTimeOfDay(flight.onBlockTime) || '—'}

@@ -74,5 +74,12 @@
       "FLIGHTS_INSTRUCTING": "du {{ref}} eingetragen hast"
     },
     "fallbackReason": "dein Flugbuch darauf hindeutet"
+  },
+  "moreClasses": "Weitere Klassen",
+  "moreSections": "Weitere Bereiche ({{count}})",
+  "dormant": {
+    "note": "Ruhend — seit 24 Monaten nicht geflogen",
+    "show": "Status anzeigen",
+    "hide": "Status ausblenden"
   }
 }

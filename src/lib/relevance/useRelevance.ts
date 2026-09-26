@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useDisciplines } from '../../hooks/usePilotProfile';
 import { getFeature, type FeatureId, type RelevanceCtx } from './registry';
-import { resolveRelevance, type RelevanceCause } from './resolve';
+import { resolveRelevance, type RelevanceCause, type RelevanceDecision } from './resolve';
 import { toolkitLabel, toolkitName } from './names';
 
 export interface Relevance {
@@ -47,4 +47,13 @@ export function useRelevance(id: FeatureId, ctx?: RelevanceCtx): Relevance {
     const decision = resolveRelevance(getFeature(id), disciplines, { aircraft, record });
     return { visible: decision.visible, folded: decision.folded, reason: relevanceReason(t, decision.cause) };
   }, [id, disciplines, aircraft, record, t]);
+}
+
+/** Decides many features at once, e.g. per picker option or per table column. */
+export function useRelevanceResolver(): (id: FeatureId, ctx?: RelevanceCtx) => RelevanceDecision {
+  const disciplines = useDisciplines();
+  return useCallback(
+    (id: FeatureId, ctx?: RelevanceCtx) => resolveRelevance(getFeature(id), disciplines, ctx),
+    [disciplines],
+  );
 }

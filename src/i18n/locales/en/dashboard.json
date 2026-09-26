@@ -20,6 +20,7 @@
     "picusDetail": "+ {{time}} PICUS"
   },
   "blockTimeBreakdown": "Block Time Breakdown",
+  "timeBreakdown": "Time Breakdown",
   "baselineApplied": "Includes {{hours}}h carried forward from your initial-hours snapshot (as of {{date}}).",
   "breakdownLabels": {
     "pic": "PIC",
