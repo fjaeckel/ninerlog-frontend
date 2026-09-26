@@ -79,7 +79,9 @@ export function useCurrencyMessages() {
     /** Right-hand progress text of a requirement bar. Durations honour the user's time format. */
     requirementProgress: (req: CurrencyRequirement) =>
       req.unit === 'minutes'
-        ? `${fmtDuration(req.current)} / ${fmtDuration(req.required)}`
+        ? req.nameKey === 'requirement.training_flight'
+          ? t('requirementLongest', { current: fmtDuration(req.current), required: fmtDuration(req.required) })
+          : `${fmtDuration(req.current)} / ${fmtDuration(req.required)}`
         : currencyMessage(req, {
             current: formatAmount(req.current),
             required: formatAmount(req.required),

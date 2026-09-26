@@ -43,6 +43,7 @@ const IMPORT_FIELDS = [
   { value: 'landingsDay', labelKey: 'fields.landingsDay' },
   { value: 'landingsNight', labelKey: 'fields.landingsNight' },
   { value: 'landingsTotal', labelKey: 'fields.landingsTotal' },
+  { value: 'launchMethod', labelKey: 'fields.launchMethod' },
   { value: 'holds', labelKey: 'fields.holds' },
   { value: 'approachesCount', labelKey: 'fields.approachesCount' },
   { value: 'isIpc', labelKey: 'fields.isIpc' },
