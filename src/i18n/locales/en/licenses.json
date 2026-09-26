@@ -71,7 +71,9 @@
     "noExpiry": "No expiry",
     "expired": "Expired",
     "expiresInDays": "Expires in {{days}}d",
-    "ulKind": "Ultralight kind"
+    "ulKind": "Ultralight kind",
+    "ulKindNotSet": "Kind not set",
+    "ulKindPlaceholder": "Select ultralight kind"
   },
   "classTypeLabels": {
     "SEP_LAND": "SEP (Land)",

@@ -161,6 +161,7 @@ export const TARGETS = [
     },
   },
   { name: 'licenses', path: '/licenses' },
+  { name: 'licenses-rating-edit', path: '/licenses?editRating=cr9' },
   {
     name: 'licenses-modal-ul',
     path: '/licenses',

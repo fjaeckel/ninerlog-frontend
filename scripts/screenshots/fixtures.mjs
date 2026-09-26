@@ -215,12 +215,16 @@ export const classRatings = {
     { id: 'cr1', licenseId: 'l1', classType: 'SEP_LAND', issueDate: '2024-06-01', expiryDate: day(45), notes: null, createdAt: iso('2024-06-01'), updatedAt: iso('2026-01-01') },
     { id: 'cr2', licenseId: 'l1', classType: 'TMG', issueDate: '2023-03-01', expiryDate: day(-20), notes: null, createdAt: iso('2023-03-01'), updatedAt: iso('2026-01-01') },
   ],
-  l2: [],
+  l2: [
+    { id: 'cr10', licenseId: 'l2', classType: 'GLIDER', issueDate: '2021-09-02', expiryDate: null, notes: null, createdAt: iso('2021-09-02'), updatedAt: iso('2026-01-01') },
+  ],
   l3: [
     { id: 'cr3', licenseId: 'l3', classType: 'GLIDER', issueDate: '2016-04-09', expiryDate: null, notes: null, createdAt: iso('2016-04-09'), updatedAt: iso('2026-01-01') },
+    { id: 'cr8', licenseId: 'l3', classType: 'TMG', issueDate: '2019-05-11', expiryDate: null, notes: null, createdAt: iso('2019-05-11'), updatedAt: iso('2026-01-01') },
   ],
   l4: [
     { id: 'cr4', licenseId: 'l4', classType: 'ULTRALIGHT', ulKind: 'THREE_AXIS', issueDate: '2018-07-21', expiryDate: null, notes: null, createdAt: iso('2018-07-21'), updatedAt: iso('2026-01-01') },
+    { id: 'cr9', licenseId: 'l4', classType: 'ULTRALIGHT', ulKind: null, issueDate: '2024-05-04', expiryDate: null, notes: null, createdAt: iso('2024-05-04'), updatedAt: iso('2026-01-01') },
   ],
   l5: [
     { id: 'cr5', licenseId: 'l5', classType: 'SEP_LAND', issueDate: '2022-05-03', expiryDate: null, notes: null, createdAt: iso('2022-05-03'), updatedAt: iso('2026-01-01') },
@@ -258,28 +262,30 @@ export const currency = {
       status: 'expiring', expiryDate: day(45), windowOpensAt: day(-320), windowOpen: true,
       countedClasses: ['SEP_LAND', 'TMG'],
       creditedUltralightKinds: ['THREE_AXIS', 'THREE_AXIS_MOTORGLIDER'],
-      message: 'Revalidation window open — 6 h 20 m of 12 h flown.',
+      messageKey: 'rating.revalidation_not_met', ruleDescriptionKey: 'easa_sep_tmg',
       ruleDescription: 'EASA FCL.740.A — 12 h, 12 take-offs and landings, 1 h training flight.',
       requirements: [
-        { name: 'Total time', met: false, current: 380, required: 720, unit: 'minutes', message: '6h 20m / 12h 00m' },
-        { name: 'PIC time', met: true, current: 380, required: 360, unit: 'minutes', message: '6h 20m / 6h 00m' },
-        { name: 'Take-offs & landings', met: false, current: 8, required: 12, unit: 'landings', message: '8 / 12' },
-        { name: 'Training flight', met: true, current: 1, required: 1, unit: 'flights', message: '1 / 1' },
+        { nameKey: 'requirement.total_time', met: false, current: 380, required: 720, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.pic_time', met: true, current: 380, required: 360, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.landings', met: false, current: 8, required: 12, unit: 'landings', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.refresher_training', met: true, current: 60, required: 60, unit: 'minutes', messageKey: 'requirement.progress' },
       ],
     },
     {
       classRatingId: 'cr2', classType: 'TMG', licenseId: 'l1', regulatoryAuthority: 'EASA', licenseType: 'PPL(A)',
       status: 'expired', expiryDate: day(-20),
       countedClasses: ['SEP_LAND', 'TMG'],
-      message: 'Rating expired — renewal requires a proficiency check.',
+      messageKey: 'rating.expired', ruleDescriptionKey: 'easa_sep_tmg',
+      ruleDescription: 'EASA FCL.740.A — 12 h, 12 take-offs and landings, 1 h training flight.',
       requirements: [
-        { name: 'Total time', met: false, current: 60, required: 720, unit: 'minutes', message: '1h 00m / 12h 00m' },
-        { name: 'Take-offs & landings', met: false, current: 2, required: 12, unit: 'landings', message: '2 / 12' },
+        { nameKey: 'requirement.total_time', met: false, current: 60, required: 720, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.landings', met: false, current: 2, required: 12, unit: 'landings', messageKey: 'requirement.progress' },
       ],
     },
     {
       classRatingId: 'cr3', classType: 'GLIDER', licenseId: 'l3', regulatoryAuthority: 'EASA', licenseType: 'SPL',
       status: 'current', windowOpen: false, messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_spl',
+      ruleDescription: 'EASA SFCL.160(a) — 5 h, 15 launches, 2 training flights in 24 months.',
       countedClasses: ['GLIDER', 'TMG'],
       creditedUltralightKinds: ['SAILPLANE', 'THREE_AXIS_MOTORGLIDER'],
       requirements: [
@@ -295,17 +301,36 @@ export const currency = {
       ],
     },
     {
-      classRatingId: 'cr4', classType: 'ULTRALIGHT', licenseId: 'l4', regulatoryAuthority: 'DULV', licenseType: 'UL',
-      status: 'expiring', windowOpen: false, messageKey: 'rating.recency_not_met', ruleDescriptionKey: 'ul_luftpersv',
-      countedClasses: ['SEP_LAND', 'TMG'],
-      creditedUltralightKinds: ['THREE_AXIS', 'THREE_AXIS_MOTORGLIDER'],
+      classRatingId: 'cr8', classType: 'TMG', licenseId: 'l3', regulatoryAuthority: 'EASA', licenseType: 'SPL',
+      status: 'lapsed', windowOpen: false, messageKey: 'rating.recency_not_met', ruleDescriptionKey: 'easa_spl_tmg',
+      ruleDescription: 'EASA SFCL.160(b) — 12 h, 6 h and 12 take-offs and landings on TMG, 1 h training flight.',
+      countedClasses: ['GLIDER', 'TMG'],
       requirements: [
-        { nameKey: 'requirement.total_time', met: false, current: 540, required: 720, unit: 'minutes' },
-        { nameKey: 'requirement.pic_time', met: true, current: 480, required: 360, unit: 'minutes' },
-        { nameKey: 'requirement.landings', met: true, current: 14, required: 12, unit: 'landings' },
-        { nameKey: 'requirement.training_flight', met: true, current: 60, required: 60, unit: 'minutes' },
+        { nameKey: 'requirement.flight_time', met: true, current: 780, required: 720, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.tmg_time', met: false, current: 250, required: 360, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.tmg_landings', met: false, current: 7, required: 12, unit: 'landings', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.tmg_training_flight', met: false, current: 0, required: 60, unit: 'minutes', messageKey: 'requirement.progress' },
         { nameKey: 'requirement.proficiency_check', met: false, current: 0, required: 1, unit: 'check', messageKey: 'requirement.prof_check_missing' },
       ],
+    },
+    {
+      classRatingId: 'cr4', classType: 'ULTRALIGHT', licenseId: 'l4', regulatoryAuthority: 'DULV', licenseType: 'UL',
+      status: 'lapsed', windowOpen: false, messageKey: 'rating.recency_not_met', ruleDescriptionKey: 'ul_luftpersv',
+      ruleDescription: 'LuftPersV §45(2) — 12 h incl. 6 h PIC, 12 take-offs and landings, 1 h training flight in 24 months.',
+      countedClasses: ['SEP_LAND', 'TMG'],
+      creditedUltralightKinds: ['THREE_AXIS', 'THREE_AXIS_MOTORGLIDER'],
+      unclassifiedFlights: 3,
+      requirements: [
+        { nameKey: 'requirement.total_time', met: false, current: 540, required: 720, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.pic_time', met: true, current: 480, required: 360, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.landings', met: true, current: 14, required: 12, unit: 'landings', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.training_flight', met: false, current: 45, required: 60, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.proficiency_check', met: false, current: 0, required: 1, unit: 'check', messageKey: 'requirement.prof_check_missing' },
+      ],
+    },
+    {
+      classRatingId: 'cr9', classType: 'ULTRALIGHT', licenseId: 'l4', regulatoryAuthority: 'DULV', licenseType: 'UL',
+      status: 'unknown', messageKey: 'rating.ul_kind_required',
     },
     {
       classRatingId: 'cr5', classType: 'SEP_LAND', licenseId: 'l5', regulatoryAuthority: 'EASA', licenseType: 'LAPL(A)',
@@ -330,6 +355,15 @@ export const currency = {
         { nameKey: 'requirement.proficiency_check', met: false, current: 0, required: 1, unit: 'check', messageKey: 'requirement.prof_check_missing' },
       ],
     },
+    {
+      classRatingId: 'cr10', classType: 'GLIDER', licenseId: 'l2', regulatoryAuthority: 'FAA', licenseType: 'PPL',
+      status: 'current', messageKey: 'flight_review.current', messageParams: { date: '2025-04-18' },
+      ruleDescriptionKey: 'faa_flight_review', ruleDescription: 'Flight review required every 24 calendar months (14 CFR 61.56)',
+      requirements: [
+        { nameKey: 'requirement.flight_review', met: true, current: 1, required: 1, unit: 'review', messageKey: 'requirement.prof_check_completed', messageParams: { date: '2025-04-18' } },
+        { nameKey: 'requirement.training_flights', met: false, current: 1, required: 3, unit: 'flights', messageKey: 'requirement.progress' },
+      ],
+    },
   ],
   passengerCurrency: [
     {
@@ -339,10 +373,9 @@ export const currency = {
     },
     {
       classType: 'SEP_LAND', regulatoryAuthority: 'FAA', dayStatus: 'current', nightStatus: 'expired',
-      dayLandings: 5, nightLandings: 1, dayRequired: 3, nightRequired: 3, nightPrivilege: false,
-      message: '§61.57(a) — day currency satisfied, night currency lapsed.',
+      dayLandings: 5, nightLandings: 1, dayRequired: 3, nightRequired: 3, nightPrivilege: true,
+      messageKey: 'pax.day_current_night_not', messageParams: { needed: 2 }, ruleDescriptionKey: 'faa_pax_day_night',
       ruleDescription: '3 take-offs and landings in the preceding 90 days.',
-      passengerPrivilege: { eligible: false, message: 'Night passenger carriage not permitted' },
     },
     {
       classType: 'ULTRALIGHT', ulKind: 'THREE_AXIS', regulatoryAuthority: 'DULV', dayStatus: 'current', nightStatus: 'unknown',
@@ -350,7 +383,7 @@ export const currency = {
       dayExpiresOn: day(61), messageKey: 'pax.current_day_privilege_separate', ruleDescriptionKey: 'ul_pax',
     },
   ],
-  flightReview: { lastCompleted: '2025-04-18', expiresOn: '2027-04-30', status: 'current', message: 'Flight review valid until April 2027.' },
+  flightReview: { lastCompleted: '2025-04-18', expiresOn: '2027-04-30', status: 'current', messageKey: 'flight_review.current', messageParams: { date: '2025-04-18' } },
 };
 
 export const adminStats = {
@@ -731,7 +764,7 @@ export function bodyFor(pathname) {
   const path = pathname.replace(/^.*\/api\/v1/, '');
   if (path in ROUTES) return ROUTES[path];
 
-  const classRatingsMatch = path.match(/^\/licenses\/([^/]+)\/class-ratings$/);
+  const classRatingsMatch = path.match(/^\/licenses\/([^/]+)\/(?:class-)?ratings$/);
   if (classRatingsMatch) return classRatings[classRatingsMatch[1]] ?? [];
   if (/^\/licenses\/[^/]+\/currency$/.test(path)) return currency;
   if (/^\/licenses\/[^/]+\/statistics$/.test(path)) return statistics;

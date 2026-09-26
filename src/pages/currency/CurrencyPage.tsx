@@ -22,6 +22,7 @@ import { RequirementIcon } from '../../components/ui/RequirementIcon';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useCurrencyMessages } from '../../lib/currencyMessages';
+import { isRatingAlert } from '../../lib/ratingStatus';
 
 export default function CurrencyPage() {
   const { data: currencyStatus, isLoading: currencyLoading } = useAllCurrencyStatus();
@@ -89,7 +90,7 @@ export default function CurrencyPage() {
   }
 
   // Count alerts
-  const expiringRatings = currencyStatus?.ratings.filter((r) => r.status === 'expiring' || r.status === 'expired') || [];
+  const expiringRatings = currencyStatus?.ratings.filter((r) => isRatingAlert(r.status)) || [];
   const now = new Date();
   const expiringCredentials = credentials?.filter((c) => {
     if (!c.expiryDate) return false;
@@ -216,7 +217,7 @@ export default function CurrencyPage() {
           {Object.entries(ratingsByLicense).map(([licenseId, ratings]) => {
             const license = licenses?.find((l) => l.id === licenseId);
             const isExpanded = expandedLicenses[licenseId] !== false; // default expanded
-            const hasAlert = ratings.some((r) => r.status === 'expiring' || r.status === 'expired');
+            const hasAlert = ratings.some((r) => isRatingAlert(r.status));
 
             return (
               <div key={licenseId} className="mb-4">

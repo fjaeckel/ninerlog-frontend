@@ -34,6 +34,8 @@
     "expiring": "Läuft bald ab",
     "expired": "Abgelaufen",
     "notCurrent": "Nicht gültig",
+    "lapsed": "Nicht aktuell",
+    "lapsedHelper": "Lizenz gültig — fortlaufende Flugerfahrung nicht erfüllt",
     "unknown": "Unbekannt",
     "attention": "Achtung",
     "valid": "Gültig",
@@ -77,6 +79,11 @@
   "windowClosedHint": "Kürzlich verlängert — Flüge vor diesem Datum zählen nicht für die nächste Verlängerung.",
   "countedClassesLabel": "Zählt Flüge auf: {{classes}}",
   "countedClassesAeroplanes": "allen Flugzeugen und TMG",
+  "setUlKind": "UL-Art festlegen",
+  "unclassifiedFlights_one": "{{count}} Flug auf einem UL ohne UL-Art wurde nicht gezählt — lege die UL-Art am Luftfahrzeug fest",
+  "unclassifiedFlights_other": "{{count}} Flüge auf UL ohne UL-Art wurden nicht gezählt — lege die UL-Art am Luftfahrzeug fest",
+  "unclassifiedFlightsLink": "Zu den Luftfahrzeugen",
+  "messageUnrecognised": "Zu diesem Status liegen keine Details vor.",
   "expiryBanner": {
     "headingExpired": "Handlungsbedarf, um wieder fliegen zu dürfen",
     "headingExpiring": "Verlängerung steht an",
@@ -100,7 +107,8 @@
       "generic": {
         "expiring": "Erfülle die unten aufgeführten Anforderungen vor dem Ablaufdatum.",
         "expired": "Das ist abgelaufen — prüfe die Anforderungen unten oder wende dich zur Erneuerung an deinen Fluglehrer bzw. Prüfer."
-      }
+      },
+      "lapsed": "Deine Lizenz bleibt gültig. Erfülle die unten fehlende Flugerfahrung oder, wo deine Regel das zulässt, eine Befähigungsüberprüfung, bevor du ihre Rechte wieder ausübst."
     }
   },
   "ruleDescriptions": {
@@ -116,7 +124,7 @@
     "easa_pax": "3 Starts & Landungen (Tag) und 1 Start & Landung bei Nacht auf demselben Muster bzw. in derselben Klasse in den vorangegangenen 90 Tagen für die Passagiermitnahme; die Nachtanforderung entfällt bei gültiger IR (EASA FCL.060(b))",
     "faa_pax_day_night": "3 Starts & Landungen in 90 Tagen für die Passagiermitnahme am Tag; 3 Starts & Landungen bei Nacht mit vollständigem Stillstand (full stop) in 90 Tagen für die Passagiermitnahme bei Nacht (14 CFR 61.57(a)/(b))",
     "faa_ir": "Erfordert 6 Instrumentenanflüge + Holdings innerhalb der vorangegangenen 6 Kalendermonate (14 CFR 61.57(c))",
-    "faa_glider": "Erfordert 3 Starts & Landungen in den vorangegangenen 90 Tagen (14 CFR 61.57(a))",
+    "faa_glider": "3 Starts & Landungen als PIC auf Segelflugzeugen in den vorangegangenen 90 Tagen für die Passagiermitnahme (14 CFR 61.57(a))",
     "faa_flight_review": "Flugüberprüfung alle 24 Kalendermonate erforderlich (14 CFR 61.56)",
     "ul_luftpersv": "Erfordert 12h auf Dreiachs-UL, Reisemotorsegler oder SEP (Land), davon 6h als verantwortlicher Pilot, 12 Starts & Landungen und 1h Übungsflug mit Fluglehrer auf Dreiachs-UL, in 24 Monaten; oder eine Befähigungsüberprüfung (LuftPersV §45 Abs. 2, 3)",
     "ul_pax": "Passagierberechtigung erforderlich (LuftPersV §84a) — 3 Starts & Landungen in 90 Tagen mit einem Luftsportgerät derselben Art (LuftPersV §45a)",
@@ -177,13 +185,12 @@
     "day_landings": "Taglandungen",
     "night_landings": "Nachtlandungen",
     "refresher_training": "Auffrischungsschulung",
-    "training_flight": "Übungsflug",
+    "training_flight": "Übungsflug mit Fluglehrer (ein Flug ≥ 1 h)",
     "proficiency_check": "Befähigungsüberprüfung",
     "approaches": "Instrumentenanflüge",
     "holds": "Holdings",
     "route_sectors": "Streckenabschnitte",
     "launches": "Starts",
-    "launches_and_landings": "Starts & Landungen",
     "sep_land_time": "Flugzeit auf SEP (Land)",
     "sep_land_landings": "Landungen auf SEP (Land)",
     "sep_sea_time": "Flugzeit auf SEP (See)",
@@ -192,8 +199,10 @@
     "training_flights": "Übungsflüge mit Fluglehrer",
     "tmg_time": "Flugzeit auf TMG",
     "tmg_landings": "Starts & Landungen auf TMG",
-    "tmg_training_flight": "Übungsflug auf TMG (mind. 1 h)"
+    "tmg_training_flight": "Übungsflug auf TMG (mind. 1 h)",
+    "flight_review": "Flugüberprüfung"
   },
+  "requirementLongest": "längster: {{current}} / {{required}}",
   "passengerExpiry": {
     "day": "Tag gültig bis {{date}}",
     "night": "Nacht gültig bis {{date}}"
@@ -216,6 +225,7 @@
       "recency_not_met": "Flugerfahrungsanforderungen nicht vollständig erfüllt.",
       "recency_current": "Gültig — alle Flugerfahrungsanforderungen erfüllt.",
       "sfcl_tmg_exempt": "Gültig — deine TMG-Rechte nach Part-FCL befreien dich von der fortlaufenden Flugerfahrung für SPL-TMG (SFCL.160(c)).",
+      "ul_kind_required": "An dieser Berechtigung ist keine UL-Art festgelegt — die fortlaufende Flugerfahrung (LuftPersV §45) hängt von der UL-Art ab. Lege die UL-Art fest, damit sie ausgewertet wird.",
       "ir_hours_and_check_not_met": "Weder die IFR-Stunden noch die Befähigungsüberprüfung sind erfüllt.",
       "ir_hours_not_met": "IFR-Stunden nicht erfüllt.",
       "ir_check_not_met": "Jährliche Befähigungsüberprüfung nicht absolviert.",
@@ -228,9 +238,7 @@
       "pax_day_current_night_not_one": "Tag gültig, Nacht nicht gültig — {{needed}} weitere Nachtlandung erforderlich.",
       "pax_day_current_night_not_other": "Tag gültig, Nacht nicht gültig — {{needed}} weitere Nachtlandungen erforderlich.",
       "pax_current_day_night": "Gültig für Passagierflüge bei Tag und Nacht.",
-      "glider_not_current_one": "Nicht gültig — {{needed}} weiterer Start erforderlich.",
-      "glider_not_current_other": "Nicht gültig — {{needed}} weitere Starts erforderlich.",
-      "glider_current": "Gültig für Passagierflüge."
+      "flight_review_glider_alternative": "Gültig — drei Übungsflüge mit Fluglehrer auf Segelflugzeugen im Zeitraum der Flugüberprüfung ersetzen die Flugüberprüfung (§61.56(b))."
     },
     "pax": {
       "evaluation_failed": "Passagier-Flugerfahrung konnte nicht ermittelt werden. Versuch es gleich noch einmal.",

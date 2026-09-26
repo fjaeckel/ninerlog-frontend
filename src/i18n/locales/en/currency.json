@@ -34,6 +34,8 @@
     "expiring": "Expiring Soon",
     "expired": "Expired",
     "notCurrent": "Not Current",
+    "lapsed": "Not current",
+    "lapsedHelper": "Licence valid — recency not met",
     "unknown": "Unknown",
     "attention": "Attention",
     "valid": "Valid",
@@ -77,6 +79,11 @@
   "windowClosedHint": "Recently revalidated — flights logged before this date don't count toward the next revalidation.",
   "countedClassesLabel": "Counts flights on: {{classes}}",
   "countedClassesAeroplanes": "all aeroplanes and TMG",
+  "setUlKind": "Set ultralight kind",
+  "unclassifiedFlights_one": "{{count}} flight on an ultralight without a kind was not counted — set the kind on the aircraft",
+  "unclassifiedFlights_other": "{{count}} flights on ultralights without a kind were not counted — set the kind on the aircraft",
+  "unclassifiedFlightsLink": "Go to aircraft",
+  "messageUnrecognised": "No details are available for this status.",
   "expiryBanner": {
     "headingExpired": "Action needed to fly again",
     "headingExpiring": "Renewal coming up",
@@ -100,7 +107,8 @@
       "generic": {
         "expiring": "Complete the requirements shown below before the expiry date.",
         "expired": "This has expired — check the requirements below or contact your instructor/examiner to renew it."
-      }
+      },
+      "lapsed": "Your licence stays valid. Complete the missing experience shown below, or a proficiency check where your rule allows one, before you exercise its privileges again."
     }
   },
   "ruleDescriptions": {
@@ -116,7 +124,7 @@
     "easa_pax": "3 takeoffs & landings (day) and 1 takeoff & landing at night in same type/class within preceding 90 days to carry passengers; the night requirement is waived for pilots holding a valid IR (EASA FCL.060(b))",
     "faa_pax_day_night": "3 takeoffs & landings in preceding 90 days for day passenger currency; 3 full-stop night takeoffs & landings in preceding 90 days for night passenger currency (14 CFR 61.57(a)/(b))",
     "faa_ir": "Requires 6 instrument approaches + holding procedures within the preceding 6 calendar months (14 CFR 61.57(c))",
-    "faa_glider": "Requires 3 launches & landings in preceding 90 days (14 CFR 61.57(a))",
+    "faa_glider": "3 takeoffs & landings as PIC in a glider within the preceding 90 days to carry passengers (14 CFR 61.57(a))",
     "faa_flight_review": "Flight review required every 24 calendar months (14 CFR 61.56)",
     "ul_luftpersv": "Requires 12h on three-axis ultralights, TMG or SEP (Land), incl. 6h as PIC, 12 takeoffs & landings and a 1h training flight with instructor on a three-axis ultralight, within 24 months; or a proficiency check (LuftPersV §45(2), (3))",
     "ul_pax": "Passenger rating required (LuftPersV §84a) — 3 takeoffs & landings in 90 days in an ultralight of the same kind (LuftPersV §45a)",
@@ -177,13 +185,12 @@
     "day_landings": "Day Landings",
     "night_landings": "Night Landings",
     "refresher_training": "Refresher Training",
-    "training_flight": "Training Flight",
+    "training_flight": "Training flight with instructor (one flight ≥ 1 h)",
     "proficiency_check": "Proficiency Check",
     "approaches": "Instrument Approaches",
     "holds": "Holding Procedures",
     "route_sectors": "Route Sectors",
     "launches": "Launches",
-    "launches_and_landings": "Launches & Landings",
     "sep_land_time": "Time on SEP (Land)",
     "sep_land_landings": "Landings on SEP (Land)",
     "sep_sea_time": "Time on SEP (Sea)",
@@ -192,8 +199,10 @@
     "training_flights": "Training flights with instructor",
     "tmg_time": "Time on TMG",
     "tmg_landings": "Takeoffs & landings on TMG",
-    "tmg_training_flight": "Training flight on TMG (min. 1 h)"
+    "tmg_training_flight": "Training flight on TMG (min. 1 h)",
+    "flight_review": "Flight Review"
   },
+  "requirementLongest": "longest: {{current}} / {{required}}",
   "passengerExpiry": {
     "day": "Day current until {{date}}",
     "night": "Night current until {{date}}"
@@ -216,6 +225,7 @@
       "recency_not_met": "Recency requirements not fully met.",
       "recency_current": "Current — all recency requirements met.",
       "sfcl_tmg_exempt": "Current — your Part-FCL TMG privileges exempt you from SPL TMG recency (SFCL.160(c)).",
+      "ul_kind_required": "No ultralight kind set on this rating — recency (LuftPersV §45) depends on the kind. Set the kind to evaluate it.",
       "ir_hours_and_check_not_met": "Neither the IFR hours nor the proficiency check are met.",
       "ir_hours_not_met": "IFR hour requirement not met.",
       "ir_check_not_met": "Annual proficiency check not completed.",
@@ -228,9 +238,7 @@
       "pax_day_current_night_not_one": "Day current, night not current — {{needed}} more night landing needed.",
       "pax_day_current_night_not_other": "Day current, night not current — {{needed}} more night landings needed.",
       "pax_current_day_night": "Current for day and night passengers.",
-      "glider_not_current_one": "Not current — {{needed}} more launch needed.",
-      "glider_not_current_other": "Not current — {{needed}} more launches needed.",
-      "glider_current": "Current for passengers."
+      "flight_review_glider_alternative": "Current — three instructional glider flights in the flight review period stand in for the flight review (§61.56(b))."
     },
     "pax": {
       "evaluation_failed": "Passenger flight experience could not be read. Try again in a moment.",

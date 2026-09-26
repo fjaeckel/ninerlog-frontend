@@ -85,7 +85,8 @@ describe('LicenseCard', () => {
     expect(screen.queryByLabelText(/ultralight kind/i)).not.toBeInTheDocument();
     await user.selectOptions(screen.getAllByRole('combobox')[0], 'ULTRALIGHT');
     const kind = screen.getByLabelText(/ultralight kind/i);
-    expect(kind).toHaveValue('THREE_AXIS');
+    expect(kind).toHaveValue('');
+    expect(screen.getByRole('option', { name: 'Select ultralight kind' })).toBeDisabled();
     expect(screen.getByRole('option', { name: 'Ultralight gyroplane' })).toHaveValue('GYROPLANE');
     expect(screen.queryByRole('option', { name: /motorglider/i })).not.toBeInTheDocument();
   });

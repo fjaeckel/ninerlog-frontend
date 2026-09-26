@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router';
 import { Award, Plus } from 'lucide-react';
 import { useLicenses, useDeleteLicense } from '../../hooks/useLicenses';
 import LicenseForm from '../../components/licenses/LicenseForm';
@@ -19,6 +20,8 @@ export default function LicensesPage() {
   const [editingLicense, setEditingLicense] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const { t } = useTranslation('licenses');
+  const [searchParams] = useSearchParams();
+  const editRatingId = searchParams.get('editRating');
 
   const handleDelete = async (id: string) => {
     setDeleteTarget(id);
@@ -95,6 +98,7 @@ export default function LicensesPage() {
               license={license}
               onEdit={() => handleEdit(license.id)}
               onDelete={() => handleDelete(license.id)}
+              editRatingId={editRatingId}
             />
           ))}
         </div>

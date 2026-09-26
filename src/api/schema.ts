@@ -1822,7 +1822,7 @@ export interface paths {
         };
         /**
          * Export flights as CSV
-         * @description Export flight data as a CSV file — every flight, or every flight matching the `GET /flights` filters given (never paginated). Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), standard (ForeFlight-compatible), and weblogbook (the column layout of vsimakhin/web-logbook's own CSV export, so its "Apply Web Logbook Mapping" import profile maps every column in one click) formats.
+         * @description Export flight data as a CSV file — every flight, or every flight matching the `GET /flights` filters given (never paginated). Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), standard (ForeFlight-compatible), and weblogbook (the column layout of vsimakhin/web-logbook's own CSV export, so its "Apply Web Logbook Mapping" import profile maps every column in one click) formats. The standard layout ends with a `LaunchMethod` column; the easa, faa and weblogbook layouts have no launch-method column and carry it in their remarks cell as `[Launch: winch]`, which `POST /imports/confirm` reads back.
          */
         get: operations["exportFlightsCSV"];
         put?: never;
@@ -3404,7 +3404,10 @@ export interface components {
             aircraftClass?: string | null;
             /**
              * @description Ultralight kind (German "Luftsportgeräteart"), kept only when aircraftClass is
-             *     ULTRALIGHT and cleared otherwise; null means unspecified.
+             *     ULTRALIGHT and cleared otherwise; null means unspecified. Flights on an ULTRALIGHT
+             *     aircraft with null count toward German ultralight recency only when every ULTRALIGHT
+             *     rating the pilot holds is of one kind; otherwise they are reported in
+             *     ClassRatingCurrency.unclassifiedFlights.
              *     - THREE_AXIS: aerodynamically (three-axis) controlled ultralight aeroplane
              *     - THREE_AXIS_MOTORGLIDER: three-axis ultralight that meets the TMG definition
              *     - WEIGHT_SHIFT: weight-shift controlled trike
@@ -3506,7 +3509,10 @@ export interface components {
             aircraftClass?: string | null;
             /**
              * @description Ultralight kind (German "Luftsportgeräteart"), kept only when aircraftClass is
-             *     ULTRALIGHT and cleared otherwise; null means unspecified.
+             *     ULTRALIGHT and cleared otherwise; null means unspecified. Flights on an ULTRALIGHT
+             *     aircraft with null count toward German ultralight recency only when every ULTRALIGHT
+             *     rating the pilot holds is of one kind; otherwise they are reported in
+             *     ClassRatingCurrency.unclassifiedFlights.
              *     - THREE_AXIS: aerodynamically (three-axis) controlled ultralight aeroplane
              *     - THREE_AXIS_MOTORGLIDER: three-axis ultralight that meets the TMG definition
              *     - WEIGHT_SHIFT: weight-shift controlled trike
@@ -3567,7 +3573,10 @@ export interface components {
             aircraftClass?: string | null;
             /**
              * @description Ultralight kind (German "Luftsportgeräteart"), kept only when aircraftClass is
-             *     ULTRALIGHT and cleared otherwise; null means unspecified.
+             *     ULTRALIGHT and cleared otherwise; null means unspecified. Flights on an ULTRALIGHT
+             *     aircraft with null count toward German ultralight recency only when every ULTRALIGHT
+             *     rating the pilot holds is of one kind; otherwise they are reported in
+             *     ClassRatingCurrency.unclassifiedFlights.
              *     - THREE_AXIS: aerodynamically (three-axis) controlled ultralight aeroplane
              *     - THREE_AXIS_MOTORGLIDER: three-axis ultralight that meets the TMG definition
              *     - WEIGHT_SHIFT: weight-shift controlled trike
@@ -5188,8 +5197,8 @@ export interface components {
             classType: components["schemas"]["ClassType"];
             /**
              * @description Ultralight kind this entry covers, present only for a German ULTRALIGHT rating.
-             *     LuftPersV §45a passenger recency counts landings in an ultralight of the same kind,
-             *     so there is one entry per kind.
+             *     LuftPersV §45a passenger recency counts take-offs and landings in an ultralight of the
+             *     same kind, so there is one entry per kind. A rating with no kind has no entry.
              * @enum {string}
              */
             ulKind?: "THREE_AXIS" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE";
@@ -5205,7 +5214,7 @@ export interface components {
              * @enum {string}
              */
             nightStatus: "current" | "expiring" | "expired" | "unknown";
-            /** @description Number of landings in the preceding 90 days */
+            /** @description Number of landings in the preceding 90 days. For a German ultralight entry (ulKind set), the smaller of the take-off and landing counts (LuftPersV §45a). */
             dayLandings: number;
             /** @description Number of night landings in the preceding 90 days */
             nightLandings: number;
@@ -5289,12 +5298,17 @@ export interface components {
             /**
              * @description Currency status:
              *     - current: All requirements met
-             *     - expiring: Rating expiry approaching (within 90 days)
-             *     - expired: Rating has expired or currency requirements not met
-             *     - unknown: Authority not supported for auto-calculation
+             *     - expiring: Expiry date approaching (within 90 days), or revalidation experience
+             *       not yet met before the expiry date (EASA FCL.740.A, FCL.625.A)
+             *     - expired: Past the rating's expiry date, or an FAA 14 CFR 61.57 requirement not met
+             *     - lapsed: A rolling recency rule (LAPL FCL.140.A, SPL SFCL.160, GPL FCL.240.G,
+             *       German UL LuftPersV §45) is not met. The licence stays valid; its privileges
+             *       may not be exercised until recency is restored.
+             *     - unknown: Not determinable — no expiry date, no rule for the authority, flight
+             *       data unreadable, or data missing (see messageKey)
              * @enum {string}
              */
-            status: "current" | "expiring" | "expired" | "unknown";
+            status: "current" | "expiring" | "expired" | "lapsed" | "unknown";
             /**
              * Format: date
              * @description Class rating expiry date
@@ -5396,6 +5410,14 @@ export interface components {
              *     ]
              */
             creditedUltralightKinds?: ("THREE_AXIS" | "THREE_AXIS_MOTORGLIDER" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE")[];
+            /**
+             * @description Flights in the rule's window on ULTRALIGHT aircraft with no ultralight kind that did
+             *     not count toward this German ultralight rating. They count only when every
+             *     ULTRALIGHT rating the pilot holds, across all licences, is of one and the same kind.
+             *     Omitted when zero. Setting the aircraft's kind makes them count.
+             * @example 3
+             */
+            unclassifiedFlights?: number;
         };
         LaunchMethodCurrency: {
             /**
@@ -5469,8 +5491,9 @@ export interface components {
             classType: components["schemas"]["ClassType"];
             /**
              * @description Ultralight kind the rating covers, kept only when classType is ULTRALIGHT and cleared
-             *     otherwise; null is evaluated as THREE_AXIS. Selects the German recency rule
-             *     (LuftPersV §45) and passenger recency (§45a). A THREE_AXIS rating covers
+             *     otherwise. Selects the German recency rule
+             *     (LuftPersV §45) and passenger recency (§45a); with null, a German ULTRALIGHT rating
+             *     reports status unknown with rating.ul_kind_required. A THREE_AXIS rating covers
              *     THREE_AXIS and THREE_AXIS_MOTORGLIDER aircraft.
              * @example THREE_AXIS
              * @enum {string|null}
@@ -5498,8 +5521,9 @@ export interface components {
             classType: components["schemas"]["ClassType"];
             /**
              * @description Ultralight kind the rating covers, kept only when classType is ULTRALIGHT and cleared
-             *     otherwise; null is evaluated as THREE_AXIS. Selects the German recency rule
-             *     (LuftPersV §45) and passenger recency (§45a). A THREE_AXIS rating covers
+             *     otherwise. Selects the German recency rule
+             *     (LuftPersV §45) and passenger recency (§45a); with null, a German ULTRALIGHT rating
+             *     reports status unknown with rating.ul_kind_required. A THREE_AXIS rating covers
              *     THREE_AXIS and THREE_AXIS_MOTORGLIDER aircraft.
              * @enum {string|null}
              */
@@ -5513,8 +5537,9 @@ export interface components {
         ClassRatingUpdate: {
             /**
              * @description Ultralight kind the rating covers, kept only when classType is ULTRALIGHT and cleared
-             *     otherwise; null is evaluated as THREE_AXIS. Selects the German recency rule
-             *     (LuftPersV §45) and passenger recency (§45a). A THREE_AXIS rating covers
+             *     otherwise. Selects the German recency rule
+             *     (LuftPersV §45) and passenger recency (§45a); with null, a German ULTRALIGHT rating
+             *     reports status unknown with rating.ul_kind_required. A THREE_AXIS rating covers
              *     THREE_AXIS and THREE_AXIS_MOTORGLIDER aircraft.
              * @enum {string|null}
              */
@@ -5553,6 +5578,19 @@ export interface components {
         /**
          * @description Target flight log field for column mapping.
          *
+         *     `launchMethod` accepts the flight enum values (winch, aerotow,
+         *     self-launch, car, bungee), the Vereinsflieger codes W, F, E, A and G,
+         *     and the German words (Winde, F-Schlepp, Eigenstart, Autoschlepp,
+         *     Gummiseil); an unrecognised value leaves the launch method empty and
+         *     does not fail the row. A `[Launch: <method>]` marker in a remarks
+         *     column is read as the launch method and removed from the remarks.
+         *
+         *     Aircraft created by the import get a class from the source's aircraft
+         *     table when it has one, otherwise from a German registration
+         *     (`D-` + four digits is GLIDER, `D-M…` is ULTRALIGHT with no kind),
+         *     otherwise GLIDER when one of its flights has a towed launch (winch,
+         *     aerotow, car, bungee). Existing aircraft are never changed.
+         *
          *     A `nightTime` or `crossCountryTime` column is stored as the pilot's
          *     own value with the matching override flag set (capped at block time)
          *     instead of being re-derived.
@@ -5573,7 +5611,7 @@ export interface components {
          *     Use `ignore` to skip a column during import.
          * @enum {string}
          */
-        ImportField: "date" | "aircraftReg" | "aircraftType" | "departureIcao" | "arrivalIcao" | "offBlockTime" | "onBlockTime" | "departureTime" | "arrivalTime" | "totalTime" | "isPic" | "isDual" | "nightTime" | "crossCountryTime" | "ifrTime" | "landingsDay" | "landingsNight" | "landingsTotal" | "remarks" | "route" | "approachesCount" | "holds" | "isIpc" | "isFlightReview" | "actualInstrumentTime" | "simulatedInstrumentTime" | "instructorName" | "instructorComments" | "dualGivenTime" | "person1" | "person2" | "person3" | "person4" | "person5" | "person6" | "ignore";
+        ImportField: "date" | "aircraftReg" | "aircraftType" | "departureIcao" | "arrivalIcao" | "offBlockTime" | "onBlockTime" | "departureTime" | "arrivalTime" | "totalTime" | "isPic" | "isDual" | "nightTime" | "crossCountryTime" | "ifrTime" | "landingsDay" | "landingsNight" | "landingsTotal" | "remarks" | "route" | "approachesCount" | "holds" | "isIpc" | "isFlightReview" | "actualInstrumentTime" | "simulatedInstrumentTime" | "instructorName" | "instructorComments" | "dualGivenTime" | "person1" | "person2" | "person3" | "person4" | "person5" | "person6" | "launchMethod" | "ignore";
         /**
          * @description One logbook export format NinerLog knows how to read, together with the
          *     steps for getting that file out of the source application.

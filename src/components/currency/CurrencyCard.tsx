@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar, Clock, Layers } from 'lucide-react';
-import type { ClassRatingCurrency, ClassType, CurrencyRequirement, CurrencyStatus } from '../../types/api';
+import { Link } from 'react-router';
+import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar, Clock, Layers, AlertTriangle, ArrowRight } from 'lucide-react';
+import type { ClassRatingCurrency, ClassType, CurrencyRequirement, RatingCurrencyStatus } from '../../types/api';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useCurrencyMessages } from '../../lib/currencyMessages';
+import { ratingStatus } from '../../lib/ratingStatus';
 import { RequirementIcon } from '../ui/RequirementIcon';
 
-const STATUS_CONFIG: Record<CurrencyStatus, {
-  bg: string; border: string; iconWrap: string; badge: string; badgeKey: string; Icon: typeof Shield;
+const STATUS_CONFIG: Record<RatingCurrencyStatus, {
+  bg: string; border: string; iconWrap: string; badge: string; badgeKey: string; helperKey?: string; Icon: typeof Shield;
 }> = {
   current: {
     bg: 'bg-gradient-to-br from-green-50/70 via-white to-green-50/30 dark:from-green-900/15 dark:via-slate-800 dark:to-slate-800',
@@ -30,6 +32,15 @@ const STATUS_CONFIG: Record<CurrencyStatus, {
     iconWrap: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 ring-2 ring-red-500/15',
     badge: 'badge-expired',
     badgeKey: 'status.notCurrent',
+    Icon: ShieldX,
+  },
+  lapsed: {
+    bg: 'bg-gradient-to-br from-red-50/70 via-white to-red-50/30 dark:from-red-900/15 dark:via-slate-800 dark:to-slate-800',
+    border: 'border-l-4 border-l-red-500',
+    iconWrap: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 ring-2 ring-red-500/15',
+    badge: 'badge-expired',
+    badgeKey: 'status.lapsed',
+    helperKey: 'status.lapsedHelper',
     Icon: ShieldX,
   },
   unknown: {
@@ -85,7 +96,8 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
   const { t } = useTranslation('currency');
   const { fmtDate } = useFormatPrefs();
   const { currencyMessage } = useCurrencyMessages();
-  const config = STATUS_CONFIG[rating.status];
+  const status = ratingStatus(rating.status);
+  const config = STATUS_CONFIG[status];
   const StatusIcon = config.Icon;
   const label = t(`classTypes.${rating.classType}`, { defaultValue: rating.classType });
   const counted = rating.countedClasses ?? [];
@@ -130,10 +142,48 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
         </span>
       </div>
 
+      {/* Status helper */}
+      {config.helperKey && (
+        <p
+          className="-mt-1 mb-2 text-xs font-medium text-red-700 dark:text-red-300"
+          data-testid="currency-status-helper"
+        >
+          {t(config.helperKey)}
+        </p>
+      )}
+
       {/* Message */}
       <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">
-        {currencyMessage(rating)}
+        {currencyMessage(rating) || t('messageUnrecognised')}
       </p>
+
+      {/* Missing ultralight kind on the rating */}
+      {rating.messageKey === 'rating.ul_kind_required' && (
+        <Link
+          to={`/licenses?editRating=${encodeURIComponent(rating.classRatingId)}`}
+          className="btn-secondary btn-sm mb-3"
+          data-testid="currency-set-ul-kind"
+        >
+          {t('setUlKind')}
+          <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+        </Link>
+      )}
+
+      {/* ULTRALIGHT flights with no kind that were not counted */}
+      {rating.unclassifiedFlights != null && rating.unclassifiedFlights > 0 && (
+        <div
+          className="mb-3 rounded-md border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-800 dark:border-amber-800/50 dark:bg-amber-900/20 dark:text-amber-200 flex items-start gap-2"
+          data-testid="currency-unclassified-flights"
+        >
+          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+          <div className="space-y-0.5">
+            <p>{t('unclassifiedFlights', { count: rating.unclassifiedFlights })}</p>
+            <Link to="/aircraft" className="link">
+              {t('unclassifiedFlightsLink')}
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Aircraft classes pooled toward this rating */}
       {showCounted && (
@@ -197,7 +247,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
       )}
 
       {/* Expiry date */}
-      {rating.expiryDate && (
+      {rating.expiryDate && status !== 'lapsed' && (
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-3 text-right inline-flex items-center gap-1 justify-end w-full">
           <Calendar className="w-3 h-3" aria-hidden="true" />
           {t('expiresLabel', { date: fmtDate(rating.expiryDate) })}

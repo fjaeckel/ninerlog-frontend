@@ -71,7 +71,9 @@
     "noExpiry": "Kein Ablaufdatum",
     "expired": "Abgelaufen",
     "expiresInDays": "Noch {{days}} Tage",
-    "ulKind": "UL-Art"
+    "ulKind": "UL-Art",
+    "ulKindNotSet": "UL-Art nicht festgelegt",
+    "ulKindPlaceholder": "UL-Art wählen"
   },
   "classTypeLabels": {
     "SEP_LAND": "SEP (Land)",

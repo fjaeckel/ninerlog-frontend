@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertOctagon, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 import type { ClassRatingCurrency, FlightReviewStatus } from '../../types/api';
+import { isRatingAlert, isRatingNotCurrent, ratingStatus } from '../../lib/ratingStatus';
 
 /**
  * Buckets each rating's revalidation/renewal rule into "next step"
@@ -31,6 +32,7 @@ interface UrgentItem {
   label: string;
   sublabel?: string;
   isExpired: boolean;
+  isLapsed?: boolean;
   days: number | null;
   category: NextStepCategory;
 }
@@ -50,13 +52,15 @@ export function CurrencyExpiryBanner({ ratings, flightReview }: CurrencyExpiryBa
   const items: UrgentItem[] = [];
 
   for (const r of ratings) {
-    if (r.status !== 'expiring' && r.status !== 'expired') continue;
+    if (!isRatingAlert(r.status)) continue;
+    const isLapsed = ratingStatus(r.status) === 'lapsed';
     items.push({
       id: `rating-${r.classRatingId}`,
       label: t(`classTypes.${r.classType}`, { defaultValue: r.classType }),
       sublabel: r.regulatoryAuthority,
-      isExpired: r.status === 'expired',
-      days: r.expiryDate ? differenceInDays(new Date(r.expiryDate), now) : null,
+      isExpired: isRatingNotCurrent(r.status),
+      isLapsed,
+      days: r.expiryDate && !isLapsed ? differenceInDays(new Date(r.expiryDate), now) : null,
       category: RULE_KEY_CATEGORY[r.ruleDescriptionKey ?? ''] ?? 'generic',
     });
   }
@@ -128,7 +132,9 @@ export function CurrencyExpiryBanner({ ratings, flightReview }: CurrencyExpiryBa
                   )}
                 </div>
                 <p className={`text-xs ${palette.heading} opacity-90 mt-0.5`}>
-                  {t(`expiryBanner.nextSteps.${item.category}.${item.isExpired ? 'expired' : 'expiring'}`)}
+                  {item.isLapsed
+                    ? t('expiryBanner.nextSteps.lapsed')
+                    : t(`expiryBanner.nextSteps.${item.category}.${item.isExpired ? 'expired' : 'expiring'}`)}
                 </p>
               </li>
             ))}

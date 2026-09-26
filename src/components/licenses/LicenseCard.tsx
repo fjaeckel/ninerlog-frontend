@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Pencil, Plus, Trash2 } from 'lucide-react';
 import { License } from '../../stores/licenseStore';
@@ -45,7 +45,7 @@ function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
   return <span className="text-xs font-medium text-green-600 dark:text-green-400">{formatted}</span>;
 }
 
-function ULKindSelect({ value, onChange }: { value: ULRatingKind; onChange: (k: ULRatingKind) => void }) {
+function ULKindSelect({ value, onChange }: { value: ULRatingKind | ''; onChange: (k: ULRatingKind | '') => void }) {
   const { t } = useTranslation('licenses');
   return (
     <div>
@@ -53,9 +53,12 @@ function ULKindSelect({ value, onChange }: { value: ULRatingKind; onChange: (k: 
       <select
         id="rating-ul-kind"
         value={value}
-        onChange={(e) => onChange(e.target.value as ULRatingKind)}
+        onChange={(e) => onChange(e.target.value as ULRatingKind | '')}
         className="input input-sm mt-0.5"
+        required
+        aria-invalid={value === ''}
       >
+        <option value="" disabled>{t('card.ulKindPlaceholder')}</option>
         {UL_RATING_KINDS.map((k) => (
           <option key={k} value={k}>{t(`common:ulKinds.${k}`)}</option>
         ))}
@@ -68,9 +71,11 @@ interface LicenseCardProps {
   license: License;
   onEdit: () => void;
   onDelete: () => void;
+  /** Class rating to open in edit mode once ratings load. */
+  editRatingId?: string | null;
 }
 
-export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardProps) {
+export default function LicenseCard({ license, onEdit, onDelete, editRatingId }: LicenseCardProps) {
   const { t } = useTranslation('licenses');
   const { fmtDate } = useFormatPrefs();
   const { data: classRatings, isLoading: ratingsLoading } = useClassRatings(license.id);
@@ -82,24 +87,24 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
   const [newClassType, setNewClassType] = useState<string>(CLASS_TYPE_OPTIONS[0]);
   const [newIssueDate, setNewIssueDate] = useState('');
   const [newExpiryDate, setNewExpiryDate] = useState('');
-  const [newULKind, setNewULKind] = useState<ULRatingKind>('THREE_AXIS');
+  const [newULKind, setNewULKind] = useState<ULRatingKind | ''>('');
   const [ratingError, setRatingError] = useState<string | null>(null);
 
   const handleAddRating = async () => {
-    if (!newClassType || !newIssueDate) return;
+    if (!newClassType || !newIssueDate || (newClassType === 'ULTRALIGHT' && !newULKind)) return;
     try {
       await createRating.mutateAsync({
         licenseId: license.id,
         data: {
           classType: newClassType as any,
-          ulKind: newClassType === 'ULTRALIGHT' ? newULKind : null,
+          ulKind: newClassType === 'ULTRALIGHT' && newULKind ? newULKind : null,
           issueDate: newIssueDate,
           expiryDate: newExpiryDate || null,
         },
       });
       setShowAddForm(false);
       setNewClassType(CLASS_TYPE_OPTIONS[0]);
-      setNewULKind('THREE_AXIS');
+      setNewULKind('');
       setNewIssueDate('');
       setNewExpiryDate('');
     } catch (err) {
@@ -118,15 +123,29 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
 
   const startEditRating = (rating: { id: string; issueDate: string; expiryDate?: string | null; ulKind?: ULRatingKind | null }) => {
     setEditingRatingId(rating.id);
-    setNewULKind(rating.ulKind ?? 'THREE_AXIS');
+    setNewULKind(rating.ulKind ?? '');
     setNewIssueDate(rating.issueDate?.split('T')[0] || '');
     setNewExpiryDate(rating.expiryDate?.split('T')[0] || '');
   };
 
   const editingRating = classRatings?.find((r) => r.id === editingRatingId);
 
+  // Opens the rating named by editRatingId once.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [openedRatingId, setOpenedRatingId] = useState<string | null>(null);
+  if (editRatingId && openedRatingId !== editRatingId) {
+    const target = classRatings?.find((r) => r.id === editRatingId);
+    if (target) {
+      setOpenedRatingId(editRatingId);
+      startEditRating(target);
+    }
+  }
+  useEffect(() => {
+    if (openedRatingId) cardRef.current?.scrollIntoView?.({ block: 'center' });
+  }, [openedRatingId]);
+
   const handleUpdateRating = async () => {
-    if (!editingRatingId || !newIssueDate) return;
+    if (!editingRatingId || !newIssueDate || (editingRating?.classType === 'ULTRALIGHT' && !newULKind)) return;
     try {
       await updateRating.mutateAsync({
         licenseId: license.id,
@@ -134,7 +153,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
         data: {
           issueDate: newIssueDate,
           expiryDate: newExpiryDate || null,
-          ...(editingRating?.classType === 'ULTRALIGHT' ? { ulKind: newULKind } : {}),
+          ...(editingRating?.classType === 'ULTRALIGHT' && newULKind ? { ulKind: newULKind } : {}),
         },
       });
       setEditingRatingId(null);
@@ -146,7 +165,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
   };
 
   return (
-    <div className="card transition-shadow hover:shadow-md">
+    <div ref={cardRef} className="card transition-shadow hover:shadow-md">
       <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
         {/* Identity */}
         <div className="lg:w-52 lg:shrink-0">
@@ -252,7 +271,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <button onClick={handleUpdateRating} disabled={!newIssueDate || updateRating.isPending} className="btn-primary btn-sm text-xs">
+                          <button onClick={handleUpdateRating} disabled={!newIssueDate || (editingRating?.classType === 'ULTRALIGHT' && !newULKind) || updateRating.isPending} className="btn-primary btn-sm text-xs">
                             {updateRating.isPending ? t('common:saving') : t('common:save')}
                           </button>
                           <button onClick={() => setEditingRatingId(null)} className="btn-secondary btn-sm text-xs">{t('common:cancel')}</button>
@@ -264,7 +283,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                           {t(`classTypeLabels.${rating.classType}`, { defaultValue: rating.classType })}
                           {rating.classType === 'ULTRALIGHT' && (
                             <span className="block text-xs font-normal text-slate-500 dark:text-slate-400">
-                              {t(`common:ulKinds.${rating.ulKind ?? 'THREE_AXIS'}`)}
+                              {rating.ulKind ? t(`common:ulKinds.${rating.ulKind}`) : t('card.ulKindNotSet')}
                             </span>
                           )}
                         </span>
@@ -347,7 +366,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                 <div className="sm:col-span-3 flex gap-2 pt-1">
                   <button
                     onClick={handleAddRating}
-                    disabled={!newIssueDate || createRating.isPending}
+                    disabled={!newIssueDate || (newClassType === 'ULTRALIGHT' && !newULKind) || createRating.isPending}
                     className="btn-primary btn-sm"
                   >
                     {createRating.isPending ? t('common:saving') : t('common:save')}

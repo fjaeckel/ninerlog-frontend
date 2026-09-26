@@ -246,6 +246,9 @@ export interface Currency {
 
 export type CurrencyStatus = 'current' | 'expiring' | 'expired' | 'unknown';
 
+/** Class rating status; `lapsed` is a valid licence whose rolling recency is not met. */
+export type RatingCurrencyStatus = CurrencyStatus | 'lapsed';
+
 /**
  * Variable parts of a localised currency message. Never repeats a field the
  * enclosing object already carries — see ninerlog-api docs/CURRENCY_MESSAGES.md.
@@ -294,7 +297,7 @@ export interface ClassRatingCurrency {
   licenseId: string;
   regulatoryAuthority: string;
   licenseType?: string;
-  status: CurrencyStatus;
+  status: RatingCurrencyStatus;
   expiryDate?: string | null;
   /**
    * For expiry-anchored revalidation rules (EASA FCL.740.A SEP/TMG/MEP/SET,
@@ -323,6 +326,8 @@ export interface ClassRatingCurrency {
   countedClasses?: ClassType[];
   /** Ultralight kinds whose flights also count (EASA FCL.035(a)(4) credit, or a German UL rating's kinds). */
   creditedUltralightKinds?: ULKind[];
+  /** Flights on ULTRALIGHT aircraft with no kind that this German UL rating did not count. Absent when zero. */
+  unclassifiedFlights?: number;
 }
 
 export interface LaunchMethodCurrency {
