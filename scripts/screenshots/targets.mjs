@@ -169,6 +169,21 @@ export const TARGETS = [
       await page.waitForTimeout(200);
     },
   },
+  { name: 'igc-import', path: '/flights/import-igc' },
+  {
+    name: 'igc-import-preview',
+    path: '/flights/import-igc',
+    skip: (fx) => !fx.igcPreview,
+    act: async (page) => {
+      await page.locator('input[type="file"]').setInputFiles({
+        name: '2026-08-13-LXN-3GP-01.igc',
+        mimeType: 'application/octet-stream',
+        buffer: Buffer.from('AXXX\r\nHFDTE130826\r\n'),
+      });
+      await page.getByTestId('igc-summary').waitFor();
+      await page.waitForTimeout(300);
+    },
+  },
   { name: 'flight-detail-simulator', path: '/flights/f6' },
   { name: 'flight-detail-signed', path: '/flights/f2' },
   {

@@ -32,6 +32,11 @@ export function isPoweredAeroplane(ac: Pick<Aircraft, 'aircraftClass' | 'ulKind'
 }
 
 const FIELD_OUTLANDING_CLASSES = ['GLIDER', 'TMG', 'ULTRALIGHT'];
+
+/** Whether the aircraft flies with an IGC logger: a sailplane (GLIDER or UL sailplane) or a TMG. */
+export function recordsIgc(ac: Pick<Aircraft, 'aircraftClass' | 'ulKind'> | null | undefined): boolean {
+  return isSailplane(ac) || normalizeAircraftClass(ac?.aircraftClass) === 'TMG';
+}
 const TOWED_LAUNCHES = ['winch', 'aerotow'];
 
 /** Flight-form features in the relevance registry. */
@@ -72,6 +77,12 @@ export const FLIGHT_FEATURES = [
     serves: ['SAILPLANE', 'TMG', 'ULTRALIGHT'],
     aircraftMatch: (ac) => FIELD_OUTLANDING_CLASSES.includes(normalizeAircraftClass(ac.aircraftClass)),
     hasData: (ctx) => rec(ctx).isOutlanding === true,
+  },
+  {
+    id: 'flight.igcImport',
+    kind: 'section',
+    serves: ['SAILPLANE'],
+    aircraftMatch: (ac) => recordsIgc(ac),
   },
   {
     id: 'flight.towFlight',

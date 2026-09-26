@@ -11,6 +11,9 @@ import { FormModal } from '../../components/ui/FormModal';
 import { PageWrapper } from '../../components/ui/PageWrapper';
 import { SignatureSection } from '../../components/flights/SignatureSection';
 import { FlightCrewCard } from '../../components/flights/FlightCrewCard';
+import { FlightFilesCard } from '../../components/flights/igc/FlightFilesCard';
+import { useAircraft } from '../../hooks/useAircraft';
+import { useRelevance } from '../../lib/relevance';
 import {
   FLIGHT_FUNCTION_BADGE,
   flightFunctionKind,
@@ -37,6 +40,10 @@ export default function FlightDetailPage() {
   const [showEditForm, setShowEditForm] = useState(false);
   const { fmtDateTime, fmtDateLong, fmtDuration } = useFormatPrefs();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { data: fleet } = useAircraft();
+  const reg = flight?.aircraftReg?.trim().toUpperCase();
+  const aircraft = reg ? fleet?.find((a) => a.registration.trim().toUpperCase() === reg) ?? null : null;
+  const igcRelevant = useRelevance('flight.igcImport', { aircraft });
 
   if (isLoading) {
     return (
@@ -405,6 +412,9 @@ export default function FlightDetailPage() {
 
         {/* Crew Members */}
         <FlightCrewCard flight={flight} />
+
+        {/* Flight recorder files */}
+        {!flight.isSimulator && <FlightFilesCard flightId={flight.id} showWhenEmpty={igcRelevant.visible} />}
       </div>
 
       {/* Metadata */}

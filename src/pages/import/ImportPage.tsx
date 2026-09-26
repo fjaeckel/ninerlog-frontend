@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import HelpLink from '../../components/ui/HelpLink';
 import { FileDropzone } from '../../components/ui/FileDropzone';
+import { FoldDrawer, Relevant } from '../../components/relevance';
+import { IgcImportCard } from '../../components/flights/igc/IgcImportEntry';
 import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import SupportedLogbooks from './SupportedLogbooks';
@@ -371,6 +373,11 @@ export default function ImportPage() {
           </FileDropzone>
 
           <SupportedLogbooks />
+          <FoldDrawer>
+            <Relevant id="flight.igcImport">
+              <IgcImportCard />
+            </Relevant>
+          </FoldDrawer>
         </div>
       )}
 

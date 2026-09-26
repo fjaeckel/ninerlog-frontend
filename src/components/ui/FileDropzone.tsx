@@ -6,7 +6,9 @@ interface FileDropzoneProps {
   accept?: string;
   disabled?: boolean;
   /** Called with the dropped or picked file once it matches `accept`. */
-  onFileSelected: (file: File) => void;
+  onFileSelected?: (file: File) => void;
+  /** Accepts several files; called once with every file that matches `accept`. */
+  onFilesSelected?: (files: File[]) => void;
   /** Called instead when the file does not match `accept` — the caller owns the message. */
   onFileRejected?: (file: File) => void;
   /** Label of the built-in trigger button — the keyboard path into the file picker. */
@@ -41,11 +43,12 @@ function matchesAccept(file: File, accept?: string): boolean {
   });
 }
 
-/** Drop target wrapping a hidden `<input type="file">`, for single-file uploads. */
+/** Drop target wrapping a hidden `<input type="file">`; several files when `onFilesSelected` is set. */
 export function FileDropzone({
   accept,
   disabled = false,
   onFileSelected,
+  onFilesSelected,
   onFileRejected,
   buttonLabel,
   hint,
@@ -68,15 +71,23 @@ export function FileDropzone({
     };
   }, []);
 
-  const handleFile = useCallback(
-    (file: File) => {
-      if (matchesAccept(file, accept)) {
-        onFileSelected(file);
-      } else {
-        onFileRejected?.(file);
+  const multiple = !!onFilesSelected;
+
+  const handleFiles = useCallback(
+    (list: FileList | null | undefined) => {
+      const files = Array.from(list ?? []);
+      if (files.length === 0) return;
+      if (!onFilesSelected) {
+        const file = files[0];
+        if (matchesAccept(file, accept)) onFileSelected?.(file);
+        else onFileRejected?.(file);
+        return;
       }
+      const accepted = files.filter((f) => matchesAccept(f, accept));
+      files.filter((f) => !accepted.includes(f)).forEach((f) => onFileRejected?.(f));
+      if (accepted.length > 0) onFilesSelected(accepted);
     },
-    [accept, onFileSelected, onFileRejected],
+    [accept, onFileSelected, onFilesSelected, onFileRejected],
   );
 
   const openPicker = useCallback(() => {
@@ -110,14 +121,11 @@ export function FileDropzone({
     e.preventDefault();
     dragDepth.current = 0;
     setIsDragging(false);
-    // Single-file flow, same as the underlying input.
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleFile(file);
+    handleFiles(e.dataTransfer.files);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
+    handleFiles(e.target.files);
     // Reset so re-picking the same file fires `change`.
     e.target.value = '';
   };
@@ -148,6 +156,7 @@ export function FileDropzone({
         ref={inputRef}
         type="file"
         accept={accept}
+        multiple={multiple}
         onChange={handleInputChange}
         disabled={disabled}
         className="hidden"

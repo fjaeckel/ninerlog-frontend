@@ -218,6 +218,14 @@ export function flight(spec) {
   };
 }
 
+/** Metadata of a stored IGC file on flight `f` (FlightFile). */
+export function igcFile(f, n, filename, sizeBytes) {
+  return {
+    id: `${f.id}-igc${n}`, flightId: f.id, kind: 'IGC', filename, sizeBytes,
+    sha256: `${f.id}${n}`.padEnd(64, '0'), createdAt: iso(`${f.date}T19:00:00Z`),
+  };
+}
+
 /** Sorts newest first and numbers ids f1… (f1 = most recent). */
 export function finalizeFlights(list) {
   const sorted = [...list].sort((a, b) =>
@@ -1137,6 +1145,8 @@ export function buildFixtureSet(persona) {
     licenses, classRatings, aircraft, flights, settings: persona.profileSettings,
   });
 
+  const flightFiles = typeof persona.flightFiles === 'function' ? persona.flightFiles(flights) : {};
+
   const routes = {
     '/users/me': persona.user,
     '/users/me/statistics': statistics,
@@ -1190,6 +1200,9 @@ export function buildFixtureSet(persona) {
     if (/^\/licenses\/[^/]+\/currency$/.test(path)) return currency;
     if (/^\/licenses\/[^/]+\/statistics$/.test(path)) return statistics;
     if (/^\/flights\/[^/]+\/signatures$/.test(path)) return [];
+    const filesMatch = path.match(/^\/flights\/([^/]+)\/files$/);
+    if (filesMatch) return flightFiles[filesMatch[1]] ?? [];
+    if (path === '/flights/igc/preview') return persona.igcPreview ?? null;
     const flightMatch = path.match(/^\/flights\/([^/]+)$/);
     if (flightMatch) return flights.find((f) => f.id === flightMatch[1]) ?? flights[0] ?? null;
     if (path.startsWith('/documents')) return EMPTY_PAGE;
@@ -1200,5 +1213,6 @@ export function buildFixtureSet(persona) {
     user: persona.user, bodyFor, flights, aircraft, currency, pilotProfile,
     profileMismatches: profileMismatches(pilotProfile, persona.expectedDisciplines),
     shotAircraft: persona.shotAircraft ?? [],
+    igcPreview: persona.igcPreview ?? null,
   };
 }

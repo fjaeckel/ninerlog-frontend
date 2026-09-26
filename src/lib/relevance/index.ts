@@ -5,7 +5,7 @@ export type { RelevanceCause, RelevanceDecision } from './resolve';
 export { useRelevance, relevanceReason } from './useRelevance';
 export type { Relevance } from './useRelevance';
 export { toolkitLabel, toolkitName } from './names';
-export { FLIGHT_FEATURES, isPoweredAeroplane, logsAirborneTimes } from './flightFeatures';
+export { FLIGHT_FEATURES, isPoweredAeroplane, logsAirborneTimes, recordsIgc } from './flightFeatures';
 export { useRelevanceResolver } from './useRelevance';
 export { classDiscipline, classPickerFeature, isDormantClass } from './classes';
 export { ratingRank, sortRatingsByDiscipline } from './ratings';
