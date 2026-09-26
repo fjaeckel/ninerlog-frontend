@@ -2,6 +2,7 @@
 // Source: ninerlog-api/api-spec/openapi.yaml
 
 import type { ULKind, ULRatingKind } from '../lib/ultralight';
+import type { components } from '../api/schema';
 
 // ============ Common Types ============
 
@@ -362,12 +363,33 @@ export interface LaunchMethodCurrency {
   validUntil?: string | null;
   remedyKey?: string;
   remedyParams?: CurrencyMessageParams;
+  /** A LAUNCH_METHOD_TRAINED privilege is recorded for the method (SFCL.155(a)). */
+  trained?: boolean;
 }
 
 export interface CurrencyStatusResponse {
   ratings: ClassRatingCurrency[];
   passengerCurrency: PassengerCurrency[];
   flightReview?: FlightReviewStatus;
+  /** One entry per licence privilege; absent when none is recorded. */
+  privileges?: PrivilegeCurrency[];
+}
+
+export type PrivilegeCurrencyStatus = 'current' | 'lapsed' | 'expired' | 'unknown';
+
+/** Currency of one licence privilege; see ninerlog-api docs/SAILPLANES.md "Privileges". */
+export interface PrivilegeCurrency {
+  privilegeId: string;
+  licenseId: string;
+  kind: components['schemas']['LicencePrivilegeKind'];
+  detail?: string;
+  status: PrivilegeCurrencyStatus;
+  /** Key into currency.json `messages` (e.g. "privilege.recency_current"). */
+  messageKey: string;
+  messageParams?: CurrencyMessageParams;
+  requirements?: CurrencyRequirement[];
+  /** Key into currency.json `ruleDescriptions` (e.g. "sfcl_205_towing"). */
+  ruleDescriptionKey?: string;
 }
 
 export interface PassengerCurrency {
@@ -400,10 +422,8 @@ export interface PassengerCurrency {
   ruleDescription: string;
   /** Key into currency.json `ruleDescriptions` (e.g. "easa_pax"). */
   ruleDescriptionKey?: string;
-  /**
-   * Never populated by the API — the backend has no code path that sets it.
-   * Kept so the guarded render does not become a type error.
-   */
+  /** Informational prerequisites (SFCL.115(a)(2), LuftPersV §84a); never change `dayStatus`. */
+  requirements?: CurrencyRequirement[];
 }
 
 export interface FlightReviewStatus {

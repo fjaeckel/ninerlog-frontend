@@ -39,7 +39,8 @@
     "unknown": "Unknown",
     "attention": "Attention",
     "valid": "Valid",
-    "dayOnly": "Day Only"
+    "dayOnly": "Day Only",
+    "authorisationMissing": "Authorisation missing"
   },
   "expiresIn": "Expires in {{days}} days",
   "expiredAgo": "Expired {{days}} days ago",
@@ -133,7 +134,15 @@
     "ul_trike_dulv": "Requires 12h as PIC on trikes within 24 months (DULV, LuftPersV §45(4))",
     "ul_trike_daec": "Requires 12h with 12 takeoffs & landings on trikes within 24 months, plus a safety/performance training that is not tracked (DAeC, LuftPersV §45(4))",
     "ul_powered_paraglider": "Requires 30 takeoffs & landings with a powered paraglider or paraglider trike within 24 months (DULV/DAeC, LuftPersV §45(4))",
-    "ul_sailplane": "Requires 5 takeoffs & landings in ultralight sailplanes within 12 months (DAeC, LuftPersV §45(4))"
+    "ul_sailplane": "Requires 5 takeoffs & landings in ultralight sailplanes within 12 months (DAeC, LuftPersV §45(4))",
+    "privilege_expiry": "No recency requirement; valid until its expiry date, if it has one.",
+    "sfcl_155_launch_method": "A launch method in which you completed training (SFCL.155(a)); its recency is shown under Launch Method Currency on the sailplane rating.",
+    "sfcl_205_towing": "Requires 5 tows within the last 24 months; otherwise fly the missing tows with or under the supervision of an instructor (EASA SFCL.205(c))",
+    "sfcl_205_banner_towing": "Requires 5 tows (banner or sailplane) within the last 24 months; otherwise fly the missing tows with or under the supervision of an instructor (EASA SFCL.205(c))",
+    "faa_61_69_towing": "Requires 3 tows, or 3 aerotows as PIC of a glider, within the preceding 24 calendar months (14 CFR 61.69(a)(5))",
+    "sfcl_215_cloud_flying": "Requires 1 h of flight time or 5 flights as PIC exercising cloud flying privileges on sailplanes — logged as IFR time — within the last 24 months; otherwise fly the missing experience with or under the supervision of an instructor (EASA SFCL.215)",
+    "sfcl_360_fi_s": "Requires 30 h or 60 launches of flight instruction on sailplanes, including TMGs, within the last 3 years, and a refresher training, which is not tracked (EASA SFCL.360)",
+    "dulv_ul_towing": "Requires 10 tows on ultralights of this kind within the last 24 months (DULV towing authorisation)"
   },
   "landingsOf": "{{current}} / {{required}} landings",
   "customCurrency": {
@@ -175,7 +184,13 @@
     "landings": "landings",
     "launches": "launches",
     "minutes": "minutes",
-    "sectors": "route sectors"
+    "sectors": "route sectors",
+    "tows": "tows",
+    "km": "km",
+    "training": "training",
+    "flight": "flight",
+    "check": "check",
+    "review": "review"
   },
   "requirement": {
     "total_time": "Total Time",
@@ -200,7 +215,20 @@
     "tmg_time": "Time on TMG",
     "tmg_landings": "Takeoffs & landings on TMG",
     "tmg_training_flight": "Training flight on TMG (min. 1 h)",
-    "flight_review": "Flight Review"
+    "flight_review": "Flight Review",
+    "tows": "Tows as tug pilot",
+    "towed_glider_flights": "Aerotows as glider PIC",
+    "cloud_flying_time": "Cloud flying time (IFR, PIC)",
+    "cloud_flying_flights": "Cloud flying flights (PIC)",
+    "instruction_time": "Instruction given",
+    "instruction_launches": "Launches with instruction given",
+    "fi_refresher": "FI(S) refresher training",
+    "pax_prerequisite_time": "PIC time since licence issue",
+    "pax_prerequisite_launches": "PIC launches since licence issue",
+    "pax_competence_flight": "Passenger-competence training flight",
+    "ul_xc_flights": "Cross-country flights with instructor",
+    "ul_xc_landing_flights": "Cross-country flights with an intermediate landing",
+    "ul_xc_distance": "Cross-country distance"
   },
   "requirementLongest": "longest: {{current}} / {{required}}",
   "passengerExpiry": {
@@ -250,7 +278,8 @@
       "day_current_night_not_one": "Day current, night not current — {{needed}} more night landing needed, or hold a valid IR.",
       "day_current_night_not_other": "Day current, night not current — {{needed}} more night landings needed, or hold a valid IR.",
       "current_day_privilege_separate": "Flight experience met — the passenger endorsement is proved separately.",
-      "gpl_experience_not_met": "Passengers only after 10 h as PIC on gyroplanes since your GPL was issued — {{needed}} min to go (FCL.205.G(a)(2))."
+      "gpl_experience_not_met": "Passengers only after 10 h as PIC on gyroplanes since your GPL was issued — {{needed}} min to go (FCL.205.G(a)(2)).",
+      "ul_authorisation_missing": "Take-offs and landings met, but no passenger authorisation (LuftPersV §84a) is recorded on your licence."
     },
     "flight_review": {
       "evaluation_failed": "Flight review status could not be determined.",
@@ -263,7 +292,8 @@
     "requirement": {
       "progress": "{{current}} / {{required}} {{unit}}",
       "prof_check_completed": "Completed {{date}}",
-      "prof_check_missing": "Not completed"
+      "prof_check_missing": "Not completed",
+      "untracked": "Not tracked — confirm it yourself"
     },
     "launch_method": {
       "progress": "{{current}} / {{required}} launches"
@@ -273,12 +303,20 @@
       "training_flight": "Fly one training flight of at least 1 h with an instructor",
       "proficiency_check": "Take a proficiency check with an examiner",
       "launch_method_dual_one": "Fly 1 more launch dual or supervised solo ({{method}})",
-      "launch_method_dual_other": "Fly {{count}} more launches dual or supervised solo ({{method}})"
+      "launch_method_dual_other": "Fly {{count}} more launches dual or supervised solo ({{method}})",
+      "privilege_with_instructor": "Fly {{amount}} with or under the supervision of an instructor"
     },
     "readiness": {
       "launch_method_current": "Current until {{date}}",
       "credential_valid": "Valid until {{date}}",
       "credential_expired": "Expired on {{date}}"
+    },
+    "privilege": {
+      "valid": "Valid — no recency requirement attached.",
+      "expired": "Expired.",
+      "recency_current": "Current — recency requirement met.",
+      "recency_not_met": "Recency requirement not met — the privilege may not be exercised until it is restored.",
+      "evaluation_failed": "Flight experience could not be read. Try again in a moment."
     }
   },
   "remedyAmount": {
@@ -292,7 +330,11 @@
     "approaches_one": "1 more instrument approach",
     "approaches_other": "{{count}} more instrument approaches",
     "holds_one": "1 more holding procedure",
-    "holds_other": "{{count}} more holding procedures"
+    "holds_other": "{{count}} more holding procedures",
+    "tows_one": "1 more tow",
+    "tows_other": "{{count}} more tows",
+    "km_one": "{{count}} more km",
+    "km_other": "{{count}} more km"
   },
   "remedyUnrecognised": "Fly the missing experience to restore this.",
   "remedyLabel": "To restore",
@@ -323,5 +365,17 @@
     "title": "To fly again",
     "subtitle": "What restores each lapsed rating and launch method.",
     "orAlternative": "Alternatively:"
+  },
+  "privilegesTitle": "Privileges",
+  "privilegeCount_one": "{{count}} privilege",
+  "privilegeCount_other": "{{count}} privileges",
+  "launchMethodTrained": "trained",
+  "launchMethodUntrainedHint": "Logged, but no training in this launch method is recorded on your licence (SFCL.155(a)).",
+  "addUlPassengerAuthorisation": "Record passenger authorisation",
+  "paxRequirementsTitle": {
+    "default": "Passenger prerequisites",
+    "easa_spl_pax": "Prerequisites since licence issue (SFCL.115(a)(2))",
+    "easa_spl_tmg_pax": "Prerequisites since licence issue (SFCL.115(a)(2))",
+    "ul_pax": "Toward the passenger authorisation (LuftPersV §84a)"
   }
 }

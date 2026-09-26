@@ -1155,6 +1155,67 @@ export interface paths {
         patch: operations["updateClassRating"];
         trace?: never;
     };
+    "/licenses/{licenseId}/privileges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List privileges recorded on a licence
+         * @description Ratings, endorsements and authorisations recorded on one of the caller's
+         *     licences beside its class ratings: sailplane and banner towing (SFCL.205,
+         *     FAA 14 CFR 61.69), cloud flying (SFCL.215), aerobatics, TMG night, FI(S),
+         *     BI(S) and FE(S), trained launch methods (SFCL.155(a)), the German UL
+         *     passenger authorisation (LuftPersV §84a), UL towing and UL type briefing
+         *     (Einweisung). Ordered by kind, then detail. A licence that does not exist
+         *     or belongs to another user answers 404. Currency for each privilege is in
+         *     `GET /currency` (`privileges`).
+         */
+        get: operations["listLicencePrivileges"];
+        put?: never;
+        /**
+         * Record a privilege on a licence
+         * @description `detail` depends on `kind`: LAUNCH_METHOD_TRAINED requires a launch method
+         *     (winch, car, aerotow, self-launch, bungee; case-insensitive), UL_TOWING an
+         *     ultralight kind (THREE_AXIS, WEIGHT_SHIFT, GYROPLANE, HELICOPTER,
+         *     POWERED_PARAGLIDER, SAILPLANE; case-insensitive) and UL_TYPE_BRIEFING the
+         *     aircraft type (at most 100 characters). Other kinds accept an optional
+         *     detail of at most 100 characters. `expiresOn` must not be before
+         *     `issuedOn`. Any violation answers 400.
+         */
+        post: operations["createLicencePrivilege"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/licenses/{licenseId}/privileges/{privilegeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a licence privilege */
+        delete: operations["deleteLicencePrivilege"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a licence privilege
+         * @description Partial update. Omitted fields are unchanged; `detail`, `issuedOn`,
+         *     `expiresOn` and `notes` are cleared by sending null. The result is
+         *     revalidated with the rules of `POST`. A privilege that does not exist,
+         *     belongs to another user or is on another licence answers 404.
+         */
+        patch: operations["updateLicencePrivilege"];
+        trace?: never;
+    };
     "/credentials": {
         parameters: {
             query?: never;
@@ -1987,7 +2048,7 @@ export interface paths {
         };
         /**
          * Export flights as CSV
-         * @description Export flight data as a CSV file — every flight, or every flight matching the `GET /flights` filters given (never paginated). Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), standard (ForeFlight-compatible), and weblogbook (the column layout of vsimakhin/web-logbook's own CSV export, so its "Apply Web Logbook Mapping" import profile maps every column in one click) formats. The standard layout ends with `LaunchMethod`, `Launches`, `Outlanding`, `TowFlight` and `ReleaseHeightM` columns; the easa, faa and weblogbook layouts have no launch-method column and carry it in their remarks cell as `[Launch: winch]`, which `POST /imports/confirm` reads back.
+         * @description Export flight data as a CSV file — every flight, or every flight matching the `GET /flights` filters given (never paginated). Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), standard (ForeFlight-compatible), and weblogbook (the column layout of vsimakhin/web-logbook's own CSV export, so its "Apply Web Logbook Mapping" import profile maps every column in one click) formats. The standard layout ends with `LaunchMethod`, `Launches`, `Outlanding`, `TowFlight` and `ReleaseHeightM` columns, then `AircraftClass` and `ULKind` taken from the fleet aircraft of the flight's registration (blank when the registration is not in the fleet; `ULKind` only for an `ULTRALIGHT` aircraft); the easa, faa and weblogbook layouts have no launch-method column and carry it in their remarks cell as `[Launch: winch]`, which `POST /imports/confirm` reads back.
          */
         get: operations["exportFlightsCSV"];
         put?: never;
@@ -2035,8 +2096,8 @@ export interface paths {
         /**
          * Export full data backup as JSON
          * @description Exports everything the user owns as a JSON backup file: flights (with
-         *     crew), aircraft, aircraft reminders, licences and class ratings,
-         *     credentials, contacts, custom currency rules, custom reports,
+         *     crew), aircraft, aircraft reminders, licences with their class ratings
+         *     and privileges, credentials, contacts, custom currency rules, custom reports,
          *     notification preferences, the carried-forward hours baseline and the
          *     pilot profile (mode and discipline intents; evidence is derived and not
          *     exported).
@@ -2066,7 +2127,7 @@ export interface paths {
          * Restore a NinerLog JSON backup
          * @description Restore a previously exported NinerLog JSON backup into the authenticated
          *     user's account. Recreates every section the backup carries: aircraft,
-         *     aircraft reminders, licences, class ratings, credentials, flights and crew members,
+         *     aircraft reminders, licences, class ratings, licence privileges, credentials, flights and crew members,
          *     contacts, custom currency rules, custom reports, notification
          *     preferences, the carried-forward hours baseline and the pilot profile. Flights keep their
          *     glider facts (launches and their override flag, outlanding, tow flight, release height);
@@ -2092,6 +2153,8 @@ export interface paths {
          *     aircraft with the same registration when that aircraft was skipped; a
          *     reminder whose aircraft the backup does not carry is skipped, as is one
          *     identical (kind, label, due date) to a reminder already on the aircraft.
+         *     Licence privileges travel inside their licence entry (`licenses[].privileges`)
+         *     and are revalidated and attached to the restored licence.
          */
         post: operations["importDataJSON"];
         delete?: never;
@@ -2119,6 +2182,17 @@ export interface paths {
          *     Every logged row is rendered, co-pilot (SIC) flights included: co-pilot
          *     time is part of total time of flight and the EASA layout has a CO-PILOT
          *     column for it (AMC1 FCL.050 col 16).
+         *
+         *     The `sailplane` format is an AMC1 SFCL.050 layout: date, aircraft type and
+         *     registration, take-off place and time, landing place and time, flight time
+         *     (total time), launch method, launches, PIC / dual / FI(S) time, and remarks
+         *     and endorsements, which carry `[Outlanding]` and `[Release <n> m]`. It has no
+         *     single-/multi-pilot, night or IFR columns and no `[Launch: …]` remarks marker.
+         *     The `ultralight` format has date, registration and type, UL kind, departure and
+         *     arrival place and time, flight time, landings, PIC / dual / instruction-given
+         *     time, and remarks. Both render one landscape page per batch of flights (the
+         *     `layout` parameter does not apply) with the same three-row totals block and a
+         *     discipline-specific totals summary page.
          *
          *     If the pilot has recorded prior experience (`PUT /users/me/baseline`),
          *     those hours open the balance: they are carried into the first
@@ -2194,6 +2268,41 @@ export interface paths {
          *     `totals` also includes the user's initial-hours snapshot whenever the timeframe reaches back to its cutoff date, so it matches `GET /users/me/statistics`; the contribution is reported separately in `baseline`.
          */
         get: operations["getFlightAnalytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/soaring-season": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a soaring season summary
+         * @description Summarises one calendar year (1 January to 31 December) of the
+         *     caller's soaring flights for the dashboard season card.
+         *
+         *     A soaring flight is a flight whose aircraft (matched by registration
+         *     in the caller's fleet) is classed `GLIDER`, is an `ULTRALIGHT` of kind
+         *     `SAILPLANE`, or is classed `TMG` and the flight has a launch method.
+         *     FSTD sessions and passenger flights never count. Flights on
+         *     registrations missing from the fleet do not count.
+         *
+         *     `launches` sums each flight's stored launch count (its take-offs, at
+         *     least one, when none was stored). `longestFlight` is the soaring
+         *     flight with the most total time (latest on a tie); it never uses airport-to-airport
+         *     distance, which is 0 for local and out-and-return soaring. `sites`
+         *     lists the five departure places with the most soaring flights.
+         *     Durations are integer minutes. A year without soaring flights returns
+         *     zeros, an empty `sites` and no `longestFlight`.
+         */
+        get: operations["getSoaringSeason"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3203,6 +3312,15 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ClassStatULKind: {
+            /** @enum {string|null} */
+            ulKind: "THREE_AXIS" | "THREE_AXIS_MOTORGLIDER" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE" | "null" | null;
+            flights: number;
+            minutes: number;
+            picMinutes: number;
+            dualMinutes: number;
+            landings: number;
+        };
         User: {
             /**
              * Format: uuid
@@ -3563,7 +3681,7 @@ export interface components {
              */
             userId: string;
             /**
-             * @description Aircraft registration/tail number. Normalised on write into the canonical notation of its state of registry: the nationality mark is matched against the ICAO table and the hyphen inserted, moved or removed to suit (`deabc` and `DE-ABC` both become `D-EABC`; `N-12345` becomes `N12345`). A registration whose nationality mark is not recognised is stored uppercased and trimmed, but otherwise unchanged.
+             * @description Aircraft registration/tail number. Normalised on write into the canonical notation of its state of registry: the nationality mark is matched against the ICAO table and the hyphen inserted, moved or removed to suit (`deabc` and `DE-ABC` both become `D-EABC`; `N-12345` becomes `N12345`). A registration whose nationality mark is not recognised is stored uppercased and trimmed, but otherwise unchanged. An ULTRALIGHT of kind `POWERED_PARAGLIDER` may carry a name in place of a registration (`PPG-Viper`); it is stored uppercased and trimmed and never rewritten into a nationality notation.
              * @example D-EFGH
              */
             registration: string;
@@ -3572,6 +3690,8 @@ export interface components {
              * @example C172
              */
             type: string;
+            /** @description Checks the saved aircraft triggered. Present only on create and update responses, and only when a check fired; the aircraft is saved either way. */
+            warnings?: components["schemas"]["SaveWarning"][];
             /**
              * @description Aircraft manufacturer
              * @example Cessna
@@ -3668,6 +3788,63 @@ export interface components {
              * @example 2026-02-01T14:30:00Z
              */
             updatedAt: string;
+        };
+        /**
+         * @description - SAILPLANE_TOWING: sailplane towing (SFCL.205; on an FAA licence the 14 CFR 61.69 tow privilege)
+         *     - BANNER_TOWING: banner towing (SFCL.205)
+         *     - CLOUD_FLYING: sailplane cloud flying (SFCL.215)
+         *     - AEROBATIC_BASIC, AEROBATIC_ADVANCED: sailplane aerobatics (SFCL.200)
+         *     - TMG_NIGHT: night flying in a TMG (SFCL.210)
+         *     - FI_S, BI_S, FE_S: sailplane flight instructor (SFCL.360), basic instructor, examiner
+         *     - UL_PASSENGER_AUTH: German UL passenger authorisation (LuftPersV §84a)
+         *     - UL_TOWING: German UL towing authorisation (DULV Schleppberechtigung); detail is the ultralight kind
+         *     - UL_TYPE_BRIEFING: UL type briefing (Einweisung); detail is the aircraft type
+         *     - LAUNCH_METHOD_TRAINED: a launch method the pilot is trained for (SFCL.155(a)); detail is the method
+         * @enum {string}
+         */
+        LicencePrivilegeKind: "SAILPLANE_TOWING" | "BANNER_TOWING" | "CLOUD_FLYING" | "AEROBATIC_BASIC" | "AEROBATIC_ADVANCED" | "TMG_NIGHT" | "FI_S" | "BI_S" | "FE_S" | "UL_PASSENGER_AUTH" | "UL_TOWING" | "UL_TYPE_BRIEFING" | "LAUNCH_METHOD_TRAINED";
+        LicencePrivilege: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            licenseId: string;
+            kind: components["schemas"]["LicencePrivilegeKind"];
+            /**
+             * @description Launch method (LAUNCH_METHOD_TRAINED), ultralight kind (UL_TOWING) or aircraft type (UL_TYPE_BRIEFING); free text for other kinds
+             * @example aerotow
+             */
+            detail?: string;
+            /** Format: date */
+            issuedOn?: string;
+            /**
+             * Format: date
+             * @description Last day the privilege is valid; absent when it does not expire
+             */
+            expiresOn?: string;
+            notes?: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        LicencePrivilegeCreate: {
+            kind: components["schemas"]["LicencePrivilegeKind"];
+            /** @description Required for LAUNCH_METHOD_TRAINED (a launch method), UL_TOWING (an ultralight kind) and UL_TYPE_BRIEFING (the aircraft type) */
+            detail?: string;
+            /** Format: date */
+            issuedOn?: string;
+            /** Format: date */
+            expiresOn?: string;
+            notes?: string;
+        };
+        LicencePrivilegeUpdate: {
+            kind?: components["schemas"]["LicencePrivilegeKind"];
+            detail?: string | null;
+            /** Format: date */
+            issuedOn?: string | null;
+            /** Format: date */
+            expiresOn?: string | null;
+            notes?: string | null;
         };
         /**
          * @description - ANNUAL_INSPECTION: annual airworthiness inspection (DAeC/DULV Jahresnachprüfung for gliders and ultralights)
@@ -4015,7 +4192,7 @@ export interface components {
              */
             date: string;
             /**
-             * @description Aircraft registration
+             * @description Aircraft registration, or the name of a powered paraglider in the pilot's fleet (kept as the aircraft stores it).
              * @example D-EFGH
              */
             aircraftReg: string;
@@ -4024,6 +4201,8 @@ export interface components {
              * @example C172
              */
             aircraftType: string;
+            /** @description Checks the saved flight triggered. Present only on create, update and batch responses, and only when a check fired; the flight is saved either way. */
+            warnings?: components["schemas"]["SaveWarning"][];
             /**
              * @description Departure location — an ICAO code (resolved to coordinates for maps/distance) or a free-text place name for off-airport sites
              * @example EDDF
@@ -4591,6 +4770,29 @@ export interface components {
             launches?: number;
             /** @description Remarks for this leg; replaces the template's remarks. */
             remarks?: string | null;
+        };
+        /**
+         * @description `ul_night_flight`: a flight on an ULTRALIGHT aircraft logs night time or night landings; German UL have no night privilege (LuftPersV §44(2), §45a). `ul_mtom_exceeds_600`: an ULTRALIGHT aircraft's MTOM is above the 600 kg German UL class limit. `ul_120kg_class` (info): an ULTRALIGHT aircraft with an MTOM of at most 120 kg may fall in the single-seat 120 kg class.
+         * @enum {string}
+         */
+        SaveWarningCode: "ul_night_flight" | "ul_mtom_exceeds_600" | "ul_120kg_class";
+        /** @enum {string} */
+        SaveWarningSeverity: "warning" | "info";
+        SaveWarning: {
+            code: components["schemas"]["SaveWarningCode"];
+            severity: components["schemas"]["SaveWarningSeverity"];
+            /**
+             * @description Values for the message. `ul_night_flight`: `nightTime` (minutes), `landingsNight`, `registration`, `ulKind` (when set). `ul_mtom_exceeds_600` and `ul_120kg_class`: `mtomKg`, `limitKg`.
+             * @example {
+             *       "nightTime": 25,
+             *       "landingsNight": 1,
+             *       "registration": "D-MXYZ",
+             *       "ulKind": "THREE_AXIS"
+             *     }
+             */
+            params: {
+                [key: string]: unknown;
+            };
         };
         FlightBatchResult: {
             /** @description The created flights, in leg order. */
@@ -5657,6 +5859,47 @@ export interface components {
             /** @description Tier 2: Passenger currency — determines whether the pilot can carry passengers (rolling from now, separate from rating validity) */
             passengerCurrency: components["schemas"]["PassengerCurrency"][];
             flightReview?: components["schemas"]["FlightReviewStatus"];
+            /**
+             * @description Currency of each privilege recorded on the pilot's licences
+             *     (`/licenses/{licenseId}/privileges`), in licence order, then kind. Absent when
+             *     the pilot has recorded none. See docs/SAILPLANES.md "Privileges".
+             */
+            privileges?: components["schemas"]["PrivilegeCurrency"][];
+        };
+        PrivilegeCurrency: {
+            /** Format: uuid */
+            privilegeId: string;
+            /** Format: uuid */
+            licenseId: string;
+            kind: components["schemas"]["LicencePrivilegeKind"];
+            /** @description The privilege's detail (launch method, ultralight kind, aircraft type) */
+            detail?: string;
+            /**
+             * @description - current: valid, and any recency rule of the privilege is met
+             *     - lapsed: a rolling recency rule (SFCL.205, SFCL.215, SFCL.360, 14 CFR 61.69,
+             *       DULV towing) is not met; the privilege is not exercisable until it is restored
+             *     - expired: past the privilege's `expiresOn`
+             *     - unknown: flight data could not be read
+             * @enum {string}
+             */
+            status: "current" | "lapsed" | "expired" | "unknown";
+            /**
+             * @description Stable key for client-side localisation; catalogued in docs/CURRENCY_MESSAGES.md.
+             * @example privilege.recency_current
+             */
+            messageKey: string;
+            messageParams?: components["schemas"]["MessageParams"];
+            /**
+             * @description Recency rows of the privilege. A row whose `messageKey` is
+             *     `requirement.untracked` is informational: NinerLog cannot count it and it never
+             *     changes `status`.
+             */
+            requirements?: components["schemas"]["CurrencyRequirement"][];
+            /**
+             * @description Stable key for the applied rule (e.g. `sfcl_205_towing`, `faa_61_69_towing`)
+             * @example sfcl_205_towing
+             */
+            ruleDescriptionKey?: string;
         };
         /** @description Variable parts of a localised message that are not already fields on the enclosing object. Which fields are present is determined by messageKey; see docs/CURRENCY_MESSAGES.md for the per-key contract. */
         MessageParams: {
@@ -5760,6 +6003,13 @@ export interface components {
              * @example easa_pax
              */
             ruleDescriptionKey?: string;
+            /**
+             * @description Informational prerequisites of carrying passengers that do not change `dayStatus`:
+             *     on SPL sailplane and TMG passenger currency the SFCL.115(a)(2) experience since
+             *     licence issue; on a German ultralight entry without a recorded passenger
+             *     authorisation, progress toward it (LuftPersV §84a). Absent otherwise.
+             */
+            requirements?: components["schemas"]["CurrencyRequirement"][];
         };
         FlightReviewStatus: {
             /**
@@ -5883,7 +6133,8 @@ export interface components {
             requirements?: components["schemas"]["CurrencyRequirement"][];
             /**
              * @description Launch method recency per SFCL.155(c) — 5 launches per method in 24 months, 2 for bungee.
-             *     Lists every method the pilot has ever logged on the rating's class; TMG take-offs count
+             *     Lists every method the pilot has ever logged on the rating's class, and every method
+             *     with a LAUNCH_METHOD_TRAINED privilege on the rating's licence; TMG take-offs count
              *     toward self-launch.
              */
             launchMethodCurrency?: components["schemas"]["LaunchMethodCurrency"][];
@@ -5945,6 +6196,12 @@ export interface components {
             required: number;
             /** @description Whether the requirement is met */
             met: boolean;
+            /**
+             * @description Whether the pilot has recorded a LAUNCH_METHOD_TRAINED privilege for this method on
+             *     the rating's licence (SFCL.155(a)). A method with such a privilege is listed even
+             *     when never logged.
+             */
+            trained?: boolean;
             /**
              * @description Always `launch_method.progress`; the client renders launches/required/method.
              * @example launch_method.progress
@@ -6580,6 +6837,11 @@ export interface components {
              * @example 0
              */
             aircraftRemindersSkipped: number;
+            /**
+             * @description Licence privileges restored onto their restored licences
+             * @example 2
+             */
+            licencePrivilegesImported: number;
             /** @description Whether the backup carried notification preferences that were applied */
             notificationPreferencesImported: boolean;
             /** @description Whether the backup carried a carried-forward hours baseline that was applied */
@@ -6681,6 +6943,20 @@ export interface components {
                 total: number;
                 /** @description Reminders whose due date is before today (UTC). */
                 overdue: number;
+            };
+            /** @description Licence privileges across all users. */
+            licencePrivileges: {
+                total: number;
+                /**
+                 * @description Privileges grouped by kind. Kinds nobody has recorded are omitted.
+                 * @example {
+                 *       "SAILPLANE_TOWING": 2,
+                 *       "UL_PASSENGER_AUTH": 5
+                 *     }
+                 */
+                byKind: {
+                    [key: string]: number;
+                };
             };
             /** @description Counts of user-configured cloud backup destinations. */
             cloudBackupDestinations: {
@@ -7765,19 +8041,65 @@ export interface components {
             definition: components["schemas"]["CustomCurrencyRuleBody"];
             shareToken: string;
         };
+        /** @description One calendar year of soaring flights (see `GET /reports/soaring-season`). Durations in minutes. */
+        SoaringSeason: {
+            year: number;
+            flights: number;
+            launches: number;
+            launchesByMethod: components["schemas"]["SoaringLaunchesByMethod"];
+            totalMinutes: number;
+            longestFlight?: components["schemas"]["SoaringSeasonFlight"];
+            /** @description Soaring flights marked as an outlanding */
+            outlandings: number;
+            /** @description totalMinutes / flights, rounded; 0 without flights */
+            averageFlightMinutes: number;
+            /** @description Top five departure places by soaring flights, most first */
+            sites: components["schemas"]["SoaringSeasonSite"][];
+        };
+        /** @description Launches per launch method; `unspecified` counts soaring flights without one. */
+        SoaringLaunchesByMethod: {
+            winch: number;
+            aerotow: number;
+            selfLaunch: number;
+            car: number;
+            bungee: number;
+            unspecified: number;
+        };
+        SoaringSeasonFlight: {
+            /** Format: uuid */
+            flightId: string;
+            /** Format: date */
+            date: string;
+            minutes: number;
+            aircraftReg: string | null;
+        };
+        SoaringSeasonSite: {
+            /** @description Departure as logged (ICAO code or free-text place) */
+            place: string;
+            flights: number;
+        };
         /**
          * @description Dimension the report groups flights by. `month` keys are `YYYY-MM`,
          *     `year` keys `YYYY`, `dayOfWeek` keys ISO weekday numbers `1` (Monday)
-         *     to `7`, `route` keys `DEP-ARR`. Time groupings are chronological and
-         *     gap-filled across the report window; the others are ranked by `value`.
+         *     to `7`, `route` keys `DEP-ARR`. `launchMethod` keys are the stored
+         *     launch method (`winch`, `aerotow`, `self-launch`, `car`, `bungee`).
+         *     `aircraftClass` and `ulKind` read the aircraft of the flight's
+         *     registration in the caller's fleet: `aircraftClass` keys are the
+         *     upper-cased class, `ulKind` keys the ultralight kind of `ULTRALIGHT`
+         *     aircraft. Flights without a value group under the empty key. Time
+         *     groupings are chronological and gap-filled across the report window;
+         *     the others are ranked by `value`.
          * @enum {string}
          */
-        CustomReportGroupBy: "month" | "year" | "dayOfWeek" | "aircraftType" | "registration" | "departure" | "arrival" | "route";
+        CustomReportGroupBy: "month" | "year" | "dayOfWeek" | "aircraftType" | "registration" | "departure" | "arrival" | "route" | "launchMethod" | "aircraftClass" | "ulKind";
         /**
          * @description Metric charted by a report. Durations are integer minutes.
+         *     `launches` sums the launch count of soaring flights only (the scope of
+         *     `GET /reports/soaring-season`); `outlandings` and `towFlights` count
+         *     flights marked as an outlanding or a tow flight.
          * @enum {string}
          */
-        CustomReportMetric: "flights" | "totalTime" | "picTime" | "dualTime" | "dualGivenTime" | "nightTime" | "ifrTime" | "crossCountryTime" | "fstdTime" | "landings";
+        CustomReportMetric: "flights" | "totalTime" | "picTime" | "dualTime" | "dualGivenTime" | "nightTime" | "ifrTime" | "crossCountryTime" | "fstdTime" | "landings" | "launches" | "outlandings" | "towFlights";
         /**
          * @description Date window. `all` has no bound; `lastMonths` covers the current
          *     calendar month and the `months - 1` before it; `yearToDate` starts on
@@ -7861,6 +8183,10 @@ export interface components {
             /** @description FSTD session time of matching simulator entries */
             fstdTime: number;
             landings: number;
+            /** @description Launches of matching soaring flights */
+            launches: number;
+            outlandings: number;
+            towFlights: number;
         };
         CustomReportRow: {
             /** @description Group key (see `CustomReportGroupBy`); empty when the flights carry no value for the dimension */
@@ -7879,6 +8205,9 @@ export interface components {
             crossCountryTime: number;
             fstdTime: number;
             landings: number;
+            launches: number;
+            outlandings: number;
+            towFlights: number;
         };
         CustomReportResult: {
             groupBy: components["schemas"]["CustomReportGroupBy"];
@@ -8088,6 +8417,8 @@ export interface components {
         BackupDestinationId: string;
         /** @description Aircraft UUID */
         AircraftId: string;
+        /** @description Licence privilege UUID */
+        PrivilegeId: string;
         /** @description Aircraft reminder UUID */
         ReminderId: string;
         /** @description Flight UUID */
@@ -10206,6 +10537,118 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
+    listLicencePrivileges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Privileges on the licence */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicencePrivilege"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createLicencePrivilege: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LicencePrivilegeCreate"];
+            };
+        };
+        responses: {
+            /** @description Privilege recorded */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicencePrivilege"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteLicencePrivilege: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+                /** @description Licence privilege UUID */
+                privilegeId: components["parameters"]["PrivilegeId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Privilege deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateLicencePrivilege: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description License UUID */
+                licenseId: components["parameters"]["LicenseId"];
+                /** @description Licence privilege UUID */
+                privilegeId: components["parameters"]["PrivilegeId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LicencePrivilegeUpdate"];
+            };
+        };
+        responses: {
+            /** @description Privilege updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicencePrivilege"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
     listCredentials: {
         parameters: {
             query?: {
@@ -11894,11 +12337,11 @@ export interface operations {
                  *     license from another class print `[Credited]` at the start of their remarks.
                  */
                 logbookLicenseId?: string;
-                /** @description PDF format — easa (AMC1 FCL.050 columns), faa (14 CFR § 61.51 / ASA-Jeppesen columns), or summary (simplified totals) */
-                format?: "easa" | "faa" | "summary";
+                /** @description PDF format — easa (AMC1 FCL.050 columns), faa (14 CFR § 61.51 / ASA-Jeppesen columns), sailplane (AMC1 SFCL.050 columns), ultralight (UL columns), or summary (simplified totals). Omitted, it is easa, except with `logbookLicenseId`: sailplane for an SPL, LAPL(S) or FAA glider licence, ultralight for an ultralight licence (a DULV/DAeC licence or a licence type naming UL), easa otherwise. */
+                format?: "easa" | "faa" | "summary" | "sailplane" | "ultralight";
                 /** @description Page size for the generated PDF. All sizes are rendered in landscape orientation. */
                 page_size?: "a4" | "a5" | "letter";
-                /** @description Page layout. `spread` (default) lays the logbook out as a book-style two-page spread (left + right facing pages) intended for double-sided printing, in any page size; intentionally-blank filler pages (one at the start, one before the totals summary) keep each spread on facing pages when printed duplex. `single` renders all columns on one landscape page per batch of flights — designed for single-page A4 landscape printing. Ignored for the summary format. */
+                /** @description Page layout. `spread` (default) lays the logbook out as a book-style two-page spread (left + right facing pages) intended for double-sided printing, in any page size; intentionally-blank filler pages (one at the start, one before the totals summary) keep each spread on facing pages when printed duplex. `single` renders all columns on one landscape page per batch of flights — designed for single-page A4 landscape printing. Ignored for the summary, sailplane and ultralight formats. */
                 layout?: "spread" | "single";
                 /** @description Number of flight rows per logbook page. When set, the row height — and, for dense layouts, the body font — scales dynamically so the rows fill the page: fewer rows give an airier, larger-print logbook, more rows a denser one. Values are clamped to what stays legible on the chosen page size; omitted, the row count is derived from the page size's default row height. Ignored for the summary format. */
                 rows_per_page?: number;
@@ -11983,6 +12426,8 @@ export interface operations {
                             picMinutes?: number;
                             dualMinutes?: number;
                             landings?: number;
+                            /** @description Present only on the `ULTRALIGHT` row: the same figures split by the aircraft's UL kind, most minutes first. `ulKind` is null for flights on an ultralight with no kind set. The row's own figures stay the sum of its kinds. */
+                            byUlKind?: components["schemas"]["ClassStatULKind"][];
                         }[];
                         /** @description PIC and Dual time grouped by aircraft category (e.g. tailwheel, complex, high-performance). Only categories with flights are included. */
                         byCategory?: {
@@ -12025,6 +12470,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FlightAnalytics"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getSoaringSeason: {
+        parameters: {
+            query?: {
+                /** @description Calendar year (UTC). Defaults to the current year; 1900 to next year. */
+                year?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Soaring season summary */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SoaringSeason"];
                 };
             };
             400: components["responses"]["BadRequest"];

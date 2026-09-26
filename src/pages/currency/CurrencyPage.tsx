@@ -10,13 +10,14 @@ import { useLicenses } from '../../hooks/useLicenses';
 import { useAircraftStats } from '../../hooks/useAircraft';
 import { useRecencyPrefs } from '../../hooks/useRecencyPrefs';
 import { recencyLevel, RECENCY_BADGE_CLASSES, RECENCY_REQUIRED_LANDINGS } from '../../lib/recency';
-import { CurrencyCard } from '../../components/currency/CurrencyCard';
+import { CurrencyCard, RequirementBar } from '../../components/currency/CurrencyCard';
+import { PrivilegeCard } from '../../components/currency/PrivilegeCard';
 import { CustomCurrencyCard } from '../../components/currency/CustomCurrencyCard';
 import { CurrencyExpiryBanner } from '../../components/currency/CurrencyExpiryBanner';
 import { SeasonStartPlanner } from '../../components/currency/SeasonStartPlanner';
-import { ChevronDown, ChevronRight, Plane, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
+import { ArrowRight, ChevronDown, ChevronRight, Plane, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
 import { isPast, differenceInDays } from 'date-fns';
-import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
+import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType, PrivilegeCurrency } from '../../types/api';
 import HelpLink from '../../components/ui/HelpLink';
 import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 import { RequirementIcon } from '../../components/ui/RequirementIcon';
@@ -96,8 +97,20 @@ export default function CurrencyPage() {
     }
   }
 
+  const privilegesByLicense: Record<string, PrivilegeCurrency[]> = {};
+  for (const p of currencyStatus?.privileges ?? []) {
+    (privilegesByLicense[p.licenseId] ??= []).push(p);
+  }
+  const licenseGroups = [
+    ...Object.keys(ratingsByLicense),
+    ...Object.keys(privilegesByLicense).filter((id) => !ratingsByLicense[id]),
+  ];
+
   // Count alerts
-  const expiringRatings = currencyStatus?.ratings.filter((r) => isRatingAlert(r.status)) || [];
+  const expiringRatings = [
+    ...(currencyStatus?.ratings.filter((r) => isRatingAlert(r.status)) ?? []),
+    ...(currencyStatus?.privileges?.filter((p) => isRatingAlert(p.status)) ?? []),
+  ];
   const now = new Date();
   const expiringCredentials = credentials?.filter((c) => {
     if (!c.expiryDate) return false;
@@ -266,7 +279,7 @@ export default function CurrencyPage() {
             </div>
           )}
 
-          {Object.keys(ratingsByLicense).length === 0 && (
+          {licenseGroups.length === 0 && (
             <div className="card text-center py-8">
               <p className="text-slate-500 dark:text-slate-400 text-sm">
                 {t('noRatings')}
@@ -274,10 +287,12 @@ export default function CurrencyPage() {
             </div>
           )}
 
-          {Object.entries(ratingsByLicense).map(([licenseId, ratings]) => {
+          {licenseGroups.map((licenseId) => {
+            const ratings = ratingsByLicense[licenseId] ?? [];
+            const privileges = privilegesByLicense[licenseId] ?? [];
             const license = licenses?.find((l) => l.id === licenseId);
             const isExpanded = expandedLicenses[licenseId] !== false; // default expanded
-            const hasAlert = ratings.some((r) => isRatingAlert(r.status));
+            const hasAlert = ratings.some((r) => isRatingAlert(r.status)) || privileges.some((p) => isRatingAlert(p.status));
 
             return (
               <div key={licenseId} className="mb-4">
@@ -291,7 +306,12 @@ export default function CurrencyPage() {
                     {license ? `${license.regulatoryAuthority} ${license.licenseType}` : ratings[0]?.regulatoryAuthority || t('licenseFallback')}
                     {license?.licenseNumber && <span className="text-sm font-normal text-slate-500 dark:text-slate-400 ml-2">({license.licenseNumber})</span>}
                   </span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('ratingCount', { count: ratings.length })}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {[
+                      ...(ratings.length > 0 || privileges.length === 0 ? [t('ratingCount', { count: ratings.length })] : []),
+                      ...(privileges.length > 0 ? [t('privilegeCount', { count: privileges.length })] : []),
+                    ].join(' · ')}
+                  </span>
                   {hasAlert && <span className="w-2 h-2 rounded-full bg-amber-500" />}
                 </button>
 
@@ -317,6 +337,27 @@ export default function CurrencyPage() {
                     ))}
                   </div>
                 )}
+
+                {/* Licence privileges */}
+                {isExpanded && privileges.length > 0 && (
+                  <div className="mt-3 pl-2" data-testid={`privilege-currency-group-${licenseId}`}>
+                    <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 px-1">
+                      {t('privilegesTitle')}
+                    </h3>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {privileges.map((p) => (
+                        <div key={p.privilegeId}>
+                          <PrivilegeCard privilege={p} />
+                          {p.ruleDescriptionKey && (
+                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 px-1 italic">
+                              {t(`ruleDescriptions.${p.ruleDescriptionKey}`, { defaultValue: '' })}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -332,10 +373,16 @@ export default function CurrencyPage() {
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             {currencyStatus.passengerCurrency.map((pax: PassengerCurrencyType) => {
-              const dayOk = pax.dayStatus === 'current';
+              const authMissing = pax.messageKey === 'pax.ul_authorisation_missing';
+              const dayOk = pax.dayStatus === 'current' || (authMissing && pax.dayLandings >= pax.dayRequired);
               const nightOk = pax.nightStatus === 'current';
               const hasNight = pax.nightPrivilege !== false;
-              const allOk = hasNight ? (dayOk && nightOk) : dayOk;
+              const allOk = !authMissing && (hasNight ? (dayOk && nightOk) : dayOk);
+              const paxRequirements = pax.requirements ?? [];
+              const paxPrereqMet = paxRequirements.some((r) => r.met && r.messageKey !== 'requirement.untracked');
+              const authLicenseId = authMissing
+                ? currencyStatus.ratings.find((r) => r.classType === 'ULTRALIGHT' && r.regulatoryAuthority === pax.regulatoryAuthority)?.licenseId
+                : undefined;
               const classLabel = pax.ulKind
                 ? `${t(`classTypes.${pax.classType}`, { defaultValue: pax.classType })} · ${t(`common:ulKinds.${pax.ulKind}`)}`
                 : t(`classTypes.${pax.classType}`, { defaultValue: pax.classType });
@@ -351,10 +398,23 @@ export default function CurrencyPage() {
                       {classLabel}
                       <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1">({pax.regulatoryAuthority})</span>
                     </h3>
-                    <span className={allOk ? 'badge-current' : dayOk ? 'badge-expiring' : 'badge-expired'}>
-                      {allOk ? t('status.current') : dayOk && hasNight ? t('status.dayOnly') : dayOk ? t('status.current') : t('status.notCurrent')}
+                    <span className={authMissing ? 'badge-expiring' : allOk ? 'badge-current' : dayOk ? 'badge-expiring' : 'badge-expired'}>
+                      {authMissing ? t('status.authorisationMissing') : allOk ? t('status.current') : dayOk && hasNight ? t('status.dayOnly') : dayOk ? t('status.current') : t('status.notCurrent')}
                     </span>
                   </div>
+                  {authMissing && (
+                    <div className="mb-2 space-y-2" data-testid="pax-ul-authorisation-missing">
+                      <p className="text-xs text-amber-800 dark:text-amber-300">{currencyMessage(pax)}</p>
+                      <Link
+                        to={`/licenses?addPrivilege=UL_PASSENGER_AUTH${authLicenseId ? `&licence=${encodeURIComponent(authLicenseId)}` : ''}`}
+                        className="btn-secondary btn-sm"
+                        data-testid="pax-add-ul-authorisation"
+                      >
+                        {t('addUlPassengerAuthorisation')}
+                        <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                      </Link>
+                    </div>
+                  )}
                   {/* Day currency bar */}
                   <div className="space-y-1 mb-1">
                     <div className="flex justify-between items-center text-xs">
@@ -412,6 +472,16 @@ export default function CurrencyPage() {
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1" data-testid="night-not-applicable">
                       {t('nightNotApplicable')}
                     </p>
+                  )}
+                  {paxRequirements.length > 0 && (
+                    <div className="mt-3 pt-2 border-t border-slate-200/70 dark:border-slate-700 space-y-2" data-testid="pax-requirements">
+                      <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                        {t(`paxRequirementsTitle.${pax.ruleDescriptionKey ?? 'default'}`, { defaultValue: t('paxRequirementsTitle.default') })}
+                      </p>
+                      {paxRequirements.map((req) => (
+                        <RequirementBar key={req.nameKey ?? req.name} req={req} showRemedy={authMissing || !paxPrereqMet} />
+                      ))}
+                    </div>
                   )}
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">
                     {pax.ruleDescriptionKey
