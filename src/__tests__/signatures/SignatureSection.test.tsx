@@ -57,6 +57,10 @@ const baseFlight: Flight = {
   simulatedFlightTime: 0,
   groundTrainingTime: 0,
   createdAt: '2026-01-15T00:00:00Z',
+  launches: 1,
+  launchesOverride: false,
+  isOutlanding: false,
+  isTowFlight: false,
   updatedAt: '2026-01-15T00:00:00Z',
 };
 
@@ -102,6 +106,10 @@ describe('SignatureSection', () => {
         emailSendCount: 1,
         tokenExpiresAt: '2026-01-22T00:00:00Z',
         createdAt: '2026-01-15T00:00:00Z',
+        launches: 1,
+        launchesOverride: false,
+        isOutlanding: false,
+        isTowFlight: false,
         updatedAt: '2026-01-15T00:00:00Z',
       } as FlightSignature,
     ]);
@@ -125,6 +133,10 @@ describe('SignatureSection', () => {
         signedAt: '2026-01-15T12:00:00Z',
         emailSendCount: 0,
         createdAt: '2026-01-15T12:00:00Z',
+        launches: 1,
+        launchesOverride: false,
+        isOutlanding: false,
+        isTowFlight: false,
         updatedAt: '2026-01-15T12:00:00Z',
       } as FlightSignature,
     ]);
@@ -149,6 +161,10 @@ describe('SignatureSection', () => {
         signedAt: '2026-01-15T12:00:00Z',
         emailSendCount: 0,
         createdAt: '2026-01-15T12:00:00Z',
+        launches: 1,
+        launchesOverride: false,
+        isOutlanding: false,
+        isTowFlight: false,
         updatedAt: '2026-01-15T12:00:00Z',
       } as FlightSignature,
     ]);

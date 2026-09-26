@@ -501,6 +501,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         fstdType: data.fstdType || null,
         endorsements: data.endorsements || null,
         crewMembers: isEditing || crewMembers.length > 0 ? crewMembers : undefined,
+        isOutlanding: existingFlight?.isOutlanding ?? false,
+        isTowFlight: existingFlight?.isTowFlight ?? false,
       };
 
       // A training device is not flown between places: the API rejects the
