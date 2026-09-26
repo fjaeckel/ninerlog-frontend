@@ -317,6 +317,37 @@
       "recency_current": "Gültig — fortlaufende Flugerfahrung erfüllt.",
       "recency_not_met": "Fortlaufende Flugerfahrung nicht erfüllt — die Berechtigung darf erst wieder ausgeübt werden, wenn sie erfüllt ist.",
       "evaluation_failed": "Flugerfahrung konnte nicht ermittelt werden. Versuch es gleich noch einmal."
+    },
+    "training": {
+      "programme": {
+        "spl": "SPL",
+        "spl_tmg_extension": "SPL-Erweiterung TMG",
+        "ul_three_axis": "Luftsportgeräteführerschein, Dreiachs-UL",
+        "ul_weight_shift": "Luftsportgeräteführerschein, Trike (gewichtskraftgesteuert)"
+      },
+      "spl": {
+        "instruction_time": "Flugausbildung",
+        "dual_time": "Doppelsteuer",
+        "supervised_solo_time": "Alleinflug unter Aufsicht",
+        "launches": "Starts und Landungen",
+        "cross_country": "Überlandflug",
+        "credit_sfcl130b": "Anrechnung deiner anderen Lizenz"
+      },
+      "tmg": {
+        "instruction_time": "Flugausbildung auf Reisemotorseglern",
+        "dual_time": "Doppelsteuer auf Reisemotorseglern",
+        "solo_cross_country": "Überlandflug im Alleinflug"
+      },
+      "ul": {
+        "total_time": "Flugausbildung",
+        "dual_time": "Doppelsteuer",
+        "solo_time": "Alleinflug"
+      },
+      "met": "Erfüllt",
+      "not_met": "Noch {{remaining}}",
+      "cross_country_distance_unknown": "Gezählt, aber die Entfernung ist unbekannt — prüfe die Strecke",
+      "credit_available": "{{amount}} können auf die Flugausbildung angerechnet werden: 10 % deiner PIC-Zeit auf anderen Luftfahrzeugen, höchstens 7 h. Nie auf den Alleinflug unter Aufsicht, die Starts oder den Überlandflug.",
+      "credit_none": "Du hast eine Lizenz für eine andere Luftfahrzeugkategorie, aber noch keine PIC-Zeit zum Anrechnen."
     }
   },
   "remedyAmount": {
@@ -377,5 +408,56 @@
     "easa_spl_pax": "Voraussetzungen seit Lizenzerteilung (SFCL.115(a)(2))",
     "easa_spl_tmg_pax": "Voraussetzungen seit Lizenzerteilung (SFCL.115(a)(2))",
     "ul_pax": "Auf dem Weg zur Passagierberechtigung (LuftPersV §84a)"
+  },
+  "trainingCard": {
+    "title": "Ausbildungsfortschritt",
+    "programmeTitle": "{{name}} — {{basis}}",
+    "allMet": "Alle erfassten Anforderungen erfüllt",
+    "signedFlights_one": "{{count}} Flug von deinem Fluglehrer unterschrieben",
+    "signedFlights_other": "{{count}} Flüge von deinem Fluglehrer unterschrieben",
+    "progress": "{{current}} / {{required}}",
+    "amount": {
+      "launches_one": "{{count}} Start",
+      "launches_other": "{{count}} Starts",
+      "landings_one": "{{count}} Landung",
+      "landings_other": "{{count}} Landungen",
+      "flights_one": "{{count}} Flug",
+      "flights_other": "{{count}} Flüge",
+      "km": "{{count}} km"
+    },
+    "unit": {
+      "launches": "Starts",
+      "landings": "Landungen",
+      "flights": "Flüge",
+      "km": "km"
+    },
+    "metLabel": "Erfüllt",
+    "note": "Hinweis",
+    "showDetails": "Was zählt",
+    "hideDetails": "Details ausblenden",
+    "legalBasis": "Rechtsgrundlage: {{basis}}",
+    "notTracked": "Theorie, praktische Prüfung und die übrigen Voraussetzungen werden hier nicht erfasst.",
+    "counts": {
+      "spl": {
+        "instruction_time": "Doppelsteuer und Alleinflug unter Aufsicht auf Segelflugzeugen (ohne Reisemotorsegler), mindestens 15 h.",
+        "dual_time": "Doppelsteuer auf Segelflugzeugen, mindestens 10 h.",
+        "supervised_solo_time": "Alleinflug unter Aufsicht auf Segelflugzeugen, mindestens 2 h. Alleinflug ohne Aufsicht zählt nicht.",
+        "launches": "Starts auf Flügen mit Doppelsteuer oder Alleinflug unter Aufsicht, mindestens 45.",
+        "cross_country": "Ein Überlandflug im Alleinflug über mindestens 50 km oder mit Fluglehrer über mindestens 100 km, gemessen von Flugplatz zu Flugplatz.",
+        "credit_sfcl130b": "10 % deiner PIC-Zeit auf Flugzeugen, Tragschraubern oder Hubschraubern, höchstens 7 h."
+      },
+      "tmg": {
+        "instruction_time": "Doppelsteuer und Alleinflug unter Aufsicht auf Reisemotorseglern, mindestens 6 h.",
+        "dual_time": "Doppelsteuer auf Reisemotorseglern, mindestens 4 h.",
+        "solo_cross_country": "Ein Überlandflug im Alleinflug über mindestens 150 km mit einer Landung auf einem anderen Flugplatz."
+      },
+      "ul": {
+        "total_time": "Doppelsteuer, PIC- und Alleinflugzeit unter Aufsicht auf dieser UL-Art.",
+        "dual_time": "Doppelsteuer auf dieser UL-Art, mindestens 10 h.",
+        "solo_time": "PIC- und Alleinflugzeit unter Aufsicht auf dieser UL-Art, mindestens 5 h."
+      }
+    },
+    "tracked": "Ausbildungsfortschritt erfasst: {{names}}",
+    "trackedNone": "Für diese Werkzeuggruppe wird kein Ausbildungsprogramm erfasst."
   }
 }

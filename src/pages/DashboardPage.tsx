@@ -13,6 +13,7 @@ import { useAircraftStats } from '../hooks/useAircraft';
 import { CurrencyCard } from '../components/currency/CurrencyCard';
 import { AircraftDueCard } from '../components/aircraft/AircraftDueCard';
 import { ReadinessCard } from '../components/currency/ReadinessCard';
+import { TrainingProgressCard } from '../components/currency/TrainingProgressCard';
 import { StatCard } from '../components/ui/StatCard';
 import { PageWrapper } from '../components/ui/PageWrapper';
 import { useFormatPrefs } from '../hooks/useFormatPrefs';
@@ -102,6 +103,7 @@ export default function DashboardPage() {
       </div>
 
       <ReadinessCard />
+      <TrainingProgressCard />
 
       {/* Currency Status — per class rating */}
       {ratings.length > 0 && (
