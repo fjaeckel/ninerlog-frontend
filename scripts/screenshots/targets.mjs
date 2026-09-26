@@ -337,6 +337,26 @@ export const TARGETS = [
     },
   },
 
+  // Welcome tour, opened from Help.
+  { name: 'onboarding', path: '/help', act: openTour },
+  {
+    name: 'onboarding-unchosen',
+    path: '/help',
+    personaOnly: true,
+    act: async (page, fx) => {
+      const profile = fx.bodyFor('/users/me/pilot-profile', new URLSearchParams());
+      const unchosen = profile && {
+        ...profile,
+        disciplines: profile.disciplines.map((s) => ({ ...s, intent: 'auto', acknowledgedAt: null })),
+      };
+      await page.route('**/api/v1/users/me/pilot-profile', (route) => route.fulfill({ json: unchosen }));
+      await page.reload({ waitUntil: 'networkidle' });
+      await openTour(page);
+    },
+  },
+  { name: 'onboarding-flight', path: '/help', act: (page) => openTourAt(page, /log a flight|flug erfassen/i) },
+  { name: 'onboarding-currency', path: '/help', act: (page) => openTourAt(page, /stay current|gültigkeit behalten|flugpraxis/i) },
+
   // Empty states.
   { name: 'empty-flights', path: '/flights', empty: true },
   { name: 'empty-aircraft', path: '/aircraft', empty: true },
@@ -362,6 +382,23 @@ async function openFormWithAircraft(page, registration) {
   await page.locator('#aircraftReg').fill(registration);
   await page.locator('#date').click();
   await page.waitForTimeout(400);
+}
+
+/** The welcome tour, opened from the Help page. */
+async function openTour(page) {
+  await page.getByRole('button', { name: /replay welcome tour|take the tour|tour erneut|tour starten/i }).first().click();
+  await page.waitForTimeout(600);
+}
+
+/** The welcome tour, advanced to the first step whose heading matches `heading`. */
+async function openTourAt(page, heading) {
+  await openTour(page);
+  const dialog = page.getByRole('dialog');
+  for (let i = 0; i < 12; i++) {
+    if (await dialog.getByRole('heading', { name: heading }).count()) break;
+    await dialog.getByRole('button', { name: /^(next|weiter)/i }).click();
+    await page.waitForTimeout(400);
+  }
 }
 
 /** The screens a persona run captures when no target is named. */

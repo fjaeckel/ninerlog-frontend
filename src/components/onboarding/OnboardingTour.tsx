@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { X, ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useOnboardingStore } from '../../stores/onboardingStore';
-import { tourSteps } from './tourSteps';
+import { usePilotProfile, useUpdatePilotProfile, useDisciplines } from '../../hooks/usePilotProfile';
+import { stepsFor, tourVariant } from './tourSteps';
+import { DisciplinesStep } from './DisciplinesStep';
+import { buildUpdate, fromLogbook, initialPicks, type Picks } from './disciplinePicks';
 
 interface TargetState {
   rect: DOMRect | null;
@@ -46,8 +49,19 @@ export function OnboardingTour() {
   );
   const cardRef = useRef<HTMLDivElement>(null);
 
+  const { data: profile } = usePilotProfile();
+  const disciplines = useDisciplines();
+  const updateProfile = useUpdatePilotProfile();
+  const [picked, setPicked] = useState<Picks | null>(null);
+  const [saveError, setSaveError] = useState('');
+  const initial = useMemo(() => initialPicks(profile), [profile]);
+  const logbook = useMemo(() => fromLogbook(profile), [profile]);
+  const picks = picked ?? initial;
+
+  const [tourSteps, setTourSteps] = useState(() => stepsFor(profile));
   const total = tourSteps.length;
   const step = tourSteps[stepIndex];
+  const isDisciplines = step?.id === 'disciplines';
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === total - 1;
 
@@ -56,7 +70,18 @@ export function OnboardingTour() {
   const [prevOpen, setPrevOpen] = useState(isOpen);
   if (isOpen !== prevOpen) {
     setPrevOpen(isOpen);
-    if (isOpen) setStepIndex(0);
+    if (isOpen) {
+      setStepIndex(0);
+      setPicked(null);
+      setSaveError('');
+      setTourSteps(stepsFor(profile));
+    }
+  }
+  // Steps recomputed once when the profile first arrives on the first step.
+  const [prevProfile, setPrevProfile] = useState(profile);
+  if (profile !== prevProfile) {
+    setPrevProfile(profile);
+    if (prevProfile === undefined && stepIndex === 0 && picked === null) setTourSteps(stepsFor(profile));
   }
 
   // Viewport breakpoint: floating card (desktop) vs bottom sheet (mobile).
@@ -102,10 +127,28 @@ export function OnboardingTour() {
     else useOnboardingStore.getState().close();
   }, [user, complete]);
 
-  const next = useCallback(() => {
+  const advance = useCallback(() => {
     if (isLast) finish();
     else setStepIndex((i) => Math.min(i + 1, total - 1));
   }, [isLast, finish, total]);
+
+  const next = useCallback(async () => {
+    if (!isDisciplines) return advance();
+    const body = buildUpdate(profile, picks);
+    if (!body) return advance();
+    setSaveError('');
+    try {
+      await updateProfile.mutateAsync(body);
+      advance();
+    } catch {
+      setSaveError(t('tour.disciplines.saveFailed'));
+    }
+  }, [isDisciplines, advance, profile, picks, updateProfile, t]);
+
+  const skipStep = useCallback(() => {
+    setSaveError('');
+    advance();
+  }, [advance]);
 
   const back = useCallback(() => setStepIndex((i) => Math.max(i - 1, 0)), []);
 
@@ -119,7 +162,7 @@ export function OnboardingTour() {
       }
       if (e.key === 'ArrowRight') {
         e.preventDefault();
-        next();
+        void next();
         return;
       }
       if (e.key === 'ArrowLeft' && !isFirst) {
@@ -172,7 +215,10 @@ export function OnboardingTour() {
   if (!isOpen || !step) return null;
 
   const title = t(`tour.steps.${step.id}.title`, { name: user?.name?.split(' ')[0] ?? '' });
-  const body = t(`tour.steps.${step.id}.body`);
+  const variant = tourVariant(disciplines);
+  const body = step.variants?.includes(variant)
+    ? t(`tour.steps.${step.id}.variants.${variant}`)
+    : t(`tour.steps.${step.id}.body`, { name: user?.name?.split(' ')[0] ?? '' });
   const showMoreHint = target.key === 'more';
 
   const spotlight = target.rect
@@ -191,7 +237,7 @@ export function OnboardingTour() {
   let cardClassName: string;
   if (!target.rect) {
     cardClassName =
-      'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-1.5rem)] max-w-md pointer-events-auto';
+      'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-1.5rem)] max-w-md max-h-[calc(100dvh-1.5rem)] overflow-y-auto pointer-events-auto';
   } else if (isDesktop) {
     cardClassName = 'absolute pointer-events-auto';
   } else {
@@ -274,6 +320,19 @@ export function OnboardingTour() {
 
         <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{body}</p>
 
+        {isDisciplines && (
+          <DisciplinesStep
+            picks={picks}
+            initial={initial}
+            logbook={logbook}
+            onChange={(p) => {
+              setSaveError('');
+              setPicked(p);
+            }}
+            error={saveError}
+          />
+        )}
+
         {showMoreHint && (
           <p className="mt-2 text-xs text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-lg px-3 py-2">
             {t('tour.moreHint')}
@@ -283,7 +342,7 @@ export function OnboardingTour() {
         {/* Footer */}
         <div className="flex items-center justify-between gap-2 mt-5">
           <button
-            onClick={finish}
+            onClick={isDisciplines ? skipStep : finish}
             className="text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 min-h-[44px] px-1 transition-colors"
           >
             {t('tour.skip')}
@@ -295,7 +354,11 @@ export function OnboardingTour() {
                 {t('tour.back')}
               </button>
             )}
-            <button onClick={next} className="btn-primary btn-sm min-h-[44px]">
+            <button
+              onClick={() => void next()}
+              disabled={isDisciplines && updateProfile.isPending}
+              className="btn-primary btn-sm min-h-[44px]"
+            >
               {isLast ? (
                 <>
                   <Check className="w-4 h-4" aria-hidden="true" />
