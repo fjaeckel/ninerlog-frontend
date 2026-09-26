@@ -59,6 +59,26 @@ npm run shots -- --audit --mobile   # touch thresholds
 A list page that does not report `[100% of column]` is leaving desktop width on
 the table.
 
+**As a persona.** `--persona=<id>` (or `SHOT_PERSONA=<id>`) swaps the default
+fixture for one persona's logbook from `../ninerlog-api/docs/PERSONAS.md`:
+
+```bash
+npm run shots -- after --persona=lena                  # one persona, persona target set
+npm run shots -- after --persona=all --theme=light     # every persona in turn
+SHOT_PERSONA=mark,sabine npm run shots -- after flights-modal-primary
+```
+
+Ids: `lena`, `jonas`, `karl`, `petra`, `mehmet`, `sabine`, `mark`, `anna`,
+`ruth`. Output goes to `.screenshots/<label>/<persona>/<target>.<theme>.png`.
+With no target named, a persona run captures `PERSONA_TARGETS` in
+`targets.mjs` (dashboard, flights, the empty form, the form with the persona's
+own aircraft selected — `flights-modal-primary`/`-secondary` — flight detail,
+aircraft, licences, currency, reports, profile); any target can be named
+explicitly. A default run (no persona) is unchanged and byte-identical, and
+wipes the whole `<label>` directory — capture personas under their own label
+or after the default run. `SHOT_LANG` still sets the UI language; every
+persona's profile says `en`.
+
 Output lands in `.screenshots/<label>/` — gitignored, wiped at the start of each run for that label.
 
 If you changed the tree before capturing `before`, commit your work to a WIP commit, capture `before` from a clean checkout of the base (`git worktree add` or `git checkout <base> -- <files>`), then restore. **Never use `git stash`**: the stash stack is shared by every worktree of the repo, so a parallel session's `pop` can take your changes and hand you theirs.
@@ -67,14 +87,17 @@ If you changed the tree before capturing `before`, commit your work to a WIP com
 
 ## What the harness is
 
-`scripts/screenshots/` — four files, no API and no backend needed:
+`scripts/screenshots/` — no API and no backend needed:
 
 | File | Holds |
 |---|---|
 | `capture.mjs` | CLI, dev-server bootstrap, browser, the capture itself |
 | `audit.mjs` | the measurements behind `--audit` |
-| `targets.mjs` | the list of screens, and how to reach each one |
-| `fixtures.mjs` | the API responses, keyed by path |
+| `targets.mjs` | the list of screens, how to reach each one, `PERSONA_TARGETS` |
+| `fixtures.mjs` | the default API responses, keyed by path |
+| `personas/index.mjs` | `PERSONA_IDS`, `loadPersona(id)` |
+| `personas/build.mjs` | shared builders; `buildFixtureSet(persona)` turns persona data into routes |
+| `personas/<id>.mjs` | one persona's data: user, licences, ratings, fleet, flights, currency, profile settings |
 
 Every `/api/v1/**` request is answered from `fixtures.mjs` via `page.route`, so screens render with a logbook that has flights in it, a rating about to lapse, and a credential that already expired. The session is seeded into `localStorage` before first paint; the welcome tour is marked seen so it never covers the shot. The dev server starts automatically if one is not already listening.
 
@@ -112,6 +135,29 @@ A screen with no target is a screen nobody reviews. Add one to `targets.mjs`:
 { name: 'error-my-page', path: '/my-page', fail: true },    // 500 on the list
 { name: 'my-public-page', path: '/public', anonymous: true }, // no session seeded
 ```
+
+## Persona fixture sets
+
+A persona module holds data only. `build.mjs` derives everything else from its
+flights — `/users/me/statistics`, trends, stats by class, `/aircraft/stats`,
+`/reports/analytics`, routes and airport stats — so no two screens disagree.
+Currency is written per persona with the helpers (`req`, `profCheck`,
+`recencyStatus`, `launchMethodRows`, `easaPax`, `ulPax`) over `tally()` of the
+persona's own flights, and uses only keys from
+`../ninerlog-api/docs/CURRENCY_MESSAGES.md` — never English text.
+
+`GET /users/me/pilot-profile` is served from `derivePilotProfile()`, a port of
+the API's `internal/service/pilotprofile/derive.go` run over the persona's
+records, plus the stored part in the persona's `profileSettings`
+(`{ mode, disciplines: { SAILPLANE: { intent, acknowledgedAt } } }`). Each
+persona declares `expectedDisciplines` from PERSONAS.md; a persona run prints
+`! pilot profile …` for every discipline where the derivation disagrees. When
+`derive.go` changes, change the port with it. Paths a persona does not
+specialise fall back to empty collections, never to the default fixture.
+
+Adding a persona: a new `personas/<id>.mjs` exporting the same shape, and its
+id in `PERSONA_IDS`. Keep generated series on the seeded `rng()` and dates on
+`day()`/`TODAY`, so captures stay byte-stable.
 
 ## When a screen renders empty
 
