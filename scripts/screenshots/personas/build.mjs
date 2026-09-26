@@ -226,28 +226,78 @@ export function finalizeFlights(list) {
 }
 
 // ── Currency helpers ─────────────────────────────────────────────────────────
-/** A `CurrencyRequirement` with `requirement.progress`. */
+/** YYYY-MM-DD plus `n` calendar months. */
+export const addMonths = (date, n) => {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCMonth(d.getUTCMonth() + n);
+  return d.toISOString().slice(0, 10);
+};
+/** Remedy of an unmet row (CURRENCY_MESSAGES.md "Remedies"). */
+const remedyFor = (nameKey, current, required, unit) => {
+  if (nameKey === 'requirement.training_flight' || nameKey === 'requirement.tmg_training_flight') {
+    return { remedyKey: 'remedy.training_flight' };
+  }
+  return { remedyKey: 'remedy.fly_more', remedyParams: { missing: Math.max(0, required - current), unit } };
+};
+/** A `CurrencyRequirement` with `requirement.progress`; an unmet row carries its remedy. */
 export const req = (nameKey, current, required, unit) => ({
   nameKey, met: current >= required, current, required, unit, messageKey: 'requirement.progress',
+  ...(current >= required ? {} : remedyFor(nameKey, current, required, unit)),
 });
-/** The proficiency-check row: completed on `date`, or missing. */
-export const profCheck = (date = null, nameKey = 'requirement.proficiency_check') =>
-  date
-    ? { nameKey, met: true, current: 1, required: 1, unit: 'check', messageKey: 'requirement.prof_check_completed', messageParams: { date } }
-    : { nameKey, met: false, current: 0, required: 1, unit: 'check', messageKey: 'requirement.prof_check_missing' };
-/** A `LaunchMethodCurrency` row (SFCL.155(c)). */
-export const launchRow = (method, launches) => {
-  const required = method === 'bungee' ? 2 : 5;
-  return { method, launches, required, met: launches >= required, messageKey: 'launch_method.progress' };
+/**
+ * Last day `field` summed over the newest flights of a tally stays at or above
+ * `required`, with no further flying, for a window of `months`.
+ */
+export function projectUntil(t, field, required, months = 24) {
+  const newestFirst = [...t.perFlight].sort((a, b) => b.date.localeCompare(a.date));
+  if (field === 'longestTraining') {
+    const f = newestFirst.find((c) => c.dual >= required);
+    return f ? addDays(addMonths(f.date, months), -1) : null;
+  }
+  let sum = 0;
+  for (const c of newestFirst) {
+    sum += c[field];
+    if (sum >= required) return addDays(addMonths(c.date, months), -1);
+  }
+  return null;
+}
+/** A rolling-window `req` over `t[field]`, with `validUntil` when met. */
+export const rollingReq = (nameKey, t, field, required, unit, months = 24) => {
+  const row = req(nameKey, t[field], required, unit);
+  return row.met ? { ...row, validUntil: projectUntil(t, field, required, months) } : row;
 };
-/** Rolling-recency status: every experience row met, or a proficiency check in the window. */
+/** The proficiency-check row: completed on `date`, or missing. `months` sets its rolling `validUntil`. */
+export const profCheck = (date = null, nameKey = 'requirement.proficiency_check', months = null) =>
+  date
+    ? {
+      nameKey, met: true, current: 1, required: 1, unit: 'check', messageKey: 'requirement.prof_check_completed', messageParams: { date },
+      ...(months ? { validUntil: addDays(addMonths(date, months), -1) } : {}),
+    }
+    : { nameKey, met: false, current: 0, required: 1, unit: 'check', messageKey: 'requirement.prof_check_missing', remedyKey: 'remedy.proficiency_check' };
+/** A `LaunchMethodCurrency` row (SFCL.155(c)). */
+export const launchRow = (method, launches, validUntil = null) => {
+  const required = method === 'bungee' ? 2 : 5;
+  const met = launches >= required;
+  return {
+    method, launches, required, met, messageKey: 'launch_method.progress',
+    ...(met
+      ? (validUntil ? { validUntil } : {})
+      : { remedyKey: 'remedy.launch_method_dual', remedyParams: { method, missing: required - launches } }),
+  };
+};
+/**
+ * Rolling-recency status: every experience row met, or a proficiency check in
+ * the window. A current result carries the latest date either alternative holds.
+ */
 export const recencyStatus = (requirements) => {
   const check = requirements.find((r) => r.nameKey === 'requirement.proficiency_check');
   const rows = requirements.filter((r) => r !== check);
-  const ok = rows.every((r) => r.met) || !!check?.met;
-  return ok
-    ? { status: 'current', messageKey: 'rating.recency_current' }
-    : { status: 'lapsed', messageKey: 'rating.recency_not_met' };
+  const rowsOk = rows.every((r) => r.met);
+  const ok = rowsOk || !!check?.met;
+  if (!ok) return { status: 'lapsed', messageKey: 'rating.recency_not_met' };
+  const rowsUntil = rowsOk && rows.every((r) => r.validUntil) ? rows.map((r) => r.validUntil).sort()[0] : null;
+  const until = [rowsUntil, check?.met ? check.validUntil : null].filter(Boolean).sort().pop();
+  return { status: 'current', messageKey: 'rating.recency_current', ...(until ? { validUntil: until } : {}) };
 };
 
 /**
@@ -258,7 +308,7 @@ export function tally(flights, aircraftByReg, match, sinceDays) {
   const since = day(-sinceDays);
   const out = {
     flights: 0, minutes: 0, pic: 0, picOrDual: 0, dual: 0, landings: 0, launches: 0,
-    trainingFlights: 0, longestTraining: 0, instructorMinutes: 0, ifr: 0, byMethod: {},
+    trainingFlights: 0, longestTraining: 0, instructorMinutes: 0, ifr: 0, byMethod: {}, perFlight: [],
   };
   for (const f of flights) {
     if (f.isSimulator || f.isPassenger || f.date < since) continue;
@@ -272,6 +322,11 @@ export function tally(flights, aircraftByReg, match, sinceDays) {
     out.ifr += f.ifrTime;
     out.launches += f.allLandings;
     if (f.launchMethod) out.byMethod[f.launchMethod] = (out.byMethod[f.launchMethod] ?? 0) + f.allLandings;
+    out.perFlight.push({
+      date: f.date, flights: 1, minutes: f.totalTime, pic: f.picTime, dual: f.dualTime, picOrDual: f.picTime + f.dualTime,
+      landings: f.allLandings, launches: f.allLandings, trainingFlights: f.dualTime > 0 ? 1 : 0, instructorMinutes: f.dualTime,
+      method: f.launchMethod ?? null,
+    });
     if (f.dualTime > 0) {
       out.trainingFlights++;
       out.instructorMinutes += f.dualTime;
@@ -350,10 +405,16 @@ export function ulPax(ulKind, flights, aircraftByReg, authority = 'DULV') {
 /** A sailplane launch-method row set: every method ever logged on the class, counted over 24 months. */
 export function launchMethodRows(flights, aircraftByReg, match, extraSelfLaunch = 0) {
   const ever = tally(flights, aircraftByReg, match, 100 * 365).byMethod;
-  const recent = tally(flights, aircraftByReg, match, 730).byMethod;
+  const window = tally(flights, aircraftByReg, match, 730);
+  const recent = window.byMethod;
   return ['winch', 'car', 'aerotow', 'self-launch', 'bungee']
     .filter((m) => ever[m])
-    .map((m) => launchRow(m, (recent[m] ?? 0) + (m === 'self-launch' ? extraSelfLaunch : 0)));
+    .map((m) => {
+      const launches = (recent[m] ?? 0) + (m === 'self-launch' ? extraSelfLaunch : 0);
+      const required = m === 'bungee' ? 2 : 5;
+      const own = { perFlight: window.perFlight.filter((c) => c.method === m) };
+      return launchRow(m, launches, launches >= required ? projectUntil(own, 'launches', required) : null);
+    });
 }
 
 // ── Pilot profile (GET /users/me/pilot-profile) ──────────────────────────────
@@ -840,6 +901,81 @@ function deriveAirportStats(flights, airports) {
     .map((a) => ({ icao: a.icao, name: a.name, latitude: a.latitude, longitude: a.longitude, totalFlights: a.flights, departures: a.departures, arrivals: a.arrivals }));
 }
 
+// ── Readiness (GET /currency/readiness) ──────────────────────────────────────
+const MEDICALS = ['EASA_CLASS1_MEDICAL', 'EASA_CLASS2_MEDICAL', 'EASA_LAPL_MEDICAL', 'FAA_CLASS1_MEDICAL', 'FAA_CLASS2_MEDICAL', 'FAA_CLASS3_MEDICAL'];
+
+/** Whether a rating or passenger entry of `classType`/kinds covers `ac`, as the API's native match does. */
+const coversAircraft = (classType, ulKinds, ac) => {
+  if (!ac) return classType !== undefined;
+  if (classType !== ac.aircraftClass) return false;
+  if (classType !== 'ULTRALIGHT') return true;
+  return !ulKinds?.length || !ac.ulKind || ulKinds.includes(ac.ulKind);
+};
+
+/**
+ * `ReadinessReport` built from a persona's own currency result, per
+ * DOMAIN.md "Readiness". Rating, launch-method and passenger statuses are
+ * fixture TODAY's, not projected to `date`; medicals are compared to `date`.
+ */
+export function deriveReadiness(currency, aircraft, credentials, search) {
+  const date = search.get('date') || day(0);
+  const reg = search.get('aircraftReg');
+  const ac = reg ? aircraft.find((a) => a.registration.toUpperCase() === reg.toUpperCase()) : null;
+  const passengers = search.get('passengers') === 'true';
+  const ratings = (currency.ratings ?? []).filter((r) => (ac ? r.classType !== 'IR' && coversAircraft(r.classType, r.creditedUltralightKinds, ac) : true));
+  const items = [];
+  for (const r of ratings) {
+    const ready = r.status === 'current' || r.status === 'expiring';
+    let reason = { reasonKey: r.messageKey, ...(r.messageParams ? { params: r.messageParams } : {}) };
+    if (r.status === 'lapsed') {
+      const rows = r.requirements ?? [];
+      const first = rows.find((q) => !q.met && q.remedyKey && q.remedyKey !== 'remedy.proficiency_check');
+      reason = first
+        ? { reasonKey: first.remedyKey, ...(first.remedyParams ? { params: first.remedyParams } : {}) }
+        : { reasonKey: 'remedy.proficiency_check' };
+    }
+    items.push({ kind: 'rating', classRatingId: r.classRatingId, licenseId: r.licenseId, classType: r.classType, ready, status: r.status, ...reason });
+  }
+  const seen = new Set();
+  for (const r of ratings) {
+    for (const m of r.launchMethodCurrency ?? []) {
+      if (seen.has(m.method)) continue;
+      seen.add(m.method);
+      items.push({
+        kind: 'launch_method', classRatingId: r.classRatingId, licenseId: r.licenseId, classType: r.classType, launchMethod: m.method,
+        ready: m.met, status: m.met ? 'current' : 'lapsed',
+        ...(m.met
+          ? { reasonKey: 'readiness.launch_method_current', ...(m.validUntil ? { params: { date: m.validUntil } } : {}) }
+          : { reasonKey: m.remedyKey, params: m.remedyParams }),
+      });
+    }
+  }
+  if (passengers) {
+    for (const p of currency.passengerCurrency ?? []) {
+      if (ac ? !coversAircraft(p.classType, p.ulKind ? [p.ulKind] : null, ac) : !ratings.some((r) => r.classType === p.classType)) continue;
+      items.push({
+        kind: 'passengers', classType: p.classType, ...(p.ulKind ? { ulKind: p.ulKind } : {}),
+        ready: p.dayStatus === 'current', status: p.dayStatus,
+        reasonKey: p.messageKey, ...(p.messageParams ? { params: p.messageParams } : {}),
+      });
+    }
+  }
+  const latest = new Map();
+  for (const c of credentials.filter((x) => MEDICALS.includes(x.credentialType))) {
+    const prev = latest.get(c.credentialType);
+    if (!prev || (c.expiryDate ?? '9999') > (prev.expiryDate ?? '9999')) latest.set(c.credentialType, c);
+  }
+  for (const c of latest.values()) {
+    const expired = !!c.expiryDate && c.expiryDate <= date;
+    items.push({
+      kind: 'credential', credentialId: c.id, ready: !expired, status: expired ? 'expired' : 'valid',
+      reasonKey: expired ? 'readiness.credential_expired' : 'readiness.credential_valid',
+      ...(c.expiryDate ? { params: { date: c.expiryDate } } : {}),
+    });
+  }
+  return { date, ...(ac ? { aircraftReg: ac.registration } : {}), items };
+}
+
 // ── Fixture set ──────────────────────────────────────────────────────────────
 const EMPTY_PAGE = { data: [], pagination: { page: 1, pageSize: 20, total: 0, totalPages: 0 } };
 const page = (list, search, fallbackSize) => {
@@ -912,6 +1048,7 @@ export function buildFixtureSet(persona) {
     if (path === '/flights') return page(flights, search, 25);
     if (path === '/aircraft') return page(aircraft, search, 100);
     if (path in routes) return routes[path];
+    if (path === '/currency/readiness') return deriveReadiness(currency, aircraft, persona.credentials ?? [], search);
     const ratingsMatch = path.match(/^\/licenses\/([^/]+)\/(?:class-)?ratings$/);
     if (ratingsMatch) return classRatings[ratingsMatch[1]] ?? [];
     if (/^\/licenses\/[^/]+\/currency$/.test(path)) return currency;

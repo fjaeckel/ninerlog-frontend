@@ -13,6 +13,7 @@ import { recencyLevel, RECENCY_BADGE_CLASSES, RECENCY_REQUIRED_LANDINGS } from '
 import { CurrencyCard } from '../../components/currency/CurrencyCard';
 import { CustomCurrencyCard } from '../../components/currency/CustomCurrencyCard';
 import { CurrencyExpiryBanner } from '../../components/currency/CurrencyExpiryBanner';
+import { SeasonStartPlanner } from '../../components/currency/SeasonStartPlanner';
 import { ChevronDown, ChevronRight, Plane, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
 import { isPast, differenceInDays } from 'date-fns';
 import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
@@ -168,6 +169,8 @@ export default function CurrencyPage() {
         titleAdornment={<HelpLink topic="currency" />}
         action={totalAlerts > 0 ? <span className="badge-expiring">{t('alerts', { count: totalAlerts })}</span> : undefined}
       />
+
+      <SeasonStartPlanner />
 
       {isLoading && <SkeletonList rows={3} />}
 

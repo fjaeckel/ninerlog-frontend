@@ -6,7 +6,7 @@
  */
 import {
   makeUser, aircraftRecord, licence, classRating, credential, flight, rng, between, pick, addDays, day, iso,
-  tally, req, profCheck, recencyStatus, easaPax, launchMethodRows, distanceNm
+  tally, rollingReq, profCheck, recencyStatus, easaPax, launchMethodRows, distanceNm
 } from './build.mjs';
 
 const user = makeUser({ id: 'u1', email: 'karl.brenner@example.com', name: 'Karl Brenner', createdAt: iso('2024-02-10') });
@@ -94,16 +94,16 @@ function currency(fl, acByReg) {
   const glider = tally(fl, acByReg, isGlider, 730);
   const tmg = tally(fl, acByReg, isTMG, 730);
   const spl = [
-    req('requirement.flight_time', both.picOrDual, 300, 'minutes'),
-    req('requirement.launches', glider.launches, 15, 'launches'),
-    req('requirement.training_flights', glider.trainingFlights, 2, 'flights'),
+    rollingReq('requirement.flight_time', both, 'picOrDual', 300, 'minutes'),
+    rollingReq('requirement.launches', glider, 'launches', 15, 'launches'),
+    rollingReq('requirement.training_flights', glider, 'trainingFlights', 2, 'flights'),
     profCheck(),
   ];
   const splTmg = [
-    req('requirement.flight_time', both.picOrDual, 720, 'minutes'),
-    req('requirement.tmg_time', tmg.picOrDual, 360, 'minutes'),
-    req('requirement.tmg_landings', tmg.landings, 12, 'landings'),
-    req('requirement.tmg_training_flight', tmg.longestTraining, 60, 'minutes'),
+    rollingReq('requirement.flight_time', both, 'picOrDual', 720, 'minutes'),
+    rollingReq('requirement.tmg_time', tmg, 'picOrDual', 360, 'minutes'),
+    rollingReq('requirement.tmg_landings', tmg, 'landings', 12, 'landings'),
+    rollingReq('requirement.tmg_training_flight', tmg, 'longestTraining', 60, 'minutes'),
     profCheck(),
   ];
   return {
