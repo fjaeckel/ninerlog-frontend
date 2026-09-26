@@ -524,6 +524,19 @@ a desktop sidebar (`lg:` and up), and a mobile bottom nav. It also auto-starts
 the first-run onboarding tour for brand-new users (no flights logged yet) and
 exposes the theme switcher, profile avatar, and logout.
 
+The tour ([OnboardingTour.tsx](../src/components/onboarding/OnboardingTour.tsx),
+steps in [tourSteps.tsx](../src/components/onboarding/tourSteps.tsx)) opens with
+"What do you fly, and what are you training for?": one tile per discipline, each
+tap cycling *I fly this* (intent `on`) → *I'm training for this* (`goal`) → not
+selected (`auto`). Tiles start from the pilot profile (stored intent, else the
+derived status). Next PATCHes `/users/me/pilot-profile` with only the tiles the
+pilot changed, plus `acknowledge` for pending toolkits left ticked; Skip writes
+nothing. Completion stays device-local in `onboardingStore`, but the step is left
+out whenever the profile already holds an explicit intent or an acknowledgement.
+Steps with `variants` (log a flight, currency) pick their body from `tourVariant()`:
+`airline` for `MULTI_CREW`, `glider`/`ultralight`/`powered` when exactly one
+aircraft family is active or training, otherwise the neutral `body`.
+
 Responsive strategy is **mobile-first**: base styles target phones; `sm:`,
 `lg:` breakpoints progressively enhance for larger screens. CSS variables
 (`--header-height`, `--bottom-nav-height`) and safe-area utilities
