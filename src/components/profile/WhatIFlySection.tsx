@@ -11,6 +11,7 @@ import {
 import { toolkitLabel, toolkitName } from '../../lib/relevance';
 import { cn } from '../../lib/cn';
 import { FoldDrawer, Folded } from '../relevance/FoldDrawer';
+import { TrackedProgramme } from './TrackedProgramme';
 
 const INTENTS: readonly DisciplineIntent[] = ['auto', 'on', 'off', 'goal'];
 
@@ -134,6 +135,7 @@ function DisciplineRow({ state, disabled, onIntent }: DisciplineRowProps) {
           ))}
         </select>
       </div>
+      <TrackedProgramme state={state} />
 
       {evidence.length > 0 && (
         <div className="mt-1">

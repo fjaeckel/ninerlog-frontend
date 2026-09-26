@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import type { components } from '../api/schema';
-import { PILOT_PROFILE_QUERY_KEY } from './invalidation';
+import { invalidateTrainingProgress, PILOT_PROFILE_QUERY_KEY } from './invalidation';
 
 export type PilotProfile = components['schemas']['PilotProfile'];
 export type PilotProfileUpdate = components['schemas']['PilotProfileUpdate'];
@@ -47,6 +47,7 @@ export const useUpdatePilotProfile = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData([...PILOT_PROFILE_QUERY_KEY], data);
+      invalidateTrainingProgress(queryClient);
     },
   });
 };

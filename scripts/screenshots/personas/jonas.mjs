@@ -47,7 +47,19 @@ function training() {
   return out;
 }
 
-const flights = training();
+const SIGNED = 7;
+
+/** Supervised solos logged as SPIC; the first SIGNED dual flights carry an instructor signature. */
+function logbook() {
+  let signed = 0;
+  return training().map((f) => {
+    if (f.soloTime > 0) return { ...f, spicTime: f.soloTime };
+    if (f.dualTime > 0 && signed < SIGNED) return { ...f, signatureId: `sig${++signed}` };
+    return f;
+  });
+}
+
+const flights = logbook();
 
 export default {
   id: 'jonas',

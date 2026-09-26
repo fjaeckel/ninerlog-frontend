@@ -11,6 +11,7 @@
  */
 
 import { importTemplates } from '../fixtures.mjs';
+import { deriveTrainingProgress } from './training.mjs';
 
 export const TODAY = new Date('2026-08-16T10:00:00Z');
 const DAY_MS = 86_400_000;
@@ -1211,6 +1212,7 @@ export function buildFixtureSet(persona) {
     if (path === '/reports/soaring-season') {
       return deriveSoaringSeason(flights, aircraftByReg, Number(search.get('year')) || TODAY.getUTCFullYear());
     }
+    if (path === '/training/progress') return deriveTrainingProgress({ pilotProfile, licenses, flights, aircraftByReg, search });
     const ratingsMatch = path.match(/^\/licenses\/([^/]+)\/(?:class-)?ratings$/);
     if (ratingsMatch) return classRatings[ratingsMatch[1]] ?? [];
     const remindersMatch = path.match(/^\/aircraft\/([^/]+)\/reminders$/);
