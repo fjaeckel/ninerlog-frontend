@@ -22,6 +22,7 @@ import { useDisciplines } from '../hooks/usePilotProfile';
 import { isDormantClass, sortRatingsByDiscipline, useRelevance } from '../lib/relevance';
 import { DormantRating } from '../components/currency/DormantRating';
 import { FoldDrawer, Folded } from '../components/relevance';
+import { SoaringSeasonCard } from '../components/dashboard/SoaringSeasonCard';
 
 /** Renders an API `YYYY-MM` key as a locale-aware short month name. */
 function shortMonth(month: string, locale: string) {
@@ -274,6 +275,8 @@ export default function DashboardPage() {
         );
       })()}
 
+      <SoaringSeasonCard />
+
       {/* Monthly activity trend */}
       {hasTrendActivity && (
         <div className="card mb-6" data-testid="monthly-activity-section">
@@ -320,6 +323,29 @@ export default function DashboardPage() {
                   <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 dark:bg-blue-400 rounded-full" style={{ width: `${pct}%` }} />
                   </div>
+                  {cs.byUlKind && cs.byUlKind.length > 0 && (
+                    <ul className="mt-2 ml-3 pl-3 border-l border-slate-200 dark:border-slate-700 space-y-1.5" data-testid="class-stat-ul-kinds">
+                      {cs.byUlKind.map((k) => (
+                        <li key={k.ulKind ?? 'none'} data-testid={`ul-kind-stat-${k.ulKind ?? 'none'}`}>
+                          <div className="flex justify-between text-xs mb-0.5 gap-2">
+                            <span className="text-slate-600 dark:text-slate-400 truncate">
+                              {k.ulKind && k.ulKind !== 'null' ? t(`common:ulKinds.${k.ulKind}`) : t('dashboard:ulKindNotSet')}
+                            </span>
+                            <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums whitespace-nowrap">
+                              {fmtDuration(k.minutes)} · {k.landings} {t('common:ldg')}
+                              <span className="hidden sm:inline"> · {k.flights} {t('common:flights')}</span>
+                            </span>
+                          </div>
+                          <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-blue-300 dark:bg-blue-600 rounded-full"
+                              style={{ width: `${(k.minutes / maxMinutes) * 100}%` }}
+                            />
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               );
             })}

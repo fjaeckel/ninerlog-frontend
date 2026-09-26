@@ -72,6 +72,7 @@ export const FEATURES = defineFeatures([
   { id: 'dashboard.ifrTile', kind: 'dashboardCard', serves: ['IFR'], hasData: positive('ifrMinutes') },
   { id: 'dashboard.nightTile', kind: 'dashboardCard', serves: POWERED, hasData: positive('nightMinutes') },
   { id: 'dashboard.blockTimeLabel', kind: 'field', serves: POWERED },
+  { id: 'dashboard.soaringSeason', kind: 'dashboardCard', serves: ['SAILPLANE'], hasData: positive('flights') },
 
   // Currency
   {
@@ -88,6 +89,14 @@ export const FEATURES = defineFeatures([
     serves: ['IFR'],
     hasData: (ctx) => ['ifrMinutes', 'approaches', 'actualInstrumentMinutes'].some((k) => positive(k)(ctx)),
   },
+
+  { id: 'reportMetric.launches', kind: 'picker', serves: ['SAILPLANE'] },
+  { id: 'reportMetric.outlandings', kind: 'picker', serves: ['SAILPLANE'] },
+  { id: 'reportMetric.towFlights', kind: 'picker', serves: ['AEROPLANE', 'SAILPLANE'] },
+
+  // Export
+  { id: 'exportFormat.sailplane', kind: 'picker', serves: ['SAILPLANE'] },
+  { id: 'exportFormat.ultralight', kind: 'picker', serves: ['ULTRALIGHT'] },
 
   // Aircraft form
   {

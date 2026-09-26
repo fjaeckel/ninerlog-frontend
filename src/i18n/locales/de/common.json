@@ -409,5 +409,16 @@
     "UL_TOWING": "UL-Schleppberechtigung",
     "UL_TYPE_BRIEFING": "Einweisung",
     "LAUNCH_METHOD_TRAINED": "Startart ausgebildet"
+  },
+  "saveWarnings": {
+    "title": "Gespeichert — bitte prüfen",
+    "region": "Hinweise zum Speichern",
+    "dismiss": "Hinweis ausblenden",
+    "dismissAll": "Alle ausblenden",
+    "ul_night_flight": "Nachtflugzeit auf einem UL eingetragen — Luftsportgeräte haben keine Nachtflugberechtigung (LuftPersV).",
+    "ul_night_flight_reg": "Nachtflugzeit auf dem UL {{registration}} eingetragen — Luftsportgeräte haben keine Nachtflugberechtigung (LuftPersV).",
+    "ul_mtom_exceeds_600": "Die MTOM von {{mtomKg}} kg liegt über der deutschen UL-Grenze von {{limitKg}} kg — prüfe die Luftfahrzeugklasse. Das Luftfahrzeug wurde gespeichert.",
+    "ul_120kg_class": "MTOM {{mtomKg}} kg: Dieses UL fällt möglicherweise in die Klasse der einsitzigen Luftsportgeräte bis {{limitKg}} kg, für die kein Medical nötig ist.",
+    "unknown": "Beim Speichern gab es einen Hinweis ({{code}})."
   }
 }

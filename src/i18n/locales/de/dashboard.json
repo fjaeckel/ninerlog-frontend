@@ -61,5 +61,21 @@
   "aircraftDue": {
     "title": "Bald fällig am Luftfahrzeug",
     "viewAircraft": "Luftfahrzeuge"
-  }
+  },
+  "soaring": {
+    "title": "Segelflugsaison",
+    "previousYear": "Vorheriges Jahr",
+    "nextYear": "Nächstes Jahr",
+    "empty": "Keine Segelflüge in {{year}}.",
+    "flights": "Flüge",
+    "launches": "Starts",
+    "hours": "Stunden",
+    "average": "Ø Flugdauer",
+    "outlandings": "Außenlandungen",
+    "byMethod": "Starts je Startart",
+    "unspecified": "Startart nicht erfasst",
+    "longest": "Längster Flug",
+    "sites": "Häufigste Startplätze"
+  },
+  "ulKindNotSet": "UL-Art nicht festgelegt"
 }

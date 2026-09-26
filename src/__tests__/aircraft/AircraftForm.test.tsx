@@ -305,4 +305,28 @@ describe('AircraftForm', () => {
     await user.click(screen.getByRole('button', { name: /cancel/i }));
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
+  it('S2 Sabine: a powered paraglider asks for a name or registration and accepts PPG-Viper', async () => {
+    const user = userEvent.setup();
+    mockCreate.mutateAsync.mockResolvedValue({});
+    renderWithProviders(<AircraftForm onClose={mockOnClose} />);
+
+    expect(screen.getByText('Registration')).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText(/aircraft class/i), 'ULTRALIGHT');
+    await user.selectOptions(screen.getByLabelText(/ultralight kind/i), 'POWERED_PARAGLIDER');
+    const field = screen.getByLabelText(/name or registration/i);
+    expect(field).toHaveAttribute('placeholder', 'PPG-Viper');
+    expect(screen.getByText('Powered paragliders have no registration — use a name, e.g. PPG-Viper.')).toBeInTheDocument();
+    expect(field).toHaveAccessibleDescription(/use a name/);
+
+    await user.type(field, 'PPG-Viper');
+    await user.type(screen.getByLabelText(/^type/i), 'PPG');
+    await user.type(screen.getByLabelText(/^make/i), 'Ozone');
+    await user.type(screen.getByLabelText(/^model/i), 'Viper 5');
+    await user.click(screen.getByRole('button', { name: /add aircraft/i }));
+    await waitFor(() => expect(mockCreate.mutateAsync).toHaveBeenCalled());
+    expect(mockCreate.mutateAsync.mock.calls[0][0]).toMatchObject({ registration: 'PPG-Viper', ulKind: 'POWERED_PARAGLIDER' });
+
+    await user.selectOptions(screen.getByLabelText(/ultralight kind/i), 'WEIGHT_SHIFT');
+    expect(screen.queryByText(/use a name/)).not.toBeInTheDocument();
+  });
 });

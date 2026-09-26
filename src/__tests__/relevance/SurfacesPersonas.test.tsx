@@ -20,6 +20,8 @@ import { useAuthStore } from '../../stores/authStore';
 import { PERSONA_PROFILES } from '../../test/pilotProfile';
 import type { PilotProfile } from '../../hooks/usePilotProfile';
 
+vi.mock('../../hooks/useSoaringSeason', () => ({ useSoaringSeason: () => ({ data: undefined, isLoading: false, isError: false }) }));
+
 const renderPage = (ui: React.ReactElement) =>
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -285,5 +287,41 @@ describe('Aircraft form flags', () => {
     expect(screen.queryByLabelText('Complex')).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Aircraft Class'), { target: { value: 'SEP_LAND' } });
     expect(screen.getByLabelText('Complex')).toBeInTheDocument();
+  });
+});
+
+describe('Dashboard time by class — UL kinds', () => {
+  const ulRow = (ulKind: string | null, minutes: number, flights: number) => ({
+    ulKind, minutes, flights, landings: flights, picMinutes: minutes, dualMinutes: 0,
+  });
+
+  it('S Sabine: the ULTRALIGHT row lists trike, powered paraglider and "Kind not set"', () => {
+    asProfile(PERSONA_PROFILES.sabine());
+    mockCommon(stats(), []);
+    vi.spyOn(classStatsHook, 'useStatsByClass').mockReturnValue({
+      data: {
+        byClass: [{
+          class: 'ULTRALIGHT', minutes: 900, flights: 40, landings: 40, picMinutes: 900,
+          byUlKind: [ulRow('WEIGHT_SHIFT', 600, 20), ulRow('POWERED_PARAGLIDER', 240, 16), ulRow(null, 60, 4)],
+        }],
+        byAuthority: [],
+      },
+    } as never);
+    renderPage(<DashboardPage />);
+    const kinds = within(screen.getByTestId('class-stat-ULTRALIGHT'));
+    expect(kinds.getByTestId('ul-kind-stat-WEIGHT_SHIFT')).toHaveTextContent('Weight-shift');
+    expect(kinds.getByTestId('ul-kind-stat-POWERED_PARAGLIDER')).toHaveTextContent('4h 0m');
+    expect(kinds.getByTestId('ul-kind-stat-none')).toHaveTextContent('Kind not set');
+  });
+
+  it('A1 Mark: rows without byUlKind render no kind list', () => {
+    asProfile(PERSONA_PROFILES.mark());
+    mockCommon(stats(), []);
+    vi.spyOn(classStatsHook, 'useStatsByClass').mockReturnValue({
+      data: { byClass: [{ class: 'MEP_LAND', minutes: 900, flights: 40, landings: 40, picMinutes: 900 }], byAuthority: [] },
+    } as never);
+    renderPage(<DashboardPage />);
+    expect(screen.getByTestId('class-stat-MEP_LAND')).toBeInTheDocument();
+    expect(screen.queryByTestId('class-stat-ul-kinds')).not.toBeInTheDocument();
   });
 });

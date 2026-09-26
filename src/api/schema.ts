@@ -935,6 +935,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/training/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get training progress toward a licence
+         * @description Evaluates syllabus templates against the caller's flights. The response
+         *     holds one programme per discipline whose pilot-profile status is
+         *     `training` (`SAILPLANE` → `SPL`, `TMG` → `SPL_TMG_EXTENSION`,
+         *     `ULTRALIGHT` → `UL_THREE_AXIS` and/or `UL_WEIGHT_SHIFT` by the
+         *     discipline's UL kinds) plus every programme named in `programme`,
+         *     each once, in the order `SPL`, `SPL_TMG_EXTENSION`, `UL_THREE_AXIS`,
+         *     `UL_WEIGHT_SHIFT`. A pilot with no discipline in training and no
+         *     `programme` gets an empty list. An unknown `programme` returns 400.
+         *
+         *     Flights count by the class of their aircraft (matched by registration
+         *     in the caller's fleet): `GLIDER` for `SPL`, `TMG` for the extension,
+         *     `ULTRALIGHT` of the kind for the UL programmes. FSTD sessions and
+         *     passenger flights never count. Durations are integer minutes. The
+         *     templates, item keys and approximations are in docs/SAILPLANES.md
+         *     ("Training progress") and docs/DOMAIN.md.
+         */
+        get: operations["getTrainingProgress"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/custom-currency": {
         parameters: {
             query?: never;
@@ -5168,6 +5202,61 @@ export interface components {
          * @enum {string}
          */
         ULKind: "THREE_AXIS" | "THREE_AXIS_MOTORGLIDER" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE";
+        /**
+         * @description A syllabus template:
+         *     - SPL: SFCL.130 sailplane pilot licence
+         *     - SPL_TMG_EXTENSION: SFCL.150(b) extension of SPL privileges to TMGs
+         *     - UL_THREE_AXIS: German three-axis ultralight licence, LuftPersV §42
+         *     - UL_WEIGHT_SHIFT: German weight-shift ultralight licence, LuftPersV §42
+         * @enum {string}
+         */
+        TrainingProgrammeId: "SPL" | "SPL_TMG_EXTENSION" | "UL_THREE_AXIS" | "UL_WEIGHT_SHIFT";
+        TrainingItem: {
+            /**
+             * @description Requirement key (e.g. `training.spl.dual_time`), a translation key.
+             * @example training.spl.dual_time
+             */
+            key: string;
+            /** @description Required amount in `unit`. */
+            required: number;
+            /** @description Amount logged so far in `unit`. */
+            current: number;
+            /** @enum {string} */
+            unit: "minutes" | "launches" | "landings" | "flights" | "km";
+            met: boolean;
+            /**
+             * @description The item is shown for information only and never affects `allMet`
+             *     (the SFCL.130(b) credit).
+             */
+            informational: boolean;
+            /**
+             * @description Status message key: `training.met`, `training.not_met`,
+             *     `training.cross_country_distance_unknown` (met by a cross-country
+             *     flight whose distance is unknown), `training.credit_available`,
+             *     `training.credit_none`.
+             * @example training.not_met
+             */
+            messageKey: string;
+        };
+        TrainingProgramme: {
+            id: components["schemas"]["TrainingProgrammeId"];
+            discipline: components["schemas"]["Discipline"];
+            /** @example training.programme.spl */
+            titleKey: string;
+            /** @example SFCL.130 */
+            legalBasis: string;
+            items: components["schemas"]["TrainingItem"][];
+            /** @description Every item that is not informational is met. */
+            allMet: boolean;
+            /**
+             * @description Counted flights carrying a completed instructor signature. Informational;
+             *     no item depends on it.
+             */
+            signedFlights: number;
+        };
+        TrainingProgress: {
+            programmes: components["schemas"]["TrainingProgramme"][];
+        };
         DisciplineEvidence: {
             /** @enum {string} */
             source: "LICENCE" | "RATING" | "AIRCRAFT" | "FLIGHTS" | "FLIGHTS_DUAL" | "FLIGHTS_INSTRUCTING";
@@ -10109,6 +10198,31 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    getTrainingProgress: {
+        parameters: {
+            query?: {
+                /** @description Programmes to include whatever the pilot profile says; repeatable. */
+                programme?: components["schemas"]["TrainingProgrammeId"][];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Training progress */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrainingProgress"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
         };
     };
     listCustomCurrencyRules: {

@@ -81,5 +81,7 @@
     "note": "Dormant — not flown in 24 months",
     "show": "Show status",
     "hide": "Hide status"
-  }
+  },
+  "moreFormats": "More formats",
+  "moreMetrics": "More metrics"
 }

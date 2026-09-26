@@ -5,6 +5,12 @@ import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ExportPage from '../../pages/export/ExportPage';
 
+vi.mock('../../hooks/useLicenses', () => ({ useLicenses: () => ({ data: [] }) }));
+vi.mock('../../hooks/usePilotProfile', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../hooks/usePilotProfile')>();
+  return { ...actual, useDisciplines: () => actual.resolveDisciplines(undefined, false) };
+});
+
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },

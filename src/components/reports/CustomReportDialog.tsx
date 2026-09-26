@@ -16,6 +16,7 @@ import {
   isRankedGrouping,
   MAX_NAME_LENGTH,
   METRICS,
+  METRIC_FEATURES,
   normalizeDefinition,
   STRUCTURED_FILTER_KEYS,
   WINDOW_KINDS,
@@ -27,6 +28,7 @@ import {
   type StructuredFilterKey,
 } from '../../lib/customReports';
 import { CustomReportChart, OtherGroupsNote } from './CustomReportChart';
+import { FeatureOptions } from '../relevance';
 import { useCustomReportFormat, useLogbookLabel } from './customReportFormat';
 
 interface CustomReportDialogProps {
@@ -220,11 +222,12 @@ function CustomReportForm({
             onChange={(e) => setDefinition((d) => ({ ...d, metric: e.target.value as CustomReportMetric }))}
             className="input"
           >
-            {METRICS.map((m) => (
-              <option key={m} value={m}>
-                {t(`custom.metric.${m}`)}
-              </option>
-            ))}
+            <FeatureOptions
+              options={METRICS.map((m) => ({ value: m, label: t(`custom.metric.${m}`), feature: METRIC_FEATURES[m] }))}
+              current={definition.metric}
+              moreLabel={t('relevance:moreMetrics')}
+              moreTestId="more-metrics"
+            />
           </select>
         </div>
         <div>

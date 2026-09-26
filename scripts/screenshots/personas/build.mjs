@@ -734,6 +734,7 @@ const classOf = (f, aircraftByReg) => {
 
 export function deriveStatsByClass(flights, aircraftByReg) {
   const groups = new Map();
+  const kinds = new Map();
   for (const f of realFlights(flights)) {
     const cls = classOf(f, aircraftByReg);
     const g = groups.get(cls) ?? { class: cls, minutes: 0, flights: 0, landings: 0 };
@@ -741,8 +742,59 @@ export function deriveStatsByClass(flights, aircraftByReg) {
     g.flights++;
     g.landings += f.allLandings;
     groups.set(cls, g);
+    if (cls === 'ULTRALIGHT') {
+      const kind = aircraftByReg[f.aircraftReg]?.ulKind ?? null;
+      const k = kinds.get(kind) ?? { ulKind: kind, minutes: 0, flights: 0, landings: 0, picMinutes: 0, dualMinutes: 0 };
+      k.minutes += f.totalTime;
+      k.flights++;
+      k.landings += f.allLandings;
+      k.picMinutes += f.picTime;
+      k.dualMinutes += f.dualTime;
+      kinds.set(kind, k);
+    }
   }
+  const ul = groups.get('ULTRALIGHT');
+  if (ul) ul.byUlKind = [...kinds.values()].sort((a, b) => b.minutes - a.minutes);
   return { byClass: [...groups.values()].sort((a, b) => b.minutes - a.minutes) };
+}
+
+const SEASON_METHODS = { winch: 'winch', aerotow: 'aerotow', 'self-launch': 'selfLaunch', car: 'car', bungee: 'bungee' };
+
+/** Port of `GET /reports/soaring-season`: GLIDER, UL sailplane, or TMG with a launch method. */
+export function deriveSoaringSeason(flights, aircraftByReg, year) {
+  const soaring = flights.filter((f) => {
+    if (f.isSimulator || f.isPassenger || !f.date.startsWith(`${year}-`)) return false;
+    const ac = aircraftByReg[f.aircraftReg];
+    if (!ac) return false;
+    return ac.aircraftClass === 'GLIDER'
+      || (ac.aircraftClass === 'ULTRALIGHT' && ac.ulKind === 'SAILPLANE')
+      || (ac.aircraftClass === 'TMG' && !!f.launchMethod);
+  });
+  const byMethod = { winch: 0, aerotow: 0, selfLaunch: 0, car: 0, bungee: 0, unspecified: 0 };
+  let launches = 0;
+  let minutes = 0;
+  let longest = null;
+  const sites = new Map();
+  for (const f of soaring) {
+    const n = Math.max(f.launches ?? (f.takeoffsDay + f.takeoffsNight), 1);
+    launches += n;
+    byMethod[SEASON_METHODS[f.launchMethod] ?? 'unspecified'] += n;
+    minutes += f.totalTime;
+    if (!longest || f.totalTime > longest.totalTime) longest = f;
+    if (f.departureIcao) sites.set(f.departureIcao, (sites.get(f.departureIcao) ?? 0) + 1);
+  }
+  return {
+    year,
+    flights: soaring.length,
+    launches,
+    launchesByMethod: byMethod,
+    totalMinutes: minutes,
+    averageFlightMinutes: soaring.length ? Math.round(minutes / soaring.length) : 0,
+    outlandings: soaring.filter((f) => f.isOutlanding).length,
+    ...(longest ? { longestFlight: { flightId: longest.id, date: longest.date, minutes: longest.totalTime, aircraftReg: longest.aircraftReg } } : {}),
+    sites: [...sites].map(([place, n]) => ({ place, flights: n }))
+      .sort((a, b) => b.flights - a.flights || a.place.localeCompare(b.place)).slice(0, 5),
+  };
 }
 
 function recencyRow(list) {
@@ -1125,6 +1177,9 @@ export function buildFixtureSet(persona) {
     if (path === '/aircraft') return page(aircraft, search, 100);
     if (path in routes) return routes[path];
     if (path === '/currency/readiness') return deriveReadiness(currency, aircraft, persona.credentials ?? [], search);
+    if (path === '/reports/soaring-season') {
+      return deriveSoaringSeason(flights, aircraftByReg, Number(search.get('year')) || TODAY.getUTCFullYear());
+    }
     const ratingsMatch = path.match(/^\/licenses\/([^/]+)\/(?:class-)?ratings$/);
     if (ratingsMatch) return classRatings[ratingsMatch[1]] ?? [];
     const privilegesMatch = path.match(/^\/licenses\/([^/]+)\/privileges$/);
