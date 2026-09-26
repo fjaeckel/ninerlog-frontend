@@ -11,6 +11,15 @@
  */
 export const TARGETS = [
   { name: 'dashboard', path: '/dashboard' },
+  {
+    name: 'dashboard-no-reminders',
+    path: '/dashboard',
+    act: async (page) => {
+      await page.route('**/api/v1/aircraft-reminders*', (route) => route.fulfill({ json: [] }));
+      await page.reload();
+      await page.waitForTimeout(800);
+    },
+  },
   { name: 'flights', path: '/flights' },
   {
     name: 'flights-modal',
@@ -132,6 +141,16 @@ export const TARGETS = [
   },
   { name: 'aircraft', path: '/aircraft' },
   {
+    name: 'aircraft-reminder-form',
+    path: '/aircraft',
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(add reminder|erinnerung hinzufügen)$/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#reminder-kind').selectOption('RESCUE_SYSTEM_REPACK');
+      await page.waitForTimeout(200);
+    },
+  },
+  {
     name: 'aircraft-modal',
     path: '/aircraft',
     act: async (page) => {
@@ -231,6 +250,14 @@ export const TARGETS = [
     path: '/profile',
     act: async (page) => {
       await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: 'profile-notifications',
+    path: '/profile',
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(notifications|benachrichtigungen)$/i }).first().click();
       await page.waitForTimeout(500);
     },
   },

@@ -118,6 +118,7 @@ export const useUpdateAircraft = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
       queryClient.invalidateQueries({ queryKey: ['currency'] });
+      queryClient.invalidateQueries({ queryKey: ['aircraft-reminders'] });
     },
   });
 };
@@ -134,6 +135,7 @@ export const useDeleteAircraft = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
       queryClient.invalidateQueries({ queryKey: ['currency'] });
+      queryClient.invalidateQueries({ queryKey: ['aircraft-reminders'] });
     },
   });
 };

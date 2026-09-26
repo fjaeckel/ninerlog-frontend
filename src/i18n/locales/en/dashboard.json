@@ -56,5 +56,9 @@
   "logFirstFlight": "Log Your First Flight",
   "startJourney": "Start your digital logbook journey by recording your first flight.",
   "monthlyActivity": "Monthly Activity",
-  "monthlyActivityLabel": "Flight hours per month over the last 12 months"
+  "monthlyActivityLabel": "Flight hours per month over the last 12 months",
+  "aircraftDue": {
+    "title": "Aircraft due soon",
+    "viewAircraft": "Aircraft"
+  }
 }

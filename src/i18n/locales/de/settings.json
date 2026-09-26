@@ -69,6 +69,7 @@
     "masterSwitch": "Hauptschalter für alle E-Mail-Benachrichtigungen",
     "credentials": "Nachweise",
     "ratingsAndCurrency": "Berechtigungen & Flugpraxis",
+    "aircraft": "Luftfahrzeuge",
     "categories": {
       "credential_medical": "Medical-Ablauf",
       "credential_medical_desc": "Klasse 1, Klasse 2, LAPL Medical-Zertifikate",
@@ -89,7 +90,9 @@
       "currency_flight_review": "Flugüberprüfung",
       "currency_flight_review_desc": "FAA §61.56 Flugüberprüfung / Befähigungsüberprüfung",
       "currency_revalidation": "EASA-Verlängerung",
-      "currency_revalidation_desc": "Fortschritt der Berechtigungsverlängerung"
+      "currency_revalidation_desc": "Fortschritt der Berechtigungsverlängerung",
+      "aircraft_reminder": "Erinnerungen am Luftfahrzeug",
+      "aircraft_reminder_desc": "Jahresnachprüfung, Versicherung, Rettungsgerät und andere Termine an deinen Luftfahrzeugen"
     },
     "warningSchedule": "Warnzeitplan",
     "warningDays": "Tage vor Ablauf für Warnungen",
