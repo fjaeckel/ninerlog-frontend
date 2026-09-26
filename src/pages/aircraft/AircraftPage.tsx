@@ -134,6 +134,11 @@ export default function AircraftPage() {
                       </dt>
                       <dd className="mt-0.5 font-medium text-slate-700 dark:text-slate-200">
                         {t(`classes.${ac.aircraftClass}`, { defaultValue: ac.aircraftClass })}
+                        {ac.ulKind && (
+                          <span className="block text-xs font-normal text-slate-500 dark:text-slate-400">
+                            {t(`common:ulKinds.${ac.ulKind}`)}
+                          </span>
+                        )}
                       </dd>
                     </div>
                   )}

@@ -34,7 +34,8 @@
     "homeAirfield": "Heimatflugplatz",
     "defaultDepartureIcao": "Standard-Startflugplatz",
     "defaultArrivalIcao": "Standard-Zielflugplatz",
-    "notes": "Anmerkungen"
+    "notes": "Anmerkungen",
+    "ulKind": "UL-Art"
   },
   "stats": {
     "totalTime": "Gesamtzeit",
@@ -81,7 +82,9 @@
     "arrivalPlaceholder": "Ziel, z. B. LSZH",
     "defaultsHelper": "Wird beim Auswählen dieses Luftfahrzeugs im Flugformular vorausgefüllt. Für Flüge ab dem Heimatplatz beide auf den Heimatflugplatz setzen.",
     "renameFlights_one": "{{count}} geloggten Flug von {{oldRegistration}} auf das neue Kennzeichen aktualisieren",
-    "renameFlights_other": "{{count}} geloggte Flüge von {{oldRegistration}} auf das neue Kennzeichen aktualisieren"
+    "renameFlights_other": "{{count}} geloggte Flüge von {{oldRegistration}} auf das neue Kennzeichen aktualisieren",
+    "ulKindUnspecified": "Nicht angegeben",
+    "ulKindHelper": "Bestimmt, worauf die Flüge angerechnet werden. Flugzeit und Landungen auf Dreiachs-UL zählen für die Verlängerung von EASA SEP (Land) und die LAPL(A)-Recency, auf einem UL-Motorsegler für TMG, der Übungsflug mit Fluglehrer aber nicht. Die UL-Recency nach LuftPersV gilt je Art."
   },
   "classOptions": {
     "SEP_LAND": "SEP (Land) — einmotorig, Kolbenmotor",

@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { useCreateAircraft, useUpdateAircraft, useAircraftById, useAircraftStats } from '../../hooks/useAircraft';
 import { extractApiError } from '../../lib/errors';
 import { normalizeLocation } from '../../lib/airport';
+import { UL_AIRCRAFT_KINDS, type ULKind } from '../../lib/ultralight';
 
 const AIRCRAFT_CLASSES = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
@@ -18,6 +19,7 @@ const aircraftSchema = z.object({
   make: z.string().min(1, 'Make is required').max(100),
   model: z.string().min(1, 'Model is required').max(100),
   aircraftClass: z.string().optional().or(z.literal('')),
+  ulKind: z.string().optional().or(z.literal('')),
   isComplex: z.boolean(),
   isHighPerformance: z.boolean(),
   isTailwheel: z.boolean(),
@@ -69,6 +71,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       make: '',
       model: '',
       aircraftClass: '',
+      ulKind: '',
       isComplex: false,
       isHighPerformance: false,
       isTailwheel: false,
@@ -93,6 +96,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       make: existingAircraft.make,
       model: existingAircraft.model,
       aircraftClass: acClass,
+      ulKind: existingAircraft.ulKind || '',
       isComplex: existingAircraft.isComplex ?? false,
       isHighPerformance: existingAircraft.isHighPerformance ?? false,
       isTailwheel: existingAircraft.isTailwheel ?? false,
@@ -116,6 +120,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
     ? aircraftStats?.byReg.get(originalRegistration.toUpperCase())?.totalFlights ?? 0
     : 0;
   const showRenameOption = registrationChanged && flightsOnOldRegistration > 0;
+  const isUltralight = watch('aircraftClass') === 'ULTRALIGHT';
 
   const onSubmit = async (data: AircraftFormData) => {
     try {
@@ -125,6 +130,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         make: data.make,
         model: data.model,
         aircraftClass: (data.aircraftClass || null) as any,
+        ulKind: data.aircraftClass === 'ULTRALIGHT' && data.ulKind ? (data.ulKind as ULKind) : null,
         isComplex: data.isComplex,
         isHighPerformance: data.isHighPerformance,
         isTailwheel: data.isTailwheel,
@@ -293,6 +299,21 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         )}
         <p className="form-helper">{t('form.classHelper')}</p>
       </div>
+
+      {isUltralight && (
+        <div>
+          <label htmlFor="ulKind" className="form-label">
+            {t('fields.ulKind')}
+          </label>
+          <select {...register('ulKind')} id="ulKind" className="input">
+            <option value="">{t('form.ulKindUnspecified')}</option>
+            {UL_AIRCRAFT_KINDS.map((k) => (
+              <option key={k} value={k}>{t(`common:ulKinds.${k}`)}</option>
+            ))}
+          </select>
+          <p className="form-helper">{t('form.ulKindHelper')}</p>
+        </div>
+      )}
 
       {/* Boolean Flags */}
       <div className="space-y-3">

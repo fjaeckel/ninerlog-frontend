@@ -1,6 +1,8 @@
 // Type definitions matching OpenAPI spec exactly
 // Source: ninerlog-api/api-spec/openapi.yaml
 
+import type { ULKind, ULRatingKind } from '../lib/ultralight';
+
 // ============ Common Types ============
 
 export interface Error {
@@ -319,6 +321,8 @@ export interface ClassRatingCurrency {
   launchMethodCurrency?: LaunchMethodCurrency[];
   /** Aircraft classes whose flights count toward this rating, when more than its own class (EASA LAPL(A), SEP(land)+TMG). */
   countedClasses?: ClassType[];
+  /** Ultralight kinds whose flights also count (EASA FCL.035(a)(4) credit, or a German UL rating's kinds). */
+  creditedUltralightKinds?: ULKind[];
 }
 
 export interface LaunchMethodCurrency {
@@ -340,6 +344,8 @@ export interface CurrencyStatusResponse {
 
 export interface PassengerCurrency {
   classType: ClassType;
+  /** Ultralight kind a German UL entry covers (LuftPersV §45a, one entry per kind). */
+  ulKind?: ULRatingKind;
   regulatoryAuthority: string;
   dayStatus: CurrencyStatus;
   nightStatus: CurrencyStatus;
@@ -427,6 +433,7 @@ export interface ClassRating {
   id: string;
   licenseId: string;
   classType: ClassType;
+  ulKind?: ULRatingKind | null;
   issueDate: string;
   expiryDate?: string | null;
   notes?: string | null;
@@ -436,12 +443,14 @@ export interface ClassRating {
 
 export interface ClassRatingCreate {
   classType: ClassType;
+  ulKind?: ULRatingKind | null;
   issueDate: string;
   expiryDate?: string | null;
   notes?: string | null;
 }
 
 export interface ClassRatingUpdate {
+  ulKind?: ULRatingKind | null;
   issueDate?: string;
   expiryDate?: string | null;
   notes?: string | null;

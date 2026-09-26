@@ -195,6 +195,7 @@
     "MET": "MET",
     "TMG": "TMG",
     "GLIDER": "Segelflugzeug",
+    "ULTRALIGHT": "Ultraleicht (UL)",
     "BALLOON": "Ballon",
     "HELICOPTER": "Hubschrauber",
     "Unclassified": "Nicht klassifiziert"

@@ -40,6 +40,22 @@ test.describe('Aircraft', () => {
     await expect(page.getByText('D-ACR2')).toBeVisible({ timeout: 10000 });
   });
 
+  test('should create an ultralight with its kind', async ({ page }) => {
+    await page.getByRole('link', { name: 'Aircraft' }).first().click();
+    await page.getByRole('button', { name: 'Add Aircraft' }).first().click();
+
+    await page.locator('#registration').fill('D-MACR');
+    await page.locator('#type').fill('C42');
+    await page.locator('#make').fill('Ikarus');
+    await page.locator('#model').fill('C42 B');
+    await page.locator('#aircraftClass').selectOption('ULTRALIGHT');
+    await page.locator('#ulKind').selectOption('THREE_AXIS');
+
+    await page.locator('button[type="submit"]').filter({ hasText: 'Add Aircraft' }).click();
+    const card = page.locator('.card').filter({ hasText: 'D-MACR' });
+    await expect(card.getByText('Three-axis ultralight')).toBeVisible({ timeout: 10000 });
+  });
+
   test('should edit aircraft', async ({ page }) => {
     await seedAircraft(page, auth.accessToken, { registration: 'D-ACR3', type: 'C152' });
     await page.getByRole('link', { name: 'Aircraft' }).first().click();

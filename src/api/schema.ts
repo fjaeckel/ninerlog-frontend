@@ -3403,6 +3403,22 @@ export interface components {
              */
             aircraftClass?: string | null;
             /**
+             * @description Ultralight kind (German "Luftsportgeräteart"), kept only when aircraftClass is
+             *     ULTRALIGHT and cleared otherwise; null means unspecified.
+             *     - THREE_AXIS: aerodynamically (three-axis) controlled ultralight aeroplane
+             *     - THREE_AXIS_MOTORGLIDER: three-axis ultralight that meets the TMG definition
+             *     - WEIGHT_SHIFT: weight-shift controlled trike
+             *     - GYROPLANE: ultralight gyroplane
+             *     - HELICOPTER: ultralight helicopter
+             *     - POWERED_PARAGLIDER: powered paraglider (Motorschirm) or paraglider trike
+             *     - SAILPLANE: ultralight sailplane
+             *     Only THREE_AXIS (as SEP_LAND) and THREE_AXIS_MOTORGLIDER (as TMG) are credited toward
+             *     EASA LAPL(A) recency and SEP/TMG revalidation under FCL.035(a)(4).
+             * @example THREE_AXIS
+             * @enum {string|null}
+             */
+            ulKind?: "THREE_AXIS" | "THREE_AXIS_MOTORGLIDER" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE" | "null" | null;
+            /**
              * @description Additional notes about the aircraft
              * @example Club aircraft, requires checkout
              */
@@ -3481,6 +3497,22 @@ export interface components {
              * @example SEP_LAND
              */
             aircraftClass?: string | null;
+            /**
+             * @description Ultralight kind (German "Luftsportgeräteart"), kept only when aircraftClass is
+             *     ULTRALIGHT and cleared otherwise; null means unspecified.
+             *     - THREE_AXIS: aerodynamically (three-axis) controlled ultralight aeroplane
+             *     - THREE_AXIS_MOTORGLIDER: three-axis ultralight that meets the TMG definition
+             *     - WEIGHT_SHIFT: weight-shift controlled trike
+             *     - GYROPLANE: ultralight gyroplane
+             *     - HELICOPTER: ultralight helicopter
+             *     - POWERED_PARAGLIDER: powered paraglider (Motorschirm) or paraglider trike
+             *     - SAILPLANE: ultralight sailplane
+             *     Only THREE_AXIS (as SEP_LAND) and THREE_AXIS_MOTORGLIDER (as TMG) are credited toward
+             *     EASA LAPL(A) recency and SEP/TMG revalidation under FCL.035(a)(4).
+             * @example THREE_AXIS
+             * @enum {string|null}
+             */
+            ulKind?: "THREE_AXIS" | "THREE_AXIS_MOTORGLIDER" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE" | "null" | null;
             /** @example Club aircraft, requires checkout */
             notes?: string | null;
             /**
@@ -3519,6 +3551,22 @@ export interface components {
              * @example SEP_LAND
              */
             aircraftClass?: string | null;
+            /**
+             * @description Ultralight kind (German "Luftsportgeräteart"), kept only when aircraftClass is
+             *     ULTRALIGHT and cleared otherwise; null means unspecified.
+             *     - THREE_AXIS: aerodynamically (three-axis) controlled ultralight aeroplane
+             *     - THREE_AXIS_MOTORGLIDER: three-axis ultralight that meets the TMG definition
+             *     - WEIGHT_SHIFT: weight-shift controlled trike
+             *     - GYROPLANE: ultralight gyroplane
+             *     - HELICOPTER: ultralight helicopter
+             *     - POWERED_PARAGLIDER: powered paraglider (Motorschirm) or paraglider trike
+             *     - SAILPLANE: ultralight sailplane
+             *     Only THREE_AXIS (as SEP_LAND) and THREE_AXIS_MOTORGLIDER (as TMG) are credited toward
+             *     EASA LAPL(A) recency and SEP/TMG revalidation under FCL.035(a)(4).
+             * @example THREE_AXIS
+             * @enum {string|null}
+             */
+            ulKind?: "THREE_AXIS" | "THREE_AXIS_MOTORGLIDER" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE" | "null" | null;
             /** @example Club aircraft, requires checkout */
             notes?: string | null;
             /** @example true */
@@ -5117,6 +5165,13 @@ export interface components {
         };
         PassengerCurrency: {
             classType: components["schemas"]["ClassType"];
+            /**
+             * @description Ultralight kind this entry covers, present only for a German ULTRALIGHT rating.
+             *     LuftPersV §45a passenger recency counts landings in an ultralight of the same kind,
+             *     so there is one entry per kind.
+             * @enum {string}
+             */
+            ulKind?: "THREE_AXIS" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE";
             /** @description Authority that defines the passenger currency rules */
             regulatoryAuthority: string;
             /**
@@ -5308,6 +5363,16 @@ export interface components {
              *     ]
              */
             countedClasses?: components["schemas"]["ClassType"][];
+            /**
+             * @description Ultralight kinds whose flights also count toward this rating, present only when any do.
+             *     EASA LAPL(A) recency and SEP/TMG revalidation credit THREE_AXIS (as SEP_LAND) and
+             *     THREE_AXIS_MOTORGLIDER (as TMG) hours and landings, never their dual time
+             *     (FCL.035(a)(4)). A German ultralight rating lists the kinds it covers.
+             * @example [
+             *       "THREE_AXIS"
+             *     ]
+             */
+            creditedUltralightKinds?: ("THREE_AXIS" | "THREE_AXIS_MOTORGLIDER" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE")[];
         };
         LaunchMethodCurrency: {
             /**
@@ -5368,7 +5433,7 @@ export interface components {
          *     - IR: Instrument Rating
          *     - OTHER: Other rating type
          *     - GLIDER: Sailplane / glider, including self-launching sailplanes (EASA SFCL.160 recency, FAA glider launches)
-         *     - ULTRALIGHT: Ultralight / microlight (LuftPersV §45 recency)
+         *     - ULTRALIGHT: Ultralight / microlight (LuftPersV §45 recency; the kind is in ulKind)
          * @enum {string}
          */
         ClassType: "SEP_LAND" | "SEP_SEA" | "MEP_LAND" | "MEP_SEA" | "SET_LAND" | "SET_SEA" | "TMG" | "IR" | "OTHER" | "GLIDER" | "ULTRALIGHT";
@@ -5378,6 +5443,15 @@ export interface components {
             /** Format: uuid */
             licenseId: string;
             classType: components["schemas"]["ClassType"];
+            /**
+             * @description Ultralight kind the rating covers, kept only when classType is ULTRALIGHT and cleared
+             *     otherwise; null is evaluated as THREE_AXIS. Selects the German recency rule
+             *     (LuftPersV §45) and passenger recency (§45a). A THREE_AXIS rating covers
+             *     THREE_AXIS and THREE_AXIS_MOTORGLIDER aircraft.
+             * @example THREE_AXIS
+             * @enum {string|null}
+             */
+            ulKind?: "THREE_AXIS" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE" | "null" | null;
             /**
              * Format: date
              * @example 2024-03-15
@@ -5398,6 +5472,14 @@ export interface components {
         };
         ClassRatingCreate: {
             classType: components["schemas"]["ClassType"];
+            /**
+             * @description Ultralight kind the rating covers, kept only when classType is ULTRALIGHT and cleared
+             *     otherwise; null is evaluated as THREE_AXIS. Selects the German recency rule
+             *     (LuftPersV §45) and passenger recency (§45a). A THREE_AXIS rating covers
+             *     THREE_AXIS and THREE_AXIS_MOTORGLIDER aircraft.
+             * @enum {string|null}
+             */
+            ulKind?: "THREE_AXIS" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE" | "null" | null;
             /** Format: date */
             issueDate: string;
             /** Format: date */
@@ -5405,6 +5487,14 @@ export interface components {
             notes?: string | null;
         };
         ClassRatingUpdate: {
+            /**
+             * @description Ultralight kind the rating covers, kept only when classType is ULTRALIGHT and cleared
+             *     otherwise; null is evaluated as THREE_AXIS. Selects the German recency rule
+             *     (LuftPersV §45) and passenger recency (§45a). A THREE_AXIS rating covers
+             *     THREE_AXIS and THREE_AXIS_MOTORGLIDER aircraft.
+             * @enum {string|null}
+             */
+            ulKind?: "THREE_AXIS" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE" | "null" | null;
             /** Format: date */
             issueDate?: string;
             /** Format: date */

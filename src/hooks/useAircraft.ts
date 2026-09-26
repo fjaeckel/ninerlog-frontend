@@ -99,6 +99,7 @@ export const useCreateAircraft = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
+      queryClient.invalidateQueries({ queryKey: ['currency'] });
     },
   });
 };
@@ -116,6 +117,7 @@ export const useUpdateAircraft = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
+      queryClient.invalidateQueries({ queryKey: ['currency'] });
     },
   });
 };
@@ -131,6 +133,7 @@ export const useDeleteAircraft = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
+      queryClient.invalidateQueries({ queryKey: ['currency'] });
     },
   });
 };

@@ -29,6 +29,7 @@ export const useCreateClassRating = () => {
     },
     onSuccess: (_, { licenseId }) => {
       queryClient.invalidateQueries({ queryKey: ['classRatings', licenseId] });
+      queryClient.invalidateQueries({ queryKey: ['currency'] });
     },
   });
 };
@@ -46,6 +47,7 @@ export const useUpdateClassRating = () => {
     },
     onSuccess: (_, { licenseId }) => {
       queryClient.invalidateQueries({ queryKey: ['classRatings', licenseId] });
+      queryClient.invalidateQueries({ queryKey: ['currency'] });
     },
   });
 };
@@ -61,6 +63,7 @@ export const useDeleteClassRating = () => {
     },
     onSuccess: (_, { licenseId }) => {
       queryClient.invalidateQueries({ queryKey: ['classRatings', licenseId] });
+      queryClient.invalidateQueries({ queryKey: ['currency'] });
     },
   });
 };

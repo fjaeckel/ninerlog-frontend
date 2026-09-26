@@ -195,6 +195,7 @@
     "MET": "MET",
     "TMG": "TMG",
     "GLIDER": "Glider",
+    "ULTRALIGHT": "Ultralight",
     "BALLOON": "Balloon",
     "HELICOPTER": "Helicopter",
     "Unclassified": "Unclassified"

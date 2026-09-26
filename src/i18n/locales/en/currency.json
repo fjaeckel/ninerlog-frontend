@@ -103,10 +103,10 @@
     }
   },
   "ruleDescriptions": {
-    "easa_sep_tmg": "Requires 12h total flight time + 6h as PIC + 12 takeoffs & landings + 1h refresher training with instructor within the 12 months preceding the expiry date of the rating; holders of both SEP (Land) and TMG ratings may combine flights in either class (EASA FCL.740.A(b)(1))",
+    "easa_sep_tmg": "Requires 12h total flight time + 6h as PIC + 12 takeoffs & landings + 1h refresher training with instructor within the 12 months preceding the expiry date of the rating; holders of both SEP (Land) and TMG ratings may combine flights in either class (EASA FCL.740.A(b)(1)); three-axis ultralight time and landings count, the refresher does not (FCL.035(a)(4))",
     "easa_mep_set": "Requires proficiency check, or 10 route sectors + 1h refresher training with instructor within the 12 months preceding the expiry date (EASA FCL.740.A(b)(2))",
     "easa_ir": "Requires 10h IFR flight time + annual proficiency check within the 12 months preceding the expiry date (EASA FCL.625.A)",
-    "easa_lapl": "Requires 12h flight time + 12 takeoffs & landings + 1h training flight with instructor on aeroplanes or TMG within the last 24 months, or a LAPL(A) proficiency check; holders of SEP (Land) and SEP (Sea) need 1h and 6 takeoffs & landings in each (EASA FCL.140.A)",
+    "easa_lapl": "Requires 12h flight time + 12 takeoffs & landings + 1h training flight with instructor on aeroplanes or TMG within the last 24 months, or a LAPL(A) proficiency check; holders of SEP (Land) and SEP (Sea) need 1h and 6 takeoffs & landings in each (EASA FCL.140.A); three-axis ultralight time and landings count, the training flight does not (FCL.035(a)(4))",
     "easa_spl": "Requires 5h flight time as PIC, dual or supervised solo on sailplanes including TMGs, with 15 launches and 2 training flights with an instructor on sailplanes excluding TMGs, within the last 24 months, or a proficiency check with an examiner (EASA SFCL.160(a)); each launch method needs 5 launches in 24 months, bungee 2 (SFCL.155(c))",
     "easa_spl_tmg": "Requires 12h flight time as PIC, dual or supervised solo on sailplanes including TMGs, with 6h, 12 takeoffs & landings and a training flight of at least 1h with an instructor on TMGs, within the last 24 months, or a proficiency check with an examiner on a TMG (EASA SFCL.160(b))",
     "easa_spl_pax": "3 launches as PIC on sailplanes, excluding TMGs, within the preceding 90 days to carry passengers (EASA SFCL.160(e)(1))",
@@ -116,8 +116,14 @@
     "faa_ir": "Requires 6 instrument approaches + holding procedures within the preceding 6 calendar months (14 CFR 61.57(c))",
     "faa_glider": "Requires 3 launches & landings in preceding 90 days (14 CFR 61.57(a))",
     "faa_flight_review": "Flight review required every 24 calendar months (14 CFR 61.56)",
-    "ul_luftpersv": "Requires 12h flight time + 12 takeoffs & landings + 1h training flight with instructor in 24 months (LuftPersV §45)",
-    "ul_pax": "Passenger authorization required — 3 takeoffs & landings in 90 days (Passagierberechtigung)"
+    "ul_luftpersv": "Requires 12h on three-axis ultralights, TMG or SEP (Land), incl. 6h as PIC, 12 takeoffs & landings and a 1h training flight with instructor on a three-axis ultralight, within 24 months; or a proficiency check (LuftPersV §45(2), (3))",
+    "ul_pax": "Passenger rating required (LuftPersV §84a) — 3 takeoffs & landings in 90 days in an ultralight of the same kind (LuftPersV §45a)",
+    "ul_luftpersv_helicopter": "Requires 6h on ultralight helicopters incl. 6 takeoffs & landings and a 1h flight with instructor within 12 months; or a proficiency check (LuftPersV §45(2a), (3))",
+    "ul_gyroplane": "Requires 12h on gyroplanes only, incl. 6h as PIC, 12 takeoffs & landings and a 1h training flight with instructor, within 24 months; or a proficiency check (DULV, LuftPersV §45(4))",
+    "ul_trike_dulv": "Requires 12h as PIC on trikes within 24 months (DULV, LuftPersV §45(4))",
+    "ul_trike_daec": "Requires 12h with 12 takeoffs & landings on trikes within 24 months, plus a safety/performance training that is not tracked (DAeC, LuftPersV §45(4))",
+    "ul_powered_paraglider": "Requires 30 takeoffs & landings with a powered paraglider or paraglider trike within 24 months (DULV/DAeC, LuftPersV §45(4))",
+    "ul_sailplane": "Requires 5 takeoffs & landings in ultralight sailplanes within 12 months (DAeC, LuftPersV §45(4))"
   },
   "landingsOf": "{{current}} / {{required}} landings",
   "customCurrency": {

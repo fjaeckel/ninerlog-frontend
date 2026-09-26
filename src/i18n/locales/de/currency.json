@@ -103,10 +103,10 @@
     }
   },
   "ruleDescriptions": {
-    "easa_sep_tmg": "Erfordert 12h Gesamtflugzeit + 6h als PIC + 12 Starts & Landungen + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum der Berechtigung; wer SEP (Land) und TMG besitzt, kann Flüge beider Klassen kombinieren (EASA FCL.740.A(b)(1))",
+    "easa_sep_tmg": "Erfordert 12h Gesamtflugzeit + 6h als PIC + 12 Starts & Landungen + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum der Berechtigung; wer SEP (Land) und TMG besitzt, kann Flüge beider Klassen kombinieren (EASA FCL.740.A(b)(1)); Flugzeit und Landungen auf Dreiachs-UL zählen, die Auffrischungsschulung nicht (FCL.035(a)(4))",
     "easa_mep_set": "Erfordert Befähigungsüberprüfung oder 10 Streckenabschnitte + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum (EASA FCL.740.A(b)(2))",
     "easa_ir": "Erfordert 10h IFR-Flugzeit + jährliche Befähigungsüberprüfung innerhalb der 12 Monate vor dem Ablaufdatum (EASA FCL.625.A)",
-    "easa_lapl": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer auf Flugzeugen oder TMG in den letzten 24 Monaten, oder eine LAPL(A)-Befähigungsüberprüfung; wer SEP (Land) und SEP (See) besitzt, braucht je Klasse 1h und 6 Starts & Landungen (EASA FCL.140.A)",
+    "easa_lapl": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer auf Flugzeugen oder TMG in den letzten 24 Monaten, oder eine LAPL(A)-Befähigungsüberprüfung; wer SEP (Land) und SEP (See) besitzt, braucht je Klasse 1h und 6 Starts & Landungen (EASA FCL.140.A); Flugzeit und Landungen auf Dreiachs-UL zählen, der Übungsflug nicht (FCL.035(a)(4))",
     "easa_spl": "Erfordert 5h Flugzeit als PIC, mit Fluglehrer oder im überwachten Alleinflug auf Segelflugzeugen einschließlich TMG, davon 15 Starts und 2 Übungsflüge mit Fluglehrer auf Segelflugzeugen ohne TMG, in den letzten 24 Monaten, oder eine Befähigungsüberprüfung mit einem Prüfer (EASA SFCL.160(a)); jede Startart erfordert 5 Starts in 24 Monaten, Gummiseil 2 (SFCL.155(c))",
     "easa_spl_tmg": "Erfordert 12h Flugzeit als PIC, mit Fluglehrer oder im überwachten Alleinflug auf Segelflugzeugen einschließlich TMG, davon 6h, 12 Starts & Landungen und ein Übungsflug von mindestens 1h mit Fluglehrer auf TMG, in den letzten 24 Monaten, oder eine Befähigungsüberprüfung mit einem Prüfer auf TMG (EASA SFCL.160(b))",
     "easa_spl_pax": "3 Starts als PIC auf Segelflugzeugen ohne TMG in den vorangegangenen 90 Tagen für die Passagiermitnahme (EASA SFCL.160(e)(1))",
@@ -116,8 +116,14 @@
     "faa_ir": "Erfordert 6 Instrumentenanflüge + Holdings innerhalb der vorangegangenen 6 Kalendermonate (14 CFR 61.57(c))",
     "faa_glider": "Erfordert 3 Starts & Landungen in den vorangegangenen 90 Tagen (14 CFR 61.57(a))",
     "faa_flight_review": "Flugüberprüfung alle 24 Kalendermonate erforderlich (14 CFR 61.56)",
-    "ul_luftpersv": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer in 24 Monaten (LuftPersV §45)",
-    "ul_pax": "Passagierberechtigung erforderlich — 3 Starts & Landungen in 90 Tagen"
+    "ul_luftpersv": "Erfordert 12h auf Dreiachs-UL, Reisemotorsegler oder SEP (Land), davon 6h als verantwortlicher Pilot, 12 Starts & Landungen und 1h Übungsflug mit Fluglehrer auf Dreiachs-UL, in 24 Monaten; oder eine Befähigungsüberprüfung (LuftPersV §45 Abs. 2, 3)",
+    "ul_pax": "Passagierberechtigung erforderlich (LuftPersV §84a) — 3 Starts & Landungen in 90 Tagen mit einem Luftsportgerät derselben Art (LuftPersV §45a)",
+    "ul_luftpersv_helicopter": "Erfordert 6h auf UL-Hubschraubern mit 6 Starts & Landungen und 1h Flug mit Fluglehrer in 12 Monaten; oder eine Befähigungsüberprüfung (LuftPersV §45 Abs. 2a, 3)",
+    "ul_gyroplane": "Erfordert 12h ausschließlich auf Tragschraubern, davon 6h als verantwortlicher Pilot, 12 Starts & Landungen und 1h Übungsflug mit Fluglehrer, in 24 Monaten; oder eine Befähigungsüberprüfung (DULV, LuftPersV §45 Abs. 4)",
+    "ul_trike_dulv": "Erfordert 12h als verantwortlicher Pilot auf Trikes in 24 Monaten (DULV, LuftPersV §45 Abs. 4)",
+    "ul_trike_daec": "Erfordert 12h mit 12 Starts & Landungen auf Trikes in 24 Monaten sowie ein Sicherheits-/Performance-Training, das nicht erfasst wird (DAeC, LuftPersV §45 Abs. 4)",
+    "ul_powered_paraglider": "Erfordert 30 Starts & Landungen mit Motorschirm oder Motorschirm-Trike in 24 Monaten (DULV/DAeC, LuftPersV §45 Abs. 4)",
+    "ul_sailplane": "Erfordert 5 Starts & Landungen mit UL-Segelflugzeugen in 12 Monaten (DAeC, LuftPersV §45 Abs. 4)"
   },
   "landingsOf": "{{current}} / {{required}} Landungen",
   "customCurrency": {

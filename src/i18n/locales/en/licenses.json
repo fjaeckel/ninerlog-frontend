@@ -70,7 +70,8 @@
     "removeRating": "Remove class rating",
     "noExpiry": "No expiry",
     "expired": "Expired",
-    "expiresInDays": "Expires in {{days}}d"
+    "expiresInDays": "Expires in {{days}}d",
+    "ulKind": "Ultralight kind"
   },
   "classTypeLabels": {
     "SEP_LAND": "SEP (Land)",

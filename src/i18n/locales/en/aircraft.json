@@ -34,7 +34,8 @@
     "homeAirfield": "Home Airfield",
     "defaultDepartureIcao": "Default departure airfield",
     "defaultArrivalIcao": "Default arrival airfield",
-    "notes": "Notes"
+    "notes": "Notes",
+    "ulKind": "Ultralight kind"
   },
   "stats": {
     "totalTime": "Total Time",
@@ -81,7 +82,9 @@
     "arrivalPlaceholder": "Arrival, e.g. LSZH",
     "defaultsHelper": "Prefilled in the flight form when you pick this aircraft. Set both to your home airfield for local flying.",
     "renameFlights_one": "Also update {{count}} logged flight from {{oldRegistration}} to the new registration",
-    "renameFlights_other": "Also update {{count}} logged flights from {{oldRegistration}} to the new registration"
+    "renameFlights_other": "Also update {{count}} logged flights from {{oldRegistration}} to the new registration",
+    "ulKindUnspecified": "Unspecified",
+    "ulKindHelper": "Decides what the flights count toward. Three-axis ultralight time and landings count toward EASA SEP (Land) revalidation and LAPL(A) recency, a UL motorglider's toward TMG, but not the instructor flight. German UL recency is kept per kind."
   },
   "classOptions": {
     "SEP_LAND": "SEP (Land) — Single Engine Piston",
