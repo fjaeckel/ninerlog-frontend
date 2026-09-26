@@ -105,7 +105,7 @@ export default function FlightsPage() {
   const { t, i18n } = useTranslation(['flights', 'common']);
   // At `lg` the table takes over from the card list; only one query runs.
   const isWide = useMediaQuery('(min-width: 1024px)');
-  const { fmtDate, fmtDuration } = useFormatPrefs();
+  const { fmtDate, fmtDuration, fmtTimeOfDay } = useFormatPrefs();
   const columnPrefs = useFlightColumnPrefs();
   const navigate = useNavigate();
   const location = useLocation();
@@ -733,7 +733,7 @@ export default function FlightsPage() {
                     </td>
                     {columns.offOnBlock && (
                       <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono tabular-nums text-xs">
-                        {flight.offBlockTime?.slice(0, 5) || '—'} / {flight.onBlockTime?.slice(0, 5) || '—'}
+                        {fmtTimeOfDay(flight.offBlockTime) || '—'} / {fmtTimeOfDay(flight.onBlockTime) || '—'}
                       </td>
                     )}
                     <td className="px-3 py-2 whitespace-nowrap text-right font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">

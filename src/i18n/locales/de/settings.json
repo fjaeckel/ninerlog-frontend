@@ -187,6 +187,12 @@
     "us": "US-Format",
     "iso": "ISO 8601"
   },
+  "clockFormat": {
+    "title": "Uhrzeitformat",
+    "description": "Wähle, wie Uhrzeiten (Block, Start und Landung) angezeigt und eingegeben werden. Gespeichert wird immer in UTC.",
+    "h24": "24 Stunden",
+    "h12": "12 Stunden (AM/PM)"
+  },
   "decimalSeparator": {
     "title": "Dezimaltrennzeichen",
     "description": "Wähle das Dezimaltrennzeichen für die Zahlenformatierung (z. B. Dezimalstunden).",

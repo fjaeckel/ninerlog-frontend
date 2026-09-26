@@ -17,6 +17,7 @@ export const user = {
   twoFactorEnabled: true,
   timeDisplayFormat: 'hm',
   dateFormat: 'DD.MM.YYYY',
+  clockFormat: '24h',
   preferredLocale: 'en',
   recencyPerModel: true,
   recencyPerRegistration: true,

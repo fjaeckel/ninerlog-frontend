@@ -97,12 +97,14 @@ t('greeting', { name: user.name }) // "Hello, John!"
 import { useFormatPrefs } from '../hooks/useFormatPrefs';
 
 function MyComponent() {
-  const { fmtDate, fmtDateTime, fmtDateLong, fmtDuration } = useFormatPrefs();
+  const { fmtDate, fmtDateTime, fmtDateLong, fmtTimeOfDay, fmtClock, fmtDuration } = useFormatPrefs();
 
   return (
     <div>
       <p>{fmtDate(flight.date)}</p>       {/* "14.04.2026" or "04/14/2026" */}
-      <p>{fmtDateTime(flight.createdAt)}</p> {/* "14.04.2026 15:30" */}
+      <p>{fmtDateTime(flight.createdAt)}</p> {/* "14.04.2026 15:30" or "04/14/2026 3:30 PM" */}
+      <p>{fmtTimeOfDay(flight.offBlockTime)}</p> {/* "14:15" or "2:15 PM" */}
+      <p>{fmtClock(run.startedAt)}</p>      {/* local time of an instant */}
       <p>{fmtDateLong(flight.date)}</p>    {/* "Montag, 14. April 2026" */}
       <p>{fmtDuration(flight.totalTime)}</p> {/* "1h 30m" or "1,5h" */}
     </div>
@@ -110,12 +112,15 @@ function MyComponent() {
 }
 ```
 
-The hook reads the user's `dateFormat`, `timeDisplayFormat`, and `decimalSeparator` preferences from the auth store.
+The hook reads the user's `dateFormat`, `clockFormat`, `timeDisplayFormat`, and `decimalSeparator` preferences from the auth store.
+
+Never render a stored time of day with `.slice(0, 5)` or `toLocaleTimeString()`, and never use `<input type="time">`: the browser draws it in its own locale (AM/PM on an en-US browser) regardless of the user's `clockFormat`. Enter times with `TimeOfDayInput` (`src/components/ui/TimeOfDayInput.tsx`), which shows the user's clock format, accepts shorthand (`1430`, `14.30`, `2:30 pm`) and always yields canonical 24-hour `HH:MM`.
 
 For non-React contexts (utility functions), import the raw functions and pass preferences as parameters:
 
 ```ts
 import { formatDate, type DateFormatPref } from '../lib/dateFormat';
+import { formatTimeOfDay, parseTimeOfDay, type ClockFormat } from '../lib/timeOfDay';
 import { formatDuration, type TimeDisplayFormat, type DecimalSeparator } from '../lib/duration';
 ```
 

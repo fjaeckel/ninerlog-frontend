@@ -347,6 +347,7 @@
     "minutes": "Minutes",
     "allLandings": "All Landings",
     "function": "Function",
+    "invalidTime": "Enter a valid time, e.g. 14:30",
     "offBlockTooltip": "Chocks off / engine start (UTC)",
     "onBlockTooltip": "Chocks on / engine shutdown (UTC)",
     "takeoffTooltip": "Takeoff time (UTC) — optional",
