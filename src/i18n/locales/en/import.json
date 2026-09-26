@@ -37,6 +37,7 @@
   "restoreJsonSummaryReplaced": "Your previous logbook data was replaced with the backup.",
   "restoreSummaryAircraftImported": "Aircraft imported",
   "restoreSummaryAircraftSkipped": "Aircraft skipped",
+  "restoreSummaryAircraftReminders": "Aircraft reminders",
   "restoreSummaryLicenses": "Licenses",
   "restoreSummaryClassRatings": "Class ratings",
   "restoreSummaryLicencePrivileges": "Licence privileges",

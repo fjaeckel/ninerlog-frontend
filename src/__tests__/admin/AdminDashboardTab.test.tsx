@@ -53,7 +53,7 @@ afterEach(() => {
   useAuthStore.setState({ user: null, isAuthenticated: false, accessToken: null, refreshToken: null } as never);
 });
 
-describe('Admin dashboard — licence privileges and pilot profiles', () => {
+describe('Admin dashboard — licence privileges, aircraft reminders and pilot profiles', () => {
   it('shows the licence privilege total', async () => {
     renderAdmin({
       ...baseStats,
@@ -62,6 +62,17 @@ describe('Admin dashboard — licence privileges and pilot profiles', () => {
     });
     await screen.findByText('Licence Privileges');
     expect(tileValue('Licence Privileges')).toBe('31');
+  });
+
+  it('shows total and overdue aircraft reminders', async () => {
+    renderAdmin({
+      ...baseStats,
+      aircraftReminders: { total: 214, overdue: 17 },
+      pilotProfiles: { everythingMode: 0, overrides: {} },
+    });
+    await screen.findByText('Aircraft Reminders');
+    expect(tileValue('Aircraft Reminders')).toBe('214');
+    expect(tileValue('Overdue Reminders')).toBe('17');
   });
 
   it('shows the pilot-profile overrides as a discipline table', async () => {
@@ -94,6 +105,8 @@ describe('Admin dashboard — licence privileges and pilot profiles', () => {
     renderAdmin(baseStats);
     await screen.findByText('Licence Privileges');
     expect(tileValue('Licence Privileges')).toBe('—');
+    expect(tileValue('Aircraft Reminders')).toBe('—');
+    expect(tileValue('Overdue Reminders')).toBe('—');
     expect(within(screen.getByTestId('admin-pilot-profiles')).getByText('—')).toBeInTheDocument();
   });
 });

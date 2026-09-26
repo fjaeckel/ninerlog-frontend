@@ -73,5 +73,9 @@
     "longest": "Längster Flug",
     "sites": "Häufigste Startplätze"
   },
-  "ulKindNotSet": "UL-Art nicht festgelegt"
+  "ulKindNotSet": "UL-Art nicht festgelegt",
+  "aircraftDue": {
+    "title": "Bald fällig am Luftfahrzeug",
+    "viewAircraft": "Luftfahrzeuge"
+  }
 }

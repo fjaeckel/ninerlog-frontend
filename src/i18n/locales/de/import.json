@@ -37,6 +37,7 @@
   "restoreJsonSummaryReplaced": "Deine bisherigen Flugbuchdaten wurden durch die Sicherung ersetzt.",
   "restoreSummaryAircraftImported": "Luftfahrzeuge importiert",
   "restoreSummaryAircraftSkipped": "Luftfahrzeuge übersprungen",
+  "restoreSummaryAircraftReminders": "Erinnerungen am Luftfahrzeug",
   "restoreSummaryLicenses": "Lizenzen",
   "restoreSummaryClassRatings": "Klassenberechtigungen",
   "restoreSummaryLicencePrivileges": "Lizenzberechtigungen",

@@ -161,7 +161,9 @@
         "MULTI_CREW": "Multi-crew",
         "INSTRUCTOR": "Instructor",
         "SIMULATOR": "Simulator"
-      }
+      },
+      "aircraftReminders": "Aircraft Reminders",
+      "aircraftRemindersOverdue": "Overdue Reminders"
     },
     "users": {
       "searchPlaceholder": "Search by email or name...",

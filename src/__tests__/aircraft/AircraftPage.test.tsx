@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AircraftPage from '../../pages/aircraft/AircraftPage';
 import * as useAircraftHook from '../../hooks/useAircraft';
+import * as remindersHook from '../../hooks/useAircraftReminders';
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -33,6 +34,36 @@ describe('AircraftPage', () => {
     vi.spyOn(useAircraftHook, 'useAircraftById').mockReturnValue({
       data: undefined, isLoading: false, error: null,
     } as any);
+    vi.spyOn(remindersHook, 'useAllAircraftReminders').mockReturnValue({
+      data: [], isLoading: false, isError: false,
+    } as never);
+  });
+
+  it('M-job3: shows each reminder inside its own aircraft card', () => {
+    const ac = (id: string, registration: string) => ({
+      id, userId: 'user-1', registration, type: 'C42', make: 'Comco Ikarus', model: 'C42 B',
+      aircraftClass: 'ULTRALIGHT', ulKind: 'THREE_AXIS', isComplex: false, isHighPerformance: false,
+      isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
+    });
+    vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
+      data: [ac('a1', 'D-MIKA'), ac('a2', 'D-MXYZ')], isLoading: false, error: null,
+    } as never);
+    vi.spyOn(remindersHook, 'useAllAircraftReminders').mockReturnValue({
+      data: [{
+        id: 'r1', aircraftId: 'a2', aircraftRegistration: 'D-MXYZ', kind: 'ANNUAL_INSPECTION',
+        dueDate: '2026-08-28', status: 'due_soon', daysUntilDue: 12, createdAt: '', updatedAt: '',
+      }],
+      isLoading: false, isError: false,
+    } as never);
+
+    renderWithProviders(<AircraftPage />);
+
+    const mika = screen.getByRole('region', { name: 'Reminders D-MIKA' });
+    const mxyz = screen.getByRole('region', { name: 'Reminders D-MXYZ' });
+    expect(mika).not.toHaveTextContent('Annual inspection');
+    expect(mika).toHaveTextContent('Add reminder');
+    expect(mxyz).toHaveTextContent('Annual inspection');
+    expect(mxyz).toHaveTextContent('Due soon');
   });
 
   it('renders empty state when no aircraft', () => {

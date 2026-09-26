@@ -116,6 +116,8 @@ function DashboardTab() {
     { label: t('admin.dashboard.flightCorrections'), value: data.flightCorrections ?? 0 },
     { label: t('admin.dashboard.voidedFlights'), value: data.voidedFlights ?? 0 },
     { label: t('admin.dashboard.logbookCertifications'), value: data.logbookCertifications ?? 0 },
+    { label: t('admin.dashboard.aircraftReminders'), value: data.aircraftReminders?.total ?? '—' },
+    { label: t('admin.dashboard.aircraftRemindersOverdue'), value: data.aircraftReminders?.overdue ?? '—' },
     { label: t('admin.dashboard.totalImports'), value: data.totalImports },
     { label: t('admin.dashboard.flightsThisMonth'), value: data.flightsThisMonth },
     { label: t('admin.dashboard.newUsersWeek'), value: data.newUsersThisWeek },
@@ -375,7 +377,7 @@ function UsersTab() {
       <div className="card overflow-hidden">
         {/* Desktop table */}
         <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full sm:max-w-lg text-sm">
             <thead><tr className="border-b border-slate-200 dark:border-slate-700 text-left">
               <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.user')}</th>
               <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.status')}</th>
@@ -744,7 +746,7 @@ function EmailTab() {
         )}
         {!!deliveries.data?.length && (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full sm:max-w-lg text-sm">
               <thead><tr className="border-b border-slate-200 dark:border-slate-700 text-left">
                 <th className="px-3 py-2 font-medium text-slate-500 dark:text-slate-400">{t('admin.email.colRecipient')}</th>
                 <th className="px-3 py-2 font-medium text-slate-500 dark:text-slate-400">{t('admin.email.colType')}</th>

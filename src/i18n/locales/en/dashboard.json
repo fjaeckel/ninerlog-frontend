@@ -73,5 +73,9 @@
     "longest": "Longest flight",
     "sites": "Top sites"
   },
-  "ulKindNotSet": "Kind not set"
+  "ulKindNotSet": "Kind not set",
+  "aircraftDue": {
+    "title": "Aircraft due soon",
+    "viewAircraft": "Aircraft"
+  }
 }

@@ -125,6 +125,7 @@ export const useUpdateAircraft = () => {
       invalidateFlightDependentQueries(queryClient);
       invalidatePilotProfile(queryClient);
       queryClient.invalidateQueries({ queryKey: ['currency'] });
+      queryClient.invalidateQueries({ queryKey: ['aircraft-reminders'] });
     },
   });
 };
@@ -142,6 +143,7 @@ export const useDeleteAircraft = () => {
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
       invalidatePilotProfile(queryClient);
       queryClient.invalidateQueries({ queryKey: ['currency'] });
+      queryClient.invalidateQueries({ queryKey: ['aircraft-reminders'] });
     },
   });
 };

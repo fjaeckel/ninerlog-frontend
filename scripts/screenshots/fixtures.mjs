@@ -211,6 +211,24 @@ export const aircraft = [
   },
 ];
 
+const reminder = (id, aircraftId, aircraftRegistration, kind, due, extra = {}) => {
+  const daysUntilDue = Math.round((Date.parse(due) - Date.parse(day(0))) / 86_400_000);
+  const status = daysUntilDue < 0 ? 'overdue' : daysUntilDue <= 30 ? 'due_soon' : 'ok';
+  return {
+    id, aircraftId, aircraftRegistration, kind, dueDate: due, status, daysUntilDue,
+    createdAt: iso('2025-09-01'), updatedAt: iso('2026-01-01'), ...extra,
+  };
+};
+
+export const aircraftReminders = [
+  reminder('r2', 'a5', 'D-MIKA', 'RESCUE_SYSTEM_REPACK', day(-5), { intervalMonths: 72, lastDoneOn: '2020-08-11', notes: 'Junkers Magnum 450 — repack at the DULV service station.' }),
+  reminder('r1', 'a5', 'D-MIKA', 'ANNUAL_INSPECTION', day(12), { intervalMonths: 12, lastDoneOn: '2025-08-28' }),
+  reminder('r5', 'a1', 'D-EABC', 'ARC', day(25), { intervalMonths: 12, lastDoneOn: '2025-09-10' }),
+  reminder('r4', 'a5', 'D-MIKA', 'INSURANCE', day(137), { intervalMonths: 12, label: 'Hull + liability' }),
+  reminder('r6', 'a4', 'D-5812', 'ANNUAL_INSPECTION', '2027-03-31', { intervalMonths: 12, lastDoneOn: '2026-03-20' }),
+  reminder('r3', 'a5', 'D-MIKA', 'RESCUE_ROCKET_EXPIRY', '2029-03-31'),
+];
+
 export const aircraftStats = {
   data: [
     { registration: 'D-EABC', aircraftType: 'C172', totalFlights: 42, totalMinutes: 4520, landingsDay: 58, landingsNight: 6, lastFlightDate: day(-2), landingsLast90Days: 12, recencyLapsesOn: day(70) },
@@ -461,6 +479,7 @@ export const adminStats = {
   totalCustomReports: 57,
   strictLogbookUsers: 23, flightRevisions: 1418, flightCorrections: 96, voidedFlights: 41, logbookCertifications: 17,
   licencePrivileges: { total: 31, byKind: { SAILPLANE_TOWING: 6, CLOUD_FLYING: 4, UL_PASSENGER_AUTH: 21 } },
+  aircraftReminders: { total: 214, overdue: 17 },
   pilotProfiles: {
     everythingMode: 9,
     overrides: {
@@ -914,8 +933,14 @@ const EMPTY_PAGE = { data: [], pagination: { page: 1, pageSize: 20, total: 0, to
 const ROUTES = {
   '/users/me': user,
   '/users/me/statistics': statistics,
-  '/users/me/notifications': { emailOnCurrencyExpiry: true, emailOnCredentialExpiry: true, daysBeforeExpiry: 30 },
-  '/users/me/notifications/history': EMPTY_PAGE,
+  '/users/me/notifications': {
+    emailEnabled: true,
+    enabledCategories: ['credential_medical', 'credential_language', 'credential_security', 'credential_other',
+      'rating_expiry', 'currency_passenger', 'currency_night', 'currency_flight_review', 'currency_revalidation',
+      'aircraft_reminder'],
+    warningDays: [30, 14, 7], checkHour: 8,
+  },
+  '/users/me/notifications/history': { items: [], total: 0 },
   '/users/me/baseline': null,
   '/flights': {
     data: flights,
@@ -928,6 +953,7 @@ const ROUTES = {
   },
   '/aircraft': { data: aircraft, pagination: { page: 1, pageSize: 100, total: aircraft.length, totalPages: 1 } },
   '/aircraft/stats': aircraftStats,
+  '/aircraft-reminders': aircraftReminders,
   '/licenses': licenses,
   '/credentials': credentials,
   '/contacts': contacts,
@@ -999,6 +1025,8 @@ export function bodyFor(pathname, search = new URLSearchParams()) {
   if (/^\/licenses\/[^/]+\/statistics$/.test(path)) return statistics;
   const revisionsMatch = path.match(/^\/flights\/([^/]+)\/revisions$/);
   if (revisionsMatch) return flightRevisions[revisionsMatch[1]] ?? [];
+  const remindersMatch = path.match(/^\/aircraft\/([^/]+)\/reminders$/);
+  if (remindersMatch) return aircraftReminders.filter((r) => r.aircraftId === remindersMatch[1]);
   const flightMatch = path.match(/^\/flights\/([^/]+)$/);
   if (flightMatch) return flights.find((f) => f.id === flightMatch[1]) ?? flights[0];
   const reportResultMatch = path.match(/^\/reports\/custom\/([^/]+)\/result$/);

@@ -194,6 +194,9 @@ export default function RestoreBackup() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto mb-6">
             <SummaryCard label={t('restoreSummaryAircraftImported')} value={result.aircraftImported} color="green" />
             <SummaryCard label={t('restoreSummaryAircraftSkipped')} value={result.aircraftSkipped} color="amber" />
+            {result.aircraftRemindersImported > 0 && (
+              <SummaryCard label={t('restoreSummaryAircraftReminders')} value={result.aircraftRemindersImported} color="green" />
+            )}
             <SummaryCard label={t('restoreSummaryLicenses')} value={result.licensesImported} color="green" />
             <SummaryCard label={t('restoreSummaryClassRatings')} value={result.classRatingsImported} color="green" />
             {result.licencePrivilegesImported > 0 && (

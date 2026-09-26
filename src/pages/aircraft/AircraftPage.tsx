@@ -7,6 +7,8 @@ import { useRecencyPrefs } from '../../hooks/useRecencyPrefs';
 import { recencyLevel, RECENCY_DOT_CLASSES, RECENCY_REQUIRED_LANDINGS } from '../../lib/recency';
 import AircraftForm from '../../components/aircraft/AircraftForm';
 import { UnclassifiedAircraftBanner } from '../../components/aircraft/UnclassifiedAircraftBanner';
+import { AircraftRemindersSection } from '../../components/aircraft/AircraftReminders';
+import { useAllAircraftReminders, type AircraftReminder } from '../../hooks/useAircraftReminders';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { FormModal } from '../../components/ui/FormModal';
@@ -28,6 +30,13 @@ export default function AircraftPage() {
   const { fmtDuration, fmtDate } = useFormatPrefs();
   const recencyPrefs = useRecencyPrefs();
   const deleteAircraft = useDeleteAircraft();
+  const { data: allReminders, isError: remindersError } = useAllAircraftReminders();
+  const remindersByAircraft = new Map<string, AircraftReminder[]>();
+  for (const r of allReminders ?? []) {
+    const list = remindersByAircraft.get(r.aircraftId);
+    if (list) list.push(r);
+    else remindersByAircraft.set(r.aircraftId, [r]);
+  }
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -307,6 +316,12 @@ export default function AircraftPage() {
                   </button>
                 </div>
               </div>
+              <AircraftRemindersSection
+                aircraftId={ac.id}
+                registration={ac.registration}
+                reminders={allReminders ? (remindersByAircraft.get(ac.id) ?? []) : undefined}
+                loadError={remindersError}
+              />
             </div>
             );
           })}

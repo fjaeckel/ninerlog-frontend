@@ -161,7 +161,9 @@
         "MULTI_CREW": "Multi-Crew",
         "INSTRUCTOR": "Lehrberechtigung",
         "SIMULATOR": "Simulator"
-      }
+      },
+      "aircraftReminders": "Erinnerungen am Luftfahrzeug",
+      "aircraftRemindersOverdue": "Überfällige Erinnerungen"
     },
     "users": {
       "searchPlaceholder": "Nach E-Mail oder Name suchen...",
