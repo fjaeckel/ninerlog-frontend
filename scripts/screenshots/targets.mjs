@@ -6,6 +6,11 @@
  *   empty      serve empty collections, to capture the empty state
  *   fail       serve 500s for the page's own list, to capture the error state
  *   anonymous  do not seed a session — for the public/auth routes
+ *   personaOnly  only captured when named, or in a persona run
+ *   skip(fx)   true when the target does not apply to the fixture set
+ *
+ * `act(page, fx)` receives the fixture set; persona sets carry
+ * `shotAircraft`, the registrations their form shots select.
  *
  * Add a target whenever you add a screen.
  */
@@ -100,6 +105,20 @@ export const TARGETS = [
       await page.getByRole('button', { name: /new aircraft\?|neues luftfahrzeug\?/i }).click();
       await page.waitForTimeout(300);
     },
+  },
+  {
+    name: 'flights-modal-primary',
+    path: '/flights',
+    personaOnly: true,
+    skip: (fx) => !fx.shotAircraft?.[0],
+    act: (page, fx) => openFormWithAircraft(page, fx.shotAircraft[0]),
+  },
+  {
+    name: 'flights-modal-secondary',
+    path: '/flights',
+    personaOnly: true,
+    skip: (fx) => !fx.shotAircraft?.[1],
+    act: (page, fx) => openFormWithAircraft(page, fx.shotAircraft[1]),
   },
   { name: 'flight-detail', path: '/flights/f1' },
   {
@@ -276,6 +295,21 @@ export const TARGETS = [
   { name: 'auth-register', path: '/register', anonymous: true },
   { name: 'auth-reset', path: '/reset-password', anonymous: true },
   { name: 'auth-new-password', path: '/new-password?token=demo-token', anonymous: true },
+];
+
+/** The flight form with `registration` picked from the fleet. */
+async function openFormWithAircraft(page, registration) {
+  await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+  await page.waitForTimeout(600);
+  await page.locator('#aircraftReg').fill(registration);
+  await page.locator('#date').click();
+  await page.waitForTimeout(400);
+}
+
+/** The screens a persona run captures when no target is named. */
+export const PERSONA_TARGETS = [
+  'dashboard', 'flights', 'flights-modal', 'flights-modal-primary', 'flights-modal-secondary',
+  'flight-detail', 'aircraft', 'licenses', 'currency', 'reports', 'profile',
 ];
 
 /** Paths whose list request is failed for a `fail` target. */

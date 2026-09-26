@@ -41,11 +41,24 @@ guess about the user.
 
 ## 3. Screenshots per persona
 
-The `screenshots` skill is mandatory for rendered changes; the persona check extends it:
+The `screenshots` skill is mandatory for rendered changes; the persona check extends it.
+Every persona has a fixture set in `scripts/screenshots/personas/<id>.mjs`, selected with
+`--persona=<id>` or `SHOT_PERSONA=<id>` (ids `lena`, `jonas`, `karl`, `petra`, `mehmet`,
+`sabine`, `mark`, `anna`, `ruth`, or `all`):
 
-- Capture the screen with the fixture set of **every persona the change touches** plus Mark
-  (`npm run shots -- <label>`; persona fixture sets are added in phase 2 of the plan — until
-  then, say which persona the default fixture stands in for).
+```bash
+npm run shots -- before --persona=all --theme=light     # .screenshots/before/<persona>/…
+npm run shots -- after  --persona=lena,karl,mark flights-modal-primary currency
+```
+
+- Capture the screen as **every persona the change touches, plus Mark** (the A2 guard: his
+  before/after diff must be empty) and Ruth when it touches onboarding or empty states.
+- `flights-modal-primary` / `-secondary` open the flight form with the persona's own aircraft
+  selected (Lena `D-1234`, Karl `D-KOFA`, Petra `D-KXYZ` then the DR400 `D-EPTW`, Mehmet
+  `D-MXYZ`, Sabine `D-MTRK` then the paramotor, Mark `D-AIUA` then the club C172, Anna the
+  C172 then the ASK 21) — the aircraft-scope check for L3, K1, P1, M1, S3, A1.
+- Each set serves `GET /users/me/pilot-profile` derived from the persona's records; a run
+  prints `! pilot profile …` where the derivation disagrees with PERSONAS.md.
 - Look at each: does Lena's form lead with launch method and take-off/landing? Does Mark's
   show nothing glider? Does Ruth's empty account show the full app?
 

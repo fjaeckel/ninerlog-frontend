@@ -9,8 +9,12 @@
  *   npm run shots -- after --mobile --fold     just the first screen, chrome in place
  *   npm run shots -- after --theme=dark        one theme
  *   npm run shots -- --audit [--mobile]        measure instead of capture
+ *   npm run shots -- after --persona=lena      a persona's fixture set (PERSONAS.md)
+ *   npm run shots -- after --persona=all       every persona in turn
  *
- * Output goes to `.screenshots/<label>/<target>.<theme>.png` (gitignored).
+ * Output goes to `.screenshots/<label>/<target>.<theme>.png` (gitignored);
+ * a persona run writes `.screenshots/<label>/<persona>/<target>.<theme>.png`.
+ * `SHOT_PERSONA=<id|all|id,id>` is the same as `--persona=`.
  * Capture `before` on the current main, make the change, capture `after`, and
  * compare the pairs.
  *
@@ -21,8 +25,9 @@
 import { mkdirSync, rmSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { user, bodyFor } from './fixtures.mjs';
-import { TARGETS, FAILING_PATHS, EMPTY_BODIES } from './targets.mjs';
+import * as defaultFixtures from './fixtures.mjs';
+import { TARGETS, PERSONA_TARGETS, FAILING_PATHS, EMPTY_BODIES } from './targets.mjs';
+import { PERSONA_IDS, loadPersona } from './personas/index.mjs';
 import { collectReport, formatReport, TARGET_MIN } from './audit.mjs';
 import { startDevServer, launchBrowser } from './lib.mjs';
 
@@ -59,18 +64,30 @@ const viewport = device.viewport;
 // chrome where it sits.
 const foldOnly = flags.has('--fold');
 const auditOnly = flags.has('--audit');
-const outDir = join(ROOT, '.screenshots', label);
+const personaArg = flagValue('persona') || process.env.SHOT_PERSONA || '';
+const personas = personaArg === 'all' ? PERSONA_IDS : personaArg.split(',').filter(Boolean);
 
 if (flags.has('--help')) {
   console.log(
-    'Usage: npm run shots -- <label> [target...] [--theme=light,dark] [--mobile] [--fold]\n\n' +
+    'Usage: npm run shots -- <label> [target...] [--theme=light,dark] [--mobile] [--fold] [--persona=<id|all>]\n\n' +
+      `Personas: ${PERSONA_IDS.join(', ')}, all\n` +
+      `Persona default targets: ${PERSONA_TARGETS.join(', ')}\n\n` +
       'Targets:\n  ' +
-      TARGETS.map((t) => t.name).join('\n  ')
+      TARGETS.map((t) => t.name + (t.personaOnly ? '  (persona runs)' : '')).join('\n  ')
   );
   process.exit(0);
 }
 
-const selected = wanted.length ? TARGETS.filter((t) => wanted.includes(t.name)) : TARGETS;
+const unknownPersonas = personas.filter((id) => !PERSONA_IDS.includes(id));
+if (unknownPersonas.length) {
+  console.error(`Unknown persona(s): ${unknownPersonas.join(', ')}\nKnown: ${PERSONA_IDS.join(', ')}, all`);
+  process.exit(1);
+}
+
+const defaultTargets = personas.length
+  ? TARGETS.filter((t) => PERSONA_TARGETS.includes(t.name))
+  : TARGETS.filter((t) => !t.personaOnly);
+const selected = wanted.length ? TARGETS.filter((t) => wanted.includes(t.name)) : defaultTargets;
 const unknown = wanted.filter((name) => !TARGETS.some((t) => t.name === name));
 if (unknown.length) {
   console.error(`Unknown target(s): ${unknown.join(', ')}\nRun with --help to list them.`);
@@ -78,22 +95,27 @@ if (unknown.length) {
 }
 
 // ── Session seeding ──────────────────────────────────────────────────────────
-const authStorage = JSON.stringify({
-  state: {
-    user,
-    isAuthenticated: true,
-    accessToken: 'fixture-access-token',
-    refreshToken: 'fixture-refresh-token',
-    tokenExpiresAt: Date.now() + 3_600_000,
-    expiresIn: 3600,
-  },
-  version: 0,
-});
-// Mark the welcome tour seen.
-const onboardingStorage = JSON.stringify({ state: { completedUserIds: [user.id] }, version: 0 });
+function sessionStorageFor(user) {
+  return {
+    authStorage: JSON.stringify({
+      state: {
+        user,
+        isAuthenticated: true,
+        accessToken: 'fixture-access-token',
+        refreshToken: 'fixture-refresh-token',
+        tokenExpiresAt: Date.now() + 3_600_000,
+        expiresIn: 3600,
+      },
+      version: 0,
+    }),
+    // Mark the welcome tour seen.
+    onboardingStorage: JSON.stringify({ state: { completedUserIds: [user.id] }, version: 0 }),
+  };
+}
 
 // ── Capture ──────────────────────────────────────────────────────────────────
-async function shoot(browser, target, theme) {
+async function shoot(browser, target, theme, fx, outDir) {
+  const { authStorage, onboardingStorage } = sessionStorageFor(fx.user);
   const context = await browser.newContext({
     ...device,
     deviceScaleFactor: 2,
@@ -118,7 +140,8 @@ async function shoot(browser, target, theme) {
   );
 
   await context.route('**/api/v1/**', async (route) => {
-    const path = new URL(route.request().url()).pathname.replace(/^.*\/api\/v1/, '');
+    const url = new URL(route.request().url());
+    const path = url.pathname.replace(/^.*\/api\/v1/, '');
     if (target.fail && FAILING_PATHS.includes(path)) {
       return route.fulfill({
         status: 500,
@@ -126,7 +149,7 @@ async function shoot(browser, target, theme) {
         body: JSON.stringify({ error: 'Internal server error' }),
       });
     }
-    const body = target.empty && path in EMPTY_BODIES ? EMPTY_BODIES[path] : bodyFor(path);
+    const body = target.empty && path in EMPTY_BODIES ? EMPTY_BODIES[path] : fx.bodyFor(path, url.searchParams);
     return route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -153,7 +176,7 @@ async function shoot(browser, target, theme) {
 
   if (target.act) {
     try {
-      await target.act(page);
+      await target.act(page, fx);
     } catch (err) {
       problems.push(`act failed: ${err.message.split('\n')[0]}`);
     }
@@ -185,16 +208,31 @@ let failures = 0;
 try {
   devServer = await startDevServer(ROOT, BASE_URL);
   const browser = await launchBrowser();
-  if (!auditOnly) rmSync(outDir, { recursive: true, force: true });
+  let shots = 0;
 
-  for (const target of selected) {
-    for (const theme of auditOnly ? ['light'] : themes) {
-      const problems = await shoot(browser, target, theme);
-      if (!auditOnly) {
-        const status = problems.length ? `⚠ ${problems[0]}` : 'ok';
-        process.stdout.write(`  ${target.name}.${theme}  ${status}\n`);
+  for (const persona of personas.length ? personas : [null]) {
+    const fx = persona ? await loadPersona(persona) : { ...defaultFixtures, shotAircraft: [] };
+    const outDir = persona ? join(ROOT, '.screenshots', label, persona) : join(ROOT, '.screenshots', label);
+    if (!auditOnly) rmSync(outDir, { recursive: true, force: true });
+    if (persona) {
+      process.stdout.write(`${persona}\n`);
+      for (const m of fx.profileMismatches) process.stdout.write(`  ! pilot profile ${m}\n`);
+    }
+
+    for (const target of selected) {
+      if (target.skip?.(fx)) {
+        if (!auditOnly) process.stdout.write(`  ${target.name}  skipped (not applicable)\n`);
+        continue;
       }
-      if (problems.length) failures++;
+      for (const theme of auditOnly ? ['light'] : themes) {
+        const problems = await shoot(browser, target, theme, fx, outDir);
+        shots++;
+        if (!auditOnly) {
+          const status = problems.length ? `⚠ ${problems[0]}` : 'ok';
+          process.stdout.write(`  ${target.name}.${theme}  ${status}\n`);
+        }
+        if (problems.length) failures++;
+      }
     }
   }
 
@@ -202,7 +240,7 @@ try {
   if (auditOnly) {
     console.log(`\n${selected.length} screens audited at ${viewport.width}×${viewport.height}.`);
   } else {
-    console.log(`\n${selected.length * themes.length} shots → .screenshots/${label}/`);
+    console.log(`\n${shots} shots → .screenshots/${label}/`);
     if (failures) console.log(`${failures} shot(s) reported a page error — check them before shipping.`);
   }
 } finally {
