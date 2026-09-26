@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar, Clock, Layers, AlertTriangle, ArrowRight } from 'lucide-react';
-import type { ClassRatingCurrency, ClassType, CurrencyRequirement, RatingCurrencyStatus } from '../../types/api';
+import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar, Clock, Layers, AlertTriangle, ArrowRight, CornerDownRight } from 'lucide-react';
+import type { ClassRatingCurrency, ClassType, CurrencyRemedy, CurrencyRequirement, RatingCurrencyStatus } from '../../types/api';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useCurrencyMessages } from '../../lib/currencyMessages';
 import { ratingStatus } from '../../lib/ratingStatus';
@@ -53,7 +53,41 @@ const STATUS_CONFIG: Record<RatingCurrencyStatus, {
   },
 };
 
-function RequirementBar({ req }: { req: CurrencyRequirement }) {
+/** Validity of a met row, or what restores an unmet one. */
+function RowFootnote({ met, validUntil, remedy, showRemedy, testId }: {
+  met: boolean;
+  validUntil?: string | null;
+  remedy: CurrencyRemedy;
+  showRemedy: boolean;
+  testId: string;
+}) {
+  const { t } = useTranslation('currency');
+  const messages = useCurrencyMessages();
+  if (met && validUntil) {
+    return (
+      <p className="text-xs text-slate-500 dark:text-slate-400 text-right tabular-nums" data-testid={`${testId}-valid-until`}>
+        {messages.validUntil(validUntil)}
+      </p>
+    );
+  }
+  if (!met && showRemedy && remedy.remedyKey) {
+    return (
+      <p
+        className="text-xs text-amber-800 dark:text-amber-300 inline-flex items-start gap-1.5"
+        data-testid={`${testId}-remedy`}
+      >
+        <CornerDownRight className="w-3.5 h-3.5 mt-px shrink-0" aria-hidden="true" />
+        <span>
+          <span className="sr-only">{t('remedyLabel')}: </span>
+          {messages.remedy(remedy)}
+        </span>
+      </p>
+    );
+  }
+  return null;
+}
+
+function RequirementBar({ req, showRemedy }: { req: CurrencyRequirement; showRemedy: boolean }) {
   const { requirementName, requirementProgress } = useCurrencyMessages();
   const pct = req.required > 0 ? Math.min((req.current / req.required) * 100, 100) : 0;
   const barColor = req.met
@@ -82,6 +116,7 @@ function RequirementBar({ req }: { req: CurrencyRequirement }) {
           data-testid={`progress-bar-${id}`}
         />
       </div>
+      <RowFootnote met={req.met} validUntil={req.validUntil} remedy={req} showRemedy={showRemedy} testId={`requirement-${id}`} />
     </div>
   );
 }
@@ -95,8 +130,9 @@ interface CurrencyCardProps {
 export function CurrencyCard({ rating }: CurrencyCardProps) {
   const { t } = useTranslation('currency');
   const { fmtDate } = useFormatPrefs();
-  const { currencyMessage } = useCurrencyMessages();
+  const { currencyMessage, launchMethod } = useCurrencyMessages();
   const status = ratingStatus(rating.status);
+  const showRemedies = status !== 'current';
   const config = STATUS_CONFIG[status];
   const StatusIcon = config.Icon;
   const label = t(`classTypes.${rating.classType}`, { defaultValue: rating.classType });
@@ -220,7 +256,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
       {rating.requirements && rating.requirements.length > 0 && (
         <div className="space-y-2">
           {rating.requirements.map((req) => (
-            <RequirementBar key={req.nameKey ?? req.name} req={req} />
+            <RequirementBar key={req.nameKey ?? req.name} req={req} showRemedy={showRemedies} />
           ))}
         </div>
       )}
@@ -230,20 +266,31 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
         <div className="mt-3 space-y-1" data-testid="launch-method-currency">
           <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('launchMethod')}</p>
           {rating.launchMethodCurrency.map((lmc) => (
-            <div key={lmc.method} className="flex justify-between items-center text-xs" data-testid={`launch-method-${lmc.method}`}>
-              <span className="text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
-                <RequirementIcon met={lmc.met} />
-                {t(`launchMethods.${lmc.method === 'self-launch' ? 'selfLaunch' : lmc.method}`, {
-                  ns: 'flights',
-                  defaultValue: lmc.method,
-                })}
-              </span>
-              <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
-                {currencyMessage(lmc, { current: lmc.launches, required: lmc.required })}
-              </span>
+            <div key={lmc.method} className="space-y-0.5" data-testid={`launch-method-${lmc.method}`}>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
+                  <RequirementIcon met={lmc.met} />
+                  {launchMethod(lmc.method)}
+                </span>
+                <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
+                  {currencyMessage(lmc, { current: lmc.launches, required: lmc.required })}
+                </span>
+              </div>
+              <RowFootnote met={lmc.met} validUntil={lmc.validUntil} remedy={lmc} showRemedy testId={`launch-method-${lmc.method}`} />
             </div>
           ))}
         </div>
+      )}
+
+      {/* Rolling recency: last day current without flying again */}
+      {rating.validUntil && status === 'current' && (
+        <p
+          className="text-xs text-slate-500 dark:text-slate-400 mt-3 text-right inline-flex items-center gap-1 justify-end w-full"
+          data-testid="currency-valid-until"
+        >
+          <Calendar className="w-3 h-3" aria-hidden="true" />
+          {t('ratingValidUntil', { date: fmtDate(rating.validUntil) })}
+        </p>
       )}
 
       {/* Expiry date */}

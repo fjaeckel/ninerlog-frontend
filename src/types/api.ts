@@ -257,6 +257,19 @@ export interface CurrencyMessageParams {
   days?: number;
   needed?: number;
   date?: string;
+  /** Outstanding amount a remedy asks for, in `unit`. */
+  missing?: number;
+  /** Unit of `missing`: minutes, landings, launches, flights, approaches, holds. */
+  unit?: string;
+  /** Launch method a remedy refers to. */
+  method?: string;
+}
+
+/** What restores an unmet row; see ninerlog-api docs/CURRENCY_MESSAGES.md "Remedies". */
+export interface CurrencyRemedy {
+  /** Key into currency.json `messages` (e.g. "remedy.fly_more"). */
+  remedyKey?: string;
+  remedyParams?: CurrencyMessageParams;
 }
 
 export interface CurrencyRequirement {
@@ -273,6 +286,10 @@ export interface CurrencyRequirement {
   /** Key into currency.json `messages` (e.g. "requirement.progress"). */
   messageKey?: string;
   messageParams?: CurrencyMessageParams;
+  /** Rolling-window rules: the last date a met row stays met without flying again. */
+  validUntil?: string | null;
+  remedyKey?: string;
+  remedyParams?: CurrencyMessageParams;
 }
 
 export interface CurrencyProgress {
@@ -328,6 +345,8 @@ export interface ClassRatingCurrency {
   creditedUltralightKinds?: ULKind[];
   /** Flights on ULTRALIGHT aircraft with no kind that this German UL rating did not count. Absent when zero. */
   unclassifiedFlights?: number;
+  /** Rolling-window rules: the last date a `current` rating stays current without flying again. */
+  validUntil?: string | null;
 }
 
 export interface LaunchMethodCurrency {
@@ -339,6 +358,10 @@ export interface LaunchMethodCurrency {
   message: string;
   /** Always "launch_method.progress". */
   messageKey?: string;
+  /** The last date a met method stays met without flying again. */
+  validUntil?: string | null;
+  remedyKey?: string;
+  remedyParams?: CurrencyMessageParams;
 }
 
 export interface CurrencyStatusResponse {

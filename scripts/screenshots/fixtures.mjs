@@ -4,6 +4,8 @@
  * too. The clock is pinned: every date derives from TODAY, not `new Date()`.
  */
 
+import { deriveReadiness } from './personas/build.mjs';
+
 const TODAY = new Date('2026-08-16T10:00:00Z');
 const iso = (d) => new Date(d).toISOString();
 const shift = (days) => new Date(TODAY.getTime() + days * 86_400_000).toISOString();
@@ -404,6 +406,27 @@ export const currency = {
   flightReview: { lastCompleted: '2025-04-18', expiresOn: '2027-04-30', status: 'current', messageKey: 'flight_review.current', messageParams: { date: '2025-04-18' } },
 };
 
+// Remedies on every unmet regulatory row and launch method (CURRENCY_MESSAGES.md "Remedies").
+for (const r of currency.ratings) {
+  for (const q of r.requirements ?? []) {
+    if (q.met || q.nameKey === 'requirement.flight_review') continue;
+    if (q.nameKey === 'requirement.proficiency_check') q.remedyKey = 'remedy.proficiency_check';
+    else if (q.nameKey === 'requirement.training_flight' || q.nameKey === 'requirement.tmg_training_flight') q.remedyKey = 'remedy.training_flight';
+    else Object.assign(q, { remedyKey: 'remedy.fly_more', remedyParams: { missing: q.required - q.current, unit: q.unit } });
+  }
+  for (const m of r.launchMethodCurrency ?? []) {
+    if (!m.met) Object.assign(m, { remedyKey: 'remedy.launch_method_dual', remedyParams: { method: m.method, missing: m.required - m.launches } });
+  }
+}
+// Rolling-window projection on the SPL rating (DOMAIN.md "Recency projection").
+{
+  const spl = currency.ratings.find((r) => r.classRatingId === 'cr3');
+  spl.validUntil = day(210);
+  const until = { 'requirement.flight_time': day(400), 'requirement.launches': day(210), 'requirement.training_flights': day(300) };
+  for (const q of spl.requirements) if (until[q.nameKey]) q.validUntil = until[q.nameKey];
+  spl.launchMethodCurrency.find((m) => m.method === 'winch').validUntil = day(380);
+}
+
 export const adminStats = {
   totalUsers: 128, totalFlights: 9421, totalSimulatorSessions: 486, totalPassengerFlights: 132,
   totalAircraft: 312, totalContacts: 517, activeSessions: 194, totalCredentials: 244,
@@ -795,9 +818,10 @@ const ROUTES = {
  * The body to serve for an API path, or null when nothing matches (still
  * answered 200).
  */
-export function bodyFor(pathname) {
+export function bodyFor(pathname, search = new URLSearchParams()) {
   const path = pathname.replace(/^.*\/api\/v1/, '');
   if (path in ROUTES) return ROUTES[path];
+  if (path === '/currency/readiness') return deriveReadiness(currency, aircraft, credentials, search);
 
   const classRatingsMatch = path.match(/^\/licenses\/([^/]+)\/(?:class-)?ratings$/);
   if (classRatingsMatch) return classRatings[classRatingsMatch[1]] ?? [];

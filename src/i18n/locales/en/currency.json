@@ -267,6 +267,61 @@
     },
     "launch_method": {
       "progress": "{{current}} / {{required}} launches"
+    },
+    "remedy": {
+      "fly_more": "Fly {{amount}}",
+      "training_flight": "Fly one training flight of at least 1 h with an instructor",
+      "proficiency_check": "Take a proficiency check with an examiner",
+      "launch_method_dual_one": "Fly 1 more launch dual or supervised solo ({{method}})",
+      "launch_method_dual_other": "Fly {{count}} more launches dual or supervised solo ({{method}})"
+    },
+    "readiness": {
+      "launch_method_current": "Current until {{date}}",
+      "credential_valid": "Valid until {{date}}",
+      "credential_expired": "Expired on {{date}}"
     }
+  },
+  "remedyAmount": {
+    "minutes": "another {{duration}}",
+    "landings_one": "1 more take-off and landing",
+    "landings_other": "{{count}} more take-offs and landings",
+    "launches_one": "1 more launch",
+    "launches_other": "{{count}} more launches",
+    "flights_one": "1 more flight",
+    "flights_other": "{{count}} more flights",
+    "approaches_one": "1 more instrument approach",
+    "approaches_other": "{{count}} more instrument approaches",
+    "holds_one": "1 more holding procedure",
+    "holds_other": "{{count}} more holding procedures"
+  },
+  "remedyUnrecognised": "Fly the missing experience to restore this.",
+  "remedyLabel": "To restore",
+  "validUntil": "valid until {{date}}",
+  "ratingValidUntil": "Current until {{date}}",
+  "readinessCredentialValidNoExpiry": "Valid — no expiry date",
+  "readiness": {
+    "title": "Ready to fly?",
+    "date": "Date",
+    "aircraft": "Aircraft",
+    "allRatings": "All ratings",
+    "withPassengers": "With passengers",
+    "solo": "Solo",
+    "passengers": "Passengers",
+    "medical": "Medical",
+    "ready": "ready",
+    "notReady": "not ready",
+    "allReady": "Everything is current on {{day}}.",
+    "someNotReady": "Not everything is current on {{day}}.",
+    "noItems": "No rating of yours covers this aircraft.",
+    "unknownAircraft": "This aircraft is no longer in your fleet. Choose another one.",
+    "dateOutOfRange": "Choose a date between today and {{max}}.",
+    "loadFailed": "Readiness could not be checked. Try again in a moment.",
+    "retry": "Try again",
+    "basis": "Counts the flights already logged, as if you do not fly before then."
+  },
+  "seasonPlanner": {
+    "title": "To fly again",
+    "subtitle": "What restores each lapsed rating and launch method.",
+    "orAlternative": "Alternatively:"
   }
 }

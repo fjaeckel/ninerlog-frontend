@@ -11,6 +11,7 @@ import { useTrends, fillTrendMonths } from '../hooks/useTrends';
 import { useAircraftStats } from '../hooks/useAircraft';
 import { CurrencyCard } from '../components/currency/CurrencyCard';
 import { AircraftDueCard } from '../components/aircraft/AircraftDueCard';
+import { ReadinessCard } from '../components/currency/ReadinessCard';
 import { StatCard } from '../components/ui/StatCard';
 import { PageWrapper } from '../components/ui/PageWrapper';
 import { useFormatPrefs } from '../hooks/useFormatPrefs';
@@ -82,6 +83,8 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
+
+      <ReadinessCard />
 
       {/* Currency Status — per class rating */}
       {currencyStatus && currencyStatus.ratings.length > 0 && (
