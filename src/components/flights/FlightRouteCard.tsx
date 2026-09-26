@@ -50,6 +50,23 @@ export default function FlightRouteCard({ flight }: { flight: Flight }) {
     });
   }
 
+  if (flight.launchesOverride || (flight.launchMethod && flight.launches > 0)) {
+    meta.push({
+      label: t('facts.launches'),
+      value: flight.launchesOverride ? t('facts.launchesSeries', { value: flight.launches }) : String(flight.launches),
+      mono: true,
+    });
+  }
+  if (flight.releaseHeightM != null) {
+    meta.push({ label: t('facts.releaseHeight'), value: t('facts.releaseHeightValue', { value: flight.releaseHeightM }), mono: true });
+  }
+  if (flight.isOutlanding) {
+    meta.push({ label: t('facts.outlanding'), value: t('facts.yes') });
+  }
+  if (flight.isTowFlight) {
+    meta.push({ label: t('facts.towFlight'), value: t('facts.yes') });
+  }
+
   return (
     <div className="card">
       <h2 className="section-title mb-4">

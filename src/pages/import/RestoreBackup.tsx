@@ -199,6 +199,9 @@ export default function RestoreBackup() {
             {result.licencePrivilegesImported > 0 && (
               <SummaryCard label={t('restoreSummaryLicencePrivileges')} value={result.licencePrivilegesImported} color="green" />
             )}
+            {result.flightFilesImported > 0 && (
+              <SummaryCard label={t('restoreSummaryFlightFiles')} value={result.flightFilesImported} color="green" />
+            )}
             <SummaryCard label={t('restoreSummaryCredentials')} value={result.credentialsImported} color="green" />
             <SummaryCard label={t('restoreSummaryFlights')} value={result.flightsImported} color="green" />
             <SummaryCard label={t('restoreSummaryCrew')} value={result.crewMembersImported} color="green" />

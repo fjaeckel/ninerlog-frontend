@@ -2,7 +2,7 @@ import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from 'rea
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
-import { Archive, ArrowDown, ArrowRight, ArrowUp, BookmarkPlus, FileSpreadsheet, ListFilter, Loader2, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
+import { Archive, ArrowDown, ArrowRight, ArrowUp, BookmarkPlus, FileSpreadsheet, FileUp, ListFilter, Loader2, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { useFlights, useInfiniteFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
@@ -26,6 +26,8 @@ import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, landingsText, launchMethodText, FLIGHT_FUNCTION_BADGE, rowClockTimes } from '../../components/flights/flightTableColumns';
 import { useFlightColumnRelevance } from '../../hooks/useFlightColumnRelevance';
+import { useRelevance } from '../../lib/relevance';
+import { igcImportPath } from '../../lib/igc';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
 import type { components, operations } from '../../api/schema';
@@ -121,6 +123,7 @@ export default function FlightsPage() {
   const columnPrefs = useFlightColumnPrefs();
   const selfName = useAuthStore((s) => s.user?.name);
   const navigate = useNavigate();
+  const igcImport = useRelevance('flight.igcImport');
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
   const { data: logbookMode } = useLogbookMode();
@@ -479,6 +482,12 @@ export default function FlightsPage() {
             <BookmarkPlus className="w-4 h-4" aria-hidden="true" />
             <span className="sr-only sm:not-sr-only">{t('flights:saveAsReport')}</span>
           </button>
+          {igcImport.visible && (
+            <Link to={igcImportPath()} title={t('flights:igc.entry')} className={TOOLBAR_ACTION}>
+              <FileUp className="w-4 h-4" aria-hidden="true" />
+              <span className="sr-only sm:not-sr-only">{t('flights:igc.entry')}</span>
+            </Link>
+          )}
           <button
             onClick={exportCsv}
             disabled={exportingCsv}

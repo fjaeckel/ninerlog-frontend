@@ -6,7 +6,7 @@
 import {
   makeUser, aircraftRecord, licence, classRating, credential, flight, rng, between, pick, weekends, addTime, day, daysAgo, iso,
   tally, req, profCheck, recencyStatus, easaPax, launchMethodRows, distanceNm,
-  privilege, privilegeReq, privilegeCurrency, untracked
+  privilege, privilegeReq, privilegeCurrency, untracked, igcFile
 } from './build.mjs';
 
 const user = makeUser({ id: 'u1', email: 'petra.lindner@example.com', name: 'Dr. Petra Lindner', createdAt: iso('2024-11-02') });
@@ -79,11 +79,18 @@ function season(seed, from, to) {
   return out;
 }
 
-const flights = [
+/** Engine-stop height on the newest self-launch, as the IGC import writes it. */
+function withReleaseHeight(list) {
+  const newest = list.filter((f) => f.aircraftReg === 'D-KXYZ' && f.launchMethod === 'self-launch')
+    .sort((a, b) => b.date.localeCompare(a.date))[0];
+  return list.map((f) => (f === newest ? { ...f, releaseHeightM: 412 } : f));
+}
+
+const flights = withReleaseHeight([
   ...season(2025, '2025-04-05', '2025-10-12'),
   ...season(2026, '2026-04-04', day(0)),
   flight({ date: '2026-03-21', reg: 'D-EPTW', type: 'DR40', from: 'EDQD', to: 'EDQM', offBlock: '09:50', onBlock: '11:15', depTime: '10:00', minutes: 75, role: 'dual', landings: 3, distance: distanceNm(airports, 'EDQD', 'EDQM'), crew: [{ name: 'Rainer Engel', role: 'Instructor' }], instructorName: 'Rainer Engel', remarks: 'FCL.740.A refresher training' }),
-];
+]);
 
 const isGlider = (f, ac) => ac?.aircraftClass === 'GLIDER';
 const isSEP = (f, ac) => ac?.aircraftClass === 'SEP_LAND';
@@ -143,8 +150,25 @@ function currency(fl, acByReg) {
   };
 }
 
+/** IGC files on her two newest ASG 29E flights (P2). */
+function flightFiles(list) {
+  const own = list.filter((f) => f.aircraftReg === 'D-KXYZ').slice(0, 2);
+  return Object.fromEntries(own.map((f, i) => [f.id, [igcFile(f, 1, `${f.date}-LXN-3GP-0${i + 1}.igc`, 812_344 - i * 97_120)]]));
+}
+
+/** Preview of a self-launched out-and-return that ends in an outlanding (P2). */
+const igcPreview = {
+  date: day(-3), takeoffTime: '10:52:14', landingTime: '16:41:08', landingDetected: true, durationMinutes: 349,
+  launchMethod: 'self-launch', launchMethodConfidence: 0.9, releaseHeightM: 438, maxAltitudeM: 2386,
+  freeDistanceKm: 243.6, outAndReturnDistanceKm: 487.2, outlanding: true,
+  departure: { icao: 'EDQD', name: 'Bayreuth', lat: 49.985, lon: 11.64 },
+  arrival: { lat: 49.76213, lon: 11.54871 },
+  gliderRegistration: 'D-KXYZ', gliderType: 'ASG 29E', pilot: 'Petra Lindner',
+};
+
 export default {
   id: 'petra',
+  flightFiles, igcPreview,
   user, aircraft, licenses, classRatings, privileges, credentials, contacts, flights, currency, airports,
   profileSettings: { disciplines: Object.fromEntries(['SAILPLANE', 'AEROPLANE', 'INSTRUCTOR'].map((d) => [d, { acknowledgedAt: iso('2024-11-02T18:00:00Z') }])) },
   expectedDisciplines: { SAILPLANE: 'active', AEROPLANE: 'active', INSTRUCTOR: 'active' },

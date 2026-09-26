@@ -6,7 +6,7 @@
 import {
   makeUser, aircraftRecord, licence, classRating, credential, flight, rng, pick, between, weekends,
   addTime, day, iso, tally, rollingReq, profCheck, recencyStatus, easaPax, launchMethodRows,
-  privilege, privilegeCurrency
+  privilege, privilegeCurrency, igcFile
 } from './build.mjs';
 
 const user = makeUser({ id: 'u1', email: 'lena.hoffmann@example.com', name: 'Lena Hoffmann', createdAt: iso('2025-03-20') });
@@ -75,10 +75,20 @@ function aerotowShortfall(list) {
   return list.map((f) => (f.launchMethod === 'aerotow' && !keep.has(f) ? { ...f, launchMethod: 'winch' } : f));
 }
 
-const flights = aerotowShortfall([
+/** Release height on the newest flight, the one with an IGC file. */
+function withReleaseHeight(list) {
+  const key = (f) => `${f.date} ${f.departureTime ?? ''}`;
+  const newest = list.reduce((a, b) => (key(b) > key(a) ? b : a));
+  return list.map((f) => (f === newest ? { ...f, releaseHeightM: f.launchMethod === 'winch' ? 430 : 610 } : f));
+}
+
+const flights = withReleaseHeight(aerotowShortfall([
   ...season(2025, '2025-04-05', '2025-10-12', 0.3),
   ...season(2026, '2026-04-04', day(0), 0.38),
-]);
+]));
+
+/** An IGC file on her newest flight. */
+const flightFiles = (list) => (list[0] ? { [list[0].id]: [igcFile(list[0], 1, `${list[0].date}-XCS-AAA-01.igc`, 188_416)] } : {});
 
 const isGlider = (f, ac) => ac?.aircraftClass === 'GLIDER';
 
@@ -104,6 +114,7 @@ function currency(fl, acByReg) {
 
 export default {
   id: 'lena',
+  flightFiles,
   user, aircraft, licenses, classRatings, privileges, credentials, contacts, flights, currency,
   profileSettings: { disciplines: { SAILPLANE: { acknowledgedAt: iso('2025-04-05T18:00:00Z') } } },
   expectedDisciplines: { SAILPLANE: 'active' },

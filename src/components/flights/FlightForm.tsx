@@ -22,6 +22,7 @@ import { crewDerivedNames, toCrewInputs } from './crewRoles';
 import { AIRCRAFT_CLASSES, classFromRegistration } from '../../lib/aircraftClass';
 import { isSailplane, LAUNCH_METHODS } from '../../lib/launchMethod';
 import { launchMethodKey } from '../../lib/currencyMessages';
+import { IgcImportEntry } from './igc/IgcImportEntry';
 import { UL_AIRCRAFT_KINDS, type ULKind } from '../../lib/ultralight';
 import { logsAirborneTimes, useRelevance, type RelevanceCtx } from '../../lib/relevance';
 import { FoldDrawer, FoldScope, Relevant } from '../relevance';
@@ -1100,6 +1101,7 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
         ) : (
           launchFields
         ))}
+      {!isSim && <IgcImportEntry aircraft={currentAircraft} flightId={flightId ?? undefined} />}
 
       {/* Session — the device and its duration stand in for route and block times */}
       {isSim && (

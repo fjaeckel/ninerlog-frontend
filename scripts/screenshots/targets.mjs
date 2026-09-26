@@ -77,6 +77,7 @@ const RESTORE_SUCCESS = {
     aircraftImported: 3, aircraftSkipped: 0, licensesImported: 2, classRatingsImported: 4,
     credentialsImported: 2, flightsImported: 214, crewMembersImported: 31, contactsImported: 12,
     flightRevisionsImported: 37, logbookCertificationsImported: 5, licencePrivilegesImported: 3, pilotProfileImported: true,
+    flightFilesImported: 4, flightFilesSkipped: 0,
     contactsSkipped: 0, contactsCreated: 3, customCurrencyRulesImported: 2, customReportsImported: 2,
     notificationPreferencesImported: true, flightBaselineImported: true, mode: 'restore',
     warnings: [
@@ -478,6 +479,21 @@ export const TARGETS = [
   },
   { name: 'flights-voided', path: '/flights/voided' },
   { name: 'flight-history-voided', path: '/flights/fv1/history' },
+  { name: 'igc-import', path: '/flights/import-igc' },
+  {
+    name: 'igc-import-preview',
+    path: '/flights/import-igc',
+    skip: (fx) => !fx.igcPreview,
+    act: async (page) => {
+      await page.locator('input[type="file"]').setInputFiles({
+        name: '2026-08-13-LXN-3GP-01.igc',
+        mimeType: 'application/octet-stream',
+        buffer: Buffer.from('AXXX\r\nHFDTE130826\r\n'),
+      });
+      await page.getByTestId('igc-summary').waitFor();
+      await page.waitForTimeout(300);
+    },
+  },
   { name: 'flight-detail-simulator', path: '/flights/f6' },
   { name: 'flight-detail-signed', path: '/flights/f2' },
   {
