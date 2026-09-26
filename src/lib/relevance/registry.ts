@@ -1,5 +1,7 @@
 import type { components } from '../../api/schema';
 import type { Discipline } from '../../hooks/usePilotProfile';
+import { normalizeAircraftClass } from '../aircraftClass';
+import { isSailplane } from '../launchMethod';
 
 export type Aircraft = components['schemas']['Aircraft'];
 
@@ -110,6 +112,18 @@ export const FEATURES = defineFeatures([
   { id: 'column.examinerTime', kind: 'column', serves: ['INSTRUCTOR'], columnBoost: 1 },
   { id: 'column.simulatedFlightTime', kind: 'column', serves: ['SIMULATOR'] },
   { id: 'column.launch', kind: 'column', serves: ['SAILPLANE'], hasData: anyTrue('hasValue') },
+  {
+    id: 'flight.circuitsMode',
+    kind: 'section',
+    serves: ['SAILPLANE'],
+    aircraftMatch: isSailplane,
+  },
+  {
+    id: 'quicklog.airborneFirst',
+    kind: 'section',
+    serves: ['SAILPLANE', 'TMG', 'ULTRALIGHT'],
+    aircraftMatch: (ac) => ['GLIDER', 'TMG', 'ULTRALIGHT'].includes(normalizeAircraftClass(ac.aircraftClass)),
+  },
 ]);
 
 export type FeatureId = (typeof FEATURES)[number]['id'];

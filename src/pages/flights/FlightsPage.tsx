@@ -6,6 +6,8 @@ import { useFlights, useInfiniteFlights, useDeleteFlight } from '../../hooks/use
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
 import FlightForm from '../../components/flights/FlightForm';
+import { FlightSavedNotice, type SavedFlights } from '../../components/flights/FlightSavedNotice';
+import { prefillFromFlight, type FlightPrefill } from '../../components/flights/logAnother';
 import FlightCard from '../../components/flights/FlightCard';
 import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { CustomReportDialog } from '../../components/reports/CustomReportDialog';
@@ -155,6 +157,8 @@ export default function FlightsPage() {
     return !!state?.openForm;
   });
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
+  const [saved, setSaved] = useState<SavedFlights | null>(null);
+  const [prefill, setPrefill] = useState<FlightPrefill | null>(null);
   // Filters restored from the URL start expanded.
   const [showFilters, setShowFilters] = useState(
     () => !!(startDate || endDate || aircraftReg || departureIcao || arrivalIcao || functionFilter)
@@ -324,6 +328,7 @@ export default function FlightsPage() {
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingFlight(null);
+    setPrefill(null);
   };
 
   const toggleSort = (field: SortField) => {
@@ -563,8 +568,20 @@ export default function FlightsPage() {
         title={editingFlight ? t('flights:editFlight') : t('flights:logNewFlight')}
         size="xl"
       >
-        <FlightForm flightId={editingFlight} onClose={handleCloseForm} />
+        <FlightForm flightId={editingFlight} onClose={handleCloseForm} prefill={prefill} onSaved={setSaved} />
       </FormModal>
+      {saved && !showForm && (
+        <FlightSavedNotice
+          saved={saved}
+          onDismiss={setSaved}
+          onLogAnother={(flight) => {
+            setSaved(null);
+            setEditingFlight(null);
+            setPrefill(prefillFromFlight(flight));
+            setShowForm(true);
+          }}
+        />
+      )}
 
       {/* Flight List */}
       {flights.length === 0 ? (
