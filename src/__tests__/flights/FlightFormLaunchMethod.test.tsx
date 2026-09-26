@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import FlightForm from '../../components/flights/FlightForm';
 import * as useFlightsHook from '../../hooks/useFlights';
 import * as useAircraftHook from '../../hooks/useAircraft';
+import * as pilotProfileHook from '../../hooks/usePilotProfile';
+import { gliderProfile } from '../../test/pilotProfile';
 
 const renderWithProviders = (component: React.ReactElement) => {
   const queryClient = new QueryClient({
@@ -47,7 +49,7 @@ const flight = (overrides: Record<string, unknown> = {}) => ({
 
 const hookResult = <T extends (...args: never[]) => unknown>(_hook: T, value: unknown) => value as ReturnType<T>;
 
-const launchMethodGroup = () => screen.queryByRole('group', { name: 'Launch Method' });
+const launchMethodGroup = () => screen.queryByRole('combobox', { name: 'Launch Method' });
 
 describe('FlightForm — launch method, fill from last flight, quick-add', () => {
   const mockCreateAircraft = { mutateAsync: vi.fn(), isPending: false };
@@ -67,6 +69,7 @@ describe('FlightForm — launch method, fill from last flight, quick-add', () =>
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue(hookResult(useAircraftHook.useAircraft, { data: fleet, isLoading: false, error: null }));
     vi.spyOn(useAircraftHook, 'useCreateAircraft').mockReturnValue(hookResult(useAircraftHook.useCreateAircraft, mockCreateAircraft));
     mockLastFlight(undefined);
+    vi.spyOn(pilotProfileHook, 'useDisciplines').mockReturnValue(pilotProfileHook.resolveDisciplines(gliderProfile(), false));
   });
 
   describe('launch method', () => {
@@ -81,7 +84,7 @@ describe('FlightForm — launch method, fill from last flight, quick-add', () =>
       renderWithProviders(<FlightForm onClose={vi.fn()} />);
       await user.type(screen.getByLabelText(/aircraft registration/i), reg);
       if (shown) {
-        expect(await screen.findByRole('group', { name: 'Launch Method' })).toBeInTheDocument();
+        expect(await screen.findByRole('combobox', { name: 'Launch Method' })).toBeInTheDocument();
         expect(screen.getByText(/launches are counted per method/i)).toBeInTheDocument();
       } else {
         expect(launchMethodGroup()).not.toBeInTheDocument();
@@ -95,7 +98,7 @@ describe('FlightForm — launch method, fill from last flight, quick-add', () =>
       }));
       renderWithProviders(<FlightForm flightId="f1" onClose={vi.fn()} />);
 
-      expect(await screen.findByRole('group', { name: 'Launch Method' })).toBeInTheDocument();
+      expect(await screen.findByRole('combobox', { name: 'Launch Method' })).toBeInTheDocument();
       await waitFor(() => {
         expect((document.getElementById('launchMethod') as HTMLSelectElement).value).toBe('winch');
       });
@@ -117,7 +120,7 @@ describe('FlightForm — launch method, fill from last flight, quick-add', () =>
       expect((screen.getByLabelText(/aircraft registration/i) as HTMLInputElement).value).toBe('D-5812');
       expect((screen.getByLabelText(/departure/i) as HTMLInputElement).value).toBe('EDNY');
       expect((screen.getByLabelText(/arrival/i) as HTMLInputElement).value).toBe('EDNY');
-      expect(await screen.findByRole('group', { name: 'Launch Method' })).toBeInTheDocument();
+      expect(await screen.findByRole('combobox', { name: 'Launch Method' })).toBeInTheDocument();
       expect((document.getElementById('launchMethod') as HTMLSelectElement).value).toBe('winch');
       expect(screen.getAllByText('Hanna Reitsch').length).toBeGreaterThan(0);
     });

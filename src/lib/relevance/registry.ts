@@ -1,7 +1,8 @@
 import type { components } from '../../api/schema';
-import type { Discipline } from '../../hooks/usePilotProfile';
+import type { Discipline, Disciplines } from '../../hooks/usePilotProfile';
 import { normalizeAircraftClass } from '../aircraftClass';
 import { isSailplane } from '../launchMethod';
+import { FLIGHT_FEATURES } from './flightFeatures';
 
 export type Aircraft = components['schemas']['Aircraft'];
 
@@ -24,6 +25,11 @@ export interface FeatureDef<Id extends string = string> {
   aircraftMatch?: (ac: Aircraft) => boolean;
   /** True when the record already holds data for the element; always shows it. */
   hasData?: (ctx: RelevanceCtx) => boolean;
+  /**
+   * Replaces the aircraft and discipline steps when set: shown when it returns true.
+   * For rules `serves` cannot express (a discipline in training, two disciplines together).
+   */
+  relevantWhen?: (d: Disciplines, ctx: RelevanceCtx) => boolean;
   /** Column priority added in automatic column mode. */
   columnBoost?: number;
 }
@@ -60,6 +66,8 @@ const anyTrue = (...keys: string[]) => (ctx: RelevanceCtx) => keys.some((k) => c
 
 /** Every adaptive element in the app. */
 export const FEATURES = defineFeatures([
+  ...FLIGHT_FEATURES,
+
   // Dashboard
   { id: 'dashboard.ifrTile', kind: 'dashboardCard', serves: ['IFR'], hasData: positive('ifrMinutes') },
   { id: 'dashboard.nightTile', kind: 'dashboardCard', serves: POWERED, hasData: positive('nightMinutes') },
