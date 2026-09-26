@@ -5,7 +5,7 @@
  */
 import {
   makeUser, aircraftRecord, licence, classRating, credential, flight, rng, between, pick, addDays, day, daysAgo, iso,
-  tally, req, profCheck, recencyStatus, easaPax, ulPax, distanceNm
+  tally, req, rollingReq, profCheck, recencyStatus, easaPax, ulPax, distanceNm
 } from './build.mjs';
 
 const user = makeUser({ id: 'u1', email: 'mehmet.yilmaz@example.com', name: 'Mehmet Yılmaz', createdAt: iso('2024-04-14') });
@@ -85,10 +85,10 @@ const isSEP = (f, ac) => ac?.aircraftClass === 'SEP_LAND';
 function currency(fl, acByReg) {
   const ul = tally(fl, acByReg, (f, ac) => isThreeAxis(f, ac) || isSEP(f, ac), 730);
   const ulReqs = [
-    req('requirement.total_time', ul.minutes, 720, 'minutes'),
-    req('requirement.pic_time', ul.pic, 360, 'minutes'),
-    req('requirement.landings', ul.landings, 12, 'landings'),
-    req('requirement.training_flight', ul.longestTraining, 60, 'minutes'),
+    rollingReq('requirement.total_time', ul, 'minutes', 720, 'minutes'),
+    rollingReq('requirement.pic_time', ul, 'pic', 360, 'minutes'),
+    rollingReq('requirement.landings', ul, 'landings', 12, 'landings'),
+    rollingReq('requirement.training_flight', ul, 'longestTraining', 60, 'minutes'),
     profCheck(),
   ];
   const sep = tally(fl, acByReg, (f, ac) => isThreeAxis(f, ac) || isSEP(f, ac), daysAgo('2025-12-15'));

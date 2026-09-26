@@ -5,7 +5,7 @@
  */
 import {
   makeUser, aircraftRecord, licence, classRating, credential, flight, rng, pick, between, weekends,
-  addTime, day, iso, tally, req, profCheck, recencyStatus, easaPax, launchMethodRows
+  addTime, day, iso, tally, rollingReq, profCheck, recencyStatus, easaPax, launchMethodRows
 } from './build.mjs';
 
 const user = makeUser({ id: 'u1', email: 'lena.hoffmann@example.com', name: 'Lena Hoffmann', createdAt: iso('2025-03-20') });
@@ -61,19 +61,27 @@ function season(seed, from, to, share) {
   return out;
 }
 
-const flights = [
+/** Aerotows beyond the newest three in 24 months are winch launches: aerotow recency is 3/5 (L4). */
+function aerotowShortfall(list) {
+  const since = day(-730);
+  const tows = list.filter((f) => f.launchMethod === 'aerotow' && f.date >= since).sort((a, b) => b.date.localeCompare(a.date));
+  const keep = new Set(tows.slice(0, 3));
+  return list.map((f) => (f.launchMethod === 'aerotow' && !keep.has(f) ? { ...f, launchMethod: 'winch' } : f));
+}
+
+const flights = aerotowShortfall([
   ...season(2025, '2025-04-05', '2025-10-12', 0.3),
   ...season(2026, '2026-04-04', day(0), 0.38),
-];
+]);
 
 const isGlider = (f, ac) => ac?.aircraftClass === 'GLIDER';
 
 function currency(fl, acByReg) {
   const g = tally(fl, acByReg, isGlider, 730);
   const requirements = [
-    req('requirement.flight_time', g.picOrDual, 300, 'minutes'),
-    req('requirement.launches', g.launches, 15, 'launches'),
-    req('requirement.training_flights', g.trainingFlights, 2, 'flights'),
+    rollingReq('requirement.flight_time', g, 'picOrDual', 300, 'minutes'),
+    rollingReq('requirement.launches', g, 'launches', 15, 'launches'),
+    rollingReq('requirement.training_flights', g, 'trainingFlights', 2, 'flights'),
     profCheck(),
   ];
   return {

@@ -43,6 +43,7 @@ export const useCreateCredential = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['credentials'] });
+      queryClient.invalidateQueries({ queryKey: ['currency', 'readiness'] });
     },
   });
 };
@@ -60,6 +61,7 @@ export const useUpdateCredential = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['credentials'] });
+      queryClient.invalidateQueries({ queryKey: ['currency', 'readiness'] });
     },
   });
 };
@@ -75,6 +77,7 @@ export const useDeleteCredential = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['credentials'] });
+      queryClient.invalidateQueries({ queryKey: ['currency', 'readiness'] });
     },
   });
 };

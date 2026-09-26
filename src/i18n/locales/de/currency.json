@@ -267,6 +267,61 @@
     },
     "launch_method": {
       "progress": "{{current}} / {{required}} Starts"
+    },
+    "remedy": {
+      "fly_more": "Noch {{amount}} fliegen",
+      "training_flight": "Einen Übungsflug von mindestens 1 h mit Fluglehrer fliegen",
+      "proficiency_check": "Eine Befähigungsüberprüfung bei einem Prüfer ablegen",
+      "launch_method_dual_one": "Noch 1 Start im Doppelsitzer oder unter Aufsicht ({{method}})",
+      "launch_method_dual_other": "Noch {{count}} Starts im Doppelsitzer oder unter Aufsicht ({{method}})"
+    },
+    "readiness": {
+      "launch_method_current": "Gültig bis {{date}}",
+      "credential_valid": "Gültig bis {{date}}",
+      "credential_expired": "Abgelaufen am {{date}}"
     }
+  },
+  "remedyAmount": {
+    "minutes": "{{duration}}",
+    "landings_one": "1 Start und Landung",
+    "landings_other": "{{count}} Starts und Landungen",
+    "launches_one": "1 Start",
+    "launches_other": "{{count}} Starts",
+    "flights_one": "1 Flug",
+    "flights_other": "{{count}} Flüge",
+    "approaches_one": "1 Instrumentenanflug",
+    "approaches_other": "{{count}} Instrumentenanflüge",
+    "holds_one": "1 Holding",
+    "holds_other": "{{count}} Holdings"
+  },
+  "remedyUnrecognised": "Die fehlende Flugerfahrung nachholen, um dies wiederherzustellen.",
+  "remedyLabel": "Zum Wiederherstellen",
+  "validUntil": "gültig bis {{date}}",
+  "ratingValidUntil": "Gültig bis {{date}}",
+  "readinessCredentialValidNoExpiry": "Gültig — ohne Ablaufdatum",
+  "readiness": {
+    "title": "Bereit zum Fliegen?",
+    "date": "Datum",
+    "aircraft": "Luftfahrzeug",
+    "allRatings": "Alle Berechtigungen",
+    "withPassengers": "Mit Passagieren",
+    "solo": "Allein",
+    "passengers": "Passagiere",
+    "medical": "Medical",
+    "ready": "bereit",
+    "notReady": "nicht bereit",
+    "allReady": "Am {{day}} ist alles gültig.",
+    "someNotReady": "Am {{day}} ist nicht alles gültig.",
+    "noItems": "Keine deiner Berechtigungen gilt für dieses Luftfahrzeug.",
+    "unknownAircraft": "Dieses Luftfahrzeug ist nicht mehr in deiner Flotte. Wähle ein anderes.",
+    "dateOutOfRange": "Wähle ein Datum zwischen heute und dem {{max}}.",
+    "loadFailed": "Die Flugbereitschaft konnte nicht geprüft werden. Versuche es gleich noch einmal.",
+    "retry": "Erneut versuchen",
+    "basis": "Zählt die bereits eingetragenen Flüge, als ob du bis dahin nicht mehr fliegst."
+  },
+  "seasonPlanner": {
+    "title": "Um wieder zu fliegen",
+    "subtitle": "Was jede abgelaufene Berechtigung und Startart wiederherstellt.",
+    "orAlternative": "Alternativ:"
   }
 }
