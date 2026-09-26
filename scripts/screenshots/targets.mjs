@@ -105,6 +105,27 @@ export const TARGETS = [
       await page.waitForTimeout(600);
     },
   },
+  {
+    name: 'aircraft-modal-ul',
+    path: '/aircraft',
+    act: async (page) => {
+      await page.getByRole('button', { name: /add aircraft|luftfahrzeug hinzufügen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#aircraftClass').selectOption('ULTRALIGHT');
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'aircraft-modal-ul-gyro',
+    path: '/aircraft',
+    act: async (page) => {
+      await page.getByRole('button', { name: /add aircraft|luftfahrzeug hinzufügen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#aircraftClass').selectOption('ULTRALIGHT');
+      await page.locator('#ulKind').selectOption('GYROPLANE');
+      await page.waitForTimeout(300);
+    },
+  },
   { name: 'licenses', path: '/licenses' },
   {
     name: 'licenses-modal-ul',

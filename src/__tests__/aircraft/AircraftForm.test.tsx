@@ -62,6 +62,61 @@ describe('AircraftForm', () => {
     expect(screen.getByRole('option', { name: /^ultralight/i })).toHaveValue('ULTRALIGHT');
   });
 
+  it('asks for the ultralight kind only for an ULTRALIGHT class', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<AircraftForm onClose={mockOnClose} />);
+
+    expect(screen.queryByLabelText(/ultralight kind/i)).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText(/aircraft class/i), 'ULTRALIGHT');
+    const kind = screen.getByLabelText(/ultralight kind/i);
+    expect(screen.getByRole('option', { name: 'Three-axis UL motorglider (TMG)' })).toHaveValue('THREE_AXIS_MOTORGLIDER');
+    await user.selectOptions(kind, 'THREE_AXIS');
+    await user.selectOptions(screen.getByLabelText(/aircraft class/i), 'SEP_LAND');
+    expect(screen.queryByLabelText(/ultralight kind/i)).not.toBeInTheDocument();
+  });
+
+  it('sends the ultralight kind with an ULTRALIGHT aircraft and clears it otherwise', async () => {
+    const user = userEvent.setup();
+    mockCreate.mutateAsync.mockResolvedValue({});
+    renderWithProviders(<AircraftForm onClose={mockOnClose} />);
+
+    await user.type(screen.getByLabelText(/registration/i), 'D-MIKA');
+    await user.type(screen.getByLabelText(/^type/i), 'C42');
+    await user.type(screen.getByLabelText(/^make/i), 'Ikarus');
+    await user.type(screen.getByLabelText(/^model/i), 'C42 B');
+    await user.selectOptions(screen.getByLabelText(/aircraft class/i), 'ULTRALIGHT');
+    await user.selectOptions(screen.getByLabelText(/ultralight kind/i), 'THREE_AXIS');
+    await user.click(screen.getByRole('button', { name: /add aircraft/i }));
+
+    await waitFor(() => expect(mockCreate.mutateAsync).toHaveBeenCalled());
+    expect(mockCreate.mutateAsync.mock.calls[0][0]).toMatchObject({ aircraftClass: 'ULTRALIGHT', ulKind: 'THREE_AXIS' });
+  });
+
+  it('asks for the maximum take-off mass of an ultralight gyroplane only', async () => {
+    const user = userEvent.setup();
+    mockCreate.mutateAsync.mockResolvedValue({});
+    renderWithProviders(<AircraftForm onClose={mockOnClose} />);
+
+    await user.type(screen.getByLabelText(/registration/i), 'D-MGYR');
+    await user.type(screen.getByLabelText(/^type/i), 'MTO');
+    await user.type(screen.getByLabelText(/^make/i), 'AutoGyro');
+    await user.type(screen.getByLabelText(/^model/i), 'MTOsport');
+    await user.selectOptions(screen.getByLabelText(/aircraft class/i), 'ULTRALIGHT');
+    await user.selectOptions(screen.getByLabelText(/ultralight kind/i), 'THREE_AXIS');
+    expect(screen.queryByLabelText(/maximum take-off mass/i)).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText(/ultralight kind/i), 'GYROPLANE');
+    await user.type(screen.getByLabelText(/maximum take-off mass/i), '472');
+    await user.click(screen.getByRole('button', { name: /add aircraft/i }));
+
+    await waitFor(() => expect(mockCreate.mutateAsync).toHaveBeenCalled());
+    expect(mockCreate.mutateAsync.mock.calls[0][0]).toMatchObject({ ulKind: 'GYROPLANE', maxTakeoffMassKg: 472 });
+  });
+
+  it('offers the gyroplane class', () => {
+    renderWithProviders(<AircraftForm onClose={mockOnClose} />);
+    expect(screen.getByRole('option', { name: /^gyroplane/i })).toHaveValue('GYROPLANE');
+  });
+
   it('shows add button in create mode', () => {
     renderWithProviders(<AircraftForm onClose={mockOnClose} />);
 

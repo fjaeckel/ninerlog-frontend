@@ -71,6 +71,7 @@ export const CLASS_TYPE_OPTIONS: { value: string; label: string }[] = [
   { value: 'IR', label: 'Instrument Rating' },
   { value: 'GLIDER', label: 'Glider' },
   { value: 'ULTRALIGHT', label: 'Ultralight' },
+  { value: 'GYROPLANE', label: 'Gyroplane' },
   { value: 'OTHER', label: 'Other' },
 ];
 

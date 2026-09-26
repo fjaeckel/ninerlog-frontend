@@ -99,6 +99,27 @@ describe('CurrencyPage', () => {
     expect(screen.queryByText('GLIDER')).not.toBeInTheDocument();
   });
 
+  it('explains the GPL passenger experience shortfall', () => {
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
+      data: {
+        ratings: [],
+        passengerCurrency: [
+          {
+            classType: 'GYROPLANE', regulatoryAuthority: 'EASA', dayStatus: 'expired', nightStatus: 'unknown',
+            dayLandings: 6, nightLandings: 0, dayRequired: 3, nightRequired: 1, nightPrivilege: false,
+            messageKey: 'pax.gpl_experience_not_met', messageParams: { needed: 150 },
+          },
+        ],
+      },
+      isLoading: false, error: null,
+    } as any);
+    vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({ data: [], isLoading: false, error: null } as any);
+
+    renderWithProviders(<CurrencyPage />);
+    expect(screen.getByText('Gyroplane')).toBeInTheDocument();
+    expect(screen.getByTestId('pax-gpl-experience')).toHaveTextContent('150 min to go');
+  });
+
   it('shows license header with rating count', () => {
     vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({
       data: {

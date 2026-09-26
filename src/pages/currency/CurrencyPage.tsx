@@ -270,11 +270,13 @@ export default function CurrencyPage() {
               const nightOk = pax.nightStatus === 'current';
               const hasNight = pax.nightPrivilege !== false;
               const allOk = hasNight ? (dayOk && nightOk) : dayOk;
-              const classLabel = t(`classTypes.${pax.classType}`, { defaultValue: pax.classType });
+              const classLabel = pax.ulKind
+                ? `${t(`classTypes.${pax.classType}`, { defaultValue: pax.classType })} · ${t(`common:ulKinds.${pax.ulKind}`)}`
+                : t(`classTypes.${pax.classType}`, { defaultValue: pax.classType });
 
               return (
                 <div
-                  key={`pax-${pax.classType}-${pax.regulatoryAuthority}`}
+                  key={`pax-${pax.classType}-${pax.regulatoryAuthority}-${pax.ulKind ?? ''}`}
                   className={`card border-l-4 ${allOk ? 'border-l-green-500 bg-green-50 dark:bg-green-900/20' : dayOk ? 'border-l-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'border-l-red-500 bg-red-50 dark:bg-red-900/20'}`}
                   data-testid={`passenger-currency-${pax.classType}`}
                 >
@@ -304,6 +306,11 @@ export default function CurrencyPage() {
                         style={{ width: `${Math.min((pax.dayLandings / pax.dayRequired) * 100, 100)}%` }}
                       />
                     </div>
+                    {pax.messageKey === 'pax.gpl_experience_not_met' && (
+                      <p className="text-xs text-red-600 dark:text-red-400" data-testid="pax-gpl-experience">
+                        {t('messages.pax.gpl_experience_not_met', { needed: pax.messageParams?.needed ?? 0 })}
+                      </p>
+                    )}
                     {pax.dayExpiresOn && (
                       <p className="text-xs text-slate-400 dark:text-slate-500" data-testid="pax-day-expires">
                         {t('passengerExpiry.day', { date: fmtDate(pax.dayExpiresOn) })}

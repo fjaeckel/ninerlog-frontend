@@ -89,9 +89,18 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
   const StatusIcon = config.Icon;
   const label = t(`classTypes.${rating.classType}`, { defaultValue: rating.classType });
   const counted = rating.countedClasses ?? [];
-  const countedText = AEROPLANE_AND_TMG_CLASSES.every((ct) => counted.includes(ct))
-    ? t('countedClassesAeroplanes')
-    : counted.map((ct) => t(`classTypes.${ct}`, { defaultValue: ct })).join(' + ');
+  const creditedUL = rating.creditedUltralightKinds ?? [];
+  const ownClasses = counted.length > 0 || rating.classType === 'ULTRALIGHT' || creditedUL.length === 0
+    ? counted
+    : [rating.classType];
+  const countedParts = [
+    ...(ownClasses.length > 0 && AEROPLANE_AND_TMG_CLASSES.every((ct) => ownClasses.includes(ct))
+      ? [t('countedClassesAeroplanes')]
+      : ownClasses.map((ct) => t(`classTypes.${ct}`, { defaultValue: ct }))),
+    ...creditedUL.map((k) => t(`common:ulKinds.${k}`)),
+  ];
+  const countedText = countedParts.join(' + ');
+  const showCounted = counted.length > 1 || creditedUL.length > 0;
 
   return (
     <div
@@ -127,7 +136,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
       </p>
 
       {/* Aircraft classes pooled toward this rating */}
-      {counted.length > 1 && (
+      {showCounted && (
         <p
           className="-mt-2 mb-3 text-xs text-slate-500 dark:text-slate-400 inline-flex items-start gap-1.5"
           data-testid="currency-counted-classes"

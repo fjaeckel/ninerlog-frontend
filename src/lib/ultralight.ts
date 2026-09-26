@@ -12,3 +12,17 @@ export function looksLikeULLicence(licenseType: string | null | undefined): bool
   const t = (licenseType ?? '').trim().toUpperCase();
   return t === 'UL' || t.startsWith('UL ') || t.startsWith('UL-') || t.includes('ULTRALIGHT') || t.includes('ULTRALEICHT');
 }
+
+/** Ultralight kinds an aircraft classed ULTRALIGHT may have. */
+export const UL_AIRCRAFT_KINDS = [
+  'THREE_AXIS', 'THREE_AXIS_MOTORGLIDER', 'WEIGHT_SHIFT',
+  'GYROPLANE', 'HELICOPTER', 'POWERED_PARAGLIDER', 'SAILPLANE',
+] as const;
+
+/** Ultralight kinds an ULTRALIGHT class rating may cover. */
+export const UL_RATING_KINDS = [
+  'THREE_AXIS', 'WEIGHT_SHIFT', 'GYROPLANE', 'HELICOPTER', 'POWERED_PARAGLIDER', 'SAILPLANE',
+] as const;
+
+export type ULKind = (typeof UL_AIRCRAFT_KINDS)[number];
+export type ULRatingKind = (typeof UL_RATING_KINDS)[number];

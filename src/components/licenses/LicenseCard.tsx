@@ -7,12 +7,12 @@ import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateC
 import { extractApiError } from '../../lib/errors';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { DocumentFileStrip } from '../documents/DocumentFileStrip';
-import { isGermanULAuthority } from '../../lib/ultralight';
+import { isGermanULAuthority, UL_RATING_KINDS, type ULRatingKind } from '../../lib/ultralight';
 import { ULAuthorityHint } from './ULAuthorityHint';
 
 const CLASS_TYPE_OPTIONS = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
-  'SET_LAND', 'SET_SEA', 'TMG', 'GLIDER', 'ULTRALIGHT', 'IR', 'OTHER',
+  'SET_LAND', 'SET_SEA', 'TMG', 'GLIDER', 'ULTRALIGHT', 'GYROPLANE', 'IR', 'OTHER',
 ] as const;
 
 function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
@@ -45,6 +45,25 @@ function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
   return <span className="text-xs font-medium text-green-600 dark:text-green-400">{formatted}</span>;
 }
 
+function ULKindSelect({ value, onChange }: { value: ULRatingKind; onChange: (k: ULRatingKind) => void }) {
+  const { t } = useTranslation('licenses');
+  return (
+    <div>
+      <label htmlFor="rating-ul-kind" className="text-xs text-slate-500 dark:text-slate-400">{t('card.ulKind')}</label>
+      <select
+        id="rating-ul-kind"
+        value={value}
+        onChange={(e) => onChange(e.target.value as ULRatingKind)}
+        className="input input-sm mt-0.5"
+      >
+        {UL_RATING_KINDS.map((k) => (
+          <option key={k} value={k}>{t(`common:ulKinds.${k}`)}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 interface LicenseCardProps {
   license: License;
   onEdit: () => void;
@@ -63,6 +82,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
   const [newClassType, setNewClassType] = useState<string>(CLASS_TYPE_OPTIONS[0]);
   const [newIssueDate, setNewIssueDate] = useState('');
   const [newExpiryDate, setNewExpiryDate] = useState('');
+  const [newULKind, setNewULKind] = useState<ULRatingKind>('THREE_AXIS');
   const [ratingError, setRatingError] = useState<string | null>(null);
 
   const handleAddRating = async () => {
@@ -72,12 +92,14 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
         licenseId: license.id,
         data: {
           classType: newClassType as any,
+          ulKind: newClassType === 'ULTRALIGHT' ? newULKind : null,
           issueDate: newIssueDate,
           expiryDate: newExpiryDate || null,
         },
       });
       setShowAddForm(false);
       setNewClassType(CLASS_TYPE_OPTIONS[0]);
+      setNewULKind('THREE_AXIS');
       setNewIssueDate('');
       setNewExpiryDate('');
     } catch (err) {
@@ -94,11 +116,14 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
     }
   };
 
-  const startEditRating = (rating: { id: string; issueDate: string; expiryDate?: string | null }) => {
+  const startEditRating = (rating: { id: string; issueDate: string; expiryDate?: string | null; ulKind?: ULRatingKind | null }) => {
     setEditingRatingId(rating.id);
+    setNewULKind(rating.ulKind ?? 'THREE_AXIS');
     setNewIssueDate(rating.issueDate?.split('T')[0] || '');
     setNewExpiryDate(rating.expiryDate?.split('T')[0] || '');
   };
+
+  const editingRating = classRatings?.find((r) => r.id === editingRatingId);
 
   const handleUpdateRating = async () => {
     if (!editingRatingId || !newIssueDate) return;
@@ -109,6 +134,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
         data: {
           issueDate: newIssueDate,
           expiryDate: newExpiryDate || null,
+          ...(editingRating?.classType === 'ULTRALIGHT' ? { ulKind: newULKind } : {}),
         },
       });
       setEditingRatingId(null);
@@ -211,6 +237,11 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                           {t(`classTypeLabels.${rating.classType}`, { defaultValue: rating.classType })}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {rating.classType === 'ULTRALIGHT' && (
+                            <div className="sm:col-span-2">
+                              <ULKindSelect value={newULKind} onChange={setNewULKind} />
+                            </div>
+                          )}
                           <div>
                             <label className="text-xs text-slate-500 dark:text-slate-400">{t('fields.issueDate')}</label>
                             <input type="date" value={newIssueDate} onChange={(e) => setNewIssueDate(e.target.value)} className="input input-sm mt-0.5" />
@@ -231,6 +262,11 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                       <div className="grid grid-cols-2 sm:grid-cols-[1.2fr_1fr_1.4fr_5rem] gap-x-3 gap-y-1 px-3 py-2 items-center text-sm hover:bg-slate-50 dark:hover:bg-slate-800/40">
                         <span className="font-medium text-slate-700 dark:text-slate-200 col-span-2 sm:col-span-1">
                           {t(`classTypeLabels.${rating.classType}`, { defaultValue: rating.classType })}
+                          {rating.classType === 'ULTRALIGHT' && (
+                            <span className="block text-xs font-normal text-slate-500 dark:text-slate-400">
+                              {t(`common:ulKinds.${rating.ulKind ?? 'THREE_AXIS'}`)}
+                            </span>
+                          )}
                         </span>
                         <span className="text-slate-600 dark:text-slate-300">
                           <span className="sm:hidden text-xs text-slate-500 dark:text-slate-400 mr-1">{t('card.issued')}:</span>
@@ -300,6 +336,11 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                     className="input input-sm mt-0.5"
                   />
                 </div>
+                {newClassType === 'ULTRALIGHT' && (
+                  <div className="sm:col-span-3">
+                    <ULKindSelect value={newULKind} onChange={setNewULKind} />
+                  </div>
+                )}
                 {newClassType === 'ULTRALIGHT' && !isGermanULAuthority(license.regulatoryAuthority) && (
                   <ULAuthorityHint className="sm:col-span-3" />
                 )}

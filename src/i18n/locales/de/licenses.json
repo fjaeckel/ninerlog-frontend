@@ -70,7 +70,8 @@
     "removeRating": "Klassenberechtigung entfernen",
     "noExpiry": "Kein Ablaufdatum",
     "expired": "Abgelaufen",
-    "expiresInDays": "Noch {{days}} Tage"
+    "expiresInDays": "Noch {{days}} Tage",
+    "ulKind": "UL-Art"
   },
   "classTypeLabels": {
     "SEP_LAND": "SEP (Land)",
@@ -83,6 +84,7 @@
     "IR": "IR",
     "GLIDER": "Segelflugzeug",
     "ULTRALIGHT": "Ultraleicht",
+    "GYROPLANE": "Tragschrauber",
     "OTHER": "Sonstige"
   }
 }

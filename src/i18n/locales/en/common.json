@@ -363,5 +363,14 @@
     "hint-add-first-flight": "Welcome! Log your first flight to get started.",
     "hint-add-aircraft": "Add your aircraft to auto-fill registrations when logging flights.",
     "hint-add-credentials": "Track your medical and language proficiency — add credentials to get expiry reminders."
+  },
+  "ulKinds": {
+    "THREE_AXIS": "Three-axis ultralight",
+    "THREE_AXIS_MOTORGLIDER": "Three-axis UL motorglider (TMG)",
+    "WEIGHT_SHIFT": "Weight-shift trike",
+    "GYROPLANE": "Ultralight gyroplane",
+    "HELICOPTER": "Ultralight helicopter",
+    "POWERED_PARAGLIDER": "Powered paraglider",
+    "SAILPLANE": "Ultralight sailplane"
   }
 }

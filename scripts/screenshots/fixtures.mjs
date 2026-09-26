@@ -138,6 +138,18 @@ export const aircraft = [
     defaultDepartureIcao: 'EDNY', defaultArrivalIcao: 'EDNY', isActive: true,
     notes: null, createdAt: iso('2024-02-01'), updatedAt: iso('2026-01-01'),
   },
+  {
+    id: 'a6', userId: 'u1', registration: 'D-MGYR', type: 'MTO', make: 'AutoGyro', model: 'MTOsport 2017',
+    aircraftClass: 'ULTRALIGHT', ulKind: 'GYROPLANE', maxTakeoffMassKg: 560, isComplex: false, isHighPerformance: false, isTailwheel: false, isMultiPilot: false,
+    defaultDepartureIcao: 'EDNY', defaultArrivalIcao: 'EDNY', isActive: true,
+    notes: null, createdAt: iso('2024-02-01'), updatedAt: iso('2026-01-01'),
+  },
+  {
+    id: 'a5', userId: 'u1', registration: 'D-MIKA', type: 'C42', make: 'Comco Ikarus', model: 'C42 B',
+    aircraftClass: 'ULTRALIGHT', ulKind: 'THREE_AXIS', isComplex: false, isHighPerformance: false, isTailwheel: false, isMultiPilot: false,
+    defaultDepartureIcao: 'EDNY', defaultArrivalIcao: 'EDNY', isActive: true,
+    notes: null, createdAt: iso('2024-02-01'), updatedAt: iso('2026-01-01'),
+  },
 ];
 
 export const aircraftStats = {
@@ -179,6 +191,11 @@ export const licenses = [
     issueDate: '2022-05-03', issuingAuthority: 'LBA', requiresSeparateLogbook: false,
     createdAt: iso('2024-01-01'), updatedAt: iso('2026-01-01'),
   },
+  {
+    id: 'l6', userId: 'u1', regulatoryAuthority: 'EASA', licenseType: 'GPL', licenseNumber: 'DE.FCL.G.0418',
+    issueDate: '2026-03-02', issuingAuthority: 'LBA', requiresSeparateLogbook: false,
+    createdAt: iso('2026-03-02'), updatedAt: iso('2026-03-02'),
+  },
 ];
 
 export const classRatings = {
@@ -191,11 +208,14 @@ export const classRatings = {
     { id: 'cr3', licenseId: 'l3', classType: 'GLIDER', issueDate: '2016-04-09', expiryDate: null, notes: null, createdAt: iso('2016-04-09'), updatedAt: iso('2026-01-01') },
   ],
   l4: [
-    { id: 'cr4', licenseId: 'l4', classType: 'ULTRALIGHT', issueDate: '2018-07-21', expiryDate: null, notes: null, createdAt: iso('2018-07-21'), updatedAt: iso('2026-01-01') },
+    { id: 'cr4', licenseId: 'l4', classType: 'ULTRALIGHT', ulKind: 'THREE_AXIS', issueDate: '2018-07-21', expiryDate: null, notes: null, createdAt: iso('2018-07-21'), updatedAt: iso('2026-01-01') },
   ],
   l5: [
     { id: 'cr5', licenseId: 'l5', classType: 'SEP_LAND', issueDate: '2022-05-03', expiryDate: null, notes: null, createdAt: iso('2022-05-03'), updatedAt: iso('2026-01-01') },
     { id: 'cr6', licenseId: 'l5', classType: 'TMG', issueDate: '2023-08-12', expiryDate: null, notes: null, createdAt: iso('2023-08-12'), updatedAt: iso('2026-01-01') },
+  ],
+  l6: [
+    { id: 'cr7', licenseId: 'l6', classType: 'GYROPLANE', issueDate: '2026-03-02', expiryDate: null, notes: null, createdAt: iso('2026-03-02'), updatedAt: iso('2026-03-02') },
   ],
 };
 
@@ -225,6 +245,7 @@ export const currency = {
       classRatingId: 'cr1', classType: 'SEP_LAND', licenseId: 'l1', regulatoryAuthority: 'EASA', licenseType: 'PPL(A)',
       status: 'expiring', expiryDate: day(45), windowOpensAt: day(-320), windowOpen: true,
       countedClasses: ['SEP_LAND', 'TMG'],
+      creditedUltralightKinds: ['THREE_AXIS', 'THREE_AXIS_MOTORGLIDER'],
       message: 'Revalidation window open — 6 h 20 m of 12 h flown.',
       ruleDescription: 'EASA FCL.740.A — 12 h, 12 take-offs and landings, 1 h training flight.',
       requirements: [
@@ -248,6 +269,7 @@ export const currency = {
       classRatingId: 'cr3', classType: 'GLIDER', licenseId: 'l3', regulatoryAuthority: 'EASA', licenseType: 'SPL',
       status: 'current', windowOpen: false, messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_spl',
       countedClasses: ['GLIDER', 'TMG'],
+      creditedUltralightKinds: ['SAILPLANE', 'THREE_AXIS_MOTORGLIDER'],
       requirements: [
         { nameKey: 'requirement.flight_time', met: true, current: 390, required: 300, unit: 'minutes', messageKey: 'requirement.progress' },
         { nameKey: 'requirement.launches', met: true, current: 15, required: 15, unit: 'launches', messageKey: 'requirement.progress' },
@@ -263,10 +285,14 @@ export const currency = {
     {
       classRatingId: 'cr4', classType: 'ULTRALIGHT', licenseId: 'l4', regulatoryAuthority: 'DULV', licenseType: 'UL',
       status: 'expiring', windowOpen: false, messageKey: 'rating.recency_not_met', ruleDescriptionKey: 'ul_luftpersv',
+      countedClasses: ['SEP_LAND', 'TMG'],
+      creditedUltralightKinds: ['THREE_AXIS', 'THREE_AXIS_MOTORGLIDER'],
       requirements: [
         { nameKey: 'requirement.total_time', met: false, current: 540, required: 720, unit: 'minutes' },
+        { nameKey: 'requirement.pic_time', met: true, current: 480, required: 360, unit: 'minutes' },
         { nameKey: 'requirement.landings', met: true, current: 14, required: 12, unit: 'landings' },
-        { nameKey: 'requirement.refresher_training', met: true, current: 60, required: 60, unit: 'minutes' },
+        { nameKey: 'requirement.training_flight', met: true, current: 60, required: 60, unit: 'minutes' },
+        { nameKey: 'requirement.proficiency_check', met: false, current: 0, required: 1, unit: 'check', messageKey: 'requirement.prof_check_missing' },
       ],
     },
     {
@@ -281,14 +307,35 @@ export const currency = {
       countedClasses: LAPL_POOL,
       requirements: LAPL_REQS,
     },
+    {
+      classRatingId: 'cr7', classType: 'GYROPLANE', licenseId: 'l6', regulatoryAuthority: 'EASA', licenseType: 'GPL',
+      status: 'current', windowOpen: false, messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_gpl',
+      creditedUltralightKinds: ['GYROPLANE'],
+      requirements: [
+        { nameKey: 'requirement.total_time', met: true, current: 810, required: 720, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.landings', met: true, current: 23, required: 12, unit: 'landings', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.refresher_training', met: true, current: 60, required: 60, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.proficiency_check', met: false, current: 0, required: 1, unit: 'check', messageKey: 'requirement.prof_check_missing' },
+      ],
+    },
   ],
   passengerCurrency: [
+    {
+      classType: 'GYROPLANE', regulatoryAuthority: 'EASA', dayStatus: 'expired', nightStatus: 'unknown',
+      dayLandings: 6, nightLandings: 0, dayRequired: 3, nightRequired: 1, nightPrivilege: false,
+      messageKey: 'pax.gpl_experience_not_met', messageParams: { needed: 150 }, ruleDescriptionKey: 'easa_pax',
+    },
     {
       classType: 'SEP_LAND', regulatoryAuthority: 'FAA', dayStatus: 'current', nightStatus: 'expired',
       dayLandings: 5, nightLandings: 1, dayRequired: 3, nightRequired: 3, nightPrivilege: false,
       message: '§61.57(a) — day currency satisfied, night currency lapsed.',
       ruleDescription: '3 take-offs and landings in the preceding 90 days.',
       passengerPrivilege: { eligible: false, message: 'Night passenger carriage not permitted' },
+    },
+    {
+      classType: 'ULTRALIGHT', ulKind: 'THREE_AXIS', regulatoryAuthority: 'DULV', dayStatus: 'current', nightStatus: 'unknown',
+      dayLandings: 5, nightLandings: 0, dayRequired: 3, nightRequired: 0, nightPrivilege: false,
+      dayExpiresOn: day(61), messageKey: 'pax.current_day_privilege_separate', ruleDescriptionKey: 'ul_pax',
     },
   ],
   flightReview: { lastCompleted: '2025-04-18', expiresOn: '2027-04-30', status: 'current', message: 'Flight review valid until April 2027.' },

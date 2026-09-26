@@ -69,6 +69,7 @@
     "IR": "Instrumentenberechtigung",
     "GLIDER": "Segelflugzeug",
     "ULTRALIGHT": "Ultraleicht",
+    "GYROPLANE": "Tragschrauber",
     "OTHER": "Sonstige"
   },
   "expiresLabel": "Gültig bis: {{date}}",
@@ -103,12 +104,13 @@
     }
   },
   "ruleDescriptions": {
-    "easa_sep_tmg": "Erfordert 12h Gesamtflugzeit + 6h als PIC + 12 Starts & Landungen + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum der Berechtigung; wer SEP (Land) und TMG besitzt, kann Flüge beider Klassen kombinieren (EASA FCL.740.A(b)(1))",
+    "easa_sep_tmg": "Erfordert 12h Gesamtflugzeit + 6h als PIC + 12 Starts & Landungen + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum der Berechtigung; wer SEP (Land) und TMG besitzt, kann Flüge beider Klassen kombinieren (EASA FCL.740.A(b)(1)); Flugzeit und Landungen auf Dreiachs-UL zählen, die Auffrischungsschulung nicht (FCL.035(a)(4))",
     "easa_mep_set": "Erfordert Befähigungsüberprüfung oder 10 Streckenabschnitte + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum (EASA FCL.740.A(b)(2))",
     "easa_ir": "Erfordert 10h IFR-Flugzeit + jährliche Befähigungsüberprüfung innerhalb der 12 Monate vor dem Ablaufdatum (EASA FCL.625.A)",
-    "easa_lapl": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer auf Flugzeugen oder TMG in den letzten 24 Monaten, oder eine LAPL(A)-Befähigungsüberprüfung; wer SEP (Land) und SEP (See) besitzt, braucht je Klasse 1h und 6 Starts & Landungen (EASA FCL.140.A)",
-    "easa_spl": "Erfordert 5h Flugzeit als PIC, mit Fluglehrer oder im überwachten Alleinflug auf Segelflugzeugen einschließlich TMG, davon 15 Starts und 2 Übungsflüge mit Fluglehrer auf Segelflugzeugen ohne TMG, in den letzten 24 Monaten, oder eine Befähigungsüberprüfung mit einem Prüfer (EASA SFCL.160(a)); jede Startart erfordert 5 Starts in 24 Monaten, Gummiseil 2 (SFCL.155(c))",
-    "easa_spl_tmg": "Erfordert 12h Flugzeit als PIC, mit Fluglehrer oder im überwachten Alleinflug auf Segelflugzeugen einschließlich TMG, davon 6h, 12 Starts & Landungen und ein Übungsflug von mindestens 1h mit Fluglehrer auf TMG, in den letzten 24 Monaten, oder eine Befähigungsüberprüfung mit einem Prüfer auf TMG (EASA SFCL.160(b))",
+    "easa_lapl": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer auf Flugzeugen oder TMG in den letzten 24 Monaten, oder eine LAPL(A)-Befähigungsüberprüfung; wer SEP (Land) und SEP (See) besitzt, braucht je Klasse 1h und 6 Starts & Landungen (EASA FCL.140.A); Flugzeit und Landungen auf Dreiachs-UL zählen, der Übungsflug nicht (FCL.035(a)(4))",
+    "easa_spl": "Erfordert 5h Flugzeit als PIC, mit Fluglehrer oder im überwachten Alleinflug auf Segelflugzeugen einschließlich TMG, davon 15 Starts und 2 Übungsflüge mit Fluglehrer auf Segelflugzeugen ohne TMG, in den letzten 24 Monaten, oder eine Befähigungsüberprüfung mit einem Prüfer (EASA SFCL.160(a)); jede Startart erfordert 5 Starts in 24 Monaten, Gummiseil 2 (SFCL.155(c)) PIC-Stunden auf UL-Segelflugzeugen und UL-Motorseglern zählen für die Stunden (AMC1 SFCL.160).",
+    "easa_spl_tmg": "Erfordert 12h Flugzeit als PIC, mit Fluglehrer oder im überwachten Alleinflug auf Segelflugzeugen einschließlich TMG, davon 6h, 12 Starts & Landungen und ein Übungsflug von mindestens 1h mit Fluglehrer auf TMG, in den letzten 24 Monaten, oder eine Befähigungsüberprüfung mit einem Prüfer auf TMG (EASA SFCL.160(b)) Entfällt mit TMG-Rechten nach Part-FCL (SFCL.160(c)); PIC-Stunden auf UL-Segelflugzeugen und UL-Motorseglern zählen für die Stunden (AMC1 SFCL.160).",
+    "easa_gpl": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Auffrischungsschulung mit Fluglehrer auf Tragschraubern in den letzten 2 Jahren, oder eine GPL-Befähigungsüberprüfung (EASA FCL.240.G(a)); UL-Tragschrauber ab 450 kg zählen für Flugzeit und Landungen, nicht für die Auffrischungsschulung (FCL.035(a)(5))",
     "easa_spl_pax": "3 Starts als PIC auf Segelflugzeugen ohne TMG in den vorangegangenen 90 Tagen für die Passagiermitnahme (EASA SFCL.160(e)(1))",
     "easa_spl_tmg_pax": "3 Starts & Landungen als PIC auf TMG in den vorangegangenen 90 Tagen für die Passagiermitnahme im TMG, davon einer bei Nacht für die Passagiermitnahme bei Nacht (EASA SFCL.160(e)(2))",
     "easa_pax": "3 Starts & Landungen (Tag) und 1 Start & Landung bei Nacht auf demselben Muster bzw. in derselben Klasse in den vorangegangenen 90 Tagen für die Passagiermitnahme; die Nachtanforderung entfällt bei gültiger IR (EASA FCL.060(b))",
@@ -116,8 +118,14 @@
     "faa_ir": "Erfordert 6 Instrumentenanflüge + Holdings innerhalb der vorangegangenen 6 Kalendermonate (14 CFR 61.57(c))",
     "faa_glider": "Erfordert 3 Starts & Landungen in den vorangegangenen 90 Tagen (14 CFR 61.57(a))",
     "faa_flight_review": "Flugüberprüfung alle 24 Kalendermonate erforderlich (14 CFR 61.56)",
-    "ul_luftpersv": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer in 24 Monaten (LuftPersV §45)",
-    "ul_pax": "Passagierberechtigung erforderlich — 3 Starts & Landungen in 90 Tagen"
+    "ul_luftpersv": "Erfordert 12h auf Dreiachs-UL, Reisemotorsegler oder SEP (Land), davon 6h als verantwortlicher Pilot, 12 Starts & Landungen und 1h Übungsflug mit Fluglehrer auf Dreiachs-UL, in 24 Monaten; oder eine Befähigungsüberprüfung (LuftPersV §45 Abs. 2, 3)",
+    "ul_pax": "Passagierberechtigung erforderlich (LuftPersV §84a) — 3 Starts & Landungen in 90 Tagen mit einem Luftsportgerät derselben Art (LuftPersV §45a)",
+    "ul_luftpersv_helicopter": "Erfordert 6h auf UL-Hubschraubern mit 6 Starts & Landungen und 1h Flug mit Fluglehrer in 12 Monaten; oder eine Befähigungsüberprüfung (LuftPersV §45 Abs. 2a, 3)",
+    "ul_gyroplane": "Erfordert 12h ausschließlich auf Tragschraubern, davon 6h als verantwortlicher Pilot, 12 Starts & Landungen und 1h Übungsflug mit Fluglehrer, in 24 Monaten; oder eine Befähigungsüberprüfung (DULV, LuftPersV §45 Abs. 4)",
+    "ul_trike_dulv": "Erfordert 12h als verantwortlicher Pilot auf Trikes in 24 Monaten (DULV, LuftPersV §45 Abs. 4)",
+    "ul_trike_daec": "Erfordert 12h mit 12 Starts & Landungen auf Trikes in 24 Monaten sowie ein Sicherheits-/Performance-Training, das nicht erfasst wird (DAeC, LuftPersV §45 Abs. 4)",
+    "ul_powered_paraglider": "Erfordert 30 Starts & Landungen mit Motorschirm oder Motorschirm-Trike in 24 Monaten (DULV/DAeC, LuftPersV §45 Abs. 4)",
+    "ul_sailplane": "Erfordert 5 Starts & Landungen mit UL-Segelflugzeugen in 12 Monaten (DAeC, LuftPersV §45 Abs. 4)"
   },
   "landingsOf": "{{current}} / {{required}} Landungen",
   "customCurrency": {
@@ -207,6 +215,7 @@
       "revalidation_current": "Gültig — alle Verlängerungsanforderungen erfüllt.",
       "recency_not_met": "Flugerfahrungsanforderungen nicht vollständig erfüllt.",
       "recency_current": "Gültig — alle Flugerfahrungsanforderungen erfüllt.",
+      "sfcl_tmg_exempt": "Gültig — deine TMG-Rechte nach Part-FCL befreien dich von der SPL-TMG-Recency (SFCL.160(c)).",
       "ir_hours_and_check_not_met": "Weder die IFR-Stunden noch die Befähigungsüberprüfung sind erfüllt.",
       "ir_hours_not_met": "IFR-Stunden nicht erfüllt.",
       "ir_check_not_met": "Jährliche Befähigungsüberprüfung nicht absolviert.",
@@ -232,7 +241,8 @@
       "current_day_night": "Gültig für Passagierflüge bei Tag und Nacht.",
       "day_current_night_not_one": "Tag gültig, Nacht nicht gültig — {{needed}} weitere Nachtlandung erforderlich, oder eine gültige IR.",
       "day_current_night_not_other": "Tag gültig, Nacht nicht gültig — {{needed}} weitere Nachtlandungen erforderlich, oder eine gültige IR.",
-      "current_day_privilege_separate": "Flugerfahrung erfüllt — die Passagierberechtigung muss separat nachgewiesen werden."
+      "current_day_privilege_separate": "Flugerfahrung erfüllt — die Passagierberechtigung muss separat nachgewiesen werden.",
+      "gpl_experience_not_met": "Passagiere erst nach 10 h als PIC auf Tragschraubern seit Ausstellung der GPL — noch {{needed}} min (FCL.205.G(a)(2))."
     },
     "flight_review": {
       "evaluation_failed": "Status der Flugüberprüfung konnte nicht ermittelt werden.",

@@ -368,4 +368,33 @@ describe('CurrencyCard', () => {
     expect(screen.getByText('Time on SEP (Sea)')).toBeInTheDocument();
     expect(screen.getByText('Landings on SEP (Sea)')).toBeInTheDocument();
   });
+
+  it('lists credited three-axis ultralights next to the rating class', () => {
+    render(<CurrencyCard rating={{ ...baseRating, creditedUltralightKinds: ['THREE_AXIS'] }} />);
+    expect(screen.getByTestId('currency-counted-classes')).toHaveTextContent('Counts flights on: SEP (Land) + Three-axis ultralight');
+  });
+
+  it('lists pooled classes and credited ultralights together', () => {
+    render(<CurrencyCard rating={{
+      ...baseRating,
+      countedClasses: ['SEP_LAND', 'TMG'],
+      creditedUltralightKinds: ['THREE_AXIS', 'THREE_AXIS_MOTORGLIDER'],
+    }} />);
+    expect(screen.getByTestId('currency-counted-classes')).toHaveTextContent(
+      'SEP (Land) + TMG + Three-axis ultralight + Three-axis UL motorglider (TMG)',
+    );
+  });
+
+  it('names only the ultralight kind for a German ultralight rating', () => {
+    render(<CurrencyCard rating={{
+      ...baseRating, classType: 'ULTRALIGHT', regulatoryAuthority: 'DULV', creditedUltralightKinds: ['GYROPLANE'],
+    }} />);
+    expect(screen.getByTestId('currency-counted-classes')).toHaveTextContent('Counts flights on: Ultralight gyroplane');
+  });
+
+  it('omits the counted line when only the own class counts', () => {
+    render(<CurrencyCard rating={baseRating} />);
+    expect(screen.queryByTestId('currency-counted-classes')).not.toBeInTheDocument();
+  });
+
 });
