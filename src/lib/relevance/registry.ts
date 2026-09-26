@@ -72,6 +72,7 @@ export const FEATURES = defineFeatures([
   { id: 'dashboard.ifrTile', kind: 'dashboardCard', serves: ['IFR'], hasData: positive('ifrMinutes') },
   { id: 'dashboard.nightTile', kind: 'dashboardCard', serves: POWERED, hasData: positive('nightMinutes') },
   { id: 'dashboard.blockTimeLabel', kind: 'field', serves: POWERED },
+  { id: 'dashboard.trainingProgress', kind: 'dashboardCard', serves: ['SAILPLANE', 'TMG', 'ULTRALIGHT'], hasData: positive('programmes') },
 
   // Currency
   {

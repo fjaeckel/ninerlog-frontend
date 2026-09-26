@@ -11,6 +11,7 @@
  */
 
 import { importTemplates } from '../fixtures.mjs';
+import { deriveTrainingProgress } from './training.mjs';
 
 export const TODAY = new Date('2026-08-16T10:00:00Z');
 const DAY_MS = 86_400_000;
@@ -1054,6 +1055,7 @@ export function buildFixtureSet(persona) {
     if (path === '/aircraft') return page(aircraft, search, 100);
     if (path in routes) return routes[path];
     if (path === '/currency/readiness') return deriveReadiness(currency, aircraft, persona.credentials ?? [], search);
+    if (path === '/training/progress') return deriveTrainingProgress({ pilotProfile, licenses, flights, aircraftByReg, search });
     const ratingsMatch = path.match(/^\/licenses\/([^/]+)\/(?:class-)?ratings$/);
     if (ratingsMatch) return classRatings[ratingsMatch[1]] ?? [];
     if (/^\/licenses\/[^/]+\/currency$/.test(path)) return currency;

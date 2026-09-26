@@ -16,14 +16,24 @@ export const FLIGHT_DEPENDENT_QUERY_KEYS: readonly (readonly unknown[])[] = [
   ['custom-reports', 'result'],
   ['custom-reports', 'preview'],
   ['pilot-profile'],
+  ['training-progress'],
 ];
 
 /** Query key of `GET /users/me/pilot-profile`. */
 export const PILOT_PROFILE_QUERY_KEY = ['pilot-profile'] as const;
 
-/** Invalidate the pilot profile, whose evidence derives from licences, ratings and aircraft. */
+/** Query key prefix of `GET /training/progress`. */
+export const TRAINING_PROGRESS_QUERY_KEY = ['training-progress'] as const;
+
+/** Invalidate training progress, whose programmes follow the pilot profile's training disciplines. */
+export function invalidateTrainingProgress(queryClient: QueryClient): void {
+  queryClient.invalidateQueries({ queryKey: [...TRAINING_PROGRESS_QUERY_KEY] });
+}
+
+/** Invalidate the pilot profile, whose evidence derives from licences, ratings and aircraft, and training progress with it. */
 export function invalidatePilotProfile(queryClient: QueryClient): void {
   queryClient.invalidateQueries({ queryKey: [...PILOT_PROFILE_QUERY_KEY] });
+  invalidateTrainingProgress(queryClient);
 }
 
 /**

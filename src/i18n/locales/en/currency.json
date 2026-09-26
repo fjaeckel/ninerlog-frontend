@@ -279,6 +279,37 @@
       "launch_method_current": "Current until {{date}}",
       "credential_valid": "Valid until {{date}}",
       "credential_expired": "Expired on {{date}}"
+    },
+    "training": {
+      "programme": {
+        "spl": "SPL",
+        "spl_tmg_extension": "SPL TMG extension",
+        "ul_three_axis": "Sport pilot licence, three-axis UL",
+        "ul_weight_shift": "Sport pilot licence, trike (weight-shift)"
+      },
+      "spl": {
+        "instruction_time": "Flight instruction",
+        "dual_time": "Dual instruction",
+        "supervised_solo_time": "Supervised solo",
+        "launches": "Launches and landings",
+        "cross_country": "Cross-country flight",
+        "credit_sfcl130b": "Credit for your other licence"
+      },
+      "tmg": {
+        "instruction_time": "Flight instruction on TMGs",
+        "dual_time": "Dual instruction on TMGs",
+        "solo_cross_country": "Solo cross-country flight"
+      },
+      "ul": {
+        "total_time": "Flight training",
+        "dual_time": "Dual training",
+        "solo_time": "Solo"
+      },
+      "met": "Done",
+      "not_met": "{{remaining}} to go",
+      "cross_country_distance_unknown": "Counted, but the distance is unknown — check the route",
+      "credit_available": "{{amount}} can be credited toward flight instruction: 10 % of your PIC time on other aircraft, at most 7 h. It never covers the supervised solo, the launches or the cross-country flight.",
+      "credit_none": "You hold a licence for another aircraft category, but no PIC time to credit yet."
     }
   },
   "remedyAmount": {
@@ -323,5 +354,56 @@
     "title": "To fly again",
     "subtitle": "What restores each lapsed rating and launch method.",
     "orAlternative": "Alternatively:"
+  },
+  "trainingCard": {
+    "title": "Training progress",
+    "programmeTitle": "{{name}} — {{basis}}",
+    "allMet": "All logged requirements met",
+    "signedFlights_one": "{{count}} flight signed by your instructor",
+    "signedFlights_other": "{{count}} flights signed by your instructor",
+    "progress": "{{current}} / {{required}}",
+    "amount": {
+      "launches_one": "{{count}} launch",
+      "launches_other": "{{count}} launches",
+      "landings_one": "{{count}} landing",
+      "landings_other": "{{count}} landings",
+      "flights_one": "{{count}} flight",
+      "flights_other": "{{count}} flights",
+      "km": "{{count}} km"
+    },
+    "unit": {
+      "launches": "launches",
+      "landings": "landings",
+      "flights": "flights",
+      "km": "km"
+    },
+    "metLabel": "Met",
+    "note": "Note",
+    "showDetails": "What counts",
+    "hideDetails": "Hide details",
+    "legalBasis": "Legal basis: {{basis}}",
+    "notTracked": "Theory, the skill test and the other prerequisites are not tracked here.",
+    "counts": {
+      "spl": {
+        "instruction_time": "Dual and supervised solo time on sailplanes (not TMGs), at least 15 h.",
+        "dual_time": "Dual instruction on sailplanes, at least 10 h.",
+        "supervised_solo_time": "Supervised solo time on sailplanes, at least 2 h. Solo time without supervision does not count.",
+        "launches": "Launches on dual and supervised solo flights, at least 45.",
+        "cross_country": "One solo cross-country flight of at least 50 km, or one dual of at least 100 km, measured airport to airport.",
+        "credit_sfcl130b": "10 % of your PIC time on aeroplanes, gyroplanes or helicopters, at most 7 h."
+      },
+      "tmg": {
+        "instruction_time": "Dual and supervised solo time on TMGs, at least 6 h.",
+        "dual_time": "Dual instruction on TMGs, at least 4 h.",
+        "solo_cross_country": "One solo cross-country flight of at least 150 km with a full-stop landing elsewhere."
+      },
+      "ul": {
+        "total_time": "Dual, PIC and supervised solo time on this UL kind.",
+        "dual_time": "Dual training on this UL kind, at least 10 h.",
+        "solo_time": "PIC and supervised solo time on this UL kind, at least 5 h."
+      }
+    },
+    "tracked": "Training progress tracked: {{names}}",
+    "trackedNone": "No training programme is tracked for this toolkit."
   }
 }
