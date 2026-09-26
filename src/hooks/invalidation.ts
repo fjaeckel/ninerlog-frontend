@@ -15,10 +15,11 @@ export const FLIGHT_DEPENDENT_QUERY_KEYS: readonly (readonly unknown[])[] = [
   ['aircraft', 'stats'],
   ['custom-reports', 'result'],
   ['custom-reports', 'preview'],
+  ['soaring-season'],
+  ['pilot-profile'],
   ['flightRevisions'],
   ['voidedFlights'],
   ['logbookMode'],
-  ['pilot-profile'],
 ];
 
 /** Query key of `GET /users/me/pilot-profile`. */

@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
-import { invalidatePilotProfile } from './invalidation';
+import { invalidateFlightDependentQueries, invalidatePilotProfile } from './invalidation';
 import type { components } from '../api/schema';
-import { invalidateFlightDependentQueries } from './invalidation';
+import { reportSaveWarnings } from '../stores/saveWarningsStore';
 
 type Aircraft = components['schemas']['Aircraft'];
 type AircraftCreate = components['schemas']['AircraftCreate'];
@@ -99,7 +99,8 @@ export const useCreateAircraft = () => {
       if (error) throw error;
       return result as Aircraft;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      reportSaveWarnings(data?.warnings);
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
       invalidatePilotProfile(queryClient);
       queryClient.invalidateQueries({ queryKey: ['currency'] });
@@ -118,7 +119,8 @@ export const useUpdateAircraft = () => {
       if (error) throw error;
       return result as Aircraft;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      reportSaveWarnings(data?.warnings);
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
       invalidateFlightDependentQueries(queryClient);
       invalidatePilotProfile(queryClient);

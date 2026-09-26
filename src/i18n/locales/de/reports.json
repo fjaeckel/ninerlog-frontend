@@ -271,9 +271,16 @@
       "CSV vsimakhin/web-logbook — Spaltenlayout des Open-Source-Flugbuchs vsimakhin/web-logbook, passend für dessen Ein-Klick-Importzuordnung (Datum TT/MM/JJJJ, Zeiten H:MM, FSTD-Sessions als Simulator-Einträge).",
       "PDF EASA — Vollständig AMC1-FCL.050-konformes Flugbuch mit SP-SE/ME-Aufteilung, FSTD-Sessions und Seitensummen.",
       "PDF FAA — Standardlayout nach ASA/Jeppesen mit Anflügen, Holdings und IPC-/Flight-Review-Markierungen.",
+      "PDF Segelflug — Layout nach AMC1 SFCL.050: Start und Landung, Flugzeit, Startart und Starts, PIC/Doppelsteuer/FI(S). Automatisch gewählt für ein SPL-, LAPL(S)- oder FAA-Glider-Flugbuch.",
+      "PDF UL — Kennzeichen, Muster, UL-Art, Start- und Landeort, Flugzeit, Landungen, PIC/Doppelsteuer/Als Fluglehrer. Automatisch gewählt für das Flugbuch einer UL-Lizenz.",
       "JSON-Sicherung — Vollständige Momentaufnahme inklusive Flotte, Lizenzen mit Klassenberechtigungen und Nachweisen.",
       "Deine Daten gehören dir — jederzeit exportierbar, ohne Einschränkungen und ohne Gebühren."
-    ]
+    ],
+    "sailplaneLogbook": "Segelflugbuch (SFCL.050)",
+    "ultralightLogbook": "UL-Flugbuch",
+    "pdfLogbook": "Flugbuch",
+    "allFlights": "Alle Flüge",
+    "formatForLicence": "{{format}} — das Layout für dein {{licence}}-Flugbuch. Wähle ein anderes Format, um es zu ändern."
   },
   "custom": {
     "metric": {
@@ -286,7 +293,10 @@
       "ifrTime": "IFR-Zeit",
       "crossCountryTime": "Überlandzeit",
       "fstdTime": "FSTD-Zeit",
-      "landings": "Landungen"
+      "landings": "Landungen",
+      "launches": "Starts",
+      "outlandings": "Außenlandungen",
+      "towFlights": "Schleppflüge"
     },
     "metricShort": {
       "flights": "Flüge",
@@ -298,7 +308,10 @@
       "ifrTime": "IFR",
       "crossCountryTime": "Überland",
       "fstdTime": "FSTD",
-      "landings": "Ldg"
+      "landings": "Ldg",
+      "launches": "Starts",
+      "outlandings": "Außenl.",
+      "towFlights": "Schlepps"
     },
     "groupBy": {
       "month": "Monat",
@@ -308,7 +321,10 @@
       "registration": "Kennzeichen",
       "departure": "Abflugort",
       "arrival": "Zielort",
-      "route": "Strecke"
+      "route": "Strecke",
+      "launchMethod": "Startart",
+      "aircraftClass": "Luftfahrzeugklasse",
+      "ulKind": "UL-Art"
     },
     "window": {
       "all": "Gesamtzeitraum",
@@ -393,7 +409,10 @@
       "registration": "Kennzeichen",
       "departure": "Abflugort",
       "arrival": "Zielort",
-      "route": "Strecke"
+      "route": "Strecke",
+      "launchMethod": "Startart",
+      "aircraftClass": "Luftfahrzeugklasse",
+      "ulKind": "UL-Art"
     }
   }
 }
