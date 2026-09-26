@@ -1,0 +1,78 @@
+{
+  "toolkit": {
+    "AEROPLANE": "Aeroplane",
+    "TMG": "TMG",
+    "SAILPLANE": "Glider",
+    "ULTRALIGHT": "Ultralight",
+    "GYROPLANE": "Gyroplane",
+    "HELICOPTER": "Helicopter",
+    "IFR": "IFR",
+    "MULTI_CREW": "Multi-crew",
+    "INSTRUCTOR": "Instructor",
+    "SIMULATOR": "Simulator"
+  },
+  "toolkitLabel": "{{name}} toolkit",
+  "status": {
+    "active": "Active",
+    "training": "Training",
+    "dormant": "Dormant",
+    "off": "Off"
+  },
+  "intent": {
+    "auto": "Automatic",
+    "on": "On",
+    "off": "Off",
+    "goal": "Training toward"
+  },
+  "strength": {
+    "strong": "Licence or rating",
+    "recent": "Recent",
+    "dormant": "Older than 24 months"
+  },
+  "whatIFly": {
+    "title": "What I fly",
+    "description": "Each toolkit turns on by itself from your licences, ratings, aircraft and flights. Set it yourself to keep it on, turn it off, or mark what you are training toward.",
+    "intentLabel": "Setting for the {{toolkit}}",
+    "why": "Why? ({{count}})",
+    "noEvidence": "No licence, rating, aircraft or flight for this toolkit yet.",
+    "others": "Other toolkits ({{count}})",
+    "noneActive": "No toolkit is on yet, so NinerLog shows everything. Turn on what you fly or train for.",
+    "showEverything": "Show everything",
+    "showEverythingHelp": "Turns folding off: every field, card and report is shown, whatever your toolkits say. With it off, features for toolkits you don't use fold into a “More” section on the same screen. Nothing is ever deleted or hidden for good, and anything that holds data is always shown.",
+    "loadError": "Your toolkits could not be loaded, so NinerLog shows everything.",
+    "saveFailed": "Could not save. Please try again."
+  },
+  "fold": {
+    "more": "More ({{count}})",
+    "explain": "These serve toolkits you don't use right now.",
+    "manage": "Change in What I fly"
+  },
+  "reason": {
+    "evidence": "Shown because: {{ref}}",
+    "intentOn": "Shown because you turned the {{toolkit}} on",
+    "goal": "Shown because you are training toward {{name}}",
+    "active": "Shown because the {{toolkit}} is on",
+    "hasData": "Shown because it already holds data",
+    "aircraft": "Shown because it matches the selected aircraft",
+    "aircraftNoMatch": "Folded because it does not apply to the selected aircraft",
+    "everything": "Shown because “Show everything” is on",
+    "folded": "Folded because none of its toolkits is on: {{names}}"
+  },
+  "toast": {
+    "region": "Toolkit notices",
+    "turnedOn": "{{toolkit}} turned on — because {{reason}}.",
+    "keep": "Keep",
+    "turnOff": "Turn off",
+    "dismiss": "Dismiss",
+    "failed": "Could not save. Please try again.",
+    "source": {
+      "LICENCE": "you hold {{ref}}",
+      "RATING": "you hold {{ref}}",
+      "AIRCRAFT": "{{ref}} is in your fleet",
+      "FLIGHTS": "you logged {{ref}}",
+      "FLIGHTS_DUAL": "you logged {{ref}}",
+      "FLIGHTS_INSTRUCTING": "you logged {{ref}}"
+    },
+    "fallbackReason": "your logbook points to it"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "toolkit": {
+    "AEROPLANE": "Motorflug",
+    "TMG": "Reisemotorsegler",
+    "SAILPLANE": "Segelflug",
+    "ULTRALIGHT": "UL",
+    "GYROPLANE": "Tragschrauber",
+    "HELICOPTER": "Hubschrauber",
+    "IFR": "IFR",
+    "MULTI_CREW": "Multi-Crew",
+    "INSTRUCTOR": "Lehrberechtigung",
+    "SIMULATOR": "Simulator"
+  },
+  "toolkitLabel": "{{name}}-Werkzeuge",
+  "status": {
+    "active": "Aktiv",
+    "training": "In Ausbildung",
+    "dormant": "Ruhend",
+    "off": "Aus"
+  },
+  "intent": {
+    "auto": "Automatisch",
+    "on": "An",
+    "off": "Aus",
+    "goal": "In Ausbildung"
+  },
+  "strength": {
+    "strong": "Lizenz oder Berechtigung",
+    "recent": "Aktuell",
+    "dormant": "Älter als 24 Monate"
+  },
+  "whatIFly": {
+    "title": "Was ich fliege",
+    "description": "Jede Werkzeuggruppe schaltet sich anhand deiner Lizenzen, Berechtigungen, Luftfahrzeuge und Flüge selbst ein. Du kannst sie auch selbst einschalten, ausschalten oder als Ausbildungsziel markieren.",
+    "intentLabel": "Einstellung für {{toolkit}}",
+    "why": "Warum? ({{count}})",
+    "noEvidence": "Noch keine Lizenz, Berechtigung, kein Luftfahrzeug und kein Flug dafür.",
+    "others": "Weitere Werkzeuge ({{count}})",
+    "noneActive": "Noch sind keine Werkzeuge eingeschaltet, deshalb zeigt NinerLog alles. Schalte ein, was du fliegst oder wofür du in Ausbildung bist.",
+    "showEverything": "Alles anzeigen",
+    "showEverythingHelp": "Schaltet das Einklappen ab: Jedes Feld, jede Karte und jeder Bericht wird angezeigt, egal welche Werkzeuge eingeschaltet sind. Ist es aus, wandern Funktionen für Werkzeuge, die du nicht nutzt, in einen „Mehr“-Bereich auf derselben Seite. Nichts wird gelöscht oder dauerhaft versteckt, und alles, was Daten enthält, wird immer angezeigt.",
+    "loadError": "Deine Werkzeuge konnten nicht geladen werden, deshalb zeigt NinerLog alles.",
+    "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut."
+  },
+  "fold": {
+    "more": "Mehr ({{count}})",
+    "explain": "Diese Funktionen gehören zu Werkzeugen, die du gerade nicht nutzt.",
+    "manage": "In „Was ich fliege“ ändern"
+  },
+  "reason": {
+    "evidence": "Angezeigt wegen: {{ref}}",
+    "intentOn": "Angezeigt, weil du {{toolkit}} eingeschaltet hast",
+    "goal": "Angezeigt, weil du in Ausbildung für {{name}} bist",
+    "active": "Angezeigt, weil {{toolkit}} eingeschaltet sind",
+    "hasData": "Angezeigt, weil bereits Daten eingetragen sind",
+    "aircraft": "Angezeigt, weil es zum gewählten Luftfahrzeug passt",
+    "aircraftNoMatch": "Eingeklappt, weil es nicht zum gewählten Luftfahrzeug passt",
+    "everything": "Angezeigt, weil „Alles anzeigen“ eingeschaltet ist",
+    "folded": "Eingeklappt, weil keine seiner Werkzeuggruppen eingeschaltet ist: {{names}}"
+  },
+  "toast": {
+    "region": "Hinweise zu Werkzeugen",
+    "turnedOn": "{{toolkit}} eingeschaltet — weil {{reason}}.",
+    "keep": "Behalten",
+    "turnOff": "Ausschalten",
+    "dismiss": "Schließen",
+    "failed": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
+    "source": {
+      "LICENCE": "du {{ref}} besitzt",
+      "RATING": "du {{ref}} besitzt",
+      "AIRCRAFT": "{{ref}} in deiner Flotte ist",
+      "FLIGHTS": "du {{ref}} eingetragen hast",
+      "FLIGHTS_DUAL": "du {{ref}} eingetragen hast",
+      "FLIGHTS_INSTRUCTING": "du {{ref}} eingetragen hast"
+    },
+    "fallbackReason": "dein Flugbuch darauf hindeutet"
+  }
+}

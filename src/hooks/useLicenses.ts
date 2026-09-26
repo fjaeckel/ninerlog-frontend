@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLicenseStore } from '../stores/licenseStore';
 import { apiClient } from '../api/client';
+import { invalidatePilotProfile } from './invalidation';
 import type { License, LicenseCreate, LicenseUpdate } from '../types/api';
 
 export const useLicenses = () => {
@@ -33,6 +34,7 @@ export const useCreateLicense = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['licenses'] });
       queryClient.invalidateQueries({ queryKey: ['logbookMode'] });
+      invalidatePilotProfile(queryClient);
       addLicense(data);
     },
   });
@@ -54,6 +56,7 @@ export const useUpdateLicense = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['licenses'] });
       queryClient.invalidateQueries({ queryKey: ['logbookMode'] });
+      invalidatePilotProfile(queryClient);
       updateLicenseInStore(data.id, data);
     },
   });
@@ -73,6 +76,7 @@ export const useDeleteLicense = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['licenses'] });
       queryClient.invalidateQueries({ queryKey: ['logbookMode'] });
+      invalidatePilotProfile(queryClient);
       removeLicense(id);
     },
   });

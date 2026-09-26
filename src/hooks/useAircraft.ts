@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
+import { invalidatePilotProfile } from './invalidation';
 import type { components } from '../api/schema';
 import { invalidateFlightDependentQueries } from './invalidation';
 
@@ -100,6 +101,7 @@ export const useCreateAircraft = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
+      invalidatePilotProfile(queryClient);
       queryClient.invalidateQueries({ queryKey: ['currency'] });
     },
   });
@@ -119,6 +121,8 @@ export const useUpdateAircraft = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
       invalidateFlightDependentQueries(queryClient);
+      invalidatePilotProfile(queryClient);
+      queryClient.invalidateQueries({ queryKey: ['currency'] });
     },
   });
 };
@@ -134,6 +138,7 @@ export const useDeleteAircraft = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
+      invalidatePilotProfile(queryClient);
       queryClient.invalidateQueries({ queryKey: ['currency'] });
     },
   });

@@ -24,6 +24,7 @@ import enSignatures from './locales/en/signatures.json';
 import enPeople from './locales/en/people.json';
 import enDocuments from './locales/en/documents.json';
 import enLogbook from './locales/en/logbook.json';
+import enRelevance from './locales/en/relevance.json';
 
 // German namespaces
 import deCommon from './locales/de/common.json';
@@ -46,6 +47,7 @@ import deSignatures from './locales/de/signatures.json';
 import dePeople from './locales/de/people.json';
 import deDocuments from './locales/de/documents.json';
 import deLogbook from './locales/de/logbook.json';
+import deRelevance from './locales/de/relevance.json';
 
 export const supportedLanguages = ['en', 'de'] as const;
 export type SupportedLanguage = (typeof supportedLanguages)[number];
@@ -82,6 +84,7 @@ i18n
         people: enPeople,
         documents: enDocuments,
         logbook: enLogbook,
+        relevance: enRelevance,
       },
       de: {
         common: deCommon,
@@ -104,6 +107,7 @@ i18n
         people: dePeople,
         documents: deDocuments,
         logbook: deLogbook,
+        relevance: deRelevance,
       },
     },
     fallbackLng: 'en',
@@ -113,6 +117,7 @@ i18n
       'currency', 'licenses', 'credentials', 'reports', 'settings',
       'import', 'help', 'backups', 'onboarding', 'quicklog', 'signatures', 'people',
       'documents', 'logbook',
+      'relevance',
     ],
     interpolation: {
       escapeValue: false, // React already escapes
