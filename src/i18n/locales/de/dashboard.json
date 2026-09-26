@@ -5,7 +5,7 @@
     "evening": "Guten Abend"
   },
   "logFlight": "Flug eintragen",
-  "flightCurrency": "Recency",
+  "flightCurrency": "Flugpraxis",
   "credentialAlert": {
     "expired": "vor {{days}} Tagen abgelaufen",
     "expiresSoon": "läuft in {{days}} Tagen ab"
@@ -47,7 +47,7 @@
     "TMG": "TMG",
     "IR": "IR",
     "GLIDER": "Segelflugzeug",
-    "ULTRALIGHT": "Ultraleicht",
+    "ULTRALIGHT": "UL",
     "GYROPLANE": "Tragschrauber",
     "OTHER": "Sonstige"
   },
