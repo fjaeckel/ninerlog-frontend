@@ -108,5 +108,65 @@
     "noUlKind": "UL-Art fehlt",
     "edit": "{{registration}} bearbeiten",
     "dismiss": "Für diese Sitzung ausblenden"
+  },
+  "reminders": {
+    "title": "Erinnerungen",
+    "add": "Erinnerung hinzufügen",
+    "addTitle": "Erinnerung hinzufügen",
+    "editTitle": "Erinnerung bearbeiten",
+    "none": "Noch keine Erinnerungen für dieses Luftfahrzeug.",
+    "loadError": "Erinnerungen konnten nicht geladen werden.",
+    "kinds": {
+      "ANNUAL_INSPECTION": "Jahresnachprüfung",
+      "INSURANCE": "Versicherung",
+      "RESCUE_SYSTEM_REPACK": "Rettungsgerät packen",
+      "RESCUE_ROCKET_EXPIRY": "Rettungsrakete Ablauf",
+      "ARC": "ARC (Lufttüchtigkeitsprüfbescheinigung)",
+      "ELT_BATTERY": "ELT-Batterie",
+      "CUSTOM": "Eigene"
+    },
+    "kindHints": {
+      "ANNUAL_INSPECTION": "Jahresnachprüfung (DAeC/DULV) für Segelflugzeuge und Ultraleichte."
+    },
+    "status": {
+      "ok": "OK",
+      "due_soon": "Bald fällig",
+      "overdue": "Überfällig"
+    },
+    "dueOn": "Fällig am {{date}}",
+    "dueToday": "heute fällig",
+    "dueIn_one": "in {{count}} Tag",
+    "dueIn_other": "in {{count}} Tagen",
+    "overdueBy_one": "seit {{count}} Tag überfällig",
+    "overdueBy_other": "seit {{count}} Tagen überfällig",
+    "lastDone": "Zuletzt erledigt am {{date}}",
+    "every_one": "jeden Monat",
+    "every_other": "alle {{count}} Monate",
+    "markDone": "Erledigt",
+    "markDoneTitle": "Erledigt: {{kind}}",
+    "doneOn": "Erledigt am",
+    "markDoneRolls_one": "Die nächste Fälligkeit wird 1 Monat nach diesem Datum gesetzt.",
+    "markDoneRolls_other": "Die nächste Fälligkeit wird {{count}} Monate nach diesem Datum gesetzt.",
+    "markDoneNoInterval": "Kein Intervall hinterlegt — die nächste Fälligkeit danach selbst eintragen.",
+    "edit": "{{kind}} bearbeiten",
+    "delete": "{{kind}} löschen",
+    "deleteTitle": "Erinnerung löschen?",
+    "deleteDescription": "{{kind}} an {{registration}} wird entfernt.",
+    "saveError": "Die Erinnerung konnte nicht gespeichert werden.",
+    "form": {
+      "kind": "Art",
+      "label": "Bezeichnung",
+      "labelPlaceholder": "z. B. Kaskoversicherung",
+      "labelRequired": "Eine eigene Erinnerung braucht eine Bezeichnung.",
+      "dueDate": "Fällig am",
+      "dueDateRequired": "Fälligkeitsdatum eingeben.",
+      "intervalMonths": "Intervall (Monate)",
+      "intervalHint": "Leer lassen für einen einmaligen Termin.",
+      "intervalManufacturer": "Laut Handbuch des Herstellers.",
+      "intervalInvalid": "1–240 Monate eingeben.",
+      "lastDoneOn": "Zuletzt erledigt",
+      "notes": "Notizen",
+      "save": "Erinnerung speichern"
+    }
   }
 }

@@ -108,5 +108,65 @@
     "noUlKind": "ultralight kind missing",
     "edit": "Edit {{registration}}",
     "dismiss": "Dismiss for this session"
+  },
+  "reminders": {
+    "title": "Reminders",
+    "add": "Add reminder",
+    "addTitle": "Add reminder",
+    "editTitle": "Edit reminder",
+    "none": "No reminders for this aircraft yet.",
+    "loadError": "Could not load reminders.",
+    "kinds": {
+      "ANNUAL_INSPECTION": "Annual inspection",
+      "INSURANCE": "Insurance",
+      "RESCUE_SYSTEM_REPACK": "Rescue system repack",
+      "RESCUE_ROCKET_EXPIRY": "Rescue rocket expiry",
+      "ARC": "ARC",
+      "ELT_BATTERY": "ELT battery",
+      "CUSTOM": "Custom"
+    },
+    "kindHints": {
+      "ANNUAL_INSPECTION": "For gliders and ultralights: the DAeC/DULV Jahresnachprüfung."
+    },
+    "status": {
+      "ok": "OK",
+      "due_soon": "Due soon",
+      "overdue": "Overdue"
+    },
+    "dueOn": "Due {{date}}",
+    "dueToday": "due today",
+    "dueIn_one": "in {{count}} day",
+    "dueIn_other": "in {{count}} days",
+    "overdueBy_one": "{{count}} day overdue",
+    "overdueBy_other": "{{count}} days overdue",
+    "lastDone": "Last done {{date}}",
+    "every_one": "every month",
+    "every_other": "every {{count}} months",
+    "markDone": "Mark done",
+    "markDoneTitle": "Mark done: {{kind}}",
+    "doneOn": "Done on",
+    "markDoneRolls_one": "The next due date is set 1 month after this date.",
+    "markDoneRolls_other": "The next due date is set {{count}} months after this date.",
+    "markDoneNoInterval": "No interval set — enter the next due date yourself afterwards.",
+    "edit": "Edit {{kind}}",
+    "delete": "Delete {{kind}}",
+    "deleteTitle": "Delete reminder?",
+    "deleteDescription": "{{kind}} on {{registration}} will be removed.",
+    "saveError": "Could not save the reminder.",
+    "form": {
+      "kind": "Kind",
+      "label": "Label",
+      "labelPlaceholder": "e.g. Hull insurance policy",
+      "labelRequired": "A custom reminder needs a label.",
+      "dueDate": "Due date",
+      "dueDateRequired": "Enter a due date.",
+      "intervalMonths": "Interval (months)",
+      "intervalHint": "Leave empty for a one-off date.",
+      "intervalManufacturer": "Per the manufacturer's manual.",
+      "intervalInvalid": "Enter 1–240 months.",
+      "lastDoneOn": "Last done",
+      "notes": "Notes",
+      "save": "Save reminder"
+    }
   }
 }

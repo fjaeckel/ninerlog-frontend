@@ -8,6 +8,7 @@ import * as useLicensesHook from '../hooks/useLicenses';
 import * as useFlightsHook from '../hooks/useFlights';
 import * as useCredentialsHook from '../hooks/useCredentials';
 import * as useCurrencyHook from '../hooks/useCurrency';
+import * as remindersHook from '../hooks/useAircraftReminders';
 import { useAuthStore } from '../stores/authStore';
 
 const renderWithProviders = (component: React.ReactElement) => {
@@ -53,6 +54,29 @@ describe('DashboardPage Currency Integration', () => {
     vi.spyOn(useCredentialsHook, 'useCredentials').mockReturnValue({
       data: [], isLoading: false, error: null,
     } as any);
+
+    vi.spyOn(remindersHook, 'useAllAircraftReminders').mockReturnValue({
+      data: [], isLoading: false,
+    } as never);
+  });
+
+  it('A2/R2: no aircraft-due card without reminders', () => {
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({ data: undefined, isLoading: false } as never);
+    renderWithProviders(<DashboardPage />);
+    expect(screen.queryByTestId('aircraft-due-section')).not.toBeInTheDocument();
+  });
+
+  it('M-job3: aircraft-due card when a reminder is due', () => {
+    vi.spyOn(useCurrencyHook, 'useAllCurrencyStatus').mockReturnValue({ data: undefined, isLoading: false } as never);
+    vi.spyOn(remindersHook, 'useAllAircraftReminders').mockReturnValue({
+      data: [{
+        id: 'r1', aircraftId: 'a5', aircraftRegistration: 'D-MIKA', kind: 'ANNUAL_INSPECTION',
+        dueDate: '2026-08-28', status: 'due_soon', daysUntilDue: 12, createdAt: '', updatedAt: '',
+      }],
+      isLoading: false,
+    } as never);
+    renderWithProviders(<DashboardPage />);
+    expect(screen.getByTestId('aircraft-due-section')).toHaveTextContent('D-MIKA');
   });
 
   it('renders currency cards when currency data is available', async () => {

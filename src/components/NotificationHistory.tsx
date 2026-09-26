@@ -14,6 +14,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   currency_instrument: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
   currency_flight_review: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   currency_revalidation: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+  aircraft_reminder: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
 };
 
 export function NotificationHistory() {

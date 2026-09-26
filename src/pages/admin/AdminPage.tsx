@@ -15,6 +15,10 @@ import { UpdateBanner, UpdateStatusCard } from './UpdateStatus';
 import { useCreateAnnouncement, useDeleteAnnouncement, useAnnouncements } from '../../hooks/useAnnouncements';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import type { AdminUser } from '../../hooks/useAdmin';
+import type { components } from '../../api/schema';
+
+type AdminStats = components['schemas']['AdminStats'];
+type Discipline = components['schemas']['Discipline'];
 
 type Tab = 'dashboard' | 'users' | 'audit' | 'email' | 'maintenance' | 'announcements' | 'config';
 
@@ -106,6 +110,8 @@ function DashboardTab() {
     { label: t('admin.dashboard.activeSessions'), value: data.activeSessions },
     { label: t('admin.dashboard.totalCredentials'), value: data.totalCredentials },
     { label: t('admin.dashboard.totalCustomReports'), value: data.totalCustomReports },
+    { label: t('admin.dashboard.aircraftReminders'), value: data.aircraftReminders?.total ?? '—' },
+    { label: t('admin.dashboard.aircraftRemindersOverdue'), value: data.aircraftReminders?.overdue ?? '—' },
     { label: t('admin.dashboard.totalImports'), value: data.totalImports },
     { label: t('admin.dashboard.flightsThisMonth'), value: data.flightsThisMonth },
     { label: t('admin.dashboard.newUsersWeek'), value: data.newUsersThisWeek },
@@ -157,6 +163,8 @@ function DashboardTab() {
         )}
       </div>
 
+      <PilotProfilesCard profiles={data.pilotProfiles} />
+
       {backups && (
         <div className="card p-4">
           <div className="flex items-baseline justify-between mb-3">
@@ -177,6 +185,65 @@ function DashboardTab() {
               ))}
             </div>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const DISCIPLINE_ORDER: readonly Discipline[] = [
+  'AEROPLANE', 'TMG', 'SAILPLANE', 'ULTRALIGHT', 'GYROPLANE', 'HELICOPTER',
+  'IFR', 'MULTI_CREW', 'INSTRUCTOR', 'SIMULATOR',
+];
+
+function PilotProfilesCard({ profiles }: { profiles: AdminStats['pilotProfiles'] | undefined }) {
+  const { t } = useTranslation('common');
+  const overrides = Object.entries(profiles?.overrides ?? {}).sort(([a], [b]) => {
+    const ia = DISCIPLINE_ORDER.indexOf(a as Discipline);
+    const ib = DISCIPLINE_ORDER.indexOf(b as Discipline);
+    return (ia === -1 ? DISCIPLINE_ORDER.length : ia) - (ib === -1 ? DISCIPLINE_ORDER.length : ib) || a.localeCompare(b);
+  });
+
+  return (
+    <div className="card p-4" data-testid="admin-pilot-profiles">
+      <div className="flex items-baseline justify-between gap-4 mb-3">
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+          {t('admin.dashboard.pilotProfiles')}
+        </h3>
+        <div className="text-right">
+          <div className="data-lg text-slate-800 dark:text-slate-100">{profiles?.everythingMode ?? '—'}</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">{t('admin.dashboard.pilotProfilesEverything')}</div>
+        </div>
+      </div>
+      <h4 className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+        {t('admin.dashboard.pilotProfilesOverrides')}
+      </h4>
+      {overrides.length === 0 ? (
+        <div className="text-xs text-slate-500 dark:text-slate-400">{t('admin.dashboard.pilotProfilesNone')}</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full sm:max-w-lg text-sm">
+            <thead>
+              <tr className="text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                <th scope="col" className="py-1.5 pr-4 font-medium">{t('admin.dashboard.discipline')}</th>
+                <th scope="col" className="py-1.5 px-2 font-medium text-right">{t('admin.dashboard.intentOn')}</th>
+                <th scope="col" className="py-1.5 px-2 font-medium text-right">{t('admin.dashboard.intentOff')}</th>
+                <th scope="col" className="py-1.5 pl-2 font-medium text-right">{t('admin.dashboard.intentGoal')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              {overrides.map(([discipline, c]) => (
+                <tr key={discipline}>
+                  <th scope="row" className="py-1.5 pr-4 font-normal text-left text-slate-700 dark:text-slate-200">
+                    {t(`admin.dashboard.disciplines.${discipline}`, { defaultValue: discipline })}
+                  </th>
+                  <td className="py-1.5 px-2 text-right font-mono tabular-nums text-slate-800 dark:text-slate-100">{c.on}</td>
+                  <td className="py-1.5 px-2 text-right font-mono tabular-nums text-slate-800 dark:text-slate-100">{c.off}</td>
+                  <td className="py-1.5 pl-2 text-right font-mono tabular-nums text-slate-800 dark:text-slate-100">{c.goal}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
@@ -240,7 +307,7 @@ function UsersTab() {
       <div className="card overflow-hidden">
         {/* Desktop table */}
         <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full sm:max-w-lg text-sm">
             <thead><tr className="border-b border-slate-200 dark:border-slate-700 text-left">
               <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.user')}</th>
               <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.status')}</th>
@@ -596,7 +663,7 @@ function EmailTab() {
         )}
         {!!deliveries.data?.length && (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full sm:max-w-lg text-sm">
               <thead><tr className="border-b border-slate-200 dark:border-slate-700 text-left">
                 <th className="px-3 py-2 font-medium text-slate-500 dark:text-slate-400">{t('admin.email.colRecipient')}</th>
                 <th className="px-3 py-2 font-medium text-slate-500 dark:text-slate-400">{t('admin.email.colType')}</th>

@@ -69,6 +69,7 @@
     "masterSwitch": "Master switch for all email alerts",
     "credentials": "Credentials",
     "ratingsAndCurrency": "Ratings & Currency",
+    "aircraft": "Aircraft",
     "categories": {
       "credential_medical": "Medical Expiry",
       "credential_medical_desc": "Class 1, Class 2, LAPL medical certificates",
@@ -89,7 +90,9 @@
       "currency_flight_review": "Flight Review",
       "currency_flight_review_desc": "FAA §61.56 flight review / proficiency check",
       "currency_revalidation": "EASA Revalidation",
-      "currency_revalidation_desc": "Rating revalidation requirements progress"
+      "currency_revalidation_desc": "Rating revalidation requirements progress",
+      "aircraft_reminder": "Aircraft reminders",
+      "aircraft_reminder_desc": "Annual inspection, insurance, rescue system and other dated items on your aircraft"
     },
     "warningSchedule": "Warning Schedule",
     "warningDays": "Days before expiry to send warnings",

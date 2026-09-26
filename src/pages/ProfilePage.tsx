@@ -569,6 +569,24 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                {/* Aircraft Group */}
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">{t('notifications.aircraft')}</h3>
+                  <div className="space-y-2">
+                    {([
+                      { cat: 'aircraft_reminder' as const, label: t('notifications.categories.aircraft_reminder'), desc: t('notifications.categories.aircraft_reminder_desc') },
+                    ] as const).map(({ cat, label, desc }) => (
+                      <label key={cat} className="flex items-center justify-between cursor-pointer">
+                        <div>
+                          <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{desc}</p>
+                        </div>
+                        <input type="checkbox" checked={notifPrefs.enabledCategories.includes(cat)} disabled={!notifPrefs.emailEnabled} onChange={(e) => { const cats = e.target.checked ? [...notifPrefs.enabledCategories, cat] : notifPrefs.enabledCategories.filter((c) => c !== cat); updateNotifPrefs.mutate({ enabledCategories: cats }); }} className="checkbox" />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Warning Schedule */}
                 <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('notifications.warningSchedule')}</span>

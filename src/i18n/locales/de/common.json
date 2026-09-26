@@ -135,7 +135,29 @@
       "totalPassengerFlights": "Passagierflüge",
       "totalContacts": "Kontakte",
       "totalCustomReports": "Eigene Berichte",
-      "activeSessions": "Aktive Sitzungen"
+      "activeSessions": "Aktive Sitzungen",
+      "aircraftReminders": "Erinnerungen am Luftfahrzeug",
+      "aircraftRemindersOverdue": "Überfällige Erinnerungen",
+      "pilotProfiles": "Pilotenprofile",
+      "pilotProfilesEverything": "Alles anzeigen",
+      "pilotProfilesOverrides": "Explizit gesetzte Disziplinen",
+      "pilotProfilesNone": "Noch hat niemand eine Disziplin explizit gesetzt.",
+      "discipline": "Disziplin",
+      "intentOn": "An",
+      "intentOff": "Aus",
+      "intentGoal": "Ziel",
+      "disciplines": {
+        "AEROPLANE": "Flugzeug",
+        "TMG": "TMG",
+        "SAILPLANE": "Segelflugzeug",
+        "ULTRALIGHT": "Ultraleicht",
+        "GYROPLANE": "Tragschrauber",
+        "HELICOPTER": "Hubschrauber",
+        "IFR": "IFR",
+        "MULTI_CREW": "Multi-Crew",
+        "INSTRUCTOR": "Lehrberechtigung",
+        "SIMULATOR": "Simulator"
+      }
     },
     "users": {
       "searchPlaceholder": "Nach E-Mail oder Name suchen...",
