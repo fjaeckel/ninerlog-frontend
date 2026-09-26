@@ -205,8 +205,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         route: existingFlight.route || '',
         ifrTime: existingFlight.ifrTime,
         landings: existingFlight.allLandings,
-        takeoffsDay: existingFlight.takeoffsDay,
-        takeoffsNight: existingFlight.takeoffsNight,
+        takeoffsDay: existingFlight.takeoffsDayOverride ? existingFlight.takeoffsDay : undefined,
+        takeoffsNight: existingFlight.takeoffsNightOverride ? existingFlight.takeoffsNight : undefined,
         nightTime: existingFlight.nightTimeOverride ? existingFlight.nightTime : undefined,
         crossCountryTime: existingFlight.crossCountryTimeOverride ? existingFlight.crossCountryTime : undefined,
         remarks: existingFlight.remarks || '',
@@ -338,10 +338,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   );
 
   type OverrideTimeField = 'nightTime' | 'crossCountryTime';
+  type OverrideField = OverrideTimeField | 'takeoffsDay' | 'takeoffsNight';
 
   // A number overrides the derived value; an emptied field on a flight the
   // pilot had overridden sends null so the server derives it again.
-  const overrideTimePayload = (field: OverrideTimeField, value: number | undefined) => {
+  const overridePayload = (field: OverrideField, value: number | undefined) => {
     if (value !== undefined) return { [field]: value };
     if (isEditing && existingFlight?.[`${field}Override`]) return { [field]: null };
     return {};
@@ -417,6 +418,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   // An FSTD session logs its duration and device instead of a route, block
   // times and landings, and feeds no flight total.
   const isSim = watch('isSimulator');
+  const watchedTakeoffsDay = watch('takeoffsDay');
+  const watchedTakeoffsNight = watch('takeoffsNight');
+  const watchedLandings = watch('landings');
+  const enteredTakeoffs = (watchedTakeoffsDay ?? 0) + (watchedTakeoffsNight ?? 0);
+  const takeoffsMismatch =
+    (watchedTakeoffsDay !== undefined || watchedTakeoffsNight !== undefined) &&
+    Number.isFinite(watchedLandings) &&
+    enteredTakeoffs !== watchedLandings;
 
   // Determine if current aircraft is a glider/TMG (show launch method)
   const currentAircraftClass = (aircraftList ?? []).find(
@@ -477,10 +486,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             examinerTime: data.examinerTime,
             reliefTime: data.reliefTime,
             landings: data.landings,
-            ...(data.takeoffsDay !== undefined && { takeoffsDay: data.takeoffsDay }),
-            ...(data.takeoffsNight !== undefined && { takeoffsNight: data.takeoffsNight }),
-            ...overrideTimePayload('nightTime', data.nightTime),
-            ...overrideTimePayload('crossCountryTime', data.crossCountryTime),
+            ...overridePayload('takeoffsDay', data.takeoffsDay),
+            ...overridePayload('takeoffsNight', data.takeoffsNight),
+            ...overridePayload('nightTime', data.nightTime),
+            ...overridePayload('crossCountryTime', data.crossCountryTime),
             launchMethod: (data.launchMethod || null) as any,
           };
 
@@ -899,6 +908,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           </div>
         </div>
         <p className="form-helper mt-2">{t('form.takeoffsAutoHelper')}</p>
+        {takeoffsMismatch && (
+          <p role="status" className="mt-2 text-sm text-amber-700 dark:text-amber-400">
+            {t('form.takeoffsLandingsMismatch', { takeoffs: enteredTakeoffs, landings: watchedLandings })}
+          </p>
+        )}
       </fieldset>
       )}
 

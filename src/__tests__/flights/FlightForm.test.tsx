@@ -440,6 +440,74 @@ describe('FlightForm', () => {
     });
   });
 
+  const takeoffFlight = (overrides: Record<string, unknown>) => ({
+    id: 'flight-1', userId: 'user-1', date: '2026-01-15',
+    aircraftReg: 'D-EFGH', aircraftType: 'C172',
+    departureIcao: 'EDDF', arrivalIcao: 'EDDH',
+    offBlockTime: '14:15:00', onBlockTime: '16:10:00',
+    totalTime: 115, isPic: true, isDual: false, picTime: 115, dualTime: 0,
+    nightTime: 0, crossCountryTime: 115, ifrTime: 0,
+    landingsDay: 3, landingsNight: 0, allLandings: 3,
+    takeoffsDay: 1, takeoffsNight: 0, soloTime: 115, distance: 185.3,
+    remarks: null, createdAt: '', updatedAt: '',
+    ...overrides,
+  });
+
+  it('leaves derived takeoffs empty and unsent when editing', async () => {
+    mockUpdate.mutateAsync.mockResolvedValueOnce({});
+    vi.spyOn(useFlightsHook, 'useFlight').mockReturnValue({
+      data: takeoffFlight({ takeoffsDayOverride: false, takeoffsNightOverride: false }),
+      isLoading: false, error: null,
+    } as any);
+
+    renderWithProviders(<FlightForm flightId="flight-1" onClose={mockOnClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^landings/i)).toHaveValue(3);
+    });
+    expect(screen.getByLabelText(/day takeoffs/i)).toHaveValue(null);
+    expect(screen.getByLabelText(/night takeoffs/i)).toHaveValue(null);
+
+    fireEvent.submit(screen.getByRole('button', { name: /update flight/i }).closest('form')!);
+
+    await waitFor(() => {
+      expect(mockUpdate.mutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.not.objectContaining({ takeoffsDay: expect.anything() }),
+        })
+      );
+    });
+  });
+
+  it('sends null to return overridden takeoffs to auto when the field is emptied', async () => {
+    const user = userEvent.setup();
+    mockUpdate.mutateAsync.mockResolvedValueOnce({});
+    vi.spyOn(useFlightsHook, 'useFlight').mockReturnValue({
+      data: takeoffFlight({ takeoffsDayOverride: true, takeoffsNightOverride: false }),
+      isLoading: false, error: null,
+    } as any);
+
+    renderWithProviders(<FlightForm flightId="flight-1" onClose={mockOnClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/day takeoffs/i)).toHaveValue(1);
+    });
+    expect(screen.getByText(/takeoffs: 1, landings: 3/i)).toBeInTheDocument();
+
+    await user.clear(screen.getByLabelText(/day takeoffs/i));
+    expect(screen.queryByText(/normally every landing has a takeoff/i)).not.toBeInTheDocument();
+
+    fireEvent.submit(screen.getByRole('button', { name: /update flight/i }).closest('form')!);
+
+    await waitFor(() => {
+      expect(mockUpdate.mutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ takeoffsDay: null }),
+        })
+      );
+    });
+  });
+
   const flightWithCrew = {
     id: 'flight-1', userId: 'user-1', date: '2026-01-15',
     aircraftReg: 'D-EFGH', aircraftType: 'C172',
