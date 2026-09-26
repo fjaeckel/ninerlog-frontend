@@ -64,7 +64,7 @@
     "SET_SEA": "SET (See)",
     "TMG": "TMG",
     "GLIDER": "Segelflugzeug",
-    "ULTRALIGHT": "Ultraleicht",
+    "ULTRALIGHT": "UL",
     "GYROPLANE": "Tragschrauber",
     "OTHER": "Sonstige"
   },
@@ -77,7 +77,7 @@
     "characteristics": "Eigenschaften",
     "multiPilotHelper": "Für eine Mindestbesatzung von zwei Piloten zugelassen. Kopilotenzeit (SIC) kann nur auf einem mehrpilotigen Luftfahrzeug erfasst werden.",
     "activeInFleet": "Aktiv in der Flotte",
-    "classHelper": "Wird für die Recency-Auswertung genutzt. Wähle eine Standardklasse oder gib einen eigenen Wert ein.",
+    "classHelper": "Wird für die Auswertung der fortlaufenden Flugerfahrung genutzt. Wähle eine Standardklasse oder gib einen eigenen Wert ein.",
     "failedToSave": "Luftfahrzeug konnte nicht gespeichert werden.",
     "loggingDefaults": "Logbuch-Vorgaben (Start / Ziel)",
     "departurePlaceholder": "Start, z. B. LSZH",
@@ -86,8 +86,8 @@
     "renameFlights_one": "{{count}} geloggten Flug von {{oldRegistration}} auf das neue Kennzeichen aktualisieren",
     "renameFlights_other": "{{count}} geloggte Flüge von {{oldRegistration}} auf das neue Kennzeichen aktualisieren",
     "ulKindUnspecified": "Nicht angegeben",
-    "ulKindHelper": "Bestimmt, worauf die Flüge angerechnet werden. Flugzeit und Landungen auf Dreiachs-UL zählen für die Verlängerung von EASA SEP (Land) und die LAPL(A)-Recency, auf einem UL-Motorsegler für TMG, der Übungsflug mit Fluglehrer aber nicht. Die UL-Recency nach LuftPersV gilt je Art.",
-    "maxTakeoffMassHelper": "UL-Tragschrauber ab 450 kg zählen für Flugzeit und Landungen der EASA-GPL-Recency (FCL.035(a)(5))."
+    "ulKindHelper": "Bestimmt, worauf die Flüge angerechnet werden. Flugzeit und Landungen auf Dreiachs-UL zählen für die Verlängerung von EASA SEP (Land) und die fortlaufende Flugerfahrung für den LAPL(A), auf einem UL-Motorsegler für TMG, der Übungsflug mit Fluglehrer aber nicht. Die fortlaufende Flugerfahrung nach LuftPersV gilt je UL-Art.",
+    "maxTakeoffMassHelper": "UL-Tragschrauber ab 450 kg zählen für Flugzeit und Landungen der fortlaufenden Flugerfahrung für den EASA-GPL (FCL.035(a)(5))."
   },
   "classOptions": {
     "SEP_LAND": "SEP (Land) — einmotorig, Kolbenmotor",
@@ -98,7 +98,7 @@
     "SET_SEA": "SET (See) — einmotorig, Turboprop",
     "TMG": "TMG — Reisemotorsegler",
     "GLIDER": "Segelflugzeug",
-    "ULTRALIGHT": "Ultraleicht (UL)",
+    "ULTRALIGHT": "Luftsportgerät (UL)",
     "GYROPLANE": "Tragschrauber — GPL (einmotoriger Tragschrauber)"
   },
   "unclassified": {

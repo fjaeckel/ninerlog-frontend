@@ -104,7 +104,7 @@ Use these consistently — the same concept must not appear under two names acro
 | Multi-pilot | **Multi-Pilot**, column header **MP** | **Not MCC** — that is a training course, not a time class |
 | Holds / holding procedures | **Holdings** | Not "Warteschleifen", which is call-centre German |
 | Simulated instrument (hood) | **unter der Haube** | What instrument students actually say |
-| Currency (of experience) | **Recency** | German pilots use the English word |
+| Currency / recency (of experience) | **Fortlaufende Flugerfahrung**, compact **Flugpraxis** | See the Luftsport glossary below; never "Recency" as a German noun |
 | Validity (of a document or rating) | **Gültigkeit** | Keep the two apart: a medical is *gültig*, a pilot is *current* |
 | Revalidation (still valid) | **Verlängerung** | The EASA German term |
 | Renewal (already expired) | **Erneuerung** | Distinct from Verlängerung; never "Wiederinkraftsetzung" |
@@ -119,6 +119,30 @@ Use these consistently — the same concept must not appear under two names acro
 Two German words are already taken and must not be reused for anything else:
 **Kennzeichen** means the registration (so "Flight Flags" is *Flug-Merkmale*, not *Flug-Kennzeichen*), and
 **Muster** means the aircraft type (so the reports section "Patterns" is *Flugverhalten*, not *Muster*).
+
+#### Luftsport glossary
+
+Gliders, TMGs and ultralights (Luftsportgeräte) have their own German vocabulary from the DAeC, the DULV and the LuftPersV. Glider and UL pilots notice at once when an app speaks airline English at them.
+
+| English | German | Note |
+|---|---|---|
+| Recency / currency (recent experience) — titles and descriptions | **Fortlaufende Flugerfahrung** | The official German term (FCL.060, SFCL.160). "Recency" is never a German noun, and neither is it a prefix ("Recency-Seite", "Passagier-Recency") |
+| Recency / currency — compact labels (nav, chips, tiles, table headers, badges) | **Flugpraxis** | For example "Flugpraxis je Startart", "Ausbildung & Flugpraxis", "IFR-Flugpraxis", "Nacht-Flugpraxis", "Flugpraxis für die Passagiermitnahme" |
+| Currency status words | Keep established terms (**Gültig**, **Nicht gültig**, **Läuft bald ab**, **Abgelaufen**, **Achtung**) | Replace only English leftovers |
+| Weight-shift (trike) | **gewichtskraftgesteuert** | The DULV/LuftVZO term. Never "schwerkraftgesteuert" |
+| Winch launch | **Windenstart** | |
+| Aerotow | **F-Schlepp** | Option lists may say "F-Schlepp (Flugzeugschlepp)" |
+| Self-launch | **Eigenstart** | |
+| Car launch / car tow | **Autoschlepp** | |
+| Bungee launch | **Gummiseilstart** | |
+| PIC under supervision | **PIC unter Aufsicht (PICUS)** | Never leave it in English |
+| Supervised solo | **Alleinflug unter Aufsicht** | Not "überwachter Alleinflug" |
+| Outlanding | **Außenlandung** | The site is an *Außenlandefeld* |
+| Type familiarisation / checkout | **Einweisung** | |
+| Ultralight aircraft | **Luftsportgerät**, short **UL** | Class option lists use "Luftsportgerät (UL)" and compact class labels use "UL". "Ultraleicht" alone is an adjective, not a class |
+| Ultralight kind | **UL-Art** | Kinds: Dreiachs-UL, Trike (gewichtskraftgesteuert), UL-Tragschrauber, UL-Hubschrauber, Motorschirm, UL-Segelflugzeug |
+
+**Block times are a powered-aircraft concept.** "Bremsklötze weg / Triebwerkstart" is correct for a Cessna and wrong for a winch launch. Help text that is shown for every class stays class-neutral, for example "Off-Block: Bremsklötze weg / Triebwerkstart (Motorflugzeuge) oder Startzeit". No German text may claim that a glider or UL needs block times.
 
 ### Interpolation
 - Translation strings use `{{variable}}` syntax for dynamic values: `"Expires in {{days}} days"`

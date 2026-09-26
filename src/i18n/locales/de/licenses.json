@@ -44,7 +44,7 @@
     "ATP": "ATP",
     "Sport": "Sport",
     "Recreational": "Recreational",
-    "Glider": "Glider"
+    "Glider": "Segelflug"
   },
   "form": {
     "requiresSeparateLogbook": "Separates Flugbuch erforderlich",
@@ -52,7 +52,7 @@
     "licenseTypePlaceholder": "z. B. PPL",
     "issuingAuthorityPlaceholder": "LBA (Deutschland)",
     "failedToSave": "Lizenz konnte nicht gespeichert werden.",
-    "ulAuthorityHint": "Die UL-Recency (LuftPersV §45) wird nur für LBA, DULV oder DAeC geprüft. Bei einer anderen Behörde werden UL-Berechtigungen nur über das Ablaufdatum verfolgt."
+    "ulAuthorityHint": "Die fortlaufende Flugerfahrung für UL (LuftPersV §45) wird nur für LBA, DULV oder DAeC geprüft. Bei einer anderen Behörde werden UL-Berechtigungen nur über das Ablaufdatum verfolgt."
   },
   "card": {
     "regulatoryAuthority": "Aufsichtsbehörde",
@@ -83,7 +83,7 @@
     "TMG": "TMG",
     "IR": "IR",
     "GLIDER": "Segelflugzeug",
-    "ULTRALIGHT": "Ultraleicht",
+    "ULTRALIGHT": "UL",
     "GYROPLANE": "Tragschrauber",
     "OTHER": "Sonstige"
   }

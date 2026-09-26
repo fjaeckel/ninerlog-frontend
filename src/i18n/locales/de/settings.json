@@ -16,12 +16,12 @@
     "decimalExample": "1,5h"
   },
   "recency": {
-    "title": "90-Tage-Recency",
-    "description": "Informative Indikatoren: 3 Starts und Landungen als steuernder Pilot (pilot flying) in den letzten 90 Tagen, angelehnt an EASA FCL.060(b). Sichtbar auf den Luftfahrzeugkarten, der Übersicht und der Recency-Seite.",
+    "title": "90-Tage-Flugpraxis",
+    "description": "Informative Indikatoren: 3 Starts und Landungen als steuernder Pilot (pilot flying) in den letzten 90 Tagen, angelehnt an EASA FCL.060(b). Sichtbar auf den Luftfahrzeugkarten, der Übersicht und der Seite Flugpraxis.",
     "perModel": "Je Muster",
-    "perModelDesc": "Recency je Muster (z. B. C172) über alle Kennzeichen hinweg — entspricht der Definition der fortlaufenden Flugerfahrung in FCL.060(b).",
+    "perModelDesc": "Flugpraxis je Muster (z. B. C172) über alle Kennzeichen hinweg — entspricht der Definition der fortlaufenden Flugerfahrung in FCL.060(b).",
     "perRegistration": "Je Kennzeichen",
-    "perRegistrationDesc": "Zusätzlich Recency je einzelnem Kennzeichen verfolgen. Reiner Vertrautheitsindikator — die Regel selbst gilt je Klasse/Muster."
+    "perRegistrationDesc": "Zusätzlich Flugpraxis je einzelnem Kennzeichen verfolgen. Reiner Vertrautheitsindikator — die Regel selbst gilt je Klasse/Muster."
   },
   "flightColumns": {
     "title": "Spalten der Flugliste",
@@ -68,7 +68,7 @@
     "emailNotifications": "E-Mail-Benachrichtigungen",
     "masterSwitch": "Hauptschalter für alle E-Mail-Benachrichtigungen",
     "credentials": "Nachweise",
-    "ratingsAndCurrency": "Berechtigungen & Recency",
+    "ratingsAndCurrency": "Berechtigungen & Flugpraxis",
     "categories": {
       "credential_medical": "Medical-Ablauf",
       "credential_medical_desc": "Klasse 1, Klasse 2, LAPL Medical-Zertifikate",
@@ -80,12 +80,12 @@
       "credential_other_desc": "Alle anderen Nachweistypen",
       "rating_expiry": "Berechtigungsablauf",
       "rating_expiry_desc": "SEP, MEP, TMG Berechtigungs-Ablaufdaten",
-      "currency_passenger": "Passagier-Recency",
+      "currency_passenger": "Flugpraxis für die Passagiermitnahme",
       "currency_passenger_desc": "3 Starts & Landungen in 90 Tagen für Passagiermitnahme",
-      "currency_night": "Nacht-Recency",
-      "currency_night_desc": "Recency-Anforderungen für Nachtlandungen",
-      "currency_instrument": "IFR-Recency",
-      "currency_instrument_desc": "Anflüge, Holdings und IFR-Recency",
+      "currency_night": "Nacht-Flugpraxis",
+      "currency_night_desc": "Anforderungen an Nachtlandungen",
+      "currency_instrument": "IFR-Flugpraxis",
+      "currency_instrument_desc": "Anflüge, Holdings und IFR-Flugpraxis",
       "currency_flight_review": "Flugüberprüfung",
       "currency_flight_review_desc": "FAA §61.56 Flugüberprüfung / Befähigungsüberprüfung",
       "currency_revalidation": "EASA-Verlängerung",

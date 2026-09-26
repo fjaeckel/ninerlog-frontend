@@ -87,7 +87,7 @@
       "flights": "Flüge eintragen",
       "quicklog": "Quick Log",
       "aircraft": "Luftfahrzeuge",
-      "currency": "Recency & Gültigkeit",
+      "currency": "Fortlaufende Flugerfahrung & Gültigkeit",
       "licenses": "Lizenzen & Berechtigungen",
       "credentials": "Nachweise",
       "signatures": "Fluglehrer-Unterschriften",
@@ -367,8 +367,8 @@
   "ulKinds": {
     "THREE_AXIS": "Dreiachs-UL",
     "THREE_AXIS_MOTORGLIDER": "Dreiachs-UL-Motorsegler (TMG)",
-    "WEIGHT_SHIFT": "Trike (schwerkraftgesteuert)",
-    "GYROPLANE": "Tragschrauber",
+    "WEIGHT_SHIFT": "Trike (gewichtskraftgesteuert)",
+    "GYROPLANE": "UL-Tragschrauber",
     "HELICOPTER": "UL-Hubschrauber",
     "POWERED_PARAGLIDER": "Motorschirm",
     "SAILPLANE": "UL-Segelflugzeug"
