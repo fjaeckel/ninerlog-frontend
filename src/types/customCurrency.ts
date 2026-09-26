@@ -79,6 +79,8 @@ export const LAUNCH_METHOD_OPTIONS: { value: string; label: string }[] = [
   { value: 'winch', label: 'Winch' },
   { value: 'aerotow', label: 'Aerotow' },
   { value: 'self-launch', label: 'Self-launch' },
+  { value: 'car', label: 'Car tow' },
+  { value: 'bungee', label: 'Bungee' },
 ];
 
 export const FILTER_FIELD_OPTIONS: {

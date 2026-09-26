@@ -107,8 +107,10 @@
     "easa_mep_set": "Erfordert Befähigungsüberprüfung oder 10 Streckenabschnitte + 1h Auffrischungsschulung mit Fluglehrer innerhalb der 12 Monate vor dem Ablaufdatum (EASA FCL.740.A(b)(2))",
     "easa_ir": "Erfordert 10h IFR-Flugzeit + jährliche Befähigungsüberprüfung innerhalb der 12 Monate vor dem Ablaufdatum (EASA FCL.625.A)",
     "easa_lapl": "Erfordert 12h Flugzeit + 12 Starts & Landungen + 1h Übungsflug mit Fluglehrer auf Flugzeugen oder TMG in den letzten 24 Monaten, oder eine LAPL(A)-Befähigungsüberprüfung; wer SEP (Land) und SEP (See) besitzt, braucht je Klasse 1h und 6 Starts & Landungen (EASA FCL.140.A)",
-    "easa_spl": "Erfordert 5h PIC-Flugzeit + 15 Starts + 2 Übungsflüge mit Fluglehrer in den letzten 24 Monaten (EASA FCL.140.S)",
-    "easa_spl_tmg": "Erfordert 12h Flugzeit + 12 Starts & Landungen auf TMG in den letzten 24 Monaten (EASA FCL.140.S(b)(2))",
+    "easa_spl": "Erfordert 5h Flugzeit als PIC, mit Fluglehrer oder im überwachten Alleinflug auf Segelflugzeugen einschließlich TMG, davon 15 Starts und 2 Übungsflüge mit Fluglehrer auf Segelflugzeugen ohne TMG, in den letzten 24 Monaten, oder eine Befähigungsüberprüfung mit einem Prüfer (EASA SFCL.160(a)); jede Startart erfordert 5 Starts in 24 Monaten, Gummiseil 2 (SFCL.155(c))",
+    "easa_spl_tmg": "Erfordert 12h Flugzeit als PIC, mit Fluglehrer oder im überwachten Alleinflug auf Segelflugzeugen einschließlich TMG, davon 6h, 12 Starts & Landungen und ein Übungsflug von mindestens 1h mit Fluglehrer auf TMG, in den letzten 24 Monaten, oder eine Befähigungsüberprüfung mit einem Prüfer auf TMG (EASA SFCL.160(b))",
+    "easa_spl_pax": "3 Starts als PIC auf Segelflugzeugen ohne TMG in den vorangegangenen 90 Tagen für die Passagiermitnahme (EASA SFCL.160(e)(1))",
+    "easa_spl_tmg_pax": "3 Starts & Landungen als PIC auf TMG in den vorangegangenen 90 Tagen für die Passagiermitnahme im TMG, davon einer bei Nacht für die Passagiermitnahme bei Nacht (EASA SFCL.160(e)(2))",
     "easa_pax": "3 Starts & Landungen (Tag) und 1 Start & Landung bei Nacht auf demselben Muster bzw. in derselben Klasse in den vorangegangenen 90 Tagen für die Passagiermitnahme; die Nachtanforderung entfällt bei gültiger IR (EASA FCL.060(b))",
     "faa_pax_day_night": "3 Starts & Landungen in 90 Tagen für die Passagiermitnahme am Tag; 3 Starts & Landungen bei Nacht mit vollständigem Stillstand (full stop) in 90 Tagen für die Passagiermitnahme bei Nacht (14 CFR 61.57(a)/(b))",
     "faa_ir": "Erfordert 6 Instrumentenanflüge + Holdings innerhalb der vorangegangenen 6 Kalendermonate (14 CFR 61.57(c))",
@@ -177,7 +179,12 @@
     "sep_land_time": "Flugzeit auf SEP (Land)",
     "sep_land_landings": "Landungen auf SEP (Land)",
     "sep_sea_time": "Flugzeit auf SEP (See)",
-    "sep_sea_landings": "Landungen auf SEP (See)"
+    "sep_sea_landings": "Landungen auf SEP (See)",
+    "flight_time": "Flugzeit (PIC oder mit Fluglehrer)",
+    "training_flights": "Übungsflüge mit Fluglehrer",
+    "tmg_time": "Flugzeit auf TMG",
+    "tmg_landings": "Starts & Landungen auf TMG",
+    "tmg_training_flight": "Übungsflug auf TMG (mind. 1 h)"
   },
   "passengerExpiry": {
     "day": "Tag gültig bis {{date}}",

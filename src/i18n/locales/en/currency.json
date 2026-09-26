@@ -107,8 +107,10 @@
     "easa_mep_set": "Requires proficiency check, or 10 route sectors + 1h refresher training with instructor within the 12 months preceding the expiry date (EASA FCL.740.A(b)(2))",
     "easa_ir": "Requires 10h IFR flight time + annual proficiency check within the 12 months preceding the expiry date (EASA FCL.625.A)",
     "easa_lapl": "Requires 12h flight time + 12 takeoffs & landings + 1h training flight with instructor on aeroplanes or TMG within the last 24 months, or a LAPL(A) proficiency check; holders of SEP (Land) and SEP (Sea) need 1h and 6 takeoffs & landings in each (EASA FCL.140.A)",
-    "easa_spl": "Requires 5h PIC flight time + 15 launches + 2 training flights with instructor within the last 24 months (EASA FCL.140.S)",
-    "easa_spl_tmg": "Requires 12h flight time + 12 takeoffs & landings on TMG within the last 24 months (EASA FCL.140.S(b)(2))",
+    "easa_spl": "Requires 5h flight time as PIC, dual or supervised solo on sailplanes including TMGs, with 15 launches and 2 training flights with an instructor on sailplanes excluding TMGs, within the last 24 months, or a proficiency check with an examiner (EASA SFCL.160(a)); each launch method needs 5 launches in 24 months, bungee 2 (SFCL.155(c))",
+    "easa_spl_tmg": "Requires 12h flight time as PIC, dual or supervised solo on sailplanes including TMGs, with 6h, 12 takeoffs & landings and a training flight of at least 1h with an instructor on TMGs, within the last 24 months, or a proficiency check with an examiner on a TMG (EASA SFCL.160(b))",
+    "easa_spl_pax": "3 launches as PIC on sailplanes, excluding TMGs, within the preceding 90 days to carry passengers (EASA SFCL.160(e)(1))",
+    "easa_spl_tmg_pax": "3 takeoffs & landings as PIC on TMGs within the preceding 90 days to carry passengers in a TMG, one of them at night to carry passengers at night (EASA SFCL.160(e)(2))",
     "easa_pax": "3 takeoffs & landings (day) and 1 takeoff & landing at night in same type/class within preceding 90 days to carry passengers; the night requirement is waived for pilots holding a valid IR (EASA FCL.060(b))",
     "faa_pax_day_night": "3 takeoffs & landings in preceding 90 days for day passenger currency; 3 full-stop night takeoffs & landings in preceding 90 days for night passenger currency (14 CFR 61.57(a)/(b))",
     "faa_ir": "Requires 6 instrument approaches + holding procedures within the preceding 6 calendar months (14 CFR 61.57(c))",
@@ -177,7 +179,12 @@
     "sep_land_time": "Time on SEP (Land)",
     "sep_land_landings": "Landings on SEP (Land)",
     "sep_sea_time": "Time on SEP (Sea)",
-    "sep_sea_landings": "Landings on SEP (Sea)"
+    "sep_sea_landings": "Landings on SEP (Sea)",
+    "flight_time": "Flight time (PIC or dual)",
+    "training_flights": "Training flights with instructor",
+    "tmg_time": "Time on TMG",
+    "tmg_landings": "Takeoffs & landings on TMG",
+    "tmg_training_flight": "Training flight on TMG (min. 1 h)"
   },
   "passengerExpiry": {
     "day": "Day current until {{date}}",
