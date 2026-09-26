@@ -11,6 +11,10 @@
     "close": "Tour schließen",
     "moreHint": "Auf dem Smartphone findest du das im Menü „Mehr“.",
     "steps": {
+      "disciplines": {
+        "title": "Was fliegst du, und wofür bist du in Ausbildung?",
+        "body": "Hallo {{name}}! NinerLog zeigt zuerst, was du fliegst, und klappt den Rest unter „Mehr“ ein. Nichts wird je versteckt, und du kannst das jederzeit unter Profil → Was ich fliege ändern. Überspringst du den Schritt, siehst du alles."
+      },
       "welcome": {
         "title": "Willkommen bei NinerLog, {{name}}! 👋",
         "body": "Lass uns kurz zeigen, wo du alles findest. Es dauert nur eine Minute – und du kannst die Tour jederzeit überspringen."
@@ -33,7 +37,13 @@
       },
       "addFlight": {
         "title": "Flug erfassen",
-        "body": "Das ist der schnellste Weg, einen Flug zu erfassen. Luftfahrzeug wählen, Off-Block- und On-Block-Zeit, Flugplätze und Landungen eintragen – fertig."
+        "body": "Das ist der schnellste Weg, einen Flug zu erfassen. Luftfahrzeug wählen, Zeiten, Flugplätze und Landungen eintragen – fertig.",
+        "variants": {
+          "glider": "Das ist der schnellste Weg, einen Flug zu erfassen. Segelflugzeug wählen, Start- und Landezeit, Startart und Flugplatz eintragen – oder einen ganzen Tag Windenstarts auf einmal erfassen.",
+          "ultralight": "Das ist der schnellste Weg, einen Flug zu erfassen. UL wählen, Start- und Landezeit, Flugplätze und Landungen eintragen – fertig.",
+          "airline": "Das ist der schnellste Weg, einen Umlauf zu erfassen. Luftfahrzeug wählen, Off-Block- und On-Block-Zeit, Flugplätze und Landungen eintragen – Multi-Pilot- und IFR-Zeit sind direkt dabei.",
+          "powered": "Das ist der schnellste Weg, einen Flug zu erfassen. Luftfahrzeug wählen, Off-Block- und On-Block-Zeit, Flugplätze und Landungen eintragen – fertig."
+        }
       },
       "flights": {
         "title": "Deine Flüge finden",
@@ -41,12 +51,28 @@
       },
       "currency": {
         "title": "Gültigkeit behalten",
-        "body": "Behalte deine Flugpraxis im Blick – etwa 3 Starts und Landungen in 90 Tagen – damit du immer weißt, wann du fliegen darfst."
+        "body": "Sieh je Lizenz und Berechtigung, ob du fliegen darfst – Flugpraxis, Passagiermitnahme und Verlängerung – damit du immer weißt, wann du fliegen darfst.",
+        "variants": {
+          "glider": "Sieh auf einen Blick, ob du fliegen darfst: Starts, Stunden und Übungsflüge, je Startart und für die Passagiermitnahme – und was noch fehlt.",
+          "ultralight": "Behalte deine fortlaufende Flugerfahrung nach § 45 LuftPersV im Blick – Stunden, Starts und Landungen und den Übungsflug, je UL-Art – damit du immer weißt, wann du fliegen darfst.",
+          "airline": "Behalte deine Flugpraxis im Blick – etwa 3 Starts und Landungen in 90 Tagen, IFR- und Simulator-Checks – damit du immer weißt, wann du fliegen darfst.",
+          "powered": "Behalte deine Flugpraxis im Blick – etwa 3 Starts und Landungen in 90 Tagen – damit du immer weißt, wann du fliegen darfst."
+        }
       },
       "finish": {
         "title": "Du bist startklar! ✈️",
         "body": "Das war die Tour. Am besten legst du jetzt ein Luftfahrzeug an und erfasst deinen ersten Flug. Die Tour findest du jederzeit erneut in der Hilfe."
       }
+    },
+    "disciplines": {
+      "legend": "Einmal tippen für „Fliege ich“, zweimal für „Bin in Ausbildung“, ein drittes Mal zum Abwählen.",
+      "on": "Fliege ich",
+      "goal": "Bin in Ausbildung",
+      "none": "Nicht ausgewählt",
+      "auto": "Automatisch, aus deinem Flugbuch",
+      "fromLogbook": "Aus deinem Flugbuch",
+      "tileLabel": "{{name}}: {{state}}",
+      "saveFailed": "Deine Auswahl konnte nicht gespeichert werden. Versuch es erneut oder überspring den Schritt – du kannst das später unter Profil → Was ich fliege einstellen."
     }
   }
 }
