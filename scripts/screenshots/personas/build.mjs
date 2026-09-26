@@ -618,7 +618,8 @@ export function derivePilotProfile({ licenses = [], classRatings = {}, aircraft 
       }
       if (kind) ulKinds.add(kind);
       if ((f.dualGivenTime ?? 0) > 0 || (f.examinerTime ?? 0) > 0) add(extra.INSTRUCTOR, 1, 0, f.date);
-      if ((f.ifrTime ?? 0) > 0 || (f.approachesCount ?? 0) > 0) add(extra.IFR, 1, 0, f.date);
+      const sailplane = cls === 'GLIDER' || (cls === 'ULTRALIGHT' && kind === 'SAILPLANE');
+      if (!sailplane && ((f.ifrTime ?? 0) > 0 || (f.approachesCount ?? 0) > 0)) add(extra.IFR, 1, 0, f.date);
       if ((f.multiPilotTime ?? 0) > 0 || (f.sicTime ?? 0) > 0 || (f.reliefTime ?? 0) > 0) add(extra.MULTI_CREW, 1, 0, f.date);
     }
     if (f.isSimulator && !f.isPassenger) add(extra.SIMULATOR, 1, 0, f.date);
