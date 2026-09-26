@@ -82,7 +82,9 @@
   "launchMethods": {
     "winch": "Winch",
     "aerotow": "Aerotow",
-    "selfLaunch": "Self-Launch"
+    "selfLaunch": "Self-Launch",
+    "car": "Car Tow",
+    "bungee": "Bungee"
   },
   "approachTypes": {
     "ILS": "ILS",
@@ -344,6 +346,8 @@
     "winchLaunch": "Winch Launch",
     "aerotow": "Aerotow",
     "selfLaunch": "Self-Launch",
+    "carLaunch": "Car Launch",
+    "bungeeLaunch": "Bungee Launch",
     "minutes": "Minutes",
     "allLandings": "All Landings",
     "function": "Function",

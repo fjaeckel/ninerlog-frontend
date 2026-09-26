@@ -311,6 +311,21 @@ describe('CurrencyCard', () => {
     expect(screen.getByTestId('launch-method-winch')).toHaveTextContent('8 / 5 launches');
   });
 
+  it('shows launch methods by their translated name', () => {
+    const splRating: ClassRatingCurrency = {
+      ...baseRating,
+      licenseType: 'SPL',
+      launchMethodCurrency: [
+        { method: 'self-launch', launches: 5, required: 5, met: true, message: '', messageKey: 'launch_method.progress' },
+        { method: 'bungee', launches: 1, required: 2, met: false, message: '', messageKey: 'launch_method.progress' },
+      ],
+    };
+    render(<CurrencyCard rating={splRating} />);
+    expect(screen.getByTestId('launch-method-self-launch')).toHaveTextContent('Self-Launch');
+    expect(screen.getByTestId('launch-method-bungee')).toHaveTextContent('Bungee');
+    expect(screen.getByTestId('launch-method-bungee')).toHaveTextContent('1 / 2 launches');
+  });
+
   it('does not render the window banner once the window is open', () => {
     const inWindow: ClassRatingCurrency = {
       ...baseRating,

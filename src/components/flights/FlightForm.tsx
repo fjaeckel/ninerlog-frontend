@@ -922,6 +922,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <option value="winch">{t('form.winchLaunch')}</option>
             <option value="aerotow">{t('form.aerotow')}</option>
             <option value="self-launch">{t('form.selfLaunch')}</option>
+            <option value="car">{t('form.carLaunch')}</option>
+            <option value="bungee">{t('form.bungeeLaunch')}</option>
           </select>
           <p className="form-helper mt-1">{t('form.requiredForSpl')}</p>
         </fieldset>

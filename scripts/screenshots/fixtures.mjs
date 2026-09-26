@@ -246,10 +246,17 @@ export const currency = {
     {
       classRatingId: 'cr3', classType: 'GLIDER', licenseId: 'l3', regulatoryAuthority: 'EASA', licenseType: 'SPL',
       status: 'current', windowOpen: false, messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_spl',
+      countedClasses: ['GLIDER', 'TMG'],
       requirements: [
-        { nameKey: 'requirement.pic_time', met: true, current: 390, required: 300, unit: 'minutes' },
-        { nameKey: 'requirement.launches', met: true, current: 15, required: 15, unit: 'launches' },
-        { nameKey: 'requirement.training_flight', met: true, current: 60, required: 60, unit: 'minutes' },
+        { nameKey: 'requirement.flight_time', met: true, current: 390, required: 300, unit: 'minutes', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.launches', met: true, current: 15, required: 15, unit: 'launches', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.training_flights', met: true, current: 2, required: 2, unit: 'flights', messageKey: 'requirement.progress' },
+        { nameKey: 'requirement.proficiency_check', met: false, current: 0, required: 1, unit: 'check', messageKey: 'requirement.prof_check_missing' },
+      ],
+      launchMethodCurrency: [
+        { method: 'winch', launches: 12, required: 5, met: true, messageKey: 'launch_method.progress' },
+        { method: 'aerotow', launches: 0, required: 5, met: false, messageKey: 'launch_method.progress' },
+        { method: 'self-launch', launches: 3, required: 5, met: false, messageKey: 'launch_method.progress' },
       ],
     },
     {

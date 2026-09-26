@@ -166,7 +166,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
         </div>
       )}
 
-      {/* Launch method currency (SPL FCL.140.S(b)(1)) */}
+      {/* Launch method currency (SFCL.155(c)) */}
       {rating.launchMethodCurrency && rating.launchMethodCurrency.length > 0 && (
         <div className="mt-3 space-y-1" data-testid="launch-method-currency">
           <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('launchMethod')}</p>
@@ -174,7 +174,10 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
             <div key={lmc.method} className="flex justify-between items-center text-xs" data-testid={`launch-method-${lmc.method}`}>
               <span className="text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
                 <RequirementIcon met={lmc.met} />
-                {lmc.method}
+                {t(`launchMethods.${lmc.method === 'self-launch' ? 'selfLaunch' : lmc.method}`, {
+                  ns: 'flights',
+                  defaultValue: lmc.method,
+                })}
               </span>
               <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
                 {currencyMessage(lmc, { current: lmc.launches, required: lmc.required })}

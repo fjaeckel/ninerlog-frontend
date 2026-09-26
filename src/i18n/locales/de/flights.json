@@ -82,7 +82,9 @@
   "launchMethods": {
     "winch": "Winde",
     "aerotow": "Flugzeugschlepp",
-    "selfLaunch": "Eigenstart"
+    "selfLaunch": "Eigenstart",
+    "car": "Autoschlepp",
+    "bungee": "Gummiseil"
   },
   "approachTypes": {
     "ILS": "ILS",
@@ -344,6 +346,8 @@
     "winchLaunch": "Windenstart",
     "aerotow": "Flugzeugschlepp",
     "selfLaunch": "Eigenstart",
+    "carLaunch": "Autoschleppstart",
+    "bungeeLaunch": "Gummiseilstart",
     "minutes": "Minuten",
     "allLandings": "Alle Landungen",
     "function": "Funktion",
