@@ -44,3 +44,9 @@ describe('invalidateFlightDependentQueries', () => {
     );
   });
 });
+
+describe('pilot profile invalidation', () => {
+  it('refreshes the pilot profile with the flight-dependent queries', () => {
+    expect(FLIGHT_DEPENDENT_QUERY_KEYS).toEqual(expect.arrayContaining([['pilot-profile']]));
+  });
+});

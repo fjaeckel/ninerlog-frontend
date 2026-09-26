@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ProfilePage from '../../pages/ProfilePage';
 import * as useProfileHook from '../../hooks/useProfile';
 import * as useAuthHook from '../../hooks/useAuth';
+import * as usePilotProfileHook from '../../hooks/usePilotProfile';
 import { useAuthStore } from '../../stores/authStore';
 
 const renderWithProviders = (component: React.ReactElement) => {
@@ -44,6 +45,7 @@ describe('ProfilePage', () => {
     vi.spyOn(useProfileHook, 'useDeleteAccount').mockReturnValue(mockDeleteAccount as any);
     vi.spyOn(useProfileHook, 'useDeleteAllFlights').mockReturnValue(mockDeleteAllFlights as any);
     vi.spyOn(useProfileHook, 'useDeleteAllUserData').mockReturnValue(mockDeleteAllUserData as any);
+    vi.spyOn(usePilotProfileHook, 'usePilotProfile').mockReturnValue({ data: undefined, isLoading: false, isError: false } as unknown as ReturnType<typeof usePilotProfileHook.usePilotProfile>);
   });
 
   it('renders all profile sections', () => {

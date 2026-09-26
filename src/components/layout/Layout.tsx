@@ -15,6 +15,7 @@ import { UpdateIndicator } from './UpdateIndicator';
 import { LogoMark } from '../ui/Logo';
 import { ThemeSwitcher } from '../ui/ThemeSwitcher';
 import { OnboardingTour } from '../onboarding/OnboardingTour';
+import { ToolkitToast } from '../relevance/ToolkitToast';
 import { APP_NAME } from '../../lib/config';
 
 export default function Layout() {
@@ -258,6 +259,7 @@ export default function Layout() {
 
       {/* First-login guided tour overlay */}
       <OnboardingTour />
+      <ToolkitToast />
     </div>
   );
 }

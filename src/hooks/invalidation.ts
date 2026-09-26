@@ -15,7 +15,16 @@ export const FLIGHT_DEPENDENT_QUERY_KEYS: readonly (readonly unknown[])[] = [
   ['aircraft', 'stats'],
   ['custom-reports', 'result'],
   ['custom-reports', 'preview'],
+  ['pilot-profile'],
 ];
+
+/** Query key of `GET /users/me/pilot-profile`. */
+export const PILOT_PROFILE_QUERY_KEY = ['pilot-profile'] as const;
+
+/** Invalidate the pilot profile, whose evidence derives from licences, ratings and aircraft. */
+export function invalidatePilotProfile(queryClient: QueryClient): void {
+  queryClient.invalidateQueries({ queryKey: [...PILOT_PROFILE_QUERY_KEY] });
+}
 
 /**
  * Invalidate all queries that depend on the user's flight log.
