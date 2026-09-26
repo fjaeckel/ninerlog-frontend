@@ -84,6 +84,7 @@
     "IR": "IR",
     "GLIDER": "Glider",
     "ULTRALIGHT": "Ultralight",
+    "GYROPLANE": "Gyroplane",
     "OTHER": "Other"
   }
 }

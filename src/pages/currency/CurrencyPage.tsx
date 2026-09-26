@@ -306,6 +306,11 @@ export default function CurrencyPage() {
                         style={{ width: `${Math.min((pax.dayLandings / pax.dayRequired) * 100, 100)}%` }}
                       />
                     </div>
+                    {pax.messageKey === 'pax.gpl_experience_not_met' && (
+                      <p className="text-xs text-red-600 dark:text-red-400" data-testid="pax-gpl-experience">
+                        {t('messages.pax.gpl_experience_not_met', { needed: pax.messageParams?.needed ?? 0 })}
+                      </p>
+                    )}
                     {pax.dayExpiresOn && (
                       <p className="text-xs text-slate-400 dark:text-slate-500" data-testid="pax-day-expires">
                         {t('passengerExpiry.day', { date: fmtDate(pax.dayExpiresOn) })}

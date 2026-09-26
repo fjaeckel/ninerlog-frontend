@@ -35,7 +35,8 @@
     "defaultDepartureIcao": "Standard-Startflugplatz",
     "defaultArrivalIcao": "Standard-Zielflugplatz",
     "notes": "Anmerkungen",
-    "ulKind": "UL-Art"
+    "ulKind": "UL-Art",
+    "maxTakeoffMassKg": "Höchstabflugmasse (kg)"
   },
   "stats": {
     "totalTime": "Gesamtzeit",
@@ -64,6 +65,7 @@
     "TMG": "TMG",
     "GLIDER": "Segelflugzeug",
     "ULTRALIGHT": "Ultraleicht",
+    "GYROPLANE": "Tragschrauber",
     "OTHER": "Sonstige"
   },
   "form": {
@@ -84,7 +86,8 @@
     "renameFlights_one": "{{count}} geloggten Flug von {{oldRegistration}} auf das neue Kennzeichen aktualisieren",
     "renameFlights_other": "{{count}} geloggte Flüge von {{oldRegistration}} auf das neue Kennzeichen aktualisieren",
     "ulKindUnspecified": "Nicht angegeben",
-    "ulKindHelper": "Bestimmt, worauf die Flüge angerechnet werden. Flugzeit und Landungen auf Dreiachs-UL zählen für die Verlängerung von EASA SEP (Land) und die LAPL(A)-Recency, auf einem UL-Motorsegler für TMG, der Übungsflug mit Fluglehrer aber nicht. Die UL-Recency nach LuftPersV gilt je Art."
+    "ulKindHelper": "Bestimmt, worauf die Flüge angerechnet werden. Flugzeit und Landungen auf Dreiachs-UL zählen für die Verlängerung von EASA SEP (Land) und die LAPL(A)-Recency, auf einem UL-Motorsegler für TMG, der Übungsflug mit Fluglehrer aber nicht. Die UL-Recency nach LuftPersV gilt je Art.",
+    "maxTakeoffMassHelper": "UL-Tragschrauber ab 450 kg zählen für Flugzeit und Landungen der EASA-GPL-Recency (FCL.035(a)(5))."
   },
   "classOptions": {
     "SEP_LAND": "SEP (Land) — einmotorig, Kolbenmotor",
@@ -95,6 +98,7 @@
     "SET_SEA": "SET (See) — einmotorig, Turboprop",
     "TMG": "TMG — Reisemotorsegler",
     "GLIDER": "Segelflugzeug",
-    "ULTRALIGHT": "Ultraleicht (UL)"
+    "ULTRALIGHT": "Ultraleicht (UL)",
+    "GYROPLANE": "Tragschrauber — GPL (einmotoriger Tragschrauber)"
   }
 }

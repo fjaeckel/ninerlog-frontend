@@ -165,6 +165,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
             <option value="LAPL" />
             <option value="LAPL(A)" />
             <option value="UL" />
+            <option value="GPL" />
             <option value="IR" />
           </datalist>
           {errors.licenseType && (

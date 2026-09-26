@@ -48,6 +48,7 @@
     "IR": "IR",
     "GLIDER": "Segelflugzeug",
     "ULTRALIGHT": "Ultraleicht",
+    "GYROPLANE": "Tragschrauber",
     "OTHER": "Sonstige"
   },
   "recentFlights": "Letzte Flüge",

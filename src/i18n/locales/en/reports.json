@@ -196,6 +196,7 @@
     "TMG": "TMG",
     "GLIDER": "Glider",
     "ULTRALIGHT": "Ultralight",
+    "GYROPLANE": "Gyroplane",
     "BALLOON": "Balloon",
     "HELICOPTER": "Helicopter",
     "Unclassified": "Unclassified"

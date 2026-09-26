@@ -69,6 +69,7 @@
     "IR": "Instrument Rating",
     "GLIDER": "Glider",
     "ULTRALIGHT": "Ultralight",
+    "GYROPLANE": "Gyroplane",
     "OTHER": "Other"
   },
   "expiresLabel": "Expires: {{date}}",
@@ -107,8 +108,9 @@
     "easa_mep_set": "Requires proficiency check, or 10 route sectors + 1h refresher training with instructor within the 12 months preceding the expiry date (EASA FCL.740.A(b)(2))",
     "easa_ir": "Requires 10h IFR flight time + annual proficiency check within the 12 months preceding the expiry date (EASA FCL.625.A)",
     "easa_lapl": "Requires 12h flight time + 12 takeoffs & landings + 1h training flight with instructor on aeroplanes or TMG within the last 24 months, or a LAPL(A) proficiency check; holders of SEP (Land) and SEP (Sea) need 1h and 6 takeoffs & landings in each (EASA FCL.140.A); three-axis ultralight time and landings count, the training flight does not (FCL.035(a)(4))",
-    "easa_spl": "Requires 5h flight time as PIC, dual or supervised solo on sailplanes including TMGs, with 15 launches and 2 training flights with an instructor on sailplanes excluding TMGs, within the last 24 months, or a proficiency check with an examiner (EASA SFCL.160(a)); each launch method needs 5 launches in 24 months, bungee 2 (SFCL.155(c))",
-    "easa_spl_tmg": "Requires 12h flight time as PIC, dual or supervised solo on sailplanes including TMGs, with 6h, 12 takeoffs & landings and a training flight of at least 1h with an instructor on TMGs, within the last 24 months, or a proficiency check with an examiner on a TMG (EASA SFCL.160(b))",
+    "easa_spl": "Requires 5h flight time as PIC, dual or supervised solo on sailplanes including TMGs, with 15 launches and 2 training flights with an instructor on sailplanes excluding TMGs, within the last 24 months, or a proficiency check with an examiner (EASA SFCL.160(a)); each launch method needs 5 launches in 24 months, bungee 2 (SFCL.155(c)) Ultralight sailplane and UL motorglider PIC hours count toward the hours (AMC1 SFCL.160).",
+    "easa_spl_tmg": "Requires 12h flight time as PIC, dual or supervised solo on sailplanes including TMGs, with 6h, 12 takeoffs & landings and a training flight of at least 1h with an instructor on TMGs, within the last 24 months, or a proficiency check with an examiner on a TMG (EASA SFCL.160(b)) Not required with Part-FCL TMG privileges (SFCL.160(c)); ultralight sailplane and UL motorglider PIC hours count toward the hours (AMC1 SFCL.160).",
+    "easa_gpl": "Requires 12h flight time + 12 takeoffs & landings + 1h refresher training with instructor on gyroplanes within the last 2 years, or a GPL proficiency check (EASA FCL.240.G(a)); ultralight gyroplanes of at least 450 kg count toward time and landings, not the refresher (FCL.035(a)(5))",
     "easa_spl_pax": "3 launches as PIC on sailplanes, excluding TMGs, within the preceding 90 days to carry passengers (EASA SFCL.160(e)(1))",
     "easa_spl_tmg_pax": "3 takeoffs & landings as PIC on TMGs within the preceding 90 days to carry passengers in a TMG, one of them at night to carry passengers at night (EASA SFCL.160(e)(2))",
     "easa_pax": "3 takeoffs & landings (day) and 1 takeoff & landing at night in same type/class within preceding 90 days to carry passengers; the night requirement is waived for pilots holding a valid IR (EASA FCL.060(b))",
@@ -213,6 +215,7 @@
       "revalidation_current": "Current — all revalidation requirements met.",
       "recency_not_met": "Recency requirements not fully met.",
       "recency_current": "Current — all recency requirements met.",
+      "sfcl_tmg_exempt": "Current — your Part-FCL TMG privileges exempt you from SPL TMG recency (SFCL.160(c)).",
       "ir_hours_and_check_not_met": "Neither the IFR hours nor the proficiency check are met.",
       "ir_hours_not_met": "IFR hour requirement not met.",
       "ir_check_not_met": "Annual proficiency check not completed.",
@@ -238,7 +241,8 @@
       "current_day_night": "Current for day and night passengers.",
       "day_current_night_not_one": "Day current, night not current — {{needed}} more night landing needed, or hold a valid IR.",
       "day_current_night_not_other": "Day current, night not current — {{needed}} more night landings needed, or hold a valid IR.",
-      "current_day_privilege_separate": "Flight experience met — the passenger endorsement is proved separately."
+      "current_day_privilege_separate": "Flight experience met — the passenger endorsement is proved separately.",
+      "gpl_experience_not_met": "Passengers only after 10 h as PIC on gyroplanes since your GPL was issued — {{needed}} min to go (FCL.205.G(a)(2))."
     },
     "flight_review": {
       "evaluation_failed": "Flight review status could not be determined.",

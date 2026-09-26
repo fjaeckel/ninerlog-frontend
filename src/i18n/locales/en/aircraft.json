@@ -35,7 +35,8 @@
     "defaultDepartureIcao": "Default departure airfield",
     "defaultArrivalIcao": "Default arrival airfield",
     "notes": "Notes",
-    "ulKind": "Ultralight kind"
+    "ulKind": "Ultralight kind",
+    "maxTakeoffMassKg": "Maximum take-off mass (kg)"
   },
   "stats": {
     "totalTime": "Total Time",
@@ -64,6 +65,7 @@
     "TMG": "TMG",
     "GLIDER": "Glider",
     "ULTRALIGHT": "Ultralight",
+    "GYROPLANE": "Gyroplane",
     "OTHER": "Other"
   },
   "form": {
@@ -84,7 +86,8 @@
     "renameFlights_one": "Also update {{count}} logged flight from {{oldRegistration}} to the new registration",
     "renameFlights_other": "Also update {{count}} logged flights from {{oldRegistration}} to the new registration",
     "ulKindUnspecified": "Unspecified",
-    "ulKindHelper": "Decides what the flights count toward. Three-axis ultralight time and landings count toward EASA SEP (Land) revalidation and LAPL(A) recency, a UL motorglider's toward TMG, but not the instructor flight. German UL recency is kept per kind."
+    "ulKindHelper": "Decides what the flights count toward. Three-axis ultralight time and landings count toward EASA SEP (Land) revalidation and LAPL(A) recency, a UL motorglider's toward TMG, but not the instructor flight. German UL recency is kept per kind.",
+    "maxTakeoffMassHelper": "Ultralight gyroplanes of at least 450 kg count toward EASA GPL recency time and landings (FCL.035(a)(5))."
   },
   "classOptions": {
     "SEP_LAND": "SEP (Land) — Single Engine Piston",
@@ -95,6 +98,7 @@
     "SET_SEA": "SET (Sea) — Single Engine Turboprop",
     "TMG": "TMG — Touring Motor Glider",
     "GLIDER": "Glider — Sailplane",
-    "ULTRALIGHT": "Ultralight — Microlight"
+    "ULTRALIGHT": "Ultralight — Microlight",
+    "GYROPLANE": "Gyroplane — GPL (single-propeller gyroplane)"
   }
 }

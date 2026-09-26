@@ -10,7 +10,7 @@ import { UL_AIRCRAFT_KINDS, type ULKind } from '../../lib/ultralight';
 
 const AIRCRAFT_CLASSES = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
-  'SET_LAND', 'SET_SEA', 'TMG', 'GLIDER', 'ULTRALIGHT',
+  'SET_LAND', 'SET_SEA', 'TMG', 'GLIDER', 'ULTRALIGHT', 'GYROPLANE',
 ] as const;
 
 const aircraftSchema = z.object({
@@ -20,6 +20,7 @@ const aircraftSchema = z.object({
   model: z.string().min(1, 'Model is required').max(100),
   aircraftClass: z.string().optional().or(z.literal('')),
   ulKind: z.string().optional().or(z.literal('')),
+  maxTakeoffMassKg: z.string().regex(/^\d{0,7}$/, 'Whole kilograms').optional().or(z.literal('')),
   isComplex: z.boolean(),
   isHighPerformance: z.boolean(),
   isTailwheel: z.boolean(),
@@ -72,6 +73,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       model: '',
       aircraftClass: '',
       ulKind: '',
+      maxTakeoffMassKg: '',
       isComplex: false,
       isHighPerformance: false,
       isTailwheel: false,
@@ -97,6 +99,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       model: existingAircraft.model,
       aircraftClass: acClass,
       ulKind: existingAircraft.ulKind || '',
+      maxTakeoffMassKg: existingAircraft.maxTakeoffMassKg ? String(existingAircraft.maxTakeoffMassKg) : '',
       isComplex: existingAircraft.isComplex ?? false,
       isHighPerformance: existingAircraft.isHighPerformance ?? false,
       isTailwheel: existingAircraft.isTailwheel ?? false,
@@ -121,6 +124,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
     : 0;
   const showRenameOption = registrationChanged && flightsOnOldRegistration > 0;
   const isUltralight = watch('aircraftClass') === 'ULTRALIGHT';
+  const isULGyroplane = isUltralight && watch('ulKind') === 'GYROPLANE';
 
   const onSubmit = async (data: AircraftFormData) => {
     try {
@@ -131,6 +135,9 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         model: data.model,
         aircraftClass: (data.aircraftClass || null) as any,
         ulKind: data.aircraftClass === 'ULTRALIGHT' && data.ulKind ? (data.ulKind as ULKind) : null,
+        maxTakeoffMassKg: data.aircraftClass === 'ULTRALIGHT' && data.ulKind === 'GYROPLANE' && Number(data.maxTakeoffMassKg) > 0
+          ? Number(data.maxTakeoffMassKg)
+          : null,
         isComplex: data.isComplex,
         isHighPerformance: data.isHighPerformance,
         isTailwheel: data.isTailwheel,
@@ -312,6 +319,25 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             ))}
           </select>
           <p className="form-helper">{t('form.ulKindHelper')}</p>
+        </div>
+      )}
+
+      {isULGyroplane && (
+        <div>
+          <label htmlFor="maxTakeoffMassKg" className="form-label">
+            {t('fields.maxTakeoffMassKg')}
+          </label>
+          <input
+            {...register('maxTakeoffMassKg')}
+            type="text"
+            inputMode="numeric"
+            id="maxTakeoffMassKg"
+            className={`input w-40 ${errors.maxTakeoffMassKg ? 'input-error' : ''}`}
+            placeholder="472"
+            aria-invalid={!!errors.maxTakeoffMassKg}
+            aria-describedby="help-mtom"
+          />
+          <p id="help-mtom" className="form-helper">{t('form.maxTakeoffMassHelper')}</p>
         </div>
       )}
 

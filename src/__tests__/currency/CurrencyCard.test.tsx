@@ -396,4 +396,5 @@ describe('CurrencyCard', () => {
     render(<CurrencyCard rating={baseRating} />);
     expect(screen.queryByTestId('currency-counted-classes')).not.toBeInTheDocument();
   });
+
 });
