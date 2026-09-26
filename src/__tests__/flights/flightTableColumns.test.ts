@@ -8,6 +8,9 @@ import {
   type FlightColumnKey,
 } from '../../components/flights/flightTableColumns';
 import type { components } from '../../api/schema';
+import { resolveDisciplines } from '../../hooks/usePilotProfile';
+import { columnRelevanceFor } from '../../hooks/useFlightColumnRelevance';
+import { PERSONA_PROFILES } from '../../test/pilotProfile';
 
 type Flight = components['schemas']['Flight'];
 
@@ -119,6 +122,7 @@ describe('selectFlightColumns — custom mode', () => {
 
     expect(layout).toEqual({
       offOnBlock: false,
+      launch: false,
       function: false,
       landings: false,
       time: [],
@@ -237,5 +241,67 @@ describe('flightFunctionKind — declared function times', () => {
   it('labels a relief-only sector SIC', () => {
     const f = flight({ isPic: false, reliefTime: 90, sicTime: 0 });
     expect(flightFunctionKind(f)).toBe('sic');
+  });
+});
+
+describe('selectFlightColumns — relevance in automatic mode', () => {
+  const rel = (p: ReturnType<(typeof PERSONA_PROFILES)[keyof typeof PERSONA_PROFILES]>) =>
+    columnRelevanceFor(resolveDisciplines(p, false));
+  const glider = (o: Partial<Flight> = {}) =>
+    flight({ aircraftReg: 'D-1234', aircraftType: 'ASK 21', offBlockTime: null, onBlockTime: null, ...o });
+
+  it('A2 Mark: an airline page is unchanged by relevance', () => {
+    const page = [
+      flight({ picTime: 90, nightTime: 30, ifrTime: 60 }),
+      flight({ sicTime: 90, multiPilotTime: 90, ifrTime: 90 }),
+    ];
+    expect(selectFlightColumns(page, auto, rel(PERSONA_PROFILES.mark()))).toEqual(selectFlightColumns(page, auto));
+    expect(selectFlightCardColumns(page, auto, rel(PERSONA_PROFILES.mark()))).toEqual(selectFlightCardColumns(page, auto));
+  });
+
+  it('L Lena: off/on block is not force-shown when no flight on the page has block times', () => {
+    const page = [glider({ picTime: 8, launchMethod: 'winch', launches: 6 })];
+    const layout = selectFlightColumns(page, auto, rel(PERSONA_PROFILES.lena()));
+    expect(layout.offOnBlock).toBe(false);
+    expect(selectFlightCardColumns(page, auto, rel(PERSONA_PROFILES.lena())).offOnBlock).toBe(false);
+  });
+
+  it('L Lena: block times on the page still show the column (data always wins)', () => {
+    const page = [glider({ offBlockTime: '10:00:00', onBlockTime: '10:10:00' })];
+    expect(selectFlightColumns(page, auto, rel(PERSONA_PROFILES.lena())).offOnBlock).toBe(true);
+  });
+
+  it('K Karl: a TMG pilot keeps the block column even when the page has none', () => {
+    const page = [flight({ offBlockTime: null, onBlockTime: null })];
+    expect(selectFlightColumns(page, auto, rel(PERSONA_PROFILES.karl())).offOnBlock).toBe(true);
+  });
+
+  it('shows the launch column when any flight on the page has a launch method', () => {
+    const lena = rel(PERSONA_PROFILES.lena());
+    expect(selectFlightColumns([glider({ launchMethod: 'winch' })], auto, lena).launch).toBe(true);
+    expect(selectFlightColumns([glider()], auto, lena).launch).toBe(false);
+    expect(selectFlightColumns([glider({ launchMethod: 'aerotow' })], auto, rel(PERSONA_PROFILES.mark())).launch).toBe(true);
+    expect(selectFlightColumns([glider({ launchMethod: 'winch' })], custom(['picTime'])).launch).toBe(false);
+  });
+
+  it('P Petra: a relevant boosted column comes before generic ones', () => {
+    const page = [glider({ picTime: 60, dualTime: 30, crossCountryTime: 60, soloTime: 20, dualGivenTime: 45 })];
+    expect(keys(selectFlightColumns(page, auto))).toEqual(['picTime', 'dualTime', 'crossCountryTime', 'dualGivenTime']);
+    expect(keys(selectFlightColumns(page, auto, rel(PERSONA_PROFILES.petra())))).toEqual([
+      'dualGivenTime', 'picTime', 'dualTime', 'crossCountryTime',
+    ]);
+  });
+
+  it('S3 Sabine: an IFR or SIC column sorts after the relevant ones', () => {
+    const page = [flight({ picTime: 60, dualTime: 10, crossCountryTime: 30, ifrTime: 5, soloTime: 20 })];
+    expect(keys(selectFlightColumns(page, auto, rel(PERSONA_PROFILES.sabine())))).toEqual([
+      'picTime', 'dualTime', 'crossCountryTime', 'soloTime',
+    ]);
+  });
+
+  it('fails open while the profile loads', () => {
+    const page = [glider({ picTime: 60 })];
+    const loading = columnRelevanceFor(resolveDisciplines(undefined, true));
+    expect(selectFlightColumns(page, auto, loading)).toEqual(selectFlightColumns(page, auto));
   });
 });

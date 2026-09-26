@@ -74,5 +74,12 @@
       "FLIGHTS_INSTRUCTING": "you logged {{ref}}"
     },
     "fallbackReason": "your logbook points to it"
+  },
+  "moreClasses": "More classes",
+  "moreSections": "More sections ({{count}})",
+  "dormant": {
+    "note": "Dormant — not flown in 24 months",
+    "show": "Show status",
+    "hide": "Hide status"
   }
 }

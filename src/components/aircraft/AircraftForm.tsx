@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +8,8 @@ import { extractApiError } from '../../lib/errors';
 import { normalizeLocation } from '../../lib/airport';
 import { UL_AIRCRAFT_KINDS, type ULKind } from '../../lib/ultralight';
 import { AIRCRAFT_CLASSES } from '../../lib/aircraftClass';
+import { useRelevance, type Aircraft } from '../../lib/relevance';
+import { ClassOptions, FoldDrawer, FoldScope, Folded } from '../relevance';
 
 const aircraftSchema = z.object({
   registration: z.string().min(1, 'Registration is required').max(20),
@@ -122,6 +124,46 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
   const isUltralight = watch('aircraftClass') === 'ULTRALIGHT';
   const isULGyroplane = isUltralight && watch('ulKind') === 'GYROPLANE';
 
+  const watchedClass = watch('aircraftClass');
+  const watchedULKind = watch('ulKind');
+  const flagAircraft = useMemo(
+    () => (watchedClass ? ({ aircraftClass: watchedClass, ulKind: watchedULKind || null } as Aircraft) : null),
+    [watchedClass, watchedULKind],
+  );
+  const [isComplex, isHighPerformance, isTailwheel, isMultiPilot] = watch([
+    'isComplex', 'isHighPerformance', 'isTailwheel', 'isMultiPilot',
+  ]);
+  const flagRecord = useMemo(
+    () => ({ isComplex, isHighPerformance, isTailwheel, isMultiPilot }),
+    [isComplex, isHighPerformance, isTailwheel, isMultiPilot],
+  );
+  const aeroplaneFlags = useRelevance('aircraft.complexFlags', { aircraft: flagAircraft, record: flagRecord });
+  const multiPilotFlag = useRelevance('aircraft.multiPilot', { aircraft: flagAircraft, record: flagRecord });
+
+  const flagLabel = 'flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer';
+  const aeroplaneFlagInputs = (
+    <>
+      <label className={flagLabel}>
+        <input {...register('isComplex')} type="checkbox" className="checkbox" />
+        {t('fields.isComplex')}
+      </label>
+      <label className={flagLabel}>
+        <input {...register('isHighPerformance')} type="checkbox" className="checkbox" />
+        {t('fields.isHighPerformance')}
+      </label>
+      <label className={flagLabel}>
+        <input {...register('isTailwheel')} type="checkbox" className="checkbox" />
+        {t('fields.isTailwheel')}
+      </label>
+    </>
+  );
+  const multiPilotInput = (
+    <label className={flagLabel}>
+      <input {...register('isMultiPilot')} type="checkbox" className="checkbox" />
+      {t('fields.isMultiPilot')}
+    </label>
+  );
+
   const onSubmit = async (data: AircraftFormData) => {
     try {
       const payload = {
@@ -159,273 +201,277 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {apiError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-          {apiError}
-        </div>
-      )}
-      {/* Registration & Type */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="registration" className="form-label">
-            {t('fields.registration')} <span className="text-red-500">*</span>
-          </label>
-          <input
-            {...register('registration')}
-            type="text"
-            id="registration"
-            className={`input ${errors.registration ? 'input-error' : ''}`}
-            placeholder="D-EFGH"
-            aria-invalid={!!errors.registration}
-            aria-describedby={errors.registration ? 'err-registration' : undefined}
-          />
-          {errors.registration && (
-            <p id="err-registration" className="form-error">{errors.registration.message}</p>
-          )}
-          {showRenameOption && (
-            <label className="mt-2 flex items-start gap-2 text-sm text-amber-700 dark:text-amber-400 cursor-pointer">
-              <input
-                {...register('renameFlights')}
-                type="checkbox"
-                className="checkbox"
-              />
-              {t('form.renameFlights', {
-                count: flightsOnOldRegistration,
-                oldRegistration: originalRegistration,
-              })}
-            </label>
-          )}
-        </div>
-        <div>
-          <label htmlFor="type" className="form-label">
-            {t('fields.type')} <span className="text-red-500">*</span>
-          </label>
-          <input
-            {...register('type')}
-            type="text"
-            id="type"
-            className={`input ${errors.type ? 'input-error' : ''}`}
-            placeholder="C172"
-            aria-invalid={!!errors.type}
-            aria-describedby={errors.type ? 'err-type' : undefined}
-          />
-          {errors.type && (
-            <p id="err-type" className="form-error">{errors.type.message}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Make & Model */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="make" className="form-label">
-            {t('fields.make')} <span className="text-red-500">*</span>
-          </label>
-          <input
-            {...register('make')}
-            type="text"
-            id="make"
-            className={`input ${errors.make ? 'input-error' : ''}`}
-            placeholder="Cessna"
-            aria-invalid={!!errors.make}
-            aria-describedby={errors.make ? 'err-make' : undefined}
-          />
-          {errors.make && (
-            <p id="err-make" className="form-error">{errors.make.message}</p>
-          )}
-        </div>
-        <div>
-          <label htmlFor="model" className="form-label">
-            {t('fields.model')} <span className="text-red-500">*</span>
-          </label>
-          <input
-            {...register('model')}
-            type="text"
-            id="model"
-            className={`input ${errors.model ? 'input-error' : ''}`}
-            placeholder="172 Skyhawk"
-            aria-invalid={!!errors.model}
-            aria-describedby={errors.model ? 'err-model' : undefined}
-          />
-          {errors.model && (
-            <p id="err-model" className="form-error">{errors.model.message}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Aircraft Class */}
-      <div>
-        <label htmlFor="aircraftClass" className="form-label">
-          {t('fields.aircraftClass')}
-        </label>
-        {isCustomClass ? (
-          <div className="flex gap-2">
-            <input
-              {...register('aircraftClass')}
-              type="text"
-              id="aircraftClass"
-              className="input flex-1"
-              placeholder={t('form.customClassPlaceholder')}
-            />
-            <button
-              type="button"
-              onClick={() => { setIsCustomClass(false); setValue('aircraftClass', ''); }}
-              className="btn-ghost btn-sm text-xs whitespace-nowrap"
-            >
-              {t('form.pickFromList')}
-            </button>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            <select
-              {...register('aircraftClass')}
-              id="aircraftClass"
-              className="input flex-1"
-              onChange={(e) => {
-                register('aircraftClass').onChange(e);
-              }}
-            >
-              <option value="">{t('form.selectClass')}</option>
-              {AIRCRAFT_CLASSES.map((cr) => (
-                <option key={cr} value={cr}>{t(`classOptions.${cr}`)}</option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={() => { setIsCustomClass(true); setValue('aircraftClass', ''); }}
-              className="btn-ghost btn-sm text-xs whitespace-nowrap"
-            >
-              {t('form.customClass')}
-            </button>
+    <FoldScope>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {apiError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+            {apiError}
           </div>
         )}
-        <p className="form-helper">{t('form.classHelper')}</p>
-      </div>
-
-      {isUltralight && (
-        <div>
-          <label htmlFor="ulKind" className="form-label">
-            {t('fields.ulKind')}
-          </label>
-          <select {...register('ulKind')} id="ulKind" className="input">
-            <option value="">{t('form.ulKindUnspecified')}</option>
-            {UL_AIRCRAFT_KINDS.map((k) => (
-              <option key={k} value={k}>{t(`common:ulKinds.${k}`)}</option>
-            ))}
-          </select>
-          <p className="form-helper">{t('form.ulKindHelper')}</p>
+        {/* Registration & Type */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="registration" className="form-label">
+              {t('fields.registration')} <span className="text-red-500">*</span>
+            </label>
+            <input
+              {...register('registration')}
+              type="text"
+              id="registration"
+              className={`input ${errors.registration ? 'input-error' : ''}`}
+              placeholder="D-EFGH"
+              aria-invalid={!!errors.registration}
+              aria-describedby={errors.registration ? 'err-registration' : undefined}
+            />
+            {errors.registration && (
+              <p id="err-registration" className="form-error">{errors.registration.message}</p>
+            )}
+            {showRenameOption && (
+              <label className="mt-2 flex items-start gap-2 text-sm text-amber-700 dark:text-amber-400 cursor-pointer">
+                <input
+                  {...register('renameFlights')}
+                  type="checkbox"
+                  className="checkbox"
+                />
+                {t('form.renameFlights', {
+                  count: flightsOnOldRegistration,
+                  oldRegistration: originalRegistration,
+                })}
+              </label>
+            )}
+          </div>
+          <div>
+            <label htmlFor="type" className="form-label">
+              {t('fields.type')} <span className="text-red-500">*</span>
+            </label>
+            <input
+              {...register('type')}
+              type="text"
+              id="type"
+              className={`input ${errors.type ? 'input-error' : ''}`}
+              placeholder="C172"
+              aria-invalid={!!errors.type}
+              aria-describedby={errors.type ? 'err-type' : undefined}
+            />
+            {errors.type && (
+              <p id="err-type" className="form-error">{errors.type.message}</p>
+            )}
+          </div>
         </div>
-      )}
 
-      {isULGyroplane && (
+        {/* Make & Model */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="make" className="form-label">
+              {t('fields.make')} <span className="text-red-500">*</span>
+            </label>
+            <input
+              {...register('make')}
+              type="text"
+              id="make"
+              className={`input ${errors.make ? 'input-error' : ''}`}
+              placeholder="Cessna"
+              aria-invalid={!!errors.make}
+              aria-describedby={errors.make ? 'err-make' : undefined}
+            />
+            {errors.make && (
+              <p id="err-make" className="form-error">{errors.make.message}</p>
+            )}
+          </div>
+          <div>
+            <label htmlFor="model" className="form-label">
+              {t('fields.model')} <span className="text-red-500">*</span>
+            </label>
+            <input
+              {...register('model')}
+              type="text"
+              id="model"
+              className={`input ${errors.model ? 'input-error' : ''}`}
+              placeholder="172 Skyhawk"
+              aria-invalid={!!errors.model}
+              aria-describedby={errors.model ? 'err-model' : undefined}
+            />
+            {errors.model && (
+              <p id="err-model" className="form-error">{errors.model.message}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Aircraft Class */}
         <div>
-          <label htmlFor="maxTakeoffMassKg" className="form-label">
-            {t('fields.maxTakeoffMassKg')}
+          <label htmlFor="aircraftClass" className="form-label">
+            {t('fields.aircraftClass')}
           </label>
-          <input
-            {...register('maxTakeoffMassKg')}
-            type="text"
-            inputMode="numeric"
-            id="maxTakeoffMassKg"
-            className={`input w-40 ${errors.maxTakeoffMassKg ? 'input-error' : ''}`}
-            placeholder="472"
-            aria-invalid={!!errors.maxTakeoffMassKg}
-            aria-describedby="help-mtom"
+          {isCustomClass ? (
+            <div className="flex gap-2">
+              <input
+                {...register('aircraftClass')}
+                type="text"
+                id="aircraftClass"
+                className="input flex-1"
+                placeholder={t('form.customClassPlaceholder')}
+              />
+              <button
+                type="button"
+                onClick={() => { setIsCustomClass(false); setValue('aircraftClass', ''); }}
+                className="btn-ghost btn-sm text-xs whitespace-nowrap"
+              >
+                {t('form.pickFromList')}
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <select
+                {...register('aircraftClass')}
+                id="aircraftClass"
+                className="input flex-1"
+                onChange={(e) => {
+                  register('aircraftClass').onChange(e);
+                }}
+              >
+                <option value="">{t('form.selectClass')}</option>
+                <ClassOptions
+                  options={AIRCRAFT_CLASSES.map((cr) => ({ value: cr, label: t(`classOptions.${cr}`) }))}
+                  current={watchedClass}
+                />
+              </select>
+              <button
+                type="button"
+                onClick={() => { setIsCustomClass(true); setValue('aircraftClass', ''); }}
+                className="btn-ghost btn-sm text-xs whitespace-nowrap"
+              >
+                {t('form.customClass')}
+              </button>
+            </div>
+          )}
+          <p className="form-helper">{t('form.classHelper')}</p>
+        </div>
+
+        {isUltralight && (
+          <div>
+            <label htmlFor="ulKind" className="form-label">
+              {t('fields.ulKind')}
+            </label>
+            <select {...register('ulKind')} id="ulKind" className="input">
+              <option value="">{t('form.ulKindUnspecified')}</option>
+              {UL_AIRCRAFT_KINDS.map((k) => (
+                <option key={k} value={k}>{t(`common:ulKinds.${k}`)}</option>
+              ))}
+            </select>
+            <p className="form-helper">{t('form.ulKindHelper')}</p>
+          </div>
+        )}
+
+        {isULGyroplane && (
+          <div>
+            <label htmlFor="maxTakeoffMassKg" className="form-label">
+              {t('fields.maxTakeoffMassKg')}
+            </label>
+            <input
+              {...register('maxTakeoffMassKg')}
+              type="text"
+              inputMode="numeric"
+              id="maxTakeoffMassKg"
+              className={`input w-40 ${errors.maxTakeoffMassKg ? 'input-error' : ''}`}
+              placeholder="472"
+              aria-invalid={!!errors.maxTakeoffMassKg}
+              aria-describedby="help-mtom"
+            />
+            <p id="help-mtom" className="form-helper">{t('form.maxTakeoffMassHelper')}</p>
+          </div>
+        )}
+
+        {/* Boolean Flags */}
+        {(aeroplaneFlags.visible || multiPilotFlag.visible) && (
+          <div className="space-y-3">
+            <label className="form-label">{t('form.characteristics')}</label>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {aeroplaneFlags.visible && aeroplaneFlagInputs}
+              {multiPilotFlag.visible && multiPilotInput}
+            </div>
+            {multiPilotFlag.visible && <p className="form-helper">{t('form.multiPilotHelper')}</p>}
+          </div>
+        )}
+
+        {/* Logging defaults */}
+        <div>
+          <label className="form-label">{t('form.loggingDefaults')}</label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="defaultDepartureIcao" className="sr-only">
+                {t('fields.defaultDepartureIcao')}
+              </label>
+              <input
+                {...register('defaultDepartureIcao')}
+                type="text"
+                id="defaultDepartureIcao"
+                className="input"
+                placeholder={t('form.departurePlaceholder')}
+                maxLength={100}
+              />
+            </div>
+            <div>
+              <label htmlFor="defaultArrivalIcao" className="sr-only">
+                {t('fields.defaultArrivalIcao')}
+              </label>
+              <input
+                {...register('defaultArrivalIcao')}
+                type="text"
+                id="defaultArrivalIcao"
+                className="input"
+                placeholder={t('form.arrivalPlaceholder')}
+                maxLength={100}
+              />
+            </div>
+          </div>
+          <p className="form-helper">{t('form.defaultsHelper')}</p>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label htmlFor="notes" className="form-label">{t('common:notes', { defaultValue: 'Notes' })}</label>
+          <textarea
+            {...register('notes')}
+            id="notes"
+            rows={2}
+            className="input"
+            placeholder={t('form.notesPlaceholder')}
           />
-          <p id="help-mtom" className="form-helper">{t('form.maxTakeoffMassHelper')}</p>
         </div>
-      )}
 
-      {/* Boolean Flags */}
-      <div className="space-y-3">
-        <label className="form-label">{t('form.characteristics')}</label>
-        <div className="flex flex-wrap gap-x-6 gap-y-2">
-          <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isComplex')} type="checkbox" className="checkbox" />
-            {t('fields.isComplex')}
-          </label>
-          <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isHighPerformance')} type="checkbox" className="checkbox" />
-            {t('fields.isHighPerformance')}
-          </label>
-          <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isTailwheel')} type="checkbox" className="checkbox" />
-            {t('fields.isTailwheel')}
-          </label>
-          <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isMultiPilot')} type="checkbox" className="checkbox" />
-            {t('fields.isMultiPilot')}
-          </label>
-        </div>
-        <p className="form-helper">{t('form.multiPilotHelper')}</p>
-      </div>
-
-      {/* Logging defaults */}
-      <div>
-        <label className="form-label">{t('form.loggingDefaults')}</label>
-        <div className="grid grid-cols-2 gap-4">
+        {/* Active toggle (edit only) */}
+        {isEditing && (
           <div>
-            <label htmlFor="defaultDepartureIcao" className="sr-only">
-              {t('fields.defaultDepartureIcao')}
+            <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+              <input {...register('isActive')} type="checkbox" className="checkbox" />
+              {t('form.activeInFleet')}
             </label>
-            <input
-              {...register('defaultDepartureIcao')}
-              type="text"
-              id="defaultDepartureIcao"
-              className="input"
-              placeholder={t('form.departurePlaceholder')}
-              maxLength={100}
-            />
           </div>
-          <div>
-            <label htmlFor="defaultArrivalIcao" className="sr-only">
-              {t('fields.defaultArrivalIcao')}
-            </label>
-            <input
-              {...register('defaultArrivalIcao')}
-              type="text"
-              id="defaultArrivalIcao"
-              className="input"
-              placeholder={t('form.arrivalPlaceholder')}
-              maxLength={100}
-            />
-          </div>
+        )}
+
+        {!aeroplaneFlags.visible && (
+          <Folded reason={aeroplaneFlags.reason} count={3}>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">{aeroplaneFlagInputs}</div>
+          </Folded>
+        )}
+        {!multiPilotFlag.visible && (
+          <Folded reason={multiPilotFlag.reason}>
+            {multiPilotInput}
+            <p className="form-helper">{t('form.multiPilotHelper')}</p>
+          </Folded>
+        )}
+        <FoldDrawer />
+
+        {/* Buttons */}
+        <div className="flex gap-3 pt-2">
+          <button type="submit" disabled={isSubmitting} className="btn-primary flex-1">
+            {isSubmitting ? t('common:saving') : isEditing ? t('updateAircraft') : t('addAircraft')}
+          </button>
+          <button type="button" onClick={onClose} className="btn-secondary flex-1">
+            {t('common:cancel')}
+          </button>
         </div>
-        <p className="form-helper">{t('form.defaultsHelper')}</p>
-      </div>
-
-      {/* Notes */}
-      <div>
-        <label htmlFor="notes" className="form-label">{t('common:notes', { defaultValue: 'Notes' })}</label>
-        <textarea
-          {...register('notes')}
-          id="notes"
-          rows={2}
-          className="input"
-          placeholder={t('form.notesPlaceholder')}
-        />
-      </div>
-
-      {/* Active toggle (edit only) */}
-      {isEditing && (
-        <div>
-          <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input {...register('isActive')} type="checkbox" className="checkbox" />
-            {t('form.activeInFleet')}
-          </label>
-        </div>
-      )}
-
-      {/* Buttons */}
-      <div className="flex gap-3 pt-2">
-        <button type="submit" disabled={isSubmitting} className="btn-primary flex-1">
-          {isSubmitting ? t('common:saving') : isEditing ? t('updateAircraft') : t('addAircraft')}
-        </button>
-        <button type="button" onClick={onClose} className="btn-secondary flex-1">
-          {t('common:cancel')}
-        </button>
-      </div>
-    </form>
+      </form>
+    </FoldScope>
   );
 }

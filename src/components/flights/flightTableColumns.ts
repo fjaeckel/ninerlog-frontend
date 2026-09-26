@@ -188,6 +188,8 @@ export interface FlightTimeColumn {
 
 export interface FlightColumnLayout {
   offOnBlock: boolean;
+  /** Launch method and launches; automatic mode only. */
+  launch: boolean;
   function: boolean;
   landings: boolean;
   time: FlightTimeColumn[];
@@ -201,6 +203,40 @@ export interface FlightColumnPrefs {
 }
 
 export const DEFAULT_FLIGHT_COLUMN_PREFS: FlightColumnPrefs = { mode: 'auto', columns: [] };
+
+/** A column automatic mode can show that custom mode cannot list. */
+export type AutoOnlyColumnKey = 'launch';
+
+/** Relevance of a column to the pilot, for automatic mode. */
+export interface ColumnRelevance {
+  /** Whether the column serves the pilot; `hasValue` is whether the page holds data for it. */
+  relevant: (key: FlightColumnKey | AutoOnlyColumnKey, hasValue: boolean) => boolean;
+  /** Priority added to a relevant column. */
+  boost: (key: FlightColumnKey | AutoOnlyColumnKey) => number;
+}
+
+/** Every column relevant, none boosted. */
+export const ALL_COLUMNS_RELEVANT: ColumnRelevance = { relevant: () => true, boost: () => 0 };
+
+/** Whether a flight carries a launch method. */
+export const hasLaunchMethod = (flight: Flight): boolean =>
+  !!flight.launchMethod && flight.launchMethod !== 'null';
+
+/**
+ * Orders columns for automatic mode: relevant columns first by boost, folded columns last;
+ * ties keep their order.
+ */
+function byRelevance<T extends { key: FlightColumnKey }>(
+  columns: T[],
+  relevance: ColumnRelevance,
+  hasValue: (column: T) => boolean
+): T[] {
+  const priority = (c: T) => (relevance.relevant(c.key, hasValue(c)) ? relevance.boost(c.key) : -1);
+  return columns
+    .map((column, index) => ({ column, index, p: priority(column) }))
+    .sort((a, b) => b.p - a.p || a.index - b.index)
+    .map((e) => e.column);
+}
 
 /**
  * What a first switch to custom mode starts from: the columns automatic mode
@@ -260,17 +296,24 @@ export interface FlightCardColumns {
  */
 export function selectFlightCardColumns(
   flights: Flight[],
-  prefs: FlightColumnPrefs = DEFAULT_FLIGHT_COLUMN_PREFS
+  prefs: FlightColumnPrefs = DEFAULT_FLIGHT_COLUMN_PREFS,
+  relevance: ColumnRelevance = ALL_COLUMNS_RELEVANT
 ): FlightCardColumns {
   const byKey = new Map(FLIGHT_COLUMNS.map((column) => [column.key, column]));
   const isTime = (key: FlightColumnKey) => byKey.get(key)?.kind === 'time';
   const custom = prefs.mode === 'custom';
   const selected = new Set(prefs.columns);
-  const shows = (key: FlightColumnKey) => (custom ? selected.has(key) : AUTO_ALWAYS_ON.includes(key));
+  const pageHas = (key: FlightColumnKey) => flights.some((f) => byKey.get(key)!.hasValue(f));
+  const shows = (key: FlightColumnKey) =>
+    custom ? selected.has(key) : AUTO_ALWAYS_ON.includes(key) && relevance.relevant(key, pageHas(key));
 
   const order = custom
     ? prefs.columns.filter(isTime)
-    : CARD_TIME_PRIORITY.filter((key) => flights.some((f) => byKey.get(key)!.hasValue(f)));
+    : byRelevance(
+        CARD_TIME_PRIORITY.filter(pageHas).map((key) => ({ key })),
+        relevance,
+        () => true
+      ).map((c) => c.key);
 
   return {
     offOnBlock: shows('offOnBlock'),
@@ -292,17 +335,19 @@ export function selectFlightCardColumns(
  */
 export function selectFlightColumns(
   flights: Flight[],
-  prefs: FlightColumnPrefs = DEFAULT_FLIGHT_COLUMN_PREFS
+  prefs: FlightColumnPrefs = DEFAULT_FLIGHT_COLUMN_PREFS,
+  relevance: ColumnRelevance = ALL_COLUMNS_RELEVANT
 ): FlightColumnLayout {
   const custom = prefs.mode === 'custom';
   const selected = new Set(prefs.columns);
+  const pageHas = (column: FlightColumnDef) => flights.some((f) => column.hasValue(f));
 
   const shows = (column: FlightColumnDef) =>
     custom
       ? selected.has(column.key)
-      : AUTO_ALWAYS_ON.includes(column.key) || flights.some((f) => column.hasValue(f));
+      : (AUTO_ALWAYS_ON.includes(column.key) && relevance.relevant(column.key, pageHas(column))) || pageHas(column);
 
-  const visible = FLIGHT_COLUMNS.filter(shows);
+  const visible = custom ? FLIGHT_COLUMNS.filter(shows) : byRelevance(FLIGHT_COLUMNS.filter(shows), relevance, pageHas);
 
   const timeColumns = visible.filter((c) => c.kind === 'time');
   const time = (custom ? timeColumns : timeColumns.slice(0, AUTO_MAX_TIME_COLUMNS)).map((col, i) => ({
@@ -315,8 +360,11 @@ export function selectFlightColumns(
 
   const has = (key: FlightColumnKey) => visible.some((c) => c.key === key);
 
+  const pageHasLaunch = flights.some(hasLaunchMethod);
+
   return {
     offOnBlock: has('offOnBlock'),
+    launch: !custom && pageHasLaunch && relevance.relevant('launch', pageHasLaunch),
     function: has('function'),
     landings: has('landings'),
     time,

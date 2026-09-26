@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, ArrowRight, Clock, Plane, Plus, ArrowDownToLine, BadgeCheck, ShieldCheck, TimerReset } from 'lucide-react';
@@ -16,6 +17,10 @@ import { PageWrapper } from '../components/ui/PageWrapper';
 import { useFormatPrefs } from '../hooks/useFormatPrefs';
 import { useRecencyPrefs } from '../hooks/useRecencyPrefs';
 import { recencyLevel, RECENCY_DOT_CLASSES } from '../lib/recency';
+import { useDisciplines } from '../hooks/usePilotProfile';
+import { isDormantClass, sortRatingsByDiscipline, useRelevance } from '../lib/relevance';
+import { DormantRating } from '../components/currency/DormantRating';
+import { FoldDrawer, Folded } from '../components/relevance';
 
 /** Renders an API `YYYY-MM` key as a locale-aware short month name. */
 function shortMonth(month: string, locale: string) {
@@ -44,6 +49,17 @@ export default function DashboardPage() {
   const { data: trends } = useTrends(12);
   const { data: aircraftStats } = useAircraftStats();
   const recencyPrefs = useRecencyPrefs();
+  const disciplines = useDisciplines();
+  const ratings = sortRatingsByDiscipline(disciplines, currencyStatus?.ratings ?? []);
+  const breakdownRecord = useMemo(
+    () => ({ ifrMinutes: statistics?.ifrMinutes ?? 0, nightMinutes: statistics?.nightMinutes ?? 0 }),
+    [statistics?.ifrMinutes, statistics?.nightMinutes]
+  );
+  const ifrTile = useRelevance('dashboard.ifrTile', { record: breakdownRecord });
+  const nightTile = useRelevance('dashboard.nightTile', { record: breakdownRecord });
+  const blockLabel = useRelevance('dashboard.blockTimeLabel');
+  const recencyRecord = useMemo(() => ({ explicit: recencyPrefs.perRegistration }), [recencyPrefs.perRegistration]);
+  const modelRecency = useRelevance('currency.aircraftRecency', { record: recencyRecord });
 
   const trendMonths = fillTrendMonths(trends?.trends, 12);
   const hasTrendActivity = trendMonths.some((m) => (m.totalMinutes ?? 0) > 0);
@@ -84,17 +100,30 @@ export default function DashboardPage() {
       </div>
 
       {/* Currency Status — per class rating */}
-      {currencyStatus && currencyStatus.ratings.length > 0 && (
+      {ratings.length > 0 && (
         <div className="mb-6" data-testid="currency-section">
           <h2 className="section-title mb-3 flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-slate-400 dark:text-slate-500" aria-hidden="true" />
             {t('dashboard:flightCurrency')}
           </h2>
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            {currencyStatus.ratings.map((rating) => (
-              <CurrencyCard key={rating.classRatingId} rating={rating} />
-            ))}
+            {ratings
+              .filter((rating) => !isDormantClass(disciplines, rating.classType))
+              .map((rating) => (
+                <CurrencyCard key={rating.classRatingId} rating={rating} />
+              ))}
           </div>
+          {ratings.some((rating) => isDormantClass(disciplines, rating.classType)) && (
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 items-start mt-4" data-testid="dormant-ratings">
+              {ratings
+                .filter((rating) => isDormantClass(disciplines, rating.classType))
+                .map((rating) => (
+                  <DormantRating key={rating.classRatingId} rating={rating}>
+                    <CurrencyCard rating={rating} />
+                  </DormantRating>
+                ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -198,36 +227,49 @@ export default function DashboardPage() {
       </div>
 
       {/* Hours breakdown */}
-      {statistics && statistics.totalMinutes > 0 && (
-        <div className="card mb-6">
-          <h2 className="section-title mb-4">{t('dashboard:blockTimeBreakdown')}</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-            {[
-              { label: t('dashboard:breakdownLabels.pic'), value: statistics.picMinutes },
-              // Function times a pilot has not logged stay out of the grid.
-              ...[
-                { label: t('dashboard:breakdownLabels.picus'), value: statistics.picusMinutes ?? 0 },
-                { label: t('dashboard:breakdownLabels.spic'), value: statistics.spicMinutes ?? 0 },
-                { label: t('dashboard:breakdownLabels.sic'), value: statistics.sicMinutes ?? 0 },
-                { label: t('dashboard:breakdownLabels.relief'), value: statistics.reliefMinutes ?? 0 },
-              ].filter((e) => e.value > 0),
-              { label: t('dashboard:breakdownLabels.dual'), value: statistics.dualMinutes },
-              ...[
-                { label: t('dashboard:breakdownLabels.examiner'), value: statistics.examinerMinutes ?? 0 },
-              ].filter((e) => e.value > 0),
-              { label: t('dashboard:breakdownLabels.solo'), value: statistics.soloMinutes ?? 0 },
-              { label: t('dashboard:breakdownLabels.crossCountry'), value: statistics.crossCountryMinutes ?? 0 },
-              { label: t('dashboard:breakdownLabels.night'), value: statistics.nightMinutes },
-              { label: t('dashboard:breakdownLabels.ifr'), value: statistics.ifrMinutes },
-            ].flat().map(({ label, value }) => (
-              <div key={label}>
-                <p className="data-lg text-slate-800 dark:text-slate-100">{fmtDuration(value)}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</p>
-              </div>
-            ))}
+      {statistics && statistics.totalMinutes > 0 && (() => {
+        const tiles = [
+          { label: t('dashboard:breakdownLabels.pic'), value: statistics.picMinutes, shown: true },
+          ...[
+            { label: t('dashboard:breakdownLabels.picus'), value: statistics.picusMinutes ?? 0 },
+            { label: t('dashboard:breakdownLabels.spic'), value: statistics.spicMinutes ?? 0 },
+            { label: t('dashboard:breakdownLabels.sic'), value: statistics.sicMinutes ?? 0 },
+            { label: t('dashboard:breakdownLabels.relief'), value: statistics.reliefMinutes ?? 0 },
+          ].filter((e) => e.value > 0).map((e) => ({ ...e, shown: true })),
+          { label: t('dashboard:breakdownLabels.dual'), value: statistics.dualMinutes, shown: true },
+          ...[
+            { label: t('dashboard:breakdownLabels.examiner'), value: statistics.examinerMinutes ?? 0 },
+          ].filter((e) => e.value > 0).map((e) => ({ ...e, shown: true })),
+          { label: t('dashboard:breakdownLabels.solo'), value: statistics.soloMinutes ?? 0, shown: true },
+          { label: t('dashboard:breakdownLabels.crossCountry'), value: statistics.crossCountryMinutes ?? 0, shown: true },
+          { label: t('dashboard:breakdownLabels.night'), value: statistics.nightMinutes, shown: nightTile.visible },
+          { label: t('dashboard:breakdownLabels.ifr'), value: statistics.ifrMinutes, shown: ifrTile.visible },
+        ];
+        const folded = tiles.filter((e) => !e.shown);
+        const tile = ({ label, value }: { label: string; value: number }) => (
+          <div key={label}>
+            <p className="data-lg text-slate-800 dark:text-slate-100">{fmtDuration(value)}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</p>
           </div>
-        </div>
-      )}
+        );
+        return (
+          <div className="card mb-6" data-testid="time-breakdown">
+            <h2 className="section-title mb-4">
+              {blockLabel.visible ? t('dashboard:blockTimeBreakdown') : t('dashboard:timeBreakdown')}
+            </h2>
+            <FoldDrawer>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                {tiles.filter((e) => e.shown).map(tile)}
+              </div>
+              {folded.length > 0 && (
+                <Folded count={folded.length} reason={ifrTile.reason ?? nightTile.reason}>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">{folded.map(tile)}</div>
+                </Folded>
+              )}
+            </FoldDrawer>
+          </div>
+        );
+      })()}
 
       {/* Monthly activity trend */}
       {hasTrendActivity && (
@@ -294,7 +336,7 @@ export default function DashboardPage() {
                 <div key={ms.aircraftType} data-testid={`model-stat-${ms.aircraftType}`}>
                   <div className="flex justify-between items-center text-sm mb-1 gap-2">
                     <span className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 min-w-0">
-                      {recencyPrefs.perModel && (
+                      {recencyPrefs.perModel && modelRecency.visible && (
                         <span
                           className={`w-2 h-2 rounded-full shrink-0 ${RECENCY_DOT_CLASSES[recencyLevel(ms.landingsLast90Days)]}`}
                           title={t('dashboard:modelRecencyTitle', { count: ms.landingsLast90Days })}

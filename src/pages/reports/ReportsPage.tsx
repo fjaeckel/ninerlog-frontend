@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useRelevance } from '../../lib/relevance';
+import { FoldDrawer, Folded } from '../../components/relevance';
 import {
   BarChart3,
   Clock,
@@ -75,6 +77,16 @@ export default function ReportsPage() {
     [i18n.language]
   );
   const nm = (v: number) => `${num(Math.round(v))} NM`;
+  const sums = data?.totals;
+  const instrumentRecord = useMemo(
+    () => ({
+      ifrMinutes: sums?.ifrMinutes ?? 0,
+      approaches: sums?.approaches ?? 0,
+      actualInstrumentMinutes: sums?.actualInstrumentMinutes ?? 0,
+    }),
+    [sums?.ifrMinutes, sums?.approaches, sums?.actualInstrumentMinutes]
+  );
+  const instrument = useRelevance('reports.instrument', { record: instrumentRecord });
 
   const sections: ReportSection[] = [
     { id: 'overview', label: t('sections.overview') },
@@ -82,7 +94,7 @@ export default function ReportsPage() {
     { id: 'experience', label: t('sections.experience') },
     { id: 'aircraft', label: t('sections.aircraft') },
     { id: 'places', label: t('sections.places') },
-    { id: 'instrument', label: t('sections.instrument') },
+    ...(instrument.visible ? [{ id: 'instrument', label: t('sections.instrument') }] : []),
     { id: 'patterns', label: t('sections.patterns') },
     { id: 'records', label: t('sections.records') },
   ];
@@ -110,6 +122,72 @@ export default function ReportsPage() {
   // Role composition per year, folded from the monthly series (it carries
   // the SIC split).
   const roleByYear = foldRoleByYear(data);
+
+  const instrumentSection = (
+    <ReportSectionBlock
+      id="instrument"
+      title={t('sections.instrument')}
+      description={t('sections.instrumentHint')}
+    >
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <StatTile
+          label={t('kpi.ifrTime')}
+          value={fmtDuration(totals.ifrMinutes)}
+          detail={t('kpi.ofTotal', {
+            pct: pct(totals.ifrMinutes, totals.totalMinutes),
+          })}
+          icon={<Gauge className="w-4 h-4" />}
+          accent="blue"
+        />
+        <StatTile
+          label={t('kpi.approaches')}
+          value={num(totals.approaches)}
+          detail={t('kpi.holds', { count: totals.holds })}
+          icon={<Navigation className="w-4 h-4" />}
+          accent="violet"
+        />
+        <StatTile
+          label={t('kpi.nightTime')}
+          value={fmtDuration(totals.nightMinutes)}
+          detail={t('kpi.nightLandings', { count: totals.landingsNight })}
+          icon={<Moon className="w-4 h-4" />}
+          accent="slate"
+        />
+        <StatTile
+          label={t('kpi.actualInstrument')}
+          value={fmtDuration(totals.actualInstrumentMinutes)}
+          detail={t('kpi.simulatedInstrument', {
+            time: fmtDuration(totals.simulatedInstrumentMinutes),
+          })}
+          icon={<Clock className="w-4 h-4" />}
+          accent="green"
+        />
+      </div>
+
+      <ReportCard
+        title={t('chart.approachTypes')}
+        hint={t('chart.approachTypesHint')}
+        table={{
+          rows: data.approachTypes,
+          columns: [
+            { key: 'type', header: t('table.approachType'), numeric: false, render: (r) => r.type },
+            { key: 'count', header: t('table.count'), render: (r) => r.count },
+          ],
+        }}
+      >
+        <RankedBars
+          color={theme.accent}
+          emptyLabel={t('noApproachData')}
+          rows={data.approachTypes.map((a) => ({
+            key: a.type,
+            label: a.type === 'Unspecified' ? t('approach.unspecified') : a.type,
+            value: a.count,
+            formatted: num(a.count),
+          }))}
+        />
+      </ReportCard>
+    </ReportSectionBlock>
+  );
 
   const rangeLabel = data.range.allTime
     ? t('range.allTimeDescription')
@@ -575,69 +653,7 @@ export default function ReportsPage() {
             </ReportSectionBlock>
 
             {/* ── Instrument ── */}
-            <ReportSectionBlock
-              id="instrument"
-              title={t('sections.instrument')}
-              description={t('sections.instrumentHint')}
-            >
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <StatTile
-                  label={t('kpi.ifrTime')}
-                  value={fmtDuration(totals.ifrMinutes)}
-                  detail={t('kpi.ofTotal', {
-                    pct: pct(totals.ifrMinutes, totals.totalMinutes),
-                  })}
-                  icon={<Gauge className="w-4 h-4" />}
-                  accent="blue"
-                />
-                <StatTile
-                  label={t('kpi.approaches')}
-                  value={num(totals.approaches)}
-                  detail={t('kpi.holds', { count: totals.holds })}
-                  icon={<Navigation className="w-4 h-4" />}
-                  accent="violet"
-                />
-                <StatTile
-                  label={t('kpi.nightTime')}
-                  value={fmtDuration(totals.nightMinutes)}
-                  detail={t('kpi.nightLandings', { count: totals.landingsNight })}
-                  icon={<Moon className="w-4 h-4" />}
-                  accent="slate"
-                />
-                <StatTile
-                  label={t('kpi.actualInstrument')}
-                  value={fmtDuration(totals.actualInstrumentMinutes)}
-                  detail={t('kpi.simulatedInstrument', {
-                    time: fmtDuration(totals.simulatedInstrumentMinutes),
-                  })}
-                  icon={<Clock className="w-4 h-4" />}
-                  accent="green"
-                />
-              </div>
-
-              <ReportCard
-                title={t('chart.approachTypes')}
-                hint={t('chart.approachTypesHint')}
-                table={{
-                  rows: data.approachTypes,
-                  columns: [
-                    { key: 'type', header: t('table.approachType'), numeric: false, render: (r) => r.type },
-                    { key: 'count', header: t('table.count'), render: (r) => r.count },
-                  ],
-                }}
-              >
-                <RankedBars
-                  color={theme.accent}
-                  emptyLabel={t('noApproachData')}
-                  rows={data.approachTypes.map((a) => ({
-                    key: a.type,
-                    label: a.type === 'Unspecified' ? t('approach.unspecified') : a.type,
-                    value: a.count,
-                    formatted: num(a.count),
-                  }))}
-                />
-              </ReportCard>
-            </ReportSectionBlock>
+            {instrument.visible && instrumentSection}
 
             {/* ── Patterns ── */}
             <ReportSectionBlock id="patterns" title={t('sections.patterns')} description={t('sections.patternsHint')}>
@@ -754,6 +770,10 @@ export default function ReportsPage() {
                 />
               </div>
             </ReportSectionBlock>
+
+            <FoldDrawer label={(count) => t('relevance:moreSections', { count })}>
+              {!instrument.visible && <Folded reason={instrument.reason}>{instrumentSection}</Folded>}
+            </FoldDrawer>
           </div>
         </>
       )}

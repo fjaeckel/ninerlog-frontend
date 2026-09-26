@@ -9,6 +9,7 @@ import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { DocumentFileStrip } from '../documents/DocumentFileStrip';
 import { isGermanULAuthority, UL_RATING_KINDS, type ULRatingKind } from '../../lib/ultralight';
 import { ULAuthorityHint } from './ULAuthorityHint';
+import { ClassOptions, useClassGroups } from '../relevance';
 
 const CLASS_TYPE_OPTIONS = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
@@ -84,7 +85,13 @@ export default function LicenseCard({ license, onEdit, onDelete, editRatingId }:
   const updateRating = useUpdateClassRating();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingRatingId, setEditingRatingId] = useState<string | null>(null);
-  const [newClassType, setNewClassType] = useState<string>(CLASS_TYPE_OPTIONS[0]);
+  const [pickedClassType, setNewClassType] = useState<string>('');
+  const classOptions = CLASS_TYPE_OPTIONS.map((ct) => ({
+    value: ct,
+    label: t(`classTypeLabels.${ct}`, { defaultValue: ct }),
+  }));
+  const { primary: relevantClasses } = useClassGroups(classOptions);
+  const newClassType = pickedClassType || relevantClasses[0]?.value || CLASS_TYPE_OPTIONS[0];
   const [newIssueDate, setNewIssueDate] = useState('');
   const [newExpiryDate, setNewExpiryDate] = useState('');
   const [newULKind, setNewULKind] = useState<ULRatingKind | ''>('');
@@ -103,7 +110,7 @@ export default function LicenseCard({ license, onEdit, onDelete, editRatingId }:
         },
       });
       setShowAddForm(false);
-      setNewClassType(CLASS_TYPE_OPTIONS[0]);
+      setNewClassType('');
       setNewULKind('');
       setNewIssueDate('');
       setNewExpiryDate('');
@@ -332,9 +339,7 @@ export default function LicenseCard({ license, onEdit, onDelete, editRatingId }:
                     onChange={(e) => setNewClassType(e.target.value)}
                     className="input input-sm mt-0.5"
                   >
-                    {CLASS_TYPE_OPTIONS.map((ct) => (
-                      <option key={ct} value={ct}>{t(`classTypeLabels.${ct}`, { defaultValue: ct })}</option>
-                    ))}
+                    <ClassOptions options={classOptions} current={newClassType} />
                   </select>
                 </div>
                 <div>

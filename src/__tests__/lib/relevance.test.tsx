@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-import { resolveDisciplines } from '../../hooks/usePilotProfile';
+import { DISCIPLINES, resolveDisciplines } from '../../hooks/usePilotProfile';
 import { defineFeatures, FEATURES, type Aircraft, type FeatureDef, type FeatureId } from '../../lib/relevance/registry';
 import { resolveRelevance } from '../../lib/relevance/resolve';
 import { useRelevance } from '../../lib/relevance/useRelevance';
@@ -48,8 +48,12 @@ const c172 = { aircraftClass: 'SEP_LAND' } as Aircraft;
 const ready = resolveDisciplines(gliderProfile(), false);
 
 describe('registry', () => {
-  it('ships empty in this phase', () => {
-    expect(FEATURES).toHaveLength(0);
+  it('declares every entry against known disciplines', () => {
+    for (const f of FEATURES as readonly FeatureDef[]) {
+      if (f.serves === 'all') continue;
+      expect(f.serves.length).toBeGreaterThan(0);
+      for (const d of f.serves) expect(DISCIPLINES).toContain(d);
+    }
   });
 
   it('rejects a duplicate id', () => {

@@ -20,6 +20,7 @@
     "picusDetail": "+ {{time}} PICUS"
   },
   "blockTimeBreakdown": "Blockzeit-Aufteilung",
+  "timeBreakdown": "Zeitaufteilung",
   "baselineApplied": "Inklusive {{hours}} h aus deinem Übertrag (Stand {{date}}).",
   "breakdownLabels": {
     "pic": "PIC",
