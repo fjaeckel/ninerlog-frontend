@@ -129,6 +129,27 @@ export const TARGETS = [
     skip: (fx) => !fx.shotAircraft?.[1],
     act: (page, fx) => openFormWithAircraft(page, fx.shotAircraft[1]),
   },
+  {
+    name: 'flights-circuits',
+    path: '/flights',
+    personaOnly: true,
+    skip: (fx) => !fx.shotAircraft?.[0],
+    act: async (page, fx) => {
+      await openFormWithAircraft(page, fx.shotAircraft[0]);
+      const entry = page.getByRole('button', { name: /^(circuits|platzrunden)$/i });
+      if ((await entry.count()) === 0) return;
+      await entry.click();
+      await page.waitForTimeout(400);
+      const landings = ['10:10', '10:23', '10:36', '10:49', '11:02', '11:15'];
+      await page.locator('#circuit-0-takeoff').fill('10:02');
+      for (const [i, time] of landings.entries()) {
+        if (i > 0) await page.getByRole('button', { name: /add circuit|platzrunde hinzufügen/i }).click();
+        await page.locator(`#circuit-${i}-landing`).fill(time);
+        await page.locator(`#circuit-${i}-landing`).press('Tab');
+      }
+      await page.waitForTimeout(300);
+    },
+  },
   { name: 'flight-detail', path: '/flights/f1' },
   {
     name: 'flights-modal-edit',
@@ -226,6 +247,16 @@ export const TARGETS = [
   { name: 'currency-builder', path: '/currency/builder' },
   { name: 'people', path: '/people' },
   { name: 'quicklog', path: '/quicklog' },
+  {
+    name: 'quicklog-primary',
+    path: '/quicklog',
+    personaOnly: true,
+    skip: (fx) => !fx.shotAircraft?.[0],
+    act: async (page, fx) => {
+      await page.locator('#quicklog-aircraft').selectOption(fx.shotAircraft[0]);
+      await page.waitForTimeout(400);
+    },
+  },
   { name: 'reports', path: '/reports' },
   {
     name: 'reports-custom',

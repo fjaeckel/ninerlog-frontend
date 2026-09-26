@@ -34,5 +34,12 @@
   "queuedTaps_one": "{{count}} tap saved offline — will sync when you're back online",
   "queuedTaps_other": "{{count}} taps saved offline — will sync when you're back online",
   "gpsHint": "With location access, departure and arrival airports are filled in automatically.",
-  "genericError": "Could not record the event. Please try again."
+  "genericError": "Could not record the event. Please try again.",
+  "subtitleAirborne": "Tap take-off and landing — the flight is logged when you land",
+  "moreBlockTimes": "More: block times",
+  "startOffBlock": "Start with OFF BLOCK",
+  "startOffBlockHint": "For a flight logged with off-block and on-block times.",
+  "flightTime": "Flight time",
+  "flightLoggedHintAirborne": "Take-off, landing and total time were filled in automatically. Review the entry to add crew and remarks.",
+  "launchMethodNotSaved": "The flight was logged, but the launch method could not be saved. Add it when you review the flight."
 }

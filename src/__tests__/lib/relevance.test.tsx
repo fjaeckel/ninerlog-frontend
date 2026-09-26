@@ -48,8 +48,10 @@ const c172 = { aircraftClass: 'SEP_LAND' } as Aircraft;
 const ready = resolveDisciplines(gliderProfile(), false);
 
 describe('registry', () => {
-  it('ships empty in this phase', () => {
-    expect(FEATURES).toHaveLength(0);
+  it('every entry serves all or at least one discipline', () => {
+    for (const f of FEATURES as readonly FeatureDef[]) {
+      expect(f.serves === 'all' || f.serves.length > 0).toBe(true);
+    }
   });
 
   it('rejects a duplicate id', () => {

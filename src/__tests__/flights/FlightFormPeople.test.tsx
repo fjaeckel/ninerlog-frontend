@@ -24,6 +24,11 @@ vi.mock('../../hooks/useAircraft', () => ({
   useCreateAircraft: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
+vi.mock('../../hooks/usePilotProfile', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../hooks/usePilotProfile')>();
+  return { ...actual, useDisciplines: () => actual.resolveDisciplines(undefined, true) };
+});
+
 vi.mock('../../hooks/useContacts', () => ({
   useSearchContacts: () => ({ data: [] }),
   useCreateContact: () => ({ mutate: vi.fn() }),

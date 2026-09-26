@@ -1,5 +1,7 @@
 import type { components } from '../../api/schema';
 import type { Discipline } from '../../hooks/usePilotProfile';
+import { normalizeAircraftClass } from '../aircraftClass';
+import { isSailplane } from '../launchMethod';
 
 export type Aircraft = components['schemas']['Aircraft'];
 
@@ -37,7 +39,20 @@ export function defineFeatures<const T extends readonly FeatureDef[]>(defs: T): 
 }
 
 /** Every adaptive element in the app. */
-export const FEATURES = defineFeatures([]);
+export const FEATURES = defineFeatures([
+  {
+    id: 'flight.circuitsMode',
+    kind: 'section',
+    serves: ['SAILPLANE'],
+    aircraftMatch: isSailplane,
+  },
+  {
+    id: 'quicklog.airborneFirst',
+    kind: 'section',
+    serves: ['SAILPLANE', 'TMG', 'ULTRALIGHT'],
+    aircraftMatch: (ac) => ['GLIDER', 'TMG', 'ULTRALIGHT'].includes(normalizeAircraftClass(ac.aircraftClass)),
+  },
+]);
 
 export type FeatureId = (typeof FEATURES)[number]['id'];
 

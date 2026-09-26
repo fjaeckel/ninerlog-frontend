@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
-  PlaneTakeoff, PlaneLanding, Timer, CheckCircle2, Trash2, WifiOff, ArrowRight,
+  PlaneTakeoff, PlaneLanding, Timer, CheckCircle2, Trash2, WifiOff, ArrowRight, ChevronDown,
 } from 'lucide-react';
 import { PageWrapper, PageHeader } from '../../components/ui/PageWrapper';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
@@ -14,13 +14,17 @@ import {
   useDiscardFlightSession,
   useQuickLogQueueSync,
   FlightSessionEventError,
-  type FlightSession,
   type FlightSessionEvent,
   type FlightSessionEventType,
 } from '../../hooks/useFlightSession';
 import { loadQuickLogQueue } from '../../lib/quickLogQueue';
+import { isAirborneSession, leadsWithAirborne, nextEventFor } from '../../lib/quickLogFlow';
+import { isLaunchMethod, isSailplane, type LaunchMethod } from '../../lib/launchMethod';
+import { useUpdateFlight } from '../../hooks/useFlights';
+import { LaunchMethodChips } from '../../components/flights/LaunchMethodChips';
 
 const LAST_REG_KEY = 'ninerlog.quicklog.lastReg';
+const LAST_LAUNCH_KEY = 'ninerlog.quicklog.lastLaunchMethod';
 const NEW_AIRCRAFT_OPTION = '__new__';
 
 // Best-effort GPS fix: resolves null rather than blocking the tap when the
@@ -46,14 +50,13 @@ function getPosition(timeoutMs = 4000): Promise<{ lat: number; lon: number } | n
   });
 }
 
-// A flight walks offblock → takeoff → landing → onblock; the primary button
-// always offers the first step the open session is still missing.
-function nextEventFor(session: FlightSession | null): FlightSessionEventType {
-  if (!session || session.status !== 'open') return 'offblock';
-  if (!session.takeoffAt) return 'takeoff';
-  if (!session.landingAt) return 'landing';
-  return 'onblock';
-}
+const readStored = (key: string): string => {
+  try {
+    return localStorage.getItem(key) ?? '';
+  } catch {
+    return '';
+  }
+};
 
 function formatUTC(iso: string | null | undefined): string | null {
   if (!iso) return null;
@@ -72,12 +75,13 @@ function formatElapsed(fromIso: string, now: number): string {
 }
 
 export default function QuickLogPage() {
-  const { t } = useTranslation(['quicklog', 'common']);
+  const { t } = useTranslation(['quicklog', 'common', 'flights']);
   const { data: session, isLoading } = useCurrentFlightSession();
   const { data: aircraft } = useAircraft();
   const createAircraft = useCreateAircraft();
   const recordEvent = useRecordFlightSessionEvent();
   const discardSession = useDiscardFlightSession();
+  const updateFlight = useUpdateFlight();
   useQuickLogQueueSync();
 
   const [selectedReg, setSelectedReg] = useState(() => localStorage.getItem(LAST_REG_KEY) ?? '');
@@ -85,7 +89,13 @@ export default function QuickLogPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [queuedCount, setQueuedCount] = useState(() => loadQuickLogQueue().length);
   const [completedFlightId, setCompletedFlightId] = useState<string | null>(null);
+  const [completedAirborne, setCompletedAirborne] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [showBlockStart, setShowBlockStart] = useState(false);
+  const [launchMethod, setLaunchMethod] = useState<LaunchMethod | ''>(() => {
+    const stored = readStored(LAST_LAUNCH_KEY);
+    return isLaunchMethod(stored) ? stored : '';
+  });
 
   // Quick-add new aircraft state
   const [showQuickAdd, setShowQuickAdd] = useState(false);
@@ -96,18 +106,23 @@ export default function QuickLogPage() {
   const [quickAddError, setQuickAddError] = useState<string | null>(null);
 
   const openSession = session?.status === 'open' ? session : null;
-  const nextEvent = nextEventFor(openSession);
-
-  // Tick the elapsed-time display while a session is running
-  useEffect(() => {
-    if (!openSession?.offBlockAt) return;
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, [openSession?.offBlockAt]);
 
   // Single-plane pilots get their aircraft preselected without an extra tap
   const effectiveReg = selectedReg || (aircraft?.length === 1 ? aircraft[0].registration : '');
   const activeReg = openSession?.aircraftReg ?? effectiveReg;
+  const activeAircraft = aircraft?.find((a) => a.registration.toUpperCase() === activeReg.toUpperCase());
+  const airborneFirst = leadsWithAirborne(activeAircraft);
+  const airborneSession = isAirborneSession(openSession);
+  const nextEvent = nextEventFor(openSession, airborneFirst);
+  const showLaunchChips = isSailplane(activeAircraft);
+  const sessionStart = openSession?.offBlockAt ?? (airborneSession ? openSession?.takeoffAt : null);
+
+  // Tick the elapsed-time display while a session is running
+  useEffect(() => {
+    if (!sessionStart) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [sessionStart]);
 
   const handleAircraftSelect = (value: string) => {
     if (value === NEW_AIRCRAFT_OPTION) {
@@ -161,7 +176,16 @@ export default function QuickLogPage() {
       const result = await recordEvent.mutateAsync(event);
       setQueuedCount(loadQuickLogQueue().length);
       if (result.session?.status === 'completed' && result.session.flightId) {
-        setCompletedFlightId(result.session.flightId);
+        const flightId = result.session.flightId;
+        if (showLaunchChips && launchMethod) {
+          try {
+            await updateFlight.mutateAsync({ id: flightId, data: { launchMethod } });
+          } catch {
+            setErrorMessage(t('quicklog:launchMethodNotSaved'));
+          }
+        }
+        setCompletedAirborne(type === 'landing');
+        setCompletedFlightId(flightId);
       }
     } catch (err) {
       setErrorMessage(
@@ -183,9 +207,18 @@ export default function QuickLogPage() {
       { type: 'takeoff' as const, at: openSession?.takeoffAt, label: t('quicklog:takeoff') },
       { type: 'landing' as const, at: openSession?.landingAt, label: t('quicklog:landing') },
       { type: 'onblock' as const, at: null, label: t('quicklog:onBlock') },
-    ],
-    [openSession, t]
+    ].filter((entry) => !airborneSession || entry.type === 'takeoff' || entry.type === 'landing'),
+    [openSession, airborneSession, t]
   );
+
+  const chooseLaunchMethod = (value: LaunchMethod | '') => {
+    setLaunchMethod(value);
+    try {
+      localStorage.setItem(LAST_LAUNCH_KEY, value);
+    } catch {
+      // storage unavailable
+    }
+  };
 
   const tapLabels: Record<FlightSessionEventType, string> = {
     offblock: t('quicklog:tapOffBlock'),
@@ -218,7 +251,7 @@ export default function QuickLogPage() {
             {t('quicklog:flightLogged')}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {t('quicklog:flightLoggedHint')}
+            {completedAirborne ? t('quicklog:flightLoggedHintAirborne') : t('quicklog:flightLoggedHint')}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <Link to={`/flights/${completedFlightId}`} className="btn-primary justify-center">
@@ -236,7 +269,10 @@ export default function QuickLogPage() {
 
   return (
     <PageWrapper maxWidth="form">
-      <PageHeader title={t('quicklog:title')} subtitle={t('quicklog:subtitle')} />
+      <PageHeader
+        title={t('quicklog:title')}
+        subtitle={airborneFirst || airborneSession ? t('quicklog:subtitleAirborne') : t('quicklog:subtitle')}
+      />
 
       {queuedCount > 0 && (
         <div className="flex items-center gap-2 mb-4 px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 text-sm">
@@ -338,10 +374,19 @@ export default function QuickLogPage() {
         )}
       </div>
 
+      {showLaunchChips && (
+        <div className="card p-4 mb-4">
+          <p className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            {t('flights:fields.launchMethod')}
+          </p>
+          <LaunchMethodChips value={launchMethod} onChange={chooseLaunchMethod} label={t('flights:fields.launchMethod')} />
+        </div>
+      )}
+
       {/* The big tap button */}
       <button
         onClick={() => void handleTap(nextEvent)}
-        disabled={isLoading || recordEvent.isPending || (nextEvent === 'offblock' && !activeReg)}
+        disabled={isLoading || recordEvent.isPending || (!openSession && !activeReg)}
         className={`w-full rounded-2xl text-white shadow-lg transition-transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed py-10 flex flex-col items-center gap-3 ${tapColors[nextEvent]}`}
         aria-label={tapLabels[nextEvent]}
       >
@@ -349,14 +394,43 @@ export default function QuickLogPage() {
         <span className="text-2xl font-bold tracking-wide">{tapLabels[nextEvent]}</span>
         {recordEvent.isPending && <span className="text-sm opacity-80">{t('common:loading')}</span>}
       </button>
-      {nextEvent === 'offblock' && !activeReg && (
+      {!openSession && !activeReg && (
         <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-2">
           {t('quicklog:selectAircraftFirst')}
         </p>
       )}
 
+      {/* Block-time start, folded behind take-off for gliders, TMGs and ultralights */}
+      {airborneFirst && !openSession && (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setShowBlockStart((v) => !v)}
+            aria-expanded={showBlockStart}
+            className="inline-flex items-center gap-1.5 min-h-[44px] px-2 -mx-2 rounded-md text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            <ChevronDown className={`w-4 h-4 transition-transform ${showBlockStart ? 'rotate-180' : ''}`} aria-hidden="true" />
+            {t('quicklog:moreBlockTimes')}
+          </button>
+          {showBlockStart && (
+            <div className="mt-2 space-y-1">
+              <button
+                type="button"
+                onClick={() => void handleTap('offblock')}
+                disabled={isLoading || recordEvent.isPending || !activeReg}
+                className="btn-secondary w-full justify-center min-h-11"
+              >
+                <Timer className="w-4 h-4" aria-hidden="true" />
+                {t('quicklog:startOffBlock')}
+              </button>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{t('quicklog:startOffBlockHint')}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Skip straight to on-block when takeoff/landing taps were missed */}
-      {openSession && nextEvent !== 'onblock' && nextEvent !== 'offblock' && (
+      {openSession && !airborneSession && nextEvent !== 'onblock' && nextEvent !== 'offblock' && (
         <button
           onClick={() => void handleTap('onblock')}
           disabled={recordEvent.isPending}
@@ -367,14 +441,14 @@ export default function QuickLogPage() {
       )}
 
       {/* Running session state */}
-      {openSession?.offBlockAt && (
+      {openSession && sessionStart && (
         <div className="card p-4 mt-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              {t('quicklog:blockTime')}
+              {airborneSession ? t('quicklog:flightTime') : t('quicklog:blockTime')}
             </span>
             <span className="font-mono text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
-              {formatElapsed(openSession.offBlockAt, now)}
+              {formatElapsed(sessionStart, now)}
             </span>
           </div>
           <ol className="space-y-1.5">
