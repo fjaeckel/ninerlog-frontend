@@ -181,6 +181,18 @@ describe('FlightForm', () => {
     });
   });
 
+  it('flags a time that does not parse', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    await user.type(screen.getByLabelText('Takeoff'), '25:99');
+    await user.tab();
+    fireEvent.submit(screen.getByRole('button', { name: /log flight/i }).closest('form')!);
+
+    expect(await screen.findByText(/enter a valid time/i)).toBeInTheDocument();
+    expect(mockCreate.mutateAsync).not.toHaveBeenCalled();
+  });
+
   it('renders time fields in the Instrument / IFR drawer', async () => {
     const user = userEvent.setup();
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
@@ -236,11 +248,14 @@ describe('FlightForm', () => {
     await user.type(screen.getByLabelText(/aircraft registration/i), 'D-EFGH');
     await user.type(screen.getByLabelText(/departure/i), 'EDDF');
     await user.type(screen.getByLabelText(/arrival/i), 'EDDH');
-    // Fill required time fields via fireEvent (time inputs)
-    fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
-    fireEvent.change(screen.getByLabelText('Takeoff'), { target: { value: '14:30' } });
-    fireEvent.change(screen.getByLabelText('Landing'), { target: { value: '16:00' } });
-    fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '16:10' } });
+    // Time fields accept shorthand and commit on blur
+    await user.clear(screen.getByLabelText(/off-block/i));
+    await user.type(screen.getByLabelText(/off-block/i), '1415');
+    await user.clear(screen.getByLabelText(/on-block/i));
+    await user.type(screen.getByLabelText(/on-block/i), '16.10');
+    await user.type(screen.getByLabelText('Takeoff'), '14:30');
+    await user.type(screen.getByLabelText('Landing'), '4:00 pm');
+    await user.tab();
 
     // Submit via form submit event directly
     fireEvent.submit(screen.getByRole('button', { name: /log flight/i }).closest('form')!);
@@ -435,6 +450,74 @@ describe('FlightForm', () => {
       expect(mockUpdate.mutateAsync).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.not.objectContaining({ crossCountryTime: expect.anything() }),
+        })
+      );
+    });
+  });
+
+  const takeoffFlight = (overrides: Record<string, unknown>) => ({
+    id: 'flight-1', userId: 'user-1', date: '2026-01-15',
+    aircraftReg: 'D-EFGH', aircraftType: 'C172',
+    departureIcao: 'EDDF', arrivalIcao: 'EDDH',
+    offBlockTime: '14:15:00', onBlockTime: '16:10:00',
+    totalTime: 115, isPic: true, isDual: false, picTime: 115, dualTime: 0,
+    nightTime: 0, crossCountryTime: 115, ifrTime: 0,
+    landingsDay: 3, landingsNight: 0, allLandings: 3,
+    takeoffsDay: 1, takeoffsNight: 0, soloTime: 115, distance: 185.3,
+    remarks: null, createdAt: '', updatedAt: '',
+    ...overrides,
+  });
+
+  it('leaves derived takeoffs empty and unsent when editing', async () => {
+    mockUpdate.mutateAsync.mockResolvedValueOnce({});
+    vi.spyOn(useFlightsHook, 'useFlight').mockReturnValue({
+      data: takeoffFlight({ takeoffsDayOverride: false, takeoffsNightOverride: false }),
+      isLoading: false, error: null,
+    } as any);
+
+    renderWithProviders(<FlightForm flightId="flight-1" onClose={mockOnClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^landings/i)).toHaveValue(3);
+    });
+    expect(screen.getByLabelText(/day takeoffs/i)).toHaveValue(null);
+    expect(screen.getByLabelText(/night takeoffs/i)).toHaveValue(null);
+
+    fireEvent.submit(screen.getByRole('button', { name: /update flight/i }).closest('form')!);
+
+    await waitFor(() => {
+      expect(mockUpdate.mutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.not.objectContaining({ takeoffsDay: expect.anything() }),
+        })
+      );
+    });
+  });
+
+  it('sends null to return overridden takeoffs to auto when the field is emptied', async () => {
+    const user = userEvent.setup();
+    mockUpdate.mutateAsync.mockResolvedValueOnce({});
+    vi.spyOn(useFlightsHook, 'useFlight').mockReturnValue({
+      data: takeoffFlight({ takeoffsDayOverride: true, takeoffsNightOverride: false }),
+      isLoading: false, error: null,
+    } as any);
+
+    renderWithProviders(<FlightForm flightId="flight-1" onClose={mockOnClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/day takeoffs/i)).toHaveValue(1);
+    });
+    expect(screen.getByText(/takeoffs: 1, landings: 3/i)).toBeInTheDocument();
+
+    await user.clear(screen.getByLabelText(/day takeoffs/i));
+    expect(screen.queryByText(/normally every landing has a takeoff/i)).not.toBeInTheDocument();
+
+    fireEvent.submit(screen.getByRole('button', { name: /update flight/i }).closest('form')!);
+
+    await waitFor(() => {
+      expect(mockUpdate.mutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ takeoffsDay: null }),
         })
       );
     });

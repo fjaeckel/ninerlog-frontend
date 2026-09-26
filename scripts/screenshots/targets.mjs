@@ -21,6 +21,18 @@ export const TARGETS = [
     },
   },
   {
+    name: 'flights-modal-takeoffs-mismatch',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#landings').fill('3');
+      await page.locator('#takeoffsDay').fill('1');
+      await page.locator('#takeoffsDay').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+    },
+  },
+  {
     name: 'flights-modal-instrument',
     path: '/flights',
     act: async (page) => {

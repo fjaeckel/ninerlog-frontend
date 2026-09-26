@@ -3047,6 +3047,13 @@ export interface components {
              */
             dateFormat: "DD.MM.YYYY" | "MM/DD/YYYY" | "YYYY-MM-DD";
             /**
+             * @description User's preferred clock format for times of day (block and takeoff/landing times). "24h" for 14:30, "12h" for 2:30 PM. Stored values are always 24-hour UTC.
+             * @default 24h
+             * @example 24h
+             * @enum {string}
+             */
+            clockFormat: "24h" | "12h";
+            /**
              * @description User's preferred decimal separator for number display. "comma" for European style (1,5), "dot" for US/UK style (1.5).
              * @default comma
              * @example comma
@@ -8352,6 +8359,11 @@ export interface operations {
                      * @enum {string}
                      */
                     dateFormat?: "DD.MM.YYYY" | "MM/DD/YYYY" | "YYYY-MM-DD";
+                    /**
+                     * @description Preferred clock format for times of day
+                     * @enum {string}
+                     */
+                    clockFormat?: "24h" | "12h";
                     /**
                      * @description Preferred decimal separator for number display
                      * @enum {string}

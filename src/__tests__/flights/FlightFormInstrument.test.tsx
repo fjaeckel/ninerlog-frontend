@@ -65,7 +65,9 @@ describe('FlightForm Instrument Tracking', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '08:05' } });
+    fireEvent.blur(screen.getByLabelText(/off-block/i));
     fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '09:30' } });
+    fireEvent.blur(screen.getByLabelText(/on-block/i));
     await user.click(screen.getByText('Instrument / IFR'));
     await user.click(screen.getByText('Training & Currency'));
 
@@ -84,7 +86,9 @@ describe('FlightForm Instrument Tracking', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '23:30' } });
+    fireEvent.blur(screen.getByLabelText(/off-block/i));
     fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '01:15' } });
+    fireEvent.blur(screen.getByLabelText(/on-block/i));
     await user.click(screen.getByText('Instrument / IFR'));
 
     await user.click(screen.getAllByRole('button', { name: /use block time/i })[0]);
@@ -96,7 +100,9 @@ describe('FlightForm Instrument Tracking', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '' } });
+    fireEvent.blur(screen.getByLabelText(/off-block/i));
     fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '' } });
+    fireEvent.blur(screen.getByLabelText(/on-block/i));
     await user.click(screen.getByText('Instrument / IFR'));
     await user.click(screen.getByText('Training & Currency'));
 
@@ -129,9 +135,13 @@ describe('FlightForm Instrument Tracking', () => {
     await user.type(screen.getByLabelText(/departure/i), 'EDDF');
     await user.type(screen.getByLabelText(/arrival/i), 'EDDH');
     fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
+    fireEvent.blur(screen.getByLabelText(/off-block/i));
     fireEvent.change(screen.getByLabelText('Takeoff'), { target: { value: '14:30' } });
+    fireEvent.blur(screen.getByLabelText('Takeoff'));
     fireEvent.change(screen.getByLabelText('Landing'), { target: { value: '16:45' } });
+    fireEvent.blur(screen.getByLabelText('Landing'));
     fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '16:55' } });
+    fireEvent.blur(screen.getByLabelText(/on-block/i));
 
     // Expand Instrument / IFR section and fill instrument fields
     await user.click(screen.getByText('Instrument / IFR'));
