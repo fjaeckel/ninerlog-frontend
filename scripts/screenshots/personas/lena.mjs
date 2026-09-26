@@ -5,7 +5,8 @@
  */
 import {
   makeUser, aircraftRecord, licence, classRating, credential, flight, rng, pick, between, weekends,
-  addTime, day, iso, tally, rollingReq, profCheck, recencyStatus, easaPax, launchMethodRows
+  addTime, day, iso, tally, rollingReq, profCheck, recencyStatus, easaPax, launchMethodRows,
+  privilege, privilegeCurrency
 } from './build.mjs';
 
 const user = makeUser({ id: 'u1', email: 'lena.hoffmann@example.com', name: 'Lena Hoffmann', createdAt: iso('2025-03-20') });
@@ -17,6 +18,11 @@ const aircraft = [
 
 const licenses = [licence('l1', 'EASA', 'SPL', 'DE.SFCL.10234', '2021-05-15', 'LBA')];
 const classRatings = { l1: [classRating('cr1', 'l1', 'GLIDER', '2021-05-15')] };
+const privileges = [
+  privilege('pv1', 'l1', 'LAUNCH_METHOD_TRAINED', { detail: 'winch', issuedOn: '2020-08-22' }),
+  privilege('pv2', 'l1', 'LAUNCH_METHOD_TRAINED', { detail: 'aerotow', issuedOn: '2021-04-10' }),
+];
+const TRAINED = privileges.map((p) => p.detail);
 const credentials = [credential('c1', 'EASA_LAPL_MEDICAL', 'MED-L-44120', '2024-03-11', '2029-03-11', 'AeMC Bielefeld')];
 const contacts = [
   { id: 'p1', userId: 'u1', name: 'Thomas Wagner', email: null, phone: null, notes: 'FI(S), club', createdAt: iso('2025-03-20'), updatedAt: iso('2025-03-20') },
@@ -89,15 +95,16 @@ function currency(fl, acByReg) {
       classRatingId: 'cr1', classType: 'GLIDER', licenseId: 'l1', regulatoryAuthority: 'EASA', licenseType: 'SPL',
       ...recencyStatus(requirements), windowOpen: false, ruleDescriptionKey: 'easa_spl',
       countedClasses: ['GLIDER', 'TMG'], requirements,
-      launchMethodCurrency: launchMethodRows(fl, acByReg, isGlider),
+      launchMethodCurrency: launchMethodRows(fl, acByReg, isGlider, 0, TRAINED),
     }],
-    passengerCurrency: [easaPax('GLIDER', fl, acByReg, isGlider, { picOnly: true, ruleDescriptionKey: 'easa_spl_pax' })],
+    passengerCurrency: [easaPax('GLIDER', fl, acByReg, isGlider, { picOnly: true, ruleDescriptionKey: 'easa_spl_pax', spl115IssueDate: '2021-05-15' })],
+    privileges: privileges.map((p) => privilegeCurrency(p, 'sfcl_155_launch_method')),
   };
 }
 
 export default {
   id: 'lena',
-  user, aircraft, licenses, classRatings, credentials, contacts, flights, currency,
+  user, aircraft, licenses, classRatings, privileges, credentials, contacts, flights, currency,
   profileSettings: { disciplines: { SAILPLANE: { acknowledgedAt: iso('2025-04-05T18:00:00Z') } } },
   expectedDisciplines: { SAILPLANE: 'active' },
   airports: { EDLO: { name: 'Oerlinghausen', country: 'DE', lat: 51.9322, lon: 8.6617 } },

@@ -120,8 +120,8 @@ function currency(fl, acByReg) {
       },
     ],
     passengerCurrency: [
-      easaPax('GLIDER', fl, acByReg, isGlider, { picOnly: true, ruleDescriptionKey: 'easa_spl_pax' }),
-      easaPax('TMG', fl, acByReg, isTMG, { picOnly: true, ruleDescriptionKey: 'easa_spl_tmg_pax' }),
+      easaPax('GLIDER', fl, acByReg, isGlider, { picOnly: true, ruleDescriptionKey: 'easa_spl_pax', spl115IssueDate: '2013-04-02' }),
+      easaPax('TMG', fl, acByReg, isTMG, { picOnly: true, ruleDescriptionKey: 'easa_spl_tmg_pax', spl115IssueDate: '2013-04-02' }),
     ],
   };
 }

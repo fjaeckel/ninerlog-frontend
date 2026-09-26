@@ -73,7 +73,8 @@ export function resolveRemedy(
   const params = remedy?.remedyParams;
   const generic = t('remedyUnrecognised');
   switch (key) {
-    case 'remedy.fly_more': {
+    case 'remedy.fly_more':
+    case 'remedy.privilege_with_instructor': {
       if (params?.missing == null || !params.unit) return generic;
       const amount = params.unit === 'minutes'
         ? t('remedyAmount.minutes', { duration: fmtDuration(params.missing) })
@@ -81,7 +82,7 @@ export function resolveRemedy(
           count: params.missing,
           defaultValue: `${formatAmount(params.missing)} ${t(`units.${params.unit}`, { defaultValue: params.unit })}`,
         });
-      return t('messages.remedy.fly_more', { amount });
+      return t(`messages.${key}`, { amount });
     }
     case 'remedy.launch_method_dual': {
       if (params?.missing == null || !params.method) return generic;

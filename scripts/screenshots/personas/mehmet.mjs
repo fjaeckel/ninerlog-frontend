@@ -5,7 +5,8 @@
  */
 import {
   makeUser, aircraftRecord, licence, classRating, credential, flight, rng, between, pick, addDays, day, daysAgo, iso,
-  tally, req, rollingReq, profCheck, recencyStatus, easaPax, ulPax, distanceNm
+  tally, req, rollingReq, profCheck, recencyStatus, easaPax, ulPax, distanceNm,
+  privilege, privilegeCurrency
 } from './build.mjs';
 
 const user = makeUser({ id: 'u1', email: 'mehmet.yilmaz@example.com', name: 'Mehmet Yılmaz', createdAt: iso('2024-04-14') });
@@ -34,9 +35,10 @@ const licenses = [
   licence('l2', 'EASA', 'PPL(A)', 'DE.FCL.PPL.A.09876', '2010-08-03', 'LBA'),
 ];
 const classRatings = {
-  l1: [classRating('cr1', 'l1', 'ULTRALIGHT', '2014-06-28', { ulKind: 'THREE_AXIS', notes: 'Passenger authorisation (§84a LuftPersV)' })],
+  l1: [classRating('cr1', 'l1', 'ULTRALIGHT', '2014-06-28', { ulKind: 'THREE_AXIS' })],
   l2: [classRating('cr2', 'l2', 'SEP_LAND', '2010-08-03', { expiryDate: SEP_EXPIRY })],
 };
+const privileges = [privilege('pv1', 'l1', 'UL_PASSENGER_AUTH', { issuedOn: '2015-04-18', notes: 'LuftPersV §84a' })];
 const credentials = [credential('c1', 'EASA_CLASS2_MEDICAL', 'MED-60318', '2025-03-18', '2027-03-18', 'AeMC Düsseldorf')];
 const contacts = [
   { id: 'p1', userId: 'u1', name: 'Ayşe Yılmaz', email: null, phone: null, notes: null, createdAt: iso('2024-05-01'), updatedAt: iso('2024-05-01') },
@@ -114,15 +116,16 @@ function currency(fl, acByReg) {
       },
     ],
     passengerCurrency: [
-      ulPax('THREE_AXIS', fl, acByReg),
+      ulPax('THREE_AXIS', fl, acByReg, 'DULV', { authorised: true }),
       easaPax('SEP_LAND', fl, acByReg, isSEP, { nightPrivilege: true }),
     ],
+    privileges: privileges.map((p) => privilegeCurrency(p, 'privilege_expiry')),
   };
 }
 
 export default {
   id: 'mehmet',
-  user, aircraft, licenses, classRatings, credentials, contacts, flights, currency, airports,
+  user, aircraft, licenses, classRatings, privileges, credentials, contacts, flights, currency, airports,
   profileSettings: { disciplines: { ULTRALIGHT: { acknowledgedAt: iso('2024-04-14T18:00:00Z') } } },
   expectedDisciplines: { ULTRALIGHT: 'active', AEROPLANE: 'dormant' },
   shotAircraft: ['D-MXYZ'],

@@ -1,57 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { ShieldCheck, ShieldAlert, ShieldX, Shield, Calendar, Clock, Layers, AlertTriangle, ArrowRight, CornerDownRight } from 'lucide-react';
-import type { ClassRatingCurrency, ClassType, CurrencyRemedy, CurrencyRequirement, RatingCurrencyStatus } from '../../types/api';
+import { Calendar, Clock, Layers, AlertTriangle, ArrowRight, CornerDownRight, GraduationCap, Info } from 'lucide-react';
+import type { ClassRatingCurrency, ClassType, CurrencyRemedy, CurrencyRequirement } from '../../types/api';
+import { STATUS_CONFIG } from './statusConfig';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useCurrencyMessages } from '../../lib/currencyMessages';
 import { ratingStatus } from '../../lib/ratingStatus';
 import { RequirementIcon } from '../ui/RequirementIcon';
-
-const STATUS_CONFIG: Record<RatingCurrencyStatus, {
-  bg: string; border: string; iconWrap: string; badge: string; badgeKey: string; helperKey?: string; Icon: typeof Shield;
-}> = {
-  current: {
-    bg: 'bg-gradient-to-br from-green-50/70 via-white to-green-50/30 dark:from-green-900/15 dark:via-slate-800 dark:to-slate-800',
-    border: 'border-l-4 border-l-green-500',
-    iconWrap: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 ring-2 ring-green-500/15',
-    badge: 'badge-current',
-    badgeKey: 'status.current',
-    Icon: ShieldCheck,
-  },
-  expiring: {
-    bg: 'bg-gradient-to-br from-amber-50/70 via-white to-amber-50/30 dark:from-amber-900/15 dark:via-slate-800 dark:to-slate-800',
-    border: 'border-l-4 border-l-amber-500',
-    iconWrap: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 ring-2 ring-amber-500/15',
-    badge: 'badge-expiring',
-    badgeKey: 'status.attention',
-    Icon: ShieldAlert,
-  },
-  expired: {
-    bg: 'bg-gradient-to-br from-red-50/70 via-white to-red-50/30 dark:from-red-900/15 dark:via-slate-800 dark:to-slate-800',
-    border: 'border-l-4 border-l-red-500',
-    iconWrap: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 ring-2 ring-red-500/15',
-    badge: 'badge-expired',
-    badgeKey: 'status.notCurrent',
-    Icon: ShieldX,
-  },
-  lapsed: {
-    bg: 'bg-gradient-to-br from-red-50/70 via-white to-red-50/30 dark:from-red-900/15 dark:via-slate-800 dark:to-slate-800',
-    border: 'border-l-4 border-l-red-500',
-    iconWrap: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 ring-2 ring-red-500/15',
-    badge: 'badge-expired',
-    badgeKey: 'status.lapsed',
-    helperKey: 'status.lapsedHelper',
-    Icon: ShieldX,
-  },
-  unknown: {
-    bg: 'bg-white dark:bg-slate-800',
-    border: 'border-l-4 border-l-slate-300 dark:border-l-slate-600',
-    iconWrap: 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300',
-    badge: 'badge-neutral',
-    badgeKey: 'status.unknown',
-    Icon: Shield,
-  },
-};
 
 /** Validity of a met row, or what restores an unmet one. */
 function RowFootnote({ met, validUntil, remedy, showRemedy, testId }: {
@@ -87,8 +42,8 @@ function RowFootnote({ met, validUntil, remedy, showRemedy, testId }: {
   return null;
 }
 
-function RequirementBar({ req, showRemedy }: { req: CurrencyRequirement; showRemedy: boolean }) {
-  const { requirementName, requirementProgress } = useCurrencyMessages();
+export function RequirementBar({ req, showRemedy }: { req: CurrencyRequirement; showRemedy: boolean }) {
+  const { requirementName, requirementProgress, currencyMessage } = useCurrencyMessages();
   const pct = req.required > 0 ? Math.min((req.current / req.required) * 100, 100) : 0;
   const barColor = req.met
     ? 'bg-green-500 dark:bg-green-400'
@@ -97,6 +52,20 @@ function RequirementBar({ req, showRemedy }: { req: CurrencyRequirement; showRem
       : 'bg-red-500 dark:bg-red-400';
 
   const id = req.nameKey ?? req.name;
+
+  if (req.messageKey === 'requirement.untracked') {
+    return (
+      <div className="flex justify-between items-start gap-2 text-xs" data-testid={`requirement-${id}`}>
+        <span className="font-medium text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
+          <Info className="w-3.5 h-3.5 shrink-0 text-slate-400 dark:text-slate-500" aria-hidden="true" />
+          {requirementName(req)}
+        </span>
+        <span className="text-slate-500 dark:text-slate-400 italic text-right" data-testid={`requirement-${id}-untracked`}>
+          {currencyMessage(req)}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-1" data-testid={`requirement-${id}`}>
@@ -149,6 +118,7 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
   ];
   const countedText = countedParts.join(' + ');
   const showCounted = counted.length > 1 || creditedUL.length > 0;
+  const anyTrained = (rating.launchMethodCurrency ?? []).some((m) => m.trained);
 
   return (
     <div
@@ -268,15 +238,33 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
           {rating.launchMethodCurrency.map((lmc) => (
             <div key={lmc.method} className="space-y-0.5" data-testid={`launch-method-${lmc.method}`}>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
+                <span className="text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5 flex-wrap">
                   <RequirementIcon met={lmc.met} />
                   {launchMethod(lmc.method)}
+                  {lmc.trained && (
+                    <span
+                      className="badge-info gap-1 py-0"
+                      data-testid={`launch-method-${lmc.method}-trained`}
+                    >
+                      <GraduationCap className="w-3 h-3" aria-hidden="true" />
+                      {t('launchMethodTrained')}
+                    </span>
+                  )}
                 </span>
                 <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums">
                   {currencyMessage(lmc, { current: lmc.launches, required: lmc.required })}
                 </span>
               </div>
               <RowFootnote met={lmc.met} validUntil={lmc.validUntil} remedy={lmc} showRemedy testId={`launch-method-${lmc.method}`} />
+              {anyTrained && lmc.trained === false && lmc.launches > 0 && (
+                <p
+                  className="text-xs text-slate-500 dark:text-slate-400 inline-flex items-start gap-1.5"
+                  data-testid={`launch-method-${lmc.method}-untrained`}
+                >
+                  <Info className="w-3.5 h-3.5 mt-px shrink-0" aria-hidden="true" />
+                  {t('launchMethodUntrainedHint')}
+                </p>
+              )}
             </div>
           ))}
         </div>
