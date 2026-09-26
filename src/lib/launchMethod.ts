@@ -23,3 +23,11 @@ export function showsLaunchMethod(
 ): boolean {
   return !!storedLaunchMethod || isSailplane(ac);
 }
+
+/** Launch methods, in picker order. */
+export const LAUNCH_METHODS = ['winch', 'aerotow', 'self-launch', 'car', 'bungee'] as const;
+export type LaunchMethod = (typeof LAUNCH_METHODS)[number];
+
+/** Whether `v` is a known launch method. */
+export const isLaunchMethod = (v: unknown): v is LaunchMethod =>
+  typeof v === 'string' && (LAUNCH_METHODS as readonly string[]).includes(v);

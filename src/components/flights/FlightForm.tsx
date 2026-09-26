@@ -34,6 +34,10 @@ const OVERRIDE_BANNER_FIELDS = ['landingsDay', 'landingsNight', 'sicTime'] as co
 import { AIRCRAFT_CLASSES, classFromRegistration } from '../../lib/aircraftClass';
 import { showsLaunchMethod } from '../../lib/launchMethod';
 import { UL_AIRCRAFT_KINDS, type ULKind } from '../../lib/ultralight';
+import { CircuitsEntry } from './CircuitsEntry';
+import { CircuitsForm, type CircuitsInitial } from './CircuitsForm';
+import type { FlightPrefill } from './logAnother';
+import type { SavedFlights } from './FlightSavedNotice';
 
 /** Returns the current UTC time as "HH:MM". Used to pre-fill Off-Block on new flights. */
 const getCurrentUtcTime = (): string => {
@@ -110,9 +114,13 @@ type FlightFormData = z.infer<typeof flightSchema>;
 interface FlightFormProps {
   flightId?: string | null;
   onClose: () => void;
+  /** Values a new flight starts from. */
+  prefill?: FlightPrefill | null;
+  /** Called after a create with what was logged. */
+  onSaved?: (saved: SavedFlights) => void;
 }
 
-export default function FlightForm({ flightId, onClose }: FlightFormProps) {
+export default function FlightForm({ flightId, onClose, prefill, onSaved }: FlightFormProps) {
   const { t } = useTranslation(['flights', 'common', 'logbook']);
   const createFlight = useCreateFlight();
   const correctable = useCorrectableFlightUpdate();
@@ -161,7 +169,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   };
 
   // Crew members state
-  const [crewMembers, setCrewMembers] = useState<FlightCrewMemberInput[]>([]);
+  const [crewMembers, setCrewMembers] = useState<FlightCrewMemberInput[]>(() => (flightId ? [] : prefill?.crew ?? []));
 
   // Structured approaches state
   interface ApproachInput { type: string; airport: string; runway: string }
@@ -220,6 +228,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       reliefTime: 0,
       fstdType: '',
       endorsements: '',
+      ...(isEditing ? {} : prefill?.values),
     },
   });
 
@@ -279,6 +288,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       }
     }
   }, [existingFlight, isEditing, reset]);
+
+  const [circuitsInitial, setCircuitsInitial] = useState<CircuitsInitial | null>(null);
 
 
 
@@ -559,7 +570,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         const outcome = await correctable.save(flightId, basePayload as FlightUpdate);
         if (outcome.status === 'cancelled') return;
       } else {
-        await createFlight.mutateAsync(basePayload);
+        const created = await createFlight.mutateAsync(basePayload);
+        onSaved?.({ count: 1, flight: data.isSimulator ? undefined : created });
       }
       onClose();
     } catch (error) {
@@ -582,6 +594,18 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
   const overrideError = (field: (typeof OVERRIDE_FORM_FIELDS)[number]) =>
     errors[field]?.message ? <p className="form-error">{errors[field]?.message}</p> : null;
+  if (circuitsInitial) {
+    return (
+      <CircuitsForm
+        initial={circuitsInitial}
+        onBack={() => setCircuitsInitial(null)}
+        onSaved={(count) => {
+          onSaved?.({ count });
+          onClose();
+        }}
+      />
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-full overflow-x-hidden">
@@ -645,6 +669,19 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             {t('form.fill')}
           </button>
         </div>
+      )}
+      {!isEditing && !isSim && (
+        <CircuitsEntry
+          registrations={[watch('aircraftReg'), lastFlight?.aircraftReg]}
+          onOpen={() => {
+            const v = getValues();
+            setCircuitsInitial({
+              date: v.date, aircraftReg: v.aircraftReg, aircraftType: v.aircraftType,
+              departureIcao: v.departureIcao, arrivalIcao: v.arrivalIcao,
+              launchMethod: v.launchMethod, crew: crewMembers, remarks: v.remarks,
+            });
+          }}
+        />
       )}
 
       <fieldset disabled={isLocked} className="space-y-6 border-0 p-0 m-0 min-w-0">

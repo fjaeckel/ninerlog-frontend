@@ -7,6 +7,7 @@ import {
   saveQuickLogQueue,
   enqueueQuickLogEvent,
 } from '../lib/quickLogQueue';
+import { invalidateFlightDependentQueries } from './invalidation';
 
 type FlightSession = components['schemas']['FlightSession'];
 type FlightSessionEvent = components['schemas']['FlightSessionEvent'];
@@ -73,7 +74,7 @@ export const useRecordFlightSessionEvent = () => {
       queryClient.invalidateQueries({ queryKey: ['flightSession'] });
       // Completion creates a flight.
       if (data.session?.status === 'completed') {
-        queryClient.invalidateQueries({ queryKey: ['flights'] });
+        invalidateFlightDependentQueries(queryClient);
       }
     },
   });
@@ -128,7 +129,7 @@ export function useQuickLogQueueSync() {
       const sent = await flushQuickLogQueue();
       if (sent > 0 && !cancelled) {
         queryClient.invalidateQueries({ queryKey: ['flightSession'] });
-        queryClient.invalidateQueries({ queryKey: ['flights'] });
+        invalidateFlightDependentQueries(queryClient);
       }
     };
     const onVisible = () => {
