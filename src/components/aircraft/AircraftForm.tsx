@@ -7,11 +7,7 @@ import { useCreateAircraft, useUpdateAircraft, useAircraftById, useAircraftStats
 import { extractApiError } from '../../lib/errors';
 import { normalizeLocation } from '../../lib/airport';
 import { UL_AIRCRAFT_KINDS, type ULKind } from '../../lib/ultralight';
-
-const AIRCRAFT_CLASSES = [
-  'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
-  'SET_LAND', 'SET_SEA', 'TMG', 'GLIDER', 'ULTRALIGHT', 'GYROPLANE',
-] as const;
+import { AIRCRAFT_CLASSES } from '../../lib/aircraftClass';
 
 const aircraftSchema = z.object({
   registration: z.string().min(1, 'Registration is required').max(20),

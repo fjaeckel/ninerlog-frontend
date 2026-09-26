@@ -18,6 +18,9 @@ import type { Aircraft } from '../../hooks/useAircraft';
 import type { FlightCrewMemberInput } from '../../types/api';
 import { CrewEditor } from './CrewEditor';
 import { crewDerivedNames, toCrewInputs } from './crewRoles';
+import { AIRCRAFT_CLASSES, classFromRegistration } from '../../lib/aircraftClass';
+import { showsLaunchMethod } from '../../lib/launchMethod';
+import { UL_AIRCRAFT_KINDS, type ULKind } from '../../lib/ultralight';
 
 /** Returns the current UTC time as "HH:MM". Used to pre-fill Off-Block on new flights. */
 const getCurrentUtcTime = (): string => {
@@ -118,6 +121,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddMake, setQuickAddMake] = useState('');
   const [quickAddModel, setQuickAddModel] = useState('');
+  const [quickAddClass, setQuickAddClass] = useState<string | null>(null);
+  const [quickAddUlKind, setQuickAddUlKind] = useState('');
   const [quickAddError, setQuickAddError] = useState<string | null>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -395,9 +400,16 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     </div>
   );
 
+  // Quick-add class: the pilot's pick, else the class the registration implies
+  const suggestedQuickAddClass = classFromRegistration(regUppercase);
+  const effectiveQuickAddClass = quickAddClass ?? suggestedQuickAddClass ?? '';
+  const quickAddIsUltralight = effectiveQuickAddClass === 'ULTRALIGHT';
+  const quickAddComplete =
+    !!quickAddMake && !!quickAddModel && !!effectiveQuickAddClass && (!quickAddIsUltralight || !!quickAddUlKind);
+
   // Quick-add aircraft handler
   const handleQuickAdd = async () => {
-    if (!regUppercase || !quickAddMake || !quickAddModel) return;
+    if (!regUppercase || !quickAddComplete) return;
     const watchedType = watch('aircraftType');
     try {
       await createAircraft.mutateAsync({
@@ -405,6 +417,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         type: (watchedType || '').toUpperCase(),
         make: quickAddMake,
         model: quickAddModel,
+        aircraftClass: effectiveQuickAddClass,
+        ulKind: quickAddIsUltralight ? (quickAddUlKind as ULKind) : null,
         isComplex: false,
         isHighPerformance: false,
         isTailwheel: false,
@@ -413,18 +427,32 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       setShowQuickAdd(false);
       setQuickAddMake('');
       setQuickAddModel('');
+      setQuickAddClass(null);
+      setQuickAddUlKind('');
     } catch (error) {
       setQuickAddError(extractApiError(error, t('form.failedToQuickAdd')));
     }
   };
 
-  // Auto-fill from last flight
+  // Auto-fill from last flight: aircraft, place, launch method and crew
   const handleAutoFill = () => {
     if (!lastFlight) return;
     setValue('aircraftReg', lastFlight.aircraftReg, { shouldValidate: true });
     setValue('aircraftType', lastFlight.aircraftType, { shouldValidate: true });
-    if (lastFlight.departureIcao) setValue('departureIcao', lastFlight.arrivalIcao || '', { shouldValidate: true });
-    if (lastFlight.arrivalIcao) setValue('arrivalIcao', '', { shouldValidate: false });
+    const lastDeparture = (lastFlight.departureIcao || '').trim();
+    const lastArrival = (lastFlight.arrivalIcao || '').trim();
+    if (lastDeparture && lastDeparture.toUpperCase() === lastArrival.toUpperCase()) {
+      setValue('departureIcao', lastArrival, { shouldValidate: true });
+      setValue('arrivalIcao', lastArrival, { shouldValidate: true });
+    } else {
+      if (lastFlight.departureIcao) setValue('departureIcao', lastFlight.arrivalIcao || '', { shouldValidate: true });
+      if (lastFlight.arrivalIcao) setValue('arrivalIcao', '', { shouldValidate: false });
+    }
+    if (lastFlight.launchMethod) setValue('launchMethod', lastFlight.launchMethod, { shouldDirty: true });
+    if (lastFlight.crewMembers && lastFlight.crewMembers.length > 0) {
+      setCrewMembers(toCrewInputs(lastFlight.crewMembers));
+    }
+    if (lastFlight.instructorName) setValue('instructorName', lastFlight.instructorName);
   };
 
   // An FSTD session logs its duration and device instead of a route, block
@@ -439,12 +467,12 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     Number.isFinite(watchedLandings) &&
     enteredTakeoffs !== watchedLandings;
 
-  // Determine if current aircraft is a glider/TMG (show launch method)
-  const currentAircraftClass = (aircraftList ?? []).find(
+  // Launch method: for a sailplane, or whenever the flight carries one
+  const currentAircraft = (aircraftList ?? []).find(
     (ac) => ac.registration.toUpperCase() === (watch('aircraftReg') || '').toUpperCase()
-  )?.aircraftClass;
-  const showLaunchMethod = !isSim && (currentAircraftClass === 'TMG' || currentAircraftClass === 'GLIDER' ||
-    (currentAircraftClass && currentAircraftClass.toLowerCase().includes('glider')));
+  );
+  const storedLaunchMethod = watch('launchMethod') || (isEditing ? existingFlight?.launchMethod : null);
+  const showLaunchMethod = !isSim && showsLaunchMethod(currentAircraft, storedLaunchMethod);
 
   const onSubmit = async (data: FlightFormData) => {
     try {
@@ -651,7 +679,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               <button
                 type="button"
                 className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center"
-                onClick={() => setShowQuickAdd(true)}
+                onClick={() => { setQuickAddClass(null); setQuickAddUlKind(''); setShowQuickAdd(true); }}
               >
                 {t('form.quickAddPrompt', { reg: regUppercase })}
               </button>
@@ -692,6 +720,48 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 placeholder={t('form.quickAddModelPlaceholder')}
               />
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 [&>*]:min-w-0">
+              <div>
+                <label htmlFor="quickAddClass" className="form-label">
+                  {t('form.quickAddClassLabel')} <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="quickAddClass"
+                  value={effectiveQuickAddClass}
+                  onChange={(e) => setQuickAddClass(e.target.value)}
+                  className="input text-sm"
+                  aria-describedby="quickAddClassHelp"
+                >
+                  <option value="">{t('form.quickAddClassPlaceholder')}</option>
+                  {AIRCRAFT_CLASSES.map((cls) => (
+                    <option key={cls} value={cls}>{t(`aircraft:classOptions.${cls}`)}</option>
+                  ))}
+                </select>
+              </div>
+              {quickAddIsUltralight && (
+                <div>
+                  <label htmlFor="quickAddUlKind" className="form-label">
+                    {t('form.quickAddUlKindLabel')} <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="quickAddUlKind"
+                    value={quickAddUlKind}
+                    onChange={(e) => setQuickAddUlKind(e.target.value)}
+                    className="input text-sm"
+                  >
+                    <option value="">{t('form.quickAddUlKindPlaceholder')}</option>
+                    {UL_AIRCRAFT_KINDS.map((k) => (
+                      <option key={k} value={k}>{t(`common:ulKinds.${k}`)}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+            <p id="quickAddClassHelp" className="form-helper">
+              {quickAddClass === null && suggestedQuickAddClass
+                ? t('form.quickAddClassFromReg')
+                : t('form.quickAddClassHelper')}
+            </p>
             {quickAddError && (
               <p className="text-sm text-red-600 dark:text-red-400 mt-1">{quickAddError}</p>
             )}
@@ -699,7 +769,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               <button
                 type="button"
                 onClick={handleQuickAdd}
-                disabled={!quickAddMake || !quickAddModel || createAircraft.isPending}
+                disabled={!quickAddComplete || createAircraft.isPending}
                 className="btn-primary btn-sm text-xs"
               >
                 {createAircraft.isPending ? t('common:saving') : t('form.quickAddSave')}
@@ -989,7 +1059,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       </fieldset>
       )}
 
-      {/* Launch Method — shown for glider/TMG aircraft */}
+      {/* Launch method */}
       {showLaunchMethod && (
         <fieldset>
           <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('fields.launchMethod')}</legend>
@@ -1001,7 +1071,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <option value="car">{t('form.carLaunch')}</option>
             <option value="bungee">{t('form.bungeeLaunch')}</option>
           </select>
-          <p className="form-helper mt-1">{t('form.requiredForSpl')}</p>
+          <p className="form-helper mt-1">{t('form.launchMethodHelper')}</p>
         </fieldset>
       )}
 

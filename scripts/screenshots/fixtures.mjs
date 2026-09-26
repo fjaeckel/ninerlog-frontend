@@ -150,6 +150,18 @@ export const aircraft = [
     defaultDepartureIcao: 'EDNY', defaultArrivalIcao: 'EDNY', isActive: true,
     notes: null, createdAt: iso('2024-02-01'), updatedAt: iso('2026-01-01'),
   },
+  {
+    id: 'a7', userId: 'u1', registration: 'D-KFAL', type: 'SF25', make: 'Scheibe', model: 'SF 25C Falke',
+    aircraftClass: null, isComplex: false, isHighPerformance: false, isTailwheel: false, isMultiPilot: false,
+    defaultDepartureIcao: 'EDNY', defaultArrivalIcao: 'EDNY', isActive: true,
+    notes: null, createdAt: iso('2026-08-01'), updatedAt: iso('2026-08-01'),
+  },
+  {
+    id: 'a8', userId: 'u1', registration: 'D-MVFL', type: 'VL3', make: 'JMB', model: 'VL3 Evolution',
+    aircraftClass: 'ULTRALIGHT', ulKind: null, isComplex: false, isHighPerformance: false, isTailwheel: false, isMultiPilot: false,
+    defaultDepartureIcao: null, defaultArrivalIcao: null, isActive: true,
+    notes: null, createdAt: iso('2026-08-01'), updatedAt: iso('2026-08-01'),
+  },
 ];
 
 export const aircraftStats = {

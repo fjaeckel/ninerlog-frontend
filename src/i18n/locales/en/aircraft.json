@@ -100,5 +100,13 @@
     "GLIDER": "Glider — Sailplane",
     "ULTRALIGHT": "Ultralight — Microlight",
     "GYROPLANE": "Gyroplane — GPL (single-propeller gyroplane)"
+  },
+  "unclassified": {
+    "title": "Unclassified aircraft",
+    "body": "Currency only counts flights on aircraft with a class, and for ultralights a kind. Set it for these:",
+    "noClass": "no class",
+    "noUlKind": "ultralight kind missing",
+    "edit": "Edit {{registration}}",
+    "dismiss": "Dismiss for this session"
   }
 }

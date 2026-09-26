@@ -358,4 +358,70 @@ describe('AircraftPage', () => {
     expect(screen.getByText('Aircraft')).toBeInTheDocument();
     expect(screen.getByText(/manage your fleet/i)).toBeInTheDocument();
   });
+
+  describe('unclassified aircraft banner', () => {
+    const base = {
+      userId: 'user-1', type: 'X', make: 'M', model: 'N',
+      isComplex: false, isHighPerformance: false, isTailwheel: false, isMultiPilot: false,
+      isActive: true, notes: null, createdAt: '2026-01-15T10:00:00Z', updatedAt: '2026-01-15T10:00:00Z',
+    };
+    const classified = [
+      { ...base, id: 'ac-1', registration: 'D-EFGH', aircraftClass: 'SEP_LAND' },
+      { ...base, id: 'ac-2', registration: 'D-5812', aircraftClass: 'GLIDER' },
+      { ...base, id: 'ac-3', registration: 'D-MIKA', aircraftClass: 'ULTRALIGHT', ulKind: 'THREE_AXIS' },
+    ];
+
+    const mockFleet = (data: unknown[]) =>
+      vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue(
+        { data, isLoading: false, error: null } as unknown as ReturnType<typeof useAircraftHook.useAircraft>,
+      );
+
+    beforeEach(() => {
+      sessionStorage.clear();
+    });
+
+    it('is absent when every aircraft has a class', () => {
+      mockFleet(classified);
+      renderWithProviders(<AircraftPage />);
+      expect(screen.queryByText('Unclassified aircraft')).not.toBeInTheDocument();
+    });
+
+    it('M3: lists aircraft without a class and ultralights without a kind', () => {
+      mockFleet([
+          ...classified,
+          { ...base, id: 'ac-4', registration: 'D-KFAL', aircraftClass: null },
+          { ...base, id: 'ac-5', registration: 'D-MVFL', aircraftClass: 'ULTRALIGHT', ulKind: null },
+        ]);
+      renderWithProviders(<AircraftPage />);
+
+      const banner = screen.getByRole('region', { name: 'Unclassified aircraft' });
+      expect(banner).toHaveTextContent(/currency only counts flights on aircraft with a class/i);
+      expect(screen.getByRole('button', { name: /D-KFAL no class/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /D-MVFL ultralight kind missing/ })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /^D-5812/ })).not.toBeInTheDocument();
+    });
+
+    it('opens the edit form for a listed aircraft', async () => {
+      const user = userEvent.setup();
+      mockFleet([{ ...base, id: 'ac-4', registration: 'D-KFAL', aircraftClass: null }]);
+      renderWithProviders(<AircraftPage />);
+
+      await user.click(screen.getByRole('button', { name: /D-KFAL no class/ }));
+      expect(await screen.findByText('Edit Aircraft')).toBeInTheDocument();
+      expect(useAircraftHook.useAircraftById).toHaveBeenCalledWith('ac-4');
+    });
+
+    it('stays dismissed for the session', async () => {
+      const user = userEvent.setup();
+      mockFleet([{ ...base, id: 'ac-4', registration: 'D-KFAL', aircraftClass: '' }]);
+      const { unmount } = renderWithProviders(<AircraftPage />);
+
+      await user.click(screen.getByRole('button', { name: /dismiss for this session/i }));
+      expect(screen.queryByText('Unclassified aircraft')).not.toBeInTheDocument();
+
+      unmount();
+      renderWithProviders(<AircraftPage />);
+      expect(screen.queryByText('Unclassified aircraft')).not.toBeInTheDocument();
+    });
+  });
 });

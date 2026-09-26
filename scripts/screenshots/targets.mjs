@@ -67,6 +67,40 @@ export const TARGETS = [
       await page.waitForTimeout(300);
     },
   },
+  {
+    name: 'flights-modal-glider',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#aircraftReg').fill('D-5812');
+      await page.locator('#date').click();
+      await page.locator('#launchMethod').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flights-modal-quick-add-glider',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#aircraftReg').fill('D-1234');
+      await page.getByRole('button', { name: /new aircraft\?|neues luftfahrzeug\?/i }).click();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flights-modal-quick-add-ul',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#aircraftReg').fill('D-MNEW');
+      await page.getByRole('button', { name: /new aircraft\?|neues luftfahrzeug\?/i }).click();
+      await page.waitForTimeout(300);
+    },
+  },
   { name: 'flight-detail', path: '/flights/f1' },
   {
     name: 'flights-modal-edit',
