@@ -181,6 +181,18 @@ describe('FlightForm', () => {
     });
   });
 
+  it('flags a time that does not parse', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    await user.type(screen.getByLabelText('Takeoff'), '25:99');
+    await user.tab();
+    fireEvent.submit(screen.getByRole('button', { name: /log flight/i }).closest('form')!);
+
+    expect(await screen.findByText(/enter a valid time/i)).toBeInTheDocument();
+    expect(mockCreate.mutateAsync).not.toHaveBeenCalled();
+  });
+
   it('renders time fields in the Instrument / IFR drawer', async () => {
     const user = userEvent.setup();
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
@@ -236,11 +248,14 @@ describe('FlightForm', () => {
     await user.type(screen.getByLabelText(/aircraft registration/i), 'D-EFGH');
     await user.type(screen.getByLabelText(/departure/i), 'EDDF');
     await user.type(screen.getByLabelText(/arrival/i), 'EDDH');
-    // Fill required time fields via fireEvent (time inputs)
-    fireEvent.change(screen.getByLabelText(/off-block/i), { target: { value: '14:15' } });
-    fireEvent.change(screen.getByLabelText('Takeoff'), { target: { value: '14:30' } });
-    fireEvent.change(screen.getByLabelText('Landing'), { target: { value: '16:00' } });
-    fireEvent.change(screen.getByLabelText(/on-block/i), { target: { value: '16:10' } });
+    // Time fields accept shorthand and commit on blur
+    await user.clear(screen.getByLabelText(/off-block/i));
+    await user.type(screen.getByLabelText(/off-block/i), '1415');
+    await user.clear(screen.getByLabelText(/on-block/i));
+    await user.type(screen.getByLabelText(/on-block/i), '16.10');
+    await user.type(screen.getByLabelText('Takeoff'), '14:30');
+    await user.type(screen.getByLabelText('Landing'), '4:00 pm');
+    await user.tab();
 
     // Submit via form submit event directly
     fireEvent.submit(screen.getByRole('button', { name: /log flight/i }).closest('form')!);

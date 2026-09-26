@@ -5,6 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { components } from '../../api/schema';
 import { splitAirportLabel } from '../../lib/airport';
 import { cn } from '../../lib/cn';
+import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
 type Flight = components['schemas']['Flight'];
 
@@ -19,6 +20,9 @@ interface TimeEntry {
  */
 export default function FlightRouteCard({ flight }: { flight: Flight }) {
   const { t } = useTranslation('flights');
+  const { fmtTimeOfDay } = useFormatPrefs();
+  const timeEntry = (label: string, value: string | null | undefined): TimeEntry[] =>
+    value ? [{ label, value: fmtTimeOfDay(value) }] : [];
 
   const departure = splitAirportLabel(flight.departureIcao, flight.departureAirportName);
   const arrival = splitAirportLabel(flight.arrivalIcao, flight.arrivalAirportName);
@@ -201,9 +205,4 @@ function RouteStop({
       </div>
     </li>
   );
-}
-
-/** Times arrive as HH:MM:SS and are optional — a missing one drops its entry. */
-function timeEntry(label: string, value: string | null | undefined): TimeEntry[] {
-  return value ? [{ label, value: value.slice(0, 5) }] : [];
 }

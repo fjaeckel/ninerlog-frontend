@@ -347,6 +347,7 @@
     "minutes": "Minuten",
     "allLandings": "Alle Landungen",
     "function": "Funktion",
+    "invalidTime": "Gültige Uhrzeit eingeben, z. B. 14:30",
     "offBlockTooltip": "Bremsklötze weg / Triebwerkstart (UTC)",
     "onBlockTooltip": "Bremsklötze gesetzt / Triebwerk aus (UTC)",
     "takeoffTooltip": "Startzeit (UTC) — optional",

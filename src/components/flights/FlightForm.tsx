@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
@@ -12,6 +12,8 @@ import { normalizeLocation } from '../../lib/airport';
 import { cn } from '../../lib/cn';
 import { extractApiError } from '../../lib/errors';
 import { useAuthStore } from '../../stores/authStore';
+import { isCanonicalTime, type ClockFormat } from '../../lib/timeOfDay';
+import { TimeOfDayInput } from '../ui/TimeOfDayInput';
 import type { Aircraft } from '../../hooks/useAircraft';
 import type { FlightCrewMemberInput } from '../../types/api';
 import { CrewEditor } from './CrewEditor';
@@ -22,6 +24,9 @@ const getCurrentUtcTime = (): string => {
   const now = new Date();
   return `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`;
 };
+
+/** Sentinel message for a time field that does not parse; rendered via `form.invalidTime`. */
+const INVALID_TIME = 'invalidTime';
 
 const flightSchema = z.object({
   date: z.string().min(1, 'Date is required'),
@@ -78,6 +83,10 @@ const flightSchema = z.object({
   if (!v.arrivalIcao) missing('arrivalIcao', 'Arrival is required');
   if (!v.offBlockTime) missing('offBlockTime', 'Off-block time is required');
   if (!v.onBlockTime) missing('onBlockTime', 'On-block time is required');
+  for (const field of ['offBlockTime', 'onBlockTime', 'departureTime', 'arrivalTime'] as const) {
+    const value = v[field];
+    if (value && !isCanonicalTime(value)) missing(field, INVALID_TIME);
+  }
 });
 
 type FlightFormData = z.infer<typeof flightSchema>;
@@ -98,8 +107,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const { data: recentFlightsData } = useFlights({ page: 1, pageSize: 1, sortBy: 'date', sortOrder: 'desc' });
   const { user } = useAuthStore();
   const fmt = (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm';
+  const clockFormat = (user?.clockFormat as ClockFormat) ?? '24h';
 
   const isEditing = !!flightId;
+  const timeError = (message?: string) => (message === INVALID_TIME ? t('form.invalidTime') : message);
   const lastFlight = recentFlightsData?.data?.[0];
 
   // Aircraft autocomplete state
@@ -139,6 +150,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
@@ -313,7 +325,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const watchedOffBlock = watch('offBlockTime');
   const watchedOnBlock = watch('onBlockTime');
   useEffect(() => {
-    if (!isEditing && watchedOffBlock && !watchedOnBlock) {
+    if (!isEditing && watchedOffBlock && isCanonicalTime(watchedOffBlock) && !watchedOnBlock) {
       setValue('onBlockTime', watchedOffBlock, { shouldValidate: true });
     }
   }, [watchedOffBlock, watchedOnBlock, setValue, isEditing]);
@@ -794,55 +806,105 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <label htmlFor="offBlockTime" className="form-label">
               {t('detail.offBlock')} <span className="text-red-500">*</span>
             </label>
-            <input
-              {...register('offBlockTime')}
-              type="time"
-              id="offBlockTime"
-              className="input px-1 text-center"
-              title={t('form.offBlockTooltip')}
+            <Controller
+              control={control}
+              name="offBlockTime"
+              render={({ field }) => (
+                <TimeOfDayInput
+                  ref={field.ref}
+                  id="offBlockTime"
+                  name={field.name}
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  clockFormat={clockFormat}
+                  invalid={!!errors.offBlockTime}
+                  className={cn('input px-1 text-center tabular-nums', errors.offBlockTime && 'input-error')}
+                  title={t('form.offBlockTooltip')}
+                />
+              )}
             />
             {errors.offBlockTime && (
-              <p className="form-error">{errors.offBlockTime.message}</p>
+              <p className="form-error">{timeError(errors.offBlockTime.message)}</p>
             )}
           </div>
           <div>
             <label htmlFor="onBlockTime" className="form-label">
               {t('detail.onBlock')} <span className="text-red-500">*</span>
             </label>
-            <input
-              {...register('onBlockTime')}
-              type="time"
-              id="onBlockTime"
-              className="input px-1 text-center"
-              title={t('form.onBlockTooltip')}
+            <Controller
+              control={control}
+              name="onBlockTime"
+              render={({ field }) => (
+                <TimeOfDayInput
+                  ref={field.ref}
+                  id="onBlockTime"
+                  name={field.name}
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  clockFormat={clockFormat}
+                  invalid={!!errors.onBlockTime}
+                  className={cn('input px-1 text-center tabular-nums', errors.onBlockTime && 'input-error')}
+                  title={t('form.onBlockTooltip')}
+                />
+              )}
             />
             {errors.onBlockTime && (
-              <p className="form-error">{errors.onBlockTime.message}</p>
+              <p className="form-error">{timeError(errors.onBlockTime.message)}</p>
             )}
           </div>
           <div>
             <label htmlFor="departureTime" className="form-label">
               {t('detail.takeoff')}
             </label>
-            <input
-              {...register('departureTime')}
-              type="time"
-              id="departureTime"
-              className="input px-1 text-center"
-              title={t('form.takeoffTooltip')}
+            <Controller
+              control={control}
+              name="departureTime"
+              render={({ field }) => (
+                <TimeOfDayInput
+                  ref={field.ref}
+                  id="departureTime"
+                  name={field.name}
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  clockFormat={clockFormat}
+                  invalid={!!errors.departureTime}
+                  className={cn('input px-1 text-center tabular-nums', errors.departureTime && 'input-error')}
+                  title={t('form.takeoffTooltip')}
+                />
+              )}
             />
+            {errors.departureTime && (
+              <p className="form-error">{timeError(errors.departureTime.message)}</p>
+            )}
           </div>
           <div>
             <label htmlFor="arrivalTime" className="form-label">
               {t('detail.landing')}
             </label>
-            <input
-              {...register('arrivalTime')}
-              type="time"
-              id="arrivalTime"
-              className="input px-1 text-center"
-              title={t('form.landingTooltip')}
+            <Controller
+              control={control}
+              name="arrivalTime"
+              render={({ field }) => (
+                <TimeOfDayInput
+                  ref={field.ref}
+                  id="arrivalTime"
+                  name={field.name}
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  clockFormat={clockFormat}
+                  invalid={!!errors.arrivalTime}
+                  className={cn('input px-1 text-center tabular-nums', errors.arrivalTime && 'input-error')}
+                  title={t('form.landingTooltip')}
+                />
+              )}
             />
+            {errors.arrivalTime && (
+              <p className="form-error">{timeError(errors.arrivalTime.message)}</p>
+            )}
           </div>
         </div>
 

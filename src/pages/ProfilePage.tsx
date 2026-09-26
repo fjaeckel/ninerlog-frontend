@@ -22,6 +22,7 @@ import BackupsPage from './backups/BackupsPage';
 import { BaselineSection } from '../components/profile/BaselineSection';
 import { FlightColumnsSection } from '../components/profile/FlightColumnsSection';
 import { SessionsSection } from '../components/profile/SessionsSection';
+import { formatTimeOfDay } from '../lib/timeOfDay';
 
 /** A maintenance action's result: the translated line plus whether it succeeded. */
 type Outcome = { text: string; ok: boolean } | null;
@@ -266,6 +267,23 @@ export default function ProfilePage() {
               <option value="DD.MM.YYYY">14.04.2026 — {t('dateFormat.european')}</option>
               <option value="MM/DD/YYYY">04/14/2026 — {t('dateFormat.us')}</option>
               <option value="YYYY-MM-DD">2026-04-14 — {t('dateFormat.iso')}</option>
+            </select>
+          </div>
+
+          <div className="card">
+            <h2 className="section-title mb-4">{t('clockFormat.title')}</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+              {t('clockFormat.description')}
+            </p>
+            <select
+              id="clockFormat"
+              aria-label={t('clockFormat.title')}
+              value={user?.clockFormat || '24h'}
+              onChange={async (e) => { const value = e.target.value as '24h' | '12h'; try { await updateProfile.mutateAsync({ clockFormat: value }); updateUser({ clockFormat: value }); } catch { /* ignore */ } }}
+              className="input w-full"
+            >
+              <option value="24h">14:30 — {t('clockFormat.h24')}</option>
+              <option value="12h">2:30 PM — {t('clockFormat.h12')}</option>
             </select>
           </div>
 
@@ -572,7 +590,7 @@ export default function ProfilePage() {
                       <p className="text-xs text-slate-500 dark:text-slate-400">{t('notifications.checkHourDesc')}</p>
                     </div>
                     <select value={notifPrefs.checkHour} disabled={!notifPrefs.emailEnabled} onChange={(e) => updateNotifPrefs.mutate({ checkHour: parseInt(e.target.value, 10) })} className="input w-24 text-sm disabled:opacity-50">
-                      {Array.from({ length: 24 }, (_, i) => (<option key={i} value={i}>{String(i).padStart(2, '0')}:00</option>))}
+                      {Array.from({ length: 24 }, (_, i) => (<option key={i} value={i}>{formatTimeOfDay(`${String(i).padStart(2, '0')}:00`, user?.clockFormat ?? '24h')}</option>))}
                     </select>
                   </label>
                 </div>

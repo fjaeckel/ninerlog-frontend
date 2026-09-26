@@ -30,7 +30,7 @@ function formatDuration(ms?: number): string {
 
 export default function BackupRunsList({ destinationId }: BackupRunsListProps) {
   const { t } = useTranslation('backups');
-  const { fmtDate } = useFormatPrefs();
+  const { fmtDate, fmtClock } = useFormatPrefs();
   const { data, isLoading, error } = useBackupRuns(destinationId, { pageSize: 20 });
 
   if (isLoading) {
@@ -86,7 +86,7 @@ export default function BackupRunsList({ destinationId }: BackupRunsListProps) {
                 <td className="py-2 pr-3 text-slate-700 dark:text-slate-300">
                   {fmtDate(run.startedAt)}{' '}
                   <span className="text-xs text-slate-500 dark:text-slate-400">
-                    {new Date(run.startedAt).toLocaleTimeString()}
+                    {fmtClock(run.startedAt)}
                   </span>
                 </td>
                 <td className="py-2 pr-3 text-slate-700 dark:text-slate-300">

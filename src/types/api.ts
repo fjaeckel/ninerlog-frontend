@@ -21,6 +21,7 @@ export interface User {
   isAdmin?: boolean;
   timeDisplayFormat?: 'hm' | 'decimal';
   dateFormat?: 'DD.MM.YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD';
+  clockFormat?: '24h' | '12h';
   decimalSeparator?: 'comma' | 'dot';
   preferredLocale?: 'en' | 'de';
   /** Show informational 90-day recency per aircraft model/type (default true) */

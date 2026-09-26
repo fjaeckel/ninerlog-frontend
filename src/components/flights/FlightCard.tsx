@@ -37,7 +37,7 @@ interface Cell {
  */
 export default function FlightCard({ flight, columns, onClick }: FlightCardProps) {
   const { t, i18n } = useTranslation('flights');
-  const { fmtDuration, fmtDate } = useFormatPrefs();
+  const { fmtDuration, fmtDate, fmtTimeOfDay } = useFormatPrefs();
 
   const functionKind = flightFunctionKind(flight);
 
@@ -51,8 +51,8 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
   // Cells honour the flights-list column setting, as the table's do.
   const offOnCells: Cell[] = columns.offOnBlock
     ? [
-        { key: 'off', label: t('tableOff'), value: (flight.offBlockTime || flight.departureTime)?.slice(0, 5) || '—' },
-        { key: 'on', label: t('tableOn'), value: (flight.onBlockTime || flight.arrivalTime)?.slice(0, 5) || '—' },
+        { key: 'off', label: t('tableOff'), value: fmtTimeOfDay(flight.offBlockTime || flight.departureTime) || '—' },
+        { key: 'on', label: t('tableOn'), value: fmtTimeOfDay(flight.onBlockTime || flight.arrivalTime) || '—' },
       ]
     : [];
 

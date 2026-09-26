@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import type { ClockFormat } from './timeOfDay';
 
 export type DateFormatPref = 'DD.MM.YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD';
 
@@ -8,10 +9,9 @@ const dateFnsPatterns: Record<DateFormatPref, string> = {
   'YYYY-MM-DD': 'yyyy-MM-dd',
 };
 
-const dateFnsWithTimePatterns: Record<DateFormatPref, string> = {
-  'DD.MM.YYYY': 'dd.MM.yyyy HH:mm',
-  'MM/DD/YYYY': 'MM/dd/yyyy HH:mm',
-  'YYYY-MM-DD': 'yyyy-MM-dd HH:mm',
+const clockPatterns: Record<ClockFormat, string> = {
+  '24h': 'HH:mm',
+  '12h': 'h:mm a',
 };
 
 const dateFnsLongPatterns: Record<DateFormatPref, string> = {
@@ -29,11 +29,24 @@ export function formatDate(date: Date | string, dateFormat: DateFormatPref = 'DD
 }
 
 /**
- * Format a date with time using the user's preferred date format.
+ * Format a date with time using the user's preferred date and clock formats.
  */
-export function formatDateTime(date: Date | string, dateFormat: DateFormatPref = 'DD.MM.YYYY'): string {
+export function formatDateTime(
+  date: Date | string,
+  dateFormat: DateFormatPref = 'DD.MM.YYYY',
+  clock: ClockFormat = '24h',
+): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return format(d, dateFnsWithTimePatterns[dateFormat] || dateFnsWithTimePatterns['DD.MM.YYYY']);
+  const datePattern = dateFnsPatterns[dateFormat] || dateFnsPatterns['DD.MM.YYYY'];
+  return format(d, `${datePattern} ${clockPatterns[clock] || clockPatterns['24h']}`);
+}
+
+/**
+ * Format the local time-of-day part of an instant using the user's clock format.
+ */
+export function formatClockTime(date: Date | string, clock: ClockFormat = '24h'): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return format(d, clockPatterns[clock] || clockPatterns['24h']);
 }
 
 /**

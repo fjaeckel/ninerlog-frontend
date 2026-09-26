@@ -153,6 +153,58 @@ test.describe('Time Display Preference', () => {
   });
 });
 
+test.describe('Clock Format Preference', () => {
+  let clockAuth: AuthContext;
+
+  test.beforeAll(async ({ request }) => {
+    clockAuth = await createTestUser(request);
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await injectAuth(page, clockAuth);
+  });
+
+  test('should show and enter times in 12-hour format after switching', async ({ page }) => {
+    await seedFlight(page, clockAuth.accessToken, {
+      date: '2026-04-02',
+      aircraftReg: 'D-CLCK',
+      offBlockTime: '14:15:00',
+      onBlockTime: '16:10:00',
+    });
+
+    await page.getByRole('link', { name: 'Profile & Settings' }).first().click();
+    const select = page.locator('#clockFormat');
+    await expect(select).toHaveValue('24h', { timeout: 10000 });
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/users/me') && resp.request().method() === 'PATCH'),
+      select.selectOption('12h'),
+    ]);
+    const user = await apiCall(page, 'GET', '/users/me', undefined, clockAuth.accessToken);
+    expect(user.clockFormat).toBe('12h');
+
+    await page.getByRole('link', { name: 'Flights' }).first().click();
+    const row = page.getByRole('table', { name: 'Flight Log' }).getByRole('row').filter({ hasText: 'D-CLCK' });
+    await expect(row).toBeVisible({ timeout: 10000 });
+    await row.click();
+    await expect(page).toHaveURL(/\/flights\/[0-9a-f-]+$/);
+    await expect(page.getByText('2:15 PM').first()).toBeVisible({ timeout: 10000 });
+
+    await page.getByRole('button', { name: /edit flight/i }).click();
+    await expect(page.locator('#offBlockTime')).toHaveValue('2:15 PM');
+    await page.locator('#departureTime').fill('2:30 pm');
+    await page.locator('#arrivalTime').fill('4:00p');
+    await expect(page.locator('#departureTime')).toHaveValue('2:30 PM');
+    await page.locator('button[type="submit"]').filter({ hasText: 'Update Flight' }).click();
+    await expect(page.getByText('Edit Flight')).toBeHidden({ timeout: 10000 });
+
+    const flights = await apiCall(page, 'GET', '/flights?search=D-CLCK', undefined, clockAuth.accessToken);
+    expect(flights.data[0].departureTime).toBe('14:30:00');
+    expect(flights.data[0].arrivalTime).toBe('16:00:00');
+
+    await apiCall(page, 'PATCH', '/users/me', { clockFormat: '24h' }, clockAuth.accessToken);
+  });
+});
+
 test.describe('Notification Settings', () => {
   test('should display notification toggles', async ({ page }) => {
     await page.getByRole('link', { name: 'Profile & Settings' }).first().click();

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatDate, formatDateTime, formatDateLong } from '../../lib/dateFormat';
+import { formatDate, formatDateTime, formatDateLong, formatClockTime } from '../../lib/dateFormat';
 
 describe('formatDate', () => {
   // Use a fixed date: 2026-03-15
@@ -39,6 +39,20 @@ describe('formatDateTime', () => {
 
   it('formats as YYYY-MM-DD HH:mm', () => {
     expect(formatDateTime(date, 'YYYY-MM-DD')).toBe('2026-03-15 14:30');
+  });
+
+  it('formats the time in 12-hour clock when requested', () => {
+    expect(formatDateTime(date, 'MM/DD/YYYY', '12h')).toBe('03/15/2026 2:30 PM');
+  });
+});
+
+describe('formatClockTime', () => {
+  it('formats 24-hour by default', () => {
+    expect(formatClockTime(new Date(2026, 2, 15, 9, 5))).toBe('09:05');
+  });
+
+  it('formats 12-hour', () => {
+    expect(formatClockTime(new Date(2026, 2, 15, 0, 5), '12h')).toBe('12:05 AM');
   });
 });
 
