@@ -100,5 +100,13 @@
     "GLIDER": "Segelflugzeug",
     "ULTRALIGHT": "Ultraleicht (UL)",
     "GYROPLANE": "Tragschrauber — GPL (einmotoriger Tragschrauber)"
+  },
+  "unclassified": {
+    "title": "Nicht klassifizierte Luftfahrzeuge",
+    "body": "Die Gültigkeit deiner Berechtigungen wird nur aus Flügen auf Luftfahrzeugen mit Klasse (bei UL zusätzlich mit UL-Art) berechnet. Ergänze sie hier:",
+    "noClass": "keine Klasse",
+    "noUlKind": "UL-Art fehlt",
+    "edit": "{{registration}} bearbeiten",
+    "dismiss": "Für diese Sitzung ausblenden"
   }
 }

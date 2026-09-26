@@ -690,6 +690,7 @@ describe('FlightForm', () => {
     await user.type(screen.getByPlaceholderText(/type/i), 'C152');
     await user.type(screen.getByPlaceholderText(/make/i), 'Cessna');
     await user.type(screen.getByPlaceholderText(/model/i), '152');
+    await user.selectOptions(screen.getByLabelText(/aircraft class/i), 'SEP_LAND');
     await user.click(screen.getByRole('button', { name: /save aircraft/i }));
 
     await waitFor(() => {
@@ -699,6 +700,8 @@ describe('FlightForm', () => {
           type: 'C152',
           make: 'Cessna',
           model: '152',
+          aircraftClass: 'SEP_LAND',
+          ulKind: null,
         })
       );
     });
