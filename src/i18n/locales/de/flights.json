@@ -77,7 +77,10 @@
     "isIpc": "IPC",
     "isProficiencyCheck": "Befähigungsüberprüfung",
     "function": "Funktion (PIC / Dual / SIC)",
-    "instructorComments": "Fluglehrer-Kommentare"
+    "instructorComments": "Fluglehrer-Kommentare",
+    "spicTimeGlider": "Alleinflug unter Aufsicht (SPIC)",
+    "releaseHeightM": "Ausklinkhöhe (m)",
+    "launches": "Starts"
   },
   "launchMethods": {
     "winch": "Windenstart",
@@ -232,9 +235,6 @@
   "tableLdg": "Ldg",
   "tableLdgSplit": "Ldg T/N",
   "tableRemarks": "Bemerkungen",
-  "tableLaunch": "Start",
-  "launchCell_one": "{{method}}",
-  "launchCell_other": "{{method}} ×{{count}}",
   "signed": "Signiert",
   "monthTotal_one": "{{count}} Flug · {{duration}}",
   "monthTotal_other": "{{count}} Flüge · {{duration}}",
@@ -289,7 +289,9 @@
     "close": "Schließen",
     "created": "Erstellt {{date}}",
     "updated": "Aktualisiert {{date}}",
-    "device": "Gerät"
+    "device": "Gerät",
+    "totalFlightTime": "Gesamtzeit",
+    "flightTimes": "Flugzeiten"
   },
   "form": {
     "lockedBySignature": "Dieser Flug ist durch eine Fluglehrer-Unterschrift gesperrt und kann nicht bearbeitet werden. Widerrufe die Unterschrift (auf der Flugdetailseite), um Änderungen vorzunehmen.",
@@ -337,7 +339,7 @@
     "multiPilotHelper": "Minuten auf Mehrpiloten-Flugzeug (EASA AMC1 Sp. 10)",
     "picusHelper": "Minuten als PIC unter Aufsicht (PICUS), EASA FCL.030",
     "useBlockTime": "Blockzeit übernehmen",
-    "useBlockTimeDisabled": "Zuerst Off-Block- und On-Block-Zeit eingeben",
+    "useBlockTimeDisabled": "Zuerst Blockzeiten oder Start- und Landezeit eingeben",
     "spicHelper": "Minuten als Student PIC (integrierter Lehrgang)",
     "examinerHelper": "Minuten als Prüfer bei einer Prüfung",
     "reliefHelper": "Minuten als Ablösepilot im Reiseflug (verstärkte Besatzung)",
@@ -376,7 +378,36 @@
     "entryKindFlight": "Flug",
     "entryKindSimulator": "Simulatorsitzung",
     "simulatorHelper": "Eine Sitzung in einem Übungsgerät. Sie erfasst ihre eigene Dauer und zählt nie zur Flugzeit, zu Summen oder zur fortlaufenden Flugerfahrung.",
-    "simulatorTypeHelper": "Das Luftfahrzeugmuster, das das Gerät abbildet."
+    "simulatorTypeHelper": "Das Luftfahrzeugmuster, das das Gerät abbildet.",
+    "useFlightTime": "Flugzeit übernehmen",
+    "launchSection": "Start",
+    "launchesHelper": "Aus den Starts abgeleitet, sofern nicht gesetzt – eine Zahl eintragen, um eine Startserie in einer Zeile zu erfassen",
+    "launchesEntered": "Von dir eingetragen",
+    "launchesDerivedValue": "Aus den Starts abgeleitet: {{value}}",
+    "launchesInvalid": "Eine ganze Zahl ab 0 eingeben",
+    "resetToDerived": "Auf abgeleiteten Wert zurücksetzen",
+    "releaseHeightHelper": "Höhe über dem Flugplatz beim Ausklinken von Winde oder Schleppflugzeug",
+    "releaseHeightInvalid": "Eine Höhe von 0 bis 20000 m eingeben",
+    "outlandingLabel": "Außenlandung",
+    "outlandingHelper": "Außerhalb des geplanten Landeplatzes gelandet; die Überlandflugzeit wird dann nicht abgeleitet",
+    "towFlightLabel": "Schleppflug (Schlepppilot)",
+    "towFlightHelper": "Du hast das Schleppflugzeug geflogen und ein Segelflugzeug geschleppt",
+    "spicHelperGlider": "Minuten im Alleinflug unter Aufsicht eines Fluglehrers; zählen für die Stunden nach SFCL.160",
+    "computedFromTakeoffLanding": "Berechnet von Start bis Landung",
+    "timePairMissing": {
+      "offBlockTime": "Off-Block-Zeit ist zusammen mit einer On-Block-Zeit erforderlich. Ein Flug braucht beide Blockzeiten oder Start- und Landezeit.",
+      "onBlockTime": "On-Block-Zeit ist zusammen mit einer Off-Block-Zeit erforderlich. Ein Flug braucht beide Blockzeiten oder Start- und Landezeit.",
+      "departureTime": "Startzeit ist zusammen mit einer Landezeit erforderlich. Ein Flug braucht Start- und Landezeit oder beide Blockzeiten.",
+      "arrivalTime": "Landezeit ist zusammen mit einer Startzeit erforderlich. Ein Flug braucht Start- und Landezeit oder beide Blockzeiten."
+    },
+    "timeRequired": {
+      "offBlockTime": "Off-Block-Zeit ist erforderlich",
+      "onBlockTime": "On-Block-Zeit ist erforderlich",
+      "departureTime": "Startzeit ist erforderlich",
+      "arrivalTime": "Landezeit ist erforderlich"
+    },
+    "takeoffTooltipLead": "Startzeit (UTC)",
+    "landingTooltipLead": "Landezeit (UTC)"
   },
   "crewRoles": {
     "PIC": "PIC",
@@ -415,6 +446,10 @@
   "exportCsv": "Als CSV exportieren",
   "exportingCsv": "Wird exportiert…",
   "exportCsvFailed": "Export fehlgeschlagen. Bitte erneut versuchen.",
+  "tableTakeoffLanding": "Start / Ldg.",
+  "tableLaunch": "Start",
+  "launchCell_one": "{{method}}",
+  "launchCell_other": "{{method}} ×{{count}}",
   "circuits": {
     "title": "Platzrunden",
     "entryTitle": "Mehrere Platzrunden heute?",

@@ -33,7 +33,8 @@ const shown = (cause: RelevanceCause): RelevanceDecision => ({ visible: true, fo
 /**
  * Decides whether a feature is shown or folded.
  * Order: unknown feature, `all`, data on the record, everything mode, profile unavailable
- * or without any active or training discipline, selected aircraft (when the feature matches aircraft), then the pilot's disciplines.
+ * or without any active or training discipline, `relevantWhen` or the selected aircraft
+ * (when the feature matches aircraft), then the pilot's disciplines.
  */
 export function resolveRelevance(
   def: FeatureDef | undefined,
@@ -45,7 +46,11 @@ export function resolveRelevance(
   if (def.hasData?.(ctx)) return shown({ kind: 'hasData' });
   if (d.mode === 'everything') return shown({ kind: 'everything' });
   if (!d.isReady || !hasAnyDiscipline(d)) return shown({ kind: 'failOpen' });
-  if (ctx.aircraft && def.aircraftMatch) {
+  if (def.relevantWhen && !def.relevantWhen(d, ctx)) {
+    return { visible: false, folded: true, cause: { kind: 'folded', disciplines: def.serves } };
+  }
+  if (def.relevantWhen && ctx.aircraft) return shown({ kind: 'aircraft', match: true });
+  if (!def.relevantWhen && ctx.aircraft && def.aircraftMatch) {
     const match = def.aircraftMatch(ctx.aircraft);
     return { visible: match, folded: !match, cause: { kind: 'aircraft', match } };
   }
@@ -58,5 +63,6 @@ export function resolveRelevance(
     const ev = d.evidence(disc)[0];
     return shown(ev ? { kind: 'evidence', discipline: disc, ref: ev.ref } : { kind: 'active', discipline: disc });
   }
+  if (def.relevantWhen) return shown({ kind: 'aircraft', match: true });
   return { visible: false, folded: true, cause: { kind: 'folded', disciplines: def.serves } };
 }

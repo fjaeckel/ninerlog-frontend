@@ -3,6 +3,7 @@ import {
   DEFAULT_CUSTOM_COLUMNS,
   FLIGHT_COLUMNS,
   flightFunctionKind,
+  rowClockTimes,
   selectFlightColumns,
   selectFlightCardColumns,
   type FlightColumnKey,
@@ -122,6 +123,7 @@ describe('selectFlightColumns — custom mode', () => {
 
     expect(layout).toEqual({
       offOnBlock: false,
+      offOnBlockLabelKey: 'tableOffOnBlock',
       launch: false,
       function: false,
       landings: false,
@@ -241,6 +243,37 @@ describe('flightFunctionKind — declared function times', () => {
   it('labels a relief-only sector SIC', () => {
     const f = flight({ isPic: false, reliefTime: 90, sicTime: 0 });
     expect(flightFunctionKind(f)).toBe('sic');
+  });
+});
+
+describe('times column without block times (WP-20)', () => {
+  const glider = flight({
+    aircraftReg: 'D-1234',
+    offBlockTime: null,
+    onBlockTime: null,
+    departureTime: '10:05:00',
+    arrivalTime: '10:17:00',
+  });
+
+  it('S3: a page of flights without block times heads the column take-off / landing', () => {
+    const layout = selectFlightColumns([glider]);
+    expect(layout.offOnBlock).toBe(true);
+    expect(layout.offOnBlockLabelKey).toBe('tableTakeoffLanding');
+  });
+
+  it('keeps the block heading when any flight on the page has block times', () => {
+    expect(selectFlightColumns([glider, flight()]).offOnBlockLabelKey).toBe('tableOffOnBlock');
+  });
+
+  it('shows take-off and landing in the row when block times are empty', () => {
+    expect(rowClockTimes(glider)).toEqual(['10:05:00', '10:17:00']);
+    expect(rowClockTimes(flight())).toEqual(['14:15:00', '16:10:00']);
+  });
+
+  it('does not count take-off and landing as block data for automatic mode', () => {
+    const def = FLIGHT_COLUMNS.find((c) => c.key === 'offOnBlock')!;
+    expect(def.hasValue(glider)).toBe(false);
+    expect(def.hasValue(flight())).toBe(true);
   });
 });
 

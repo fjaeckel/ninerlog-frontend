@@ -22,7 +22,7 @@ import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, hasLaunchMethod, FLIGHT_FUNCTION_BADGE } from '../../components/flights/flightTableColumns';
+import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, hasLaunchMethod, FLIGHT_FUNCTION_BADGE, rowClockTimes } from '../../components/flights/flightTableColumns';
 import { useFlightColumnRelevance } from '../../hooks/useFlightColumnRelevance';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
@@ -671,7 +671,7 @@ export default function FlightsPage() {
                     <th title={t('flights:fields.launchMethod')} className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLaunch')}</th>
                   )}
                   {columns.offOnBlock && (
-                    <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableOffOnBlock')}</th>
+                    <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t(`flights:${columns.offOnBlockLabelKey}`)}</th>
                   )}
                   <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableTotal')}</th>
                   {columns.time.map((col) => (
@@ -769,7 +769,7 @@ export default function FlightsPage() {
                     )}
                     {columns.offOnBlock && (
                       <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono tabular-nums text-xs">
-                        {fmtTimeOfDay(flight.offBlockTime) || '—'} / {fmtTimeOfDay(flight.onBlockTime) || '—'}
+                        {fmtTimeOfDay(rowClockTimes(flight)[0]) || '—'} / {fmtTimeOfDay(rowClockTimes(flight)[1]) || '—'}
                       </td>
                     )}
                     <td className="px-3 py-2 whitespace-nowrap text-right font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">

@@ -77,7 +77,10 @@
     "isIpc": "IPC",
     "isProficiencyCheck": "Proficiency Check",
     "function": "Function (PIC / Dual / SIC)",
-    "instructorComments": "Instructor Comments"
+    "instructorComments": "Instructor Comments",
+    "spicTimeGlider": "Supervised solo (SPIC)",
+    "releaseHeightM": "Release height (m)",
+    "launches": "Launches"
   },
   "launchMethods": {
     "winch": "Winch",
@@ -232,9 +235,6 @@
   "tableLdg": "Ldg",
   "tableLdgSplit": "Ldg D/N",
   "tableRemarks": "Remarks",
-  "tableLaunch": "Launch",
-  "launchCell_one": "{{method}}",
-  "launchCell_other": "{{method}} ×{{count}}",
   "signed": "Signed",
   "monthTotal_one": "{{count}} flight · {{duration}}",
   "monthTotal_other": "{{count}} flights · {{duration}}",
@@ -289,7 +289,9 @@
     "close": "Close",
     "created": "Created {{date}}",
     "updated": "Updated {{date}}",
-    "device": "Device"
+    "device": "Device",
+    "totalFlightTime": "Total time",
+    "flightTimes": "Flight Times"
   },
   "form": {
     "lockedBySignature": "This flight is locked by an instructor signature and can't be edited. Void the signature (on the flight detail page) to make changes.",
@@ -337,7 +339,7 @@
     "multiPilotHelper": "Minutes on multi-pilot aircraft (EASA AMC1 Col 10)",
     "picusHelper": "Minutes as PIC under supervision (EASA FCL.030)",
     "useBlockTime": "Use block time",
-    "useBlockTimeDisabled": "Enter off- and on-block times first",
+    "useBlockTimeDisabled": "Enter block times or take-off and landing times first",
     "spicHelper": "Minutes as student PIC (integrated course)",
     "examinerHelper": "Minutes conducting a check as examiner",
     "reliefHelper": "Minutes as cruise relief co-pilot (augmented crew)",
@@ -376,7 +378,36 @@
     "entryKindFlight": "Flight",
     "entryKindSimulator": "Simulator session",
     "simulatorHelper": "A session in a training device. It records its own duration and never counts towards flight time, totals or currency.",
-    "simulatorTypeHelper": "The aircraft type the device represents."
+    "simulatorTypeHelper": "The aircraft type the device represents.",
+    "useFlightTime": "Use flight time",
+    "launchSection": "Launch",
+    "launchesHelper": "Derived from the take-offs unless set — enter a number to log a series of launches as one line",
+    "launchesEntered": "Entered by you",
+    "launchesDerivedValue": "Derived from the take-offs: {{value}}",
+    "launchesInvalid": "Enter a whole number of 0 or more",
+    "resetToDerived": "Reset to derived",
+    "releaseHeightHelper": "Height above the airfield where you released from the winch or tug",
+    "releaseHeightInvalid": "Enter a height from 0 to 20000 m",
+    "outlandingLabel": "Outlanding",
+    "outlandingHelper": "Landed away from the planned site; cross-country time is then not derived",
+    "towFlightLabel": "Tow flight (I flew the tug)",
+    "towFlightHelper": "You flew the tow plane, towing a sailplane",
+    "spicHelperGlider": "Minutes flown solo under an instructor’s supervision; counts toward the SFCL.160 hours",
+    "computedFromTakeoffLanding": "Computed from take-off to landing",
+    "timePairMissing": {
+      "offBlockTime": "Off-block time is required with an on-block time. A flight needs both block times, or both take-off and landing times.",
+      "onBlockTime": "On-block time is required with an off-block time. A flight needs both block times, or both take-off and landing times.",
+      "departureTime": "Take-off time is required with a landing time. A flight needs both take-off and landing times, or both block times.",
+      "arrivalTime": "Landing time is required with a take-off time. A flight needs both take-off and landing times, or both block times."
+    },
+    "timeRequired": {
+      "offBlockTime": "Off-block time is required",
+      "onBlockTime": "On-block time is required",
+      "departureTime": "Take-off time is required",
+      "arrivalTime": "Landing time is required"
+    },
+    "takeoffTooltipLead": "Take-off time (UTC)",
+    "landingTooltipLead": "Landing time (UTC)"
   },
   "crewRoles": {
     "PIC": "PIC",
@@ -415,6 +446,10 @@
   "exportCsv": "Export as CSV",
   "exportingCsv": "Exporting…",
   "exportCsvFailed": "Export failed. Please try again.",
+  "tableTakeoffLanding": "Take-off / Ldg",
+  "tableLaunch": "Launch",
+  "launchCell_one": "{{method}}",
+  "launchCell_other": "{{method}} ×{{count}}",
   "circuits": {
     "title": "Circuits",
     "entryTitle": "Several circuits today?",

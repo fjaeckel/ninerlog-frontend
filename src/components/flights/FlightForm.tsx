@@ -1,13 +1,13 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { useCreateFlight, useUpdateFlight, useFlight, useFlights } from '../../hooks/useFlights';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { useCreateContact } from '../../hooks/useContacts';
-import { formatDuration, blockMinutes, type TimeDisplayFormat } from '../../lib/duration';
+import { formatDuration, type TimeDisplayFormat } from '../../lib/duration';
 import { normalizeLocation } from '../../lib/airport';
 import { cn } from '../../lib/cn';
 import { extractApiError } from '../../lib/errors';
@@ -19,8 +19,17 @@ import type { FlightCrewMemberInput } from '../../types/api';
 import { CrewEditor } from './CrewEditor';
 import { crewDerivedNames, toCrewInputs } from './crewRoles';
 import { AIRCRAFT_CLASSES, classFromRegistration } from '../../lib/aircraftClass';
-import { showsLaunchMethod } from '../../lib/launchMethod';
+import { isSailplane } from '../../lib/launchMethod';
 import { UL_AIRCRAFT_KINDS, type ULKind } from '../../lib/ultralight';
+import { useRelevance, type RelevanceCtx } from '../../lib/relevance';
+import { FoldDrawer, FoldScope, Relevant } from '../relevance';
+import {
+  timeErrorsFromApi,
+  timePairIssues,
+  totalFromClocks,
+  type ClockField,
+  type TimeLead,
+} from './flightTimes';
 import { CircuitsEntry } from './CircuitsEntry';
 import { CircuitsForm, type CircuitsInitial } from './CircuitsForm';
 import type { FlightPrefill } from './logAnother';
@@ -32,10 +41,14 @@ const getCurrentUtcTime = (): string => {
   return `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`;
 };
 
-/** Sentinel message for a time field that does not parse; rendered via `form.invalidTime`. */
-const INVALID_TIME = 'invalidTime';
+/** Sentinel message for a time field that does not parse. */
+const INVALID_TIME = 'form.invalidTime';
 
-const flightSchema = z.object({
+const CLOCK_FIELDS: readonly ClockField[] = ['offBlockTime', 'onBlockTime', 'departureTime', 'arrivalTime'];
+
+const optionalNumber = (v: string) => (v === '' ? undefined : Number(v));
+
+const makeFlightSchema = (lead: TimeLead) => z.object({
   date: z.string().min(1, 'Date is required'),
   isSimulator: z.boolean(),
   aircraftReg: z.string().max(20),
@@ -67,6 +80,10 @@ const flightSchema = z.object({
   isFlightReview: z.boolean(),
   isProficiencyCheck: z.boolean(),
   launchMethod: z.string().optional().or(z.literal('')),
+  launches: z.number().int().min(0).optional(),
+  isOutlanding: z.boolean(),
+  isTowFlight: z.boolean(),
+  releaseHeightM: z.number().int().min(0).max(20000).optional(),
   // Phase 6c regulatory compliance fields
   picName: z.string().optional().or(z.literal('')),
   multiPilotTime: z.number().min(0),
@@ -88,15 +105,14 @@ const flightSchema = z.object({
   if (!v.aircraftReg) missing('aircraftReg', 'Aircraft registration is required');
   if (!v.departureIcao) missing('departureIcao', 'Departure is required');
   if (!v.arrivalIcao) missing('arrivalIcao', 'Arrival is required');
-  if (!v.offBlockTime) missing('offBlockTime', 'Off-block time is required');
-  if (!v.onBlockTime) missing('onBlockTime', 'On-block time is required');
-  for (const field of ['offBlockTime', 'onBlockTime', 'departureTime', 'arrivalTime'] as const) {
+  for (const [field, message] of timePairIssues(v, lead)) missing(field, message);
+  for (const field of CLOCK_FIELDS) {
     const value = v[field];
     if (value && !isCanonicalTime(value)) missing(field, INVALID_TIME);
   }
 });
 
-type FlightFormData = z.infer<typeof flightSchema>;
+type FlightFormData = z.infer<ReturnType<typeof makeFlightSchema>>;
 
 interface FlightFormProps {
   flightId?: string | null;
@@ -121,7 +137,7 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
   const clockFormat = (user?.clockFormat as ClockFormat) ?? '24h';
 
   const isEditing = !!flightId;
-  const timeError = (message?: string) => (message === INVALID_TIME ? t('form.invalidTime') : message);
+  const timeError = (message?: string) => (message?.startsWith('form.') ? t(message) : message);
   const lastFlight = recentFlightsData?.data?.[0];
 
   // Aircraft autocomplete state
@@ -161,17 +177,24 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
   const [approaches, setApproaches] = useState<ApproachInput[]>([]);
   const createContact = useCreateContact();
 
+  // Clock time a new flight starts from, on the lead pair's first field.
+  const [prefillTime] = useState(getCurrentUtcTime);
+  const leadRef = useRef<TimeLead>('block');
+  const resolver: Resolver<FlightFormData> = (values, context, options) =>
+    zodResolver(makeFlightSchema(leadRef.current))(values, context, options);
+
   const {
     register,
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, submitCount },
     reset,
     watch,
     setValue,
     getValues,
+    setError,
   } = useForm<FlightFormData>({
-    resolver: zodResolver(flightSchema),
+    resolver,
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
       isSimulator: false,
@@ -179,7 +202,7 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
       aircraftType: '',
       departureIcao: '',
       arrivalIcao: '',
-      offBlockTime: isEditing ? '' : getCurrentUtcTime(),
+      offBlockTime: isEditing ? '' : prefillTime,
       onBlockTime: '',
       departureTime: '',
       arrivalTime: '',
@@ -203,6 +226,10 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
       isFlightReview: false,
       isProficiencyCheck: false,
       launchMethod: '',
+      launches: undefined,
+      isOutlanding: false,
+      isTowFlight: false,
+      releaseHeightM: undefined,
       picName: '',
       multiPilotTime: 0,
       picusTime: 0,
@@ -248,6 +275,10 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
         isFlightReview: existingFlight.isFlightReview || false,
         isProficiencyCheck: existingFlight.isProficiencyCheck || false,
         launchMethod: existingFlight.launchMethod || '',
+        launches: existingFlight.launchesOverride ? existingFlight.launches : undefined,
+        isOutlanding: existingFlight.isOutlanding ?? false,
+        isTowFlight: existingFlight.isTowFlight ?? false,
+        releaseHeightM: existingFlight.releaseHeightM ?? undefined,
         picName: existingFlight.picName || '',
         multiPilotTime: existingFlight.multiPilotTime || 0,
         picusTime: existingFlight.picusTime || 0,
@@ -336,37 +367,76 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
     }
   }, [matchedAircraft, setValue, isEditing, applyAircraftDefaults]);
 
-  // Pre-fill on-block with off-block when off-block is entered (and on-block is empty)
+  const isSim = watch('isSimulator');
+  const currentAircraft = matchedAircraft ?? null;
+
+  // Take-off and landing lead for gliders, TMGs and ultralights; block times fold.
+  const blockTimesLead = useRelevance('flight.blockTimes', { aircraft: currentAircraft });
+  const timeLead: TimeLead = !isSim && blockTimesLead.folded ? 'airborne' : 'block';
+  useEffect(() => {
+    leadRef.current = timeLead;
+  }, [timeLead]);
+
+  // Moves the untouched start-time prefill onto the lead pair.
+  useEffect(() => {
+    if (isEditing) return;
+    const [off, on, dep, arr] = getValues(['offBlockTime', 'onBlockTime', 'departureTime', 'arrivalTime']);
+    const untouched = (start?: string, end?: string) => start === prefillTime && (!end || end === prefillTime);
+    if (timeLead === 'airborne' && untouched(off, on) && !dep && !arr) {
+      setValue('onBlockTime', '');
+      setValue('offBlockTime', '');
+      setValue('departureTime', prefillTime);
+    } else if (timeLead === 'block' && untouched(dep, arr) && !off && !on) {
+      setValue('arrivalTime', '');
+      setValue('departureTime', '');
+      setValue('offBlockTime', prefillTime);
+    }
+  }, [timeLead, isEditing, getValues, setValue, prefillTime]);
+
+  // Pre-fill the end of the lead pair with its start (and on-block from off-block).
   // Cuts down on time-wheel scrolling on mobile.
   const watchedOffBlock = watch('offBlockTime');
   const watchedOnBlock = watch('onBlockTime');
+  const watchedDeparture = watch('departureTime');
+  const watchedArrival = watch('arrivalTime');
   useEffect(() => {
-    if (!isEditing && watchedOffBlock && isCanonicalTime(watchedOffBlock) && !watchedOnBlock) {
-      setValue('onBlockTime', watchedOffBlock, { shouldValidate: true });
-    }
-  }, [watchedOffBlock, watchedOnBlock, setValue, isEditing]);
+    if (isEditing) return;
+    const [off, on] = getValues(['offBlockTime', 'onBlockTime']);
+    if (off && isCanonicalTime(off) && !on) setValue('onBlockTime', off, { shouldValidate: true });
+  }, [watchedOffBlock, watchedOnBlock, getValues, setValue, isEditing]);
+  useEffect(() => {
+    if (isEditing || timeLead !== 'airborne') return;
+    const [dep, arr] = getValues(['departureTime', 'arrivalTime']);
+    if (dep && isCanonicalTime(dep) && !arr) setValue('arrivalTime', dep, { shouldValidate: true });
+  }, [watchedDeparture, watchedArrival, getValues, setValue, isEditing, timeLead]);
 
-  // Block minutes from the entered times; fills a duration field in one tap.
-  const currentBlockMinutes = blockMinutes(watchedOffBlock || '', watchedOnBlock || '');
-  const canUseBlockTime = currentBlockMinutes !== null && currentBlockMinutes > 0;
-  const fillWithBlockTime = (field: 'ifrTime' | 'picusTime') => {
-    if (!canUseBlockTime) return;
-    setValue(field, currentBlockMinutes, { shouldValidate: true, shouldDirty: true });
+  // Total minutes by the API's rule; fills a duration field in one tap.
+  const liveTotal = totalFromClocks({
+    offBlockTime: watchedOffBlock,
+    onBlockTime: watchedOnBlock,
+    departureTime: watchedDeparture,
+    arrivalTime: watchedArrival,
+  });
+  const canUseTotal = liveTotal !== null && liveTotal.minutes > 0;
+  const totalSource: TimeLead = liveTotal?.source ?? timeLead;
+  const fillWithTotal = (field: 'ifrTime' | 'picusTime') => {
+    if (!liveTotal || !canUseTotal) return;
+    setValue(field, liveTotal.minutes, { shouldValidate: true, shouldDirty: true });
   };
-  const blockTimeButton = (field: 'ifrTime' | 'picusTime') => (
+  const totalTimeButton = (field: 'ifrTime' | 'picusTime') => (
     <button
       type="button"
-      onClick={() => fillWithBlockTime(field)}
-      disabled={!canUseBlockTime}
-      title={canUseBlockTime ? formatDuration(currentBlockMinutes, fmt) : t('form.useBlockTimeDisabled')}
+      onClick={() => fillWithTotal(field)}
+      disabled={!canUseTotal}
+      title={liveTotal && canUseTotal ? formatDuration(liveTotal.minutes, fmt) : t('form.useBlockTimeDisabled')}
       className="link text-xs py-3.5 -my-3.5 whitespace-nowrap ml-auto disabled:opacity-50 disabled:pointer-events-none"
     >
-      {t('form.useBlockTime')}
+      {totalSource === 'block' ? t('form.useBlockTime') : t('form.useFlightTime')}
     </button>
   );
 
   type OverrideTimeField = 'nightTime' | 'crossCountryTime';
-  type OverrideField = OverrideTimeField | 'takeoffsDay' | 'takeoffsNight';
+  type OverrideField = OverrideTimeField | 'takeoffsDay' | 'takeoffsNight' | 'launches';
 
   // A number overrides the derived value; an emptied field on a flight the
   // pilot had overridden sends null so the server derives it again.
@@ -468,7 +538,6 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
 
   // An FSTD session logs its duration and device instead of a route, block
   // times and landings, and feeds no flight total.
-  const isSim = watch('isSimulator');
   const watchedTakeoffsDay = watch('takeoffsDay');
   const watchedTakeoffsNight = watch('takeoffsNight');
   const watchedLandings = watch('landings');
@@ -478,12 +547,153 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
     Number.isFinite(watchedLandings) &&
     enteredTakeoffs !== watchedLandings;
 
-  // Launch method: for a sailplane, or whenever the flight carries one
-  const currentAircraft = (aircraftList ?? []).find(
-    (ac) => ac.registration.toUpperCase() === (watch('aircraftReg') || '').toUpperCase()
+  // Record the fold decisions read: the saved flight, overlaid with the form values
+  // as they stood when the aircraft changed or a submit was tried.
+  const aircraftKey = currentAircraft?.id ?? '';
+  const foldRecord = useMemo(() => {
+    const record: Record<string, unknown> = { ...(existingFlight ?? {}) };
+    const values: Record<string, unknown> = { ...getValues(), approaches, snapshot: [aircraftKey, submitCount] };
+    for (const f of CLOCK_FIELDS) if (!isEditing && values[f] === prefillTime) delete values[f];
+    for (const [k, v] of Object.entries(values)) {
+      if (v !== undefined && v !== null && v !== '' && v !== false && v !== 0) record[k] = v;
+    }
+    return record;
+  }, [existingFlight, getValues, approaches, aircraftKey, submitCount, isEditing, prefillTime]);
+  const watchedLaunchMethod = watch('launchMethod');
+  const foldCtx: RelevanceCtx = useMemo(() => ({ aircraft: currentAircraft, record: foldRecord }), [currentAircraft, foldRecord]);
+  const releaseCtx: RelevanceCtx = useMemo(
+    () => ({ aircraft: currentAircraft, record: { ...foldRecord, launchMethod: watchedLaunchMethod || foldRecord.launchMethod } }),
+    [currentAircraft, foldRecord, watchedLaunchMethod],
   );
-  const storedLaunchMethod = watch('launchMethod') || (isEditing ? existingFlight?.launchMethod : null);
-  const showLaunchMethod = !isSim && showsLaunchMethod(currentAircraft, storedLaunchMethod);
+  const launchMethodRel = useRelevance('flight.launchMethod', foldCtx);
+  const launchesRel = useRelevance('flight.launches', foldCtx);
+  const releaseRel = useRelevance('flight.releaseHeight', releaseCtx);
+  const launchGroupVisible = launchMethodRel.visible || launchesRel.visible || releaseRel.visible;
+  const ifrRel = useRelevance('flight.ifrSection', foldCtx);
+  const sailplaneForm = isSailplane(currentAircraft) || (!currentAircraft && launchMethodRel.visible);
+
+  const launchesHelper = () => {
+    if (watch('launches') !== undefined) return t('form.launchesEntered');
+    if (isEditing && existingFlight && !existingFlight.launchesOverride) {
+      return t('form.launchesDerivedValue', { value: existingFlight.launches });
+    }
+    return t('form.launchesHelper');
+  };
+
+  const clockInput = (field: ClockField, label: string, title: string, required: boolean) => (
+    <div>
+      <label htmlFor={field} className="form-label">
+        {label}
+        {required && <> <span className="text-red-500">*</span></>}
+      </label>
+      <Controller
+        control={control}
+        name={field}
+        render={({ field: f }) => (
+          <TimeOfDayInput
+            ref={f.ref}
+            id={field}
+            name={f.name}
+            value={f.value ?? ''}
+            onChange={f.onChange}
+            onBlur={f.onBlur}
+            clockFormat={clockFormat}
+            invalid={!!errors[field]}
+            className={cn('input px-1 text-center tabular-nums', errors[field] && 'input-error')}
+            title={title}
+          />
+        )}
+      />
+      {errors[field] && <p className="form-error">{timeError(errors[field]?.message)}</p>}
+    </div>
+  );
+
+  const flagInput = (field: 'isOutlanding' | 'isTowFlight', label: string, helper: string) => (
+    <div>
+      <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+        <input {...register(field)} type="checkbox" id={field} className="checkbox" />
+        {label}
+      </label>
+      <p className="form-helper mt-0">{helper}</p>
+    </div>
+  );
+
+  const outlandingRel = useRelevance('flight.outlanding', foldCtx);
+  const towFlightRel = useRelevance('flight.towFlight', foldCtx);
+  const flightFacts = (
+    <>
+      <Relevant id="flight.outlanding" ctx={foldCtx}>
+        {flagInput('isOutlanding', t('form.outlandingLabel'), t('form.outlandingHelper'))}
+      </Relevant>
+      <Relevant id="flight.towFlight" ctx={foldCtx}>
+        {flagInput('isTowFlight', t('form.towFlightLabel'), t('form.towFlightHelper'))}
+      </Relevant>
+    </>
+  );
+
+  const launchFields = (
+    <>
+      <Relevant id="flight.launchMethod" ctx={foldCtx}>
+        <div>
+          <label htmlFor="launchMethod" className="form-label">{t('fields.launchMethod')}</label>
+          <select {...register('launchMethod')} id="launchMethod" className="input">
+            <option value="">{t('form.notSpecified')}</option>
+            <option value="winch">{t('form.winchLaunch')}</option>
+            <option value="aerotow">{t('form.aerotow')}</option>
+            <option value="self-launch">{t('form.selfLaunch')}</option>
+            <option value="car">{t('form.carLaunch')}</option>
+            <option value="bungee">{t('form.bungeeLaunch')}</option>
+          </select>
+          <p className="form-helper">{t('form.launchMethodHelper')}</p>
+        </div>
+      </Relevant>
+      <Relevant id="flight.releaseHeight" ctx={releaseCtx}>
+        <div>
+          <label htmlFor="releaseHeightM" className="form-label">{t('fields.releaseHeightM')}</label>
+          <input
+            {...register('releaseHeightM', { setValueAs: optionalNumber })}
+            type="number"
+            id="releaseHeightM"
+            min="0"
+            max="20000"
+            step="1"
+            inputMode="numeric"
+            className={cn('input', errors.releaseHeightM && 'input-error')}
+          />
+          {errors.releaseHeightM && <p className="form-error">{t('form.releaseHeightInvalid')}</p>}
+          <p className="form-helper">{t('form.releaseHeightHelper')}</p>
+        </div>
+      </Relevant>
+      <Relevant id="flight.launches" ctx={foldCtx}>
+        <div>
+          <label htmlFor="launches" className="form-label">{t('fields.launches')}</label>
+          <input
+            {...register('launches', { setValueAs: optionalNumber })}
+            type="number"
+            id="launches"
+            min="0"
+            step="1"
+            inputMode="numeric"
+            className={cn('input', errors.launches && 'input-error')}
+            placeholder={t('form.autoPlaceholder')}
+          />
+          {errors.launches && <p className="form-error">{t('form.launchesInvalid')}</p>}
+          <p className="form-helper flex flex-wrap items-baseline justify-between gap-x-2">
+            <span>{launchesHelper()}</span>
+            {watch('launches') !== undefined && (
+              <button
+                type="button"
+                onClick={() => setValue('launches', undefined, { shouldDirty: true })}
+                className="link text-xs py-3.5 -my-3.5 whitespace-nowrap ml-auto"
+              >
+                {t('form.resetToDerived')}
+              </button>
+            )}
+          </p>
+        </div>
+      </Relevant>
+    </>
+  );
 
   const onSubmit = async (data: FlightFormData) => {
     try {
@@ -512,8 +722,8 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
         fstdType: data.fstdType || null,
         endorsements: data.endorsements || null,
         crewMembers: isEditing || crewMembers.length > 0 ? crewMembers : undefined,
-        isOutlanding: existingFlight?.isOutlanding ?? false,
-        isTowFlight: existingFlight?.isTowFlight ?? false,
+        isOutlanding: !data.isSimulator && data.isOutlanding,
+        isTowFlight: !data.isSimulator && data.isTowFlight,
       };
 
       // A training device is not flown between places: the API rejects the
@@ -526,10 +736,6 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
             aircraftReg: data.aircraftReg.toUpperCase(),
             departureIcao: normalizeLocation(data.departureIcao),
             arrivalIcao: normalizeLocation(data.arrivalIcao),
-            offBlockTime: data.offBlockTime + ':00',
-            onBlockTime: data.onBlockTime + ':00',
-            departureTime: data.departureTime ? data.departureTime + ':00' : undefined,
-            arrivalTime: data.arrivalTime ? data.arrivalTime + ':00' : undefined,
             route: data.route || null,
             ifrTime: data.ifrTime,
             actualInstrumentTime: data.actualInstrumentTime,
@@ -543,18 +749,31 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
             ...overridePayload('takeoffsNight', data.takeoffsNight),
             ...overridePayload('nightTime', data.nightTime),
             ...overridePayload('crossCountryTime', data.crossCountryTime),
+            ...overridePayload('launches', data.launches),
             launchMethod: (data.launchMethod || null) as any,
+            releaseHeightM: data.releaseHeightM ?? null,
           };
 
+      // An emptied clock time on an edited flight is cleared; a new flight omits it.
+      const clock = (v?: string) => (v ? `${v}:00` : undefined);
       if (isEditing && flightId) {
-        await updateFlight.mutateAsync({ id: flightId, data: basePayload });
+        const clocks = data.isSimulator
+          ? {}
+          : Object.fromEntries(CLOCK_FIELDS.map((f) => [f, clock(data[f]) ?? null]));
+        await updateFlight.mutateAsync({ id: flightId, data: { ...basePayload, ...clocks } });
       } else {
-        const created = await createFlight.mutateAsync(basePayload);
+        const clocks = data.isSimulator
+          ? {}
+          : Object.fromEntries(CLOCK_FIELDS.flatMap((f) => (data[f] ? [[f, clock(data[f])]] : [])));
+        const created = await createFlight.mutateAsync({ ...basePayload, ...clocks });
         onSaved?.({ count: 1, flight: data.isSimulator ? undefined : created });
       }
       onClose();
     } catch (error) {
-      setApiError(extractApiError(error, t('form.failedToSave')));
+      const message = extractApiError(error, t('form.failedToSave'));
+      const timeErrors = timeErrorsFromApi(message, timeLead);
+      for (const [field, key] of timeErrors) setError(field, { type: 'server', message: key });
+      setApiError(timeErrors.length > 0 ? t(timeErrors[0][1]) : message);
     }
   };
 
@@ -572,6 +791,7 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
   }
 
   return (
+    <FoldScope>
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-full overflow-x-hidden">
       {apiError && (
         <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
@@ -826,6 +1046,17 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
         )}
       </fieldset>
 
+      {/* Launch — method, release height and launches lead a sailplane flight */}
+      {!isSim &&
+        (launchGroupVisible ? (
+          <fieldset>
+            <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.launchSection')}</legend>
+            <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0">{launchFields}</div>
+          </fieldset>
+        ) : (
+          launchFields
+        ))}
+
       {/* Session — the device and its duration stand in for route and block times */}
       {isSim && (
         <fieldset>
@@ -910,128 +1141,52 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
         </div>
         <p className="form-helper -mt-2 mb-4">{t('form.locationHelper')}</p>
 
-        {/* Off-Block → On-Block → Takeoff → Landing */}
+        {/* Outlanding and tow flight */}
+        {outlandingRel.visible || towFlightRel.visible ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 -mt-2 mb-4 [&>*]:min-w-0">{flightFacts}</div>
+        ) : (
+          flightFacts
+        )}
+
+        {/* Lead pair first: block times, or take-off and landing */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 [&>*]:min-w-0">
-          <div>
-            <label htmlFor="offBlockTime" className="form-label">
-              {t('detail.offBlock')} <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              control={control}
-              name="offBlockTime"
-              render={({ field }) => (
-                <TimeOfDayInput
-                  ref={field.ref}
-                  id="offBlockTime"
-                  name={field.name}
-                  value={field.value ?? ''}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  clockFormat={clockFormat}
-                  invalid={!!errors.offBlockTime}
-                  className={cn('input px-1 text-center tabular-nums', errors.offBlockTime && 'input-error')}
-                  title={t('form.offBlockTooltip')}
-                />
-              )}
-            />
-            {errors.offBlockTime && (
-              <p className="form-error">{timeError(errors.offBlockTime.message)}</p>
-            )}
-          </div>
-          <div>
-            <label htmlFor="onBlockTime" className="form-label">
-              {t('detail.onBlock')} <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              control={control}
-              name="onBlockTime"
-              render={({ field }) => (
-                <TimeOfDayInput
-                  ref={field.ref}
-                  id="onBlockTime"
-                  name={field.name}
-                  value={field.value ?? ''}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  clockFormat={clockFormat}
-                  invalid={!!errors.onBlockTime}
-                  className={cn('input px-1 text-center tabular-nums', errors.onBlockTime && 'input-error')}
-                  title={t('form.onBlockTooltip')}
-                />
-              )}
-            />
-            {errors.onBlockTime && (
-              <p className="form-error">{timeError(errors.onBlockTime.message)}</p>
-            )}
-          </div>
-          <div>
-            <label htmlFor="departureTime" className="form-label">
-              {t('detail.takeoff')}
-            </label>
-            <Controller
-              control={control}
-              name="departureTime"
-              render={({ field }) => (
-                <TimeOfDayInput
-                  ref={field.ref}
-                  id="departureTime"
-                  name={field.name}
-                  value={field.value ?? ''}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  clockFormat={clockFormat}
-                  invalid={!!errors.departureTime}
-                  className={cn('input px-1 text-center tabular-nums', errors.departureTime && 'input-error')}
-                  title={t('form.takeoffTooltip')}
-                />
-              )}
-            />
-            {errors.departureTime && (
-              <p className="form-error">{timeError(errors.departureTime.message)}</p>
-            )}
-          </div>
-          <div>
-            <label htmlFor="arrivalTime" className="form-label">
-              {t('detail.landing')}
-            </label>
-            <Controller
-              control={control}
-              name="arrivalTime"
-              render={({ field }) => (
-                <TimeOfDayInput
-                  ref={field.ref}
-                  id="arrivalTime"
-                  name={field.name}
-                  value={field.value ?? ''}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  clockFormat={clockFormat}
-                  invalid={!!errors.arrivalTime}
-                  className={cn('input px-1 text-center tabular-nums', errors.arrivalTime && 'input-error')}
-                  title={t('form.landingTooltip')}
-                />
-              )}
-            />
-            {errors.arrivalTime && (
-              <p className="form-error">{timeError(errors.arrivalTime.message)}</p>
-            )}
-          </div>
+          {timeLead === 'block' ? (
+            <>
+              {clockInput('offBlockTime', t('detail.offBlock'), t('form.offBlockTooltip'), true)}
+              {clockInput('onBlockTime', t('detail.onBlock'), t('form.onBlockTooltip'), true)}
+              {clockInput('departureTime', t('detail.takeoff'), t('form.takeoffTooltip'), false)}
+              {clockInput('arrivalTime', t('detail.landing'), t('form.landingTooltip'), false)}
+            </>
+          ) : (
+            <>
+              {clockInput('departureTime', t('detail.takeoff'), t('form.takeoffTooltipLead'), true)}
+              {clockInput('arrivalTime', t('detail.landing'), t('form.landingTooltipLead'), true)}
+              <Relevant id="flight.blockTimes" ctx={foldCtx}>
+                <div className="col-span-2 grid grid-cols-2 gap-4 [&>*]:min-w-0">
+                  {clockInput('offBlockTime', t('detail.offBlock'), t('form.offBlockTooltip'), false)}
+                  {clockInput('onBlockTime', t('detail.onBlock'), t('form.onBlockTooltip'), false)}
+                </div>
+              </Relevant>
+            </>
+          )}
         </div>
 
         {/* Route waypoints */}
-        <div>
-          <label htmlFor="route" className="form-label">
-            {t('fields.route')}
-          </label>
-          <input
-            {...register('route')}
-            type="text"
-            id="route"
-            className="input uppercase"
-            placeholder="EDDF,EDDS,EDDM"
-          />
-          <p className="form-helper">{t('form.commaSeparatedIcao')}</p>
-        </div>
+        <Relevant id="flight.route" ctx={foldCtx}>
+          <div>
+            <label htmlFor="route" className="form-label">
+              {t('fields.route')}
+            </label>
+            <input
+              {...register('route')}
+              type="text"
+              id="route"
+              className="input uppercase"
+              placeholder="EDDF,EDDS,EDDM"
+            />
+            <p className="form-helper">{t('form.commaSeparatedIcao')}</p>
+          </div>
+        </Relevant>
       </fieldset>
       )}
 
@@ -1099,22 +1254,6 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
       </fieldset>
       )}
 
-      {/* Launch method */}
-      {showLaunchMethod && (
-        <fieldset>
-          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('fields.launchMethod')}</legend>
-          <select {...register('launchMethod')} id="launchMethod" className="input w-auto">
-            <option value="">{t('form.notSpecified')}</option>
-            <option value="winch">{t('form.winchLaunch')}</option>
-            <option value="aerotow">{t('form.aerotow')}</option>
-            <option value="self-launch">{t('form.selfLaunch')}</option>
-            <option value="car">{t('form.carLaunch')}</option>
-            <option value="bungee">{t('form.bungeeLaunch')}</option>
-          </select>
-          <p className="form-helper mt-1">{t('form.launchMethodHelper')}</p>
-        </fieldset>
-      )}
-
       {/* Crew — always visible: determines auto-calculated Solo/Dual/SIC time, not optional metadata */}
       <fieldset>
         <legend className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">
@@ -1139,17 +1278,19 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
         </div>
       </fieldset>
 
-      {/* Total block time (edit mode only) */}
+      {/* Total time (edit mode only): block span, else take-off to landing */}
       {isEditing && existingFlight && !isSim && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div>
             <label className="form-label">
-              {t('detail.totalBlockTime')}
+              {totalSource === 'block' ? t('detail.totalBlockTime') : t('detail.totalFlightTime')}
             </label>
             <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-              {formatDuration(existingFlight.totalTime, fmt)}
+              {formatDuration(liveTotal?.minutes ?? existingFlight.totalTime, fmt)}
             </div>
-            <p className="form-helper">{t('form.computedFromBlockTimes')}</p>
+            <p className="form-helper">
+              {totalSource === 'block' ? t('form.computedFromBlockTimes') : t('form.computedFromTakeoffLanding')}
+            </p>
           </div>
         </div>
       )}
@@ -1186,13 +1327,15 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
               </div>
               <p className="form-helper">{t('form.autoFromCrew')}</p>
             </div>
-            <div>
-              <label className="form-label">{t('fields.sicTime')}</label>
-              <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-                {formatDuration(existingFlight.sicTime || 0, fmt)}h
+            <Relevant id="flight.multiCrew" ctx={foldCtx}>
+              <div>
+                <label className="form-label">{t('fields.sicTime')}</label>
+                <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
+                  {formatDuration(existingFlight.sicTime || 0, fmt)}h
+                </div>
+                <p className="form-helper">{t('form.autoFromCrew')}</p>
               </div>
-              <p className="form-helper">{t('form.autoFromCrew')}</p>
-            </div>
+            </Relevant>
             <div>
               <label className="form-label">{t('detail.dualGiven')}</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
@@ -1204,8 +1347,12 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
         </fieldset>
       )}
 
-      {/* Instrument / IFR Section (Collapsible) */}
+      {/* Instrument / IFR Section (Collapsible; open when folded into More) */}
+      <Relevant id="flight.ifrSection" ctx={foldCtx}>
       <fieldset>
+        {ifrRel.folded ? (
+          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('sections.instrument')}</legend>
+        ) : (
         <button
           type="button"
           onClick={() => toggleSection('instrument')}
@@ -1214,7 +1361,8 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
           {expandedSections.instrument ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           {t('sections.instrument')}
         </button>
-        {expandedSections.instrument && (
+        )}
+        {(expandedSections.instrument || ifrRel.folded) && (
           <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {!isSim && (
@@ -1230,7 +1378,7 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
               />
               <p className="form-helper flex flex-wrap items-baseline justify-between gap-x-2">
                 <span>{t('common:minutes')}</span>
-                {blockTimeButton('ifrTime')}
+                {totalTimeButton('ifrTime')}
               </p>
             </div>
             )}
@@ -1340,6 +1488,7 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
           </>
         )}
       </fieldset>
+      </Relevant>
 
       {/* Training & Currency Section (Collapsible) */}
       <fieldset>
@@ -1381,6 +1530,7 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
             </div>
             )}
             {!isSim && (
+            <Relevant id="flight.multiCrew" ctx={foldCtx}>
             <div>
               <label htmlFor="multiPilotTime" className="form-label">{t('fields.multiPilotTime')}</label>
               <input
@@ -1397,8 +1547,10 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
                   : t('form.multiPilotHelper')}
               </p>
             </div>
+            </Relevant>
             )}
             {!isSim && (
+            <Relevant id="flight.multiCrew" ctx={foldCtx}>
             <div>
               <label htmlFor="picusTime" className="form-label">{t('fields.picusTime')}</label>
               <input
@@ -1411,13 +1563,15 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
               />
               <p className="form-helper flex flex-wrap items-baseline justify-between gap-x-2">
                 <span>{t('form.picusHelper')}</span>
-                {blockTimeButton('picusTime')}
+                {totalTimeButton('picusTime')}
               </p>
             </div>
+            </Relevant>
             )}
             {!isSim && (
+            <Relevant id="flight.spic" ctx={foldCtx}>
             <div>
-              <label htmlFor="spicTime" className="form-label">{t('fields.spicTime')}</label>
+              <label htmlFor="spicTime" className="form-label">{sailplaneForm ? t('fields.spicTimeGlider') : t('fields.spicTime')}</label>
               <input
                 {...register('spicTime', { valueAsNumber: true })}
                 type="number"
@@ -1426,10 +1580,12 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
                 min="0"
                 className="input"
               />
-              <p className="form-helper">{t('form.spicHelper')}</p>
+              <p className="form-helper">{sailplaneForm ? t('form.spicHelperGlider') : t('form.spicHelper')}</p>
             </div>
+            </Relevant>
             )}
             {!isSim && (
+            <Relevant id="flight.examiner" ctx={foldCtx}>
             <div>
               <label htmlFor="examinerTime" className="form-label">{t('fields.examinerTime')}</label>
               <input
@@ -1442,8 +1598,10 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
               />
               <p className="form-helper">{t('form.examinerHelper')}</p>
             </div>
+            </Relevant>
             )}
             {!isSim && (
+            <Relevant id="flight.multiCrew" ctx={foldCtx}>
             <div>
               <label htmlFor="reliefTime" className="form-label">{t('fields.reliefTime')}</label>
               <input
@@ -1456,6 +1614,7 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
               />
               <p className="form-helper">{t('form.reliefHelper')}</p>
             </div>
+            </Relevant>
             )}
           </div>
 
@@ -1496,6 +1655,9 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
           </>
         )}
       </fieldset>
+
+      {/* Folded fields: toolkits the pilot does not use, for this aircraft */}
+      <FoldDrawer className="mt-0" />
 
       {/* Remarks & Endorsements */}
       <div className="space-y-4">
@@ -1541,5 +1703,6 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
         </button>
       </div>
     </form>
+    </FoldScope>
   );
 }

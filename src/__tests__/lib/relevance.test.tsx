@@ -48,6 +48,16 @@ const c172 = { aircraftClass: 'SEP_LAND' } as Aircraft;
 const ready = resolveDisciplines(gliderProfile(), false);
 
 describe('registry', () => {
+  it('declares the flight form features', () => {
+    expect(FEATURES.map((f) => f.id)).toEqual(
+      expect.arrayContaining([
+        'flight.launchMethod', 'flight.ifrSection', 'flight.multiCrew', 'flight.spic', 'flight.examiner',
+        'flight.route', 'flight.outlanding', 'flight.towFlight', 'flight.releaseHeight', 'flight.launches',
+        'flight.blockTimes',
+      ]),
+    );
+  });
+
   it('declares every entry against known disciplines', () => {
     for (const f of FEATURES as readonly FeatureDef[]) {
       if (f.serves === 'all') continue;
