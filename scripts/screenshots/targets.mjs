@@ -219,6 +219,17 @@ export const TARGETS = [
       await page.waitForTimeout(300);
     },
   },
+  {
+    name: 'aircraft-modal-ul-ppg',
+    path: '/aircraft',
+    act: async (page) => {
+      await page.getByRole('button', { name: /add aircraft|luftfahrzeug hinzufügen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#aircraftClass').selectOption('ULTRALIGHT');
+      await page.locator('#ulKind').selectOption('POWERED_PARAGLIDER');
+      await page.waitForTimeout(300);
+    },
+  },
   { name: 'licenses', path: '/licenses' },
   { name: 'licenses-rating-edit', path: '/licenses?editRating=cr9' },
   {
@@ -289,6 +300,18 @@ export const TARGETS = [
     path: '/export',
     act: async (page) => {
       await page.getByLabel(/^csv format$|^csv-format$/i).selectOption('weblogbook');
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'export-logbook-licence',
+    path: '/export',
+    act: async (page) => {
+      const logbook = page.getByLabel(/^(logbook|flugbuch)$/i);
+      if (await logbook.count()) {
+        const value = await logbook.locator('option').nth(1).getAttribute('value');
+        if (value) await logbook.selectOption(value);
+      }
       await page.waitForTimeout(200);
     },
   },

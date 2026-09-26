@@ -822,6 +822,13 @@ export function bodyFor(pathname, search = new URLSearchParams()) {
   const path = pathname.replace(/^.*\/api\/v1/, '');
   if (path in ROUTES) return ROUTES[path];
   if (path === '/currency/readiness') return deriveReadiness(currency, aircraft, credentials, search);
+  if (path === '/reports/soaring-season') {
+    const year = Number(search.get('year')) || 2026;
+    return {
+      year, flights: 0, launches: 0, totalMinutes: 0, averageFlightMinutes: 0, outlandings: 0, sites: [],
+      launchesByMethod: { winch: 0, aerotow: 0, selfLaunch: 0, car: 0, bungee: 0, unspecified: 0 },
+    };
+  }
 
   const classRatingsMatch = path.match(/^\/licenses\/([^/]+)\/(?:class-)?ratings$/);
   if (classRatingsMatch) return classRatings[classRatingsMatch[1]] ?? [];

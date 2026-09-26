@@ -1,4 +1,5 @@
 import type { components } from '../api/schema';
+import type { FeatureId } from './relevance/registry';
 
 export type CustomReport = components['schemas']['CustomReport'];
 export type CustomReportInput = components['schemas']['CustomReportInput'];
@@ -21,6 +22,9 @@ export const GROUP_BYS: readonly CustomReportGroupBy[] = [
   'departure',
   'arrival',
   'route',
+  'launchMethod',
+  'aircraftClass',
+  'ulKind',
 ];
 
 export const METRICS: readonly CustomReportMetric[] = [
@@ -34,7 +38,27 @@ export const METRICS: readonly CustomReportMetric[] = [
   'crossCountryTime',
   'fstdTime',
   'landings',
+  'launches',
+  'outlandings',
+  'towFlights',
 ];
+
+/** Soaring metrics; a result table shows them only when charted or not zero. */
+export const SOARING_METRICS: readonly CustomReportMetric[] = ['launches', 'outlandings', 'towFlights'];
+
+/** Registry entry deciding whether a metric is offered first in the picker. */
+export const METRIC_FEATURES: Partial<Record<CustomReportMetric, FeatureId>> = {
+  launches: 'reportMetric.launches',
+  outlandings: 'reportMetric.outlandings',
+  towFlights: 'reportMetric.towFlights',
+};
+
+/** Metrics a result table shows: every metric except soaring ones that are neither charted nor used. */
+export function tableMetrics(result: Pick<CustomReportResult, 'metric' | 'totals'>): CustomReportMetric[] {
+  return METRICS.filter(
+    (m) => !SOARING_METRICS.includes(m) || m === result.metric || (result.totals[m] ?? 0) !== 0,
+  );
+}
 
 export const WINDOW_KINDS: readonly CustomReportWindowKind[] = ['all', 'lastMonths', 'yearToDate', 'range'];
 
@@ -48,7 +72,8 @@ export const DEFAULT_WINDOW: CustomReportWindow = { kind: 'lastMonths', months: 
 export const isRankedGrouping = (groupBy: CustomReportGroupBy) => !TIME_GROUPINGS.includes(groupBy);
 
 /** Whether a metric is a duration in minutes rather than a count. */
-export const isDurationMetric = (metric: CustomReportMetric) => metric !== 'flights' && metric !== 'landings';
+export const isDurationMetric = (metric: CustomReportMetric) =>
+  !['flights', 'landings', 'launches', 'outlandings', 'towFlights'].includes(metric);
 
 /** Filter keys shown as removable chips. */
 export const STRUCTURED_FILTER_KEYS = [

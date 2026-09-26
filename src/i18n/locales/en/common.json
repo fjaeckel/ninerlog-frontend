@@ -394,5 +394,16 @@
     "HELICOPTER": "Ultralight helicopter",
     "POWERED_PARAGLIDER": "Powered paraglider",
     "SAILPLANE": "Ultralight sailplane"
+  },
+  "saveWarnings": {
+    "title": "Saved — please check",
+    "region": "Save warnings",
+    "dismiss": "Dismiss warning",
+    "dismissAll": "Dismiss all",
+    "ul_night_flight": "Night time logged on an ultralight — German ultralights have no night privilege (LuftPersV).",
+    "ul_night_flight_reg": "Night time logged on ultralight {{registration}} — German ultralights have no night privilege (LuftPersV).",
+    "ul_mtom_exceeds_600": "MTOM of {{mtomKg}} kg is above the {{limitKg}} kg German ultralight limit — check the aircraft class. The aircraft was saved.",
+    "ul_120kg_class": "MTOM of {{mtomKg}} kg: this ultralight may fall in the single-seat {{limitKg}} kg class, which needs no medical.",
+    "unknown": "The save returned a note ({{code}})."
   }
 }

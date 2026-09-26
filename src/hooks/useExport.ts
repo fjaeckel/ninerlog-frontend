@@ -1,6 +1,7 @@
 import { useAuthStore } from '../stores/authStore';
 import { API_BASE_URL as API_BASE } from '../lib/config';
 import type { operations } from '../api/schema';
+import { SINGLE_LAYOUT_FORMATS, type PdfFormat } from '../lib/logbookFormat';
 
 export type FlightSearchCSVQuery = Omit<NonNullable<operations['exportFlightsCSV']['parameters']['query']>, 'totals'>;
 
@@ -44,7 +45,7 @@ export const exportDataJSON = () =>
 
 export const exportFlightsPDF = (
   logbookLicenseId?: string,
-  format?: 'easa' | 'faa' | 'summary',
+  format?: PdfFormat,
   pageSize?: 'a4' | 'a5' | 'letter',
   layout?: 'spread' | 'single',
   rowsPerPage?: number,
@@ -54,7 +55,7 @@ export const exportFlightsPDF = (
   if (format) params.set('format', format);
   if (pageSize) params.set('page_size', pageSize);
   // Layout and row density: logbook layouts only.
-  if (layout && format !== 'summary') params.set('layout', layout);
+  if (layout && !(format && SINGLE_LAYOUT_FORMATS.includes(format))) params.set('layout', layout);
   if (rowsPerPage && format !== 'summary') params.set('rows_per_page', String(rowsPerPage));
   const query = params.toString() ? `?${params.toString()}` : '';
   return downloadFile(`${API_BASE}/exports/pdf${query}`, `ninerlog_logbook_${new Date().toISOString().slice(0, 10)}.pdf`);

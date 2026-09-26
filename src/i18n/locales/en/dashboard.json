@@ -61,5 +61,21 @@
   "aircraftDue": {
     "title": "Aircraft due soon",
     "viewAircraft": "Aircraft"
-  }
+  },
+  "soaring": {
+    "title": "Soaring season",
+    "previousYear": "Previous year",
+    "nextYear": "Next year",
+    "empty": "No soaring flights in {{year}}.",
+    "flights": "Flights",
+    "launches": "Launches",
+    "hours": "Hours",
+    "average": "Average flight",
+    "outlandings": "Outlandings",
+    "byMethod": "Launches by method",
+    "unspecified": "Method not recorded",
+    "longest": "Longest flight",
+    "sites": "Top sites"
+  },
+  "ulKindNotSet": "Kind not set"
 }

@@ -123,6 +123,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
   const showRenameOption = registrationChanged && flightsOnOldRegistration > 0;
   const isUltralight = watch('aircraftClass') === 'ULTRALIGHT';
   const isULGyroplane = isUltralight && watch('ulKind') === 'GYROPLANE';
+  const isPoweredParaglider = isUltralight && watch('ulKind') === 'POWERED_PARAGLIDER';
 
   const watchedClass = watch('aircraftClass');
   const watchedULKind = watch('ulKind');
@@ -212,17 +213,22 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="registration" className="form-label">
-              {t('fields.registration')} <span className="text-red-500">*</span>
+              {isPoweredParaglider ? t('fields.registrationOrName') : t('fields.registration')} <span className="text-red-500">*</span>
             </label>
             <input
               {...register('registration')}
               type="text"
               id="registration"
               className={`input ${errors.registration ? 'input-error' : ''}`}
-              placeholder="D-EFGH"
+              placeholder={isPoweredParaglider ? 'PPG-Viper' : 'D-EFGH'}
               aria-invalid={!!errors.registration}
-              aria-describedby={errors.registration ? 'err-registration' : undefined}
+              aria-describedby={
+                [errors.registration && 'err-registration', isPoweredParaglider && 'help-registration-ppg'].filter(Boolean).join(' ') || undefined
+              }
             />
+            {isPoweredParaglider && (
+              <p id="help-registration-ppg" className="form-helper">{t('form.registrationPpgHelper')}</p>
+            )}
             {errors.registration && (
               <p id="err-registration" className="form-error">{errors.registration.message}</p>
             )}

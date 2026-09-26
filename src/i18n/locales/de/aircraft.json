@@ -36,7 +36,8 @@
     "defaultArrivalIcao": "Standard-Zielflugplatz",
     "notes": "Anmerkungen",
     "ulKind": "UL-Art",
-    "maxTakeoffMassKg": "Höchstabflugmasse (kg)"
+    "maxTakeoffMassKg": "Höchstabflugmasse (kg)",
+    "registrationOrName": "Name oder Kennzeichen"
   },
   "stats": {
     "totalTime": "Gesamtzeit",
@@ -87,7 +88,8 @@
     "renameFlights_other": "{{count}} geloggte Flüge von {{oldRegistration}} auf das neue Kennzeichen aktualisieren",
     "ulKindUnspecified": "Nicht angegeben",
     "ulKindHelper": "Bestimmt, worauf die Flüge angerechnet werden. Flugzeit und Landungen auf Dreiachs-UL zählen für die Verlängerung von EASA SEP (Land) und die fortlaufende Flugerfahrung für den LAPL(A), auf einem UL-Motorsegler für TMG, der Übungsflug mit Fluglehrer aber nicht. Die fortlaufende Flugerfahrung nach LuftPersV gilt je UL-Art.",
-    "maxTakeoffMassHelper": "UL-Tragschrauber ab 450 kg zählen für Flugzeit und Landungen der fortlaufenden Flugerfahrung für den EASA-GPL (FCL.035(a)(5))."
+    "maxTakeoffMassHelper": "UL-Tragschrauber ab 450 kg zählen für Flugzeit und Landungen der fortlaufenden Flugerfahrung für den EASA-GPL (FCL.035(a)(5)).",
+    "registrationPpgHelper": "Motorschirme haben kein Kennzeichen — verwende einen Namen, z. B. PPG-Viper."
   },
   "classOptions": {
     "SEP_LAND": "SEP (Land) — einmotorig, Kolbenmotor",

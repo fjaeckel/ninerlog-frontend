@@ -271,9 +271,16 @@
       "CSV vsimakhin/web-logbook — the column layout of the open-source vsimakhin/web-logbook, ready for its one-click import mapping (DD/MM/YYYY dates, H:MM times, FSTD sessions as simulator records).",
       "PDF EASA — Full AMC1 FCL.050 compliant logbook with SP-SE/ME split, FSTD sessions, and page totals.",
       "PDF FAA — Standard ASA/Jeppesen layout with approaches, holds, and IPC/Flight Review markers.",
+      "PDF Sailplane — AMC1 SFCL.050 layout: take-off and landing, flight time, launch method and launches, PIC/dual/FI(S). Chosen automatically for an SPL, LAPL(S) or FAA glider logbook.",
+      "PDF Ultralight — registration, type, UL kind, departure and arrival, flight time, landings, PIC/dual/instruction given. Chosen automatically for an ultralight licence's logbook.",
       "JSON Backup — Complete data snapshot including aircraft fleet, licenses with class ratings, and credentials.",
       "Your data is yours — export anytime, no restrictions, no fees."
-    ]
+    ],
+    "sailplaneLogbook": "Sailplane logbook (SFCL.050)",
+    "ultralightLogbook": "Ultralight logbook",
+    "pdfLogbook": "Logbook",
+    "allFlights": "All flights",
+    "formatForLicence": "{{format}} — the layout for your {{licence}} logbook. Pick another format to change it."
   },
   "custom": {
     "metric": {
@@ -286,7 +293,10 @@
       "ifrTime": "IFR time",
       "crossCountryTime": "Cross-country time",
       "fstdTime": "FSTD time",
-      "landings": "Landings"
+      "landings": "Landings",
+      "launches": "Launches",
+      "outlandings": "Outlandings",
+      "towFlights": "Tow flights"
     },
     "metricShort": {
       "flights": "Flights",
@@ -298,7 +308,10 @@
       "ifrTime": "IFR",
       "crossCountryTime": "XC",
       "fstdTime": "FSTD",
-      "landings": "Ldg"
+      "landings": "Ldg",
+      "launches": "Launches",
+      "outlandings": "Outl.",
+      "towFlights": "Tows"
     },
     "groupBy": {
       "month": "Month",
@@ -308,7 +321,10 @@
       "registration": "Registration",
       "departure": "Departure",
       "arrival": "Arrival",
-      "route": "Route"
+      "route": "Route",
+      "launchMethod": "Launch method",
+      "aircraftClass": "Aircraft class",
+      "ulKind": "Ultralight kind"
     },
     "window": {
       "all": "All time",
@@ -393,7 +409,10 @@
       "registration": "registration",
       "departure": "departure",
       "arrival": "arrival",
-      "route": "route"
+      "route": "route",
+      "launchMethod": "launch method",
+      "aircraftClass": "aircraft class",
+      "ulKind": "ultralight kind"
     }
   }
 }

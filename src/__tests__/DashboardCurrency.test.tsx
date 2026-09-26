@@ -9,6 +9,8 @@ import * as useFlightsHook from '../hooks/useFlights';
 import * as useCredentialsHook from '../hooks/useCredentials';
 import * as useCurrencyHook from '../hooks/useCurrency';
 import * as remindersHook from '../hooks/useAircraftReminders';
+
+vi.mock('../hooks/useSoaringSeason', () => ({ useSoaringSeason: () => ({ data: undefined, isLoading: false, isError: false }) }));
 import { useAuthStore } from '../stores/authStore';
 
 const renderWithProviders = (component: React.ReactElement) => {

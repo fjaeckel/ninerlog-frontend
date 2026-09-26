@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import type { components } from '../api/schema';
 import { invalidateFlightDependentQueries } from './invalidation';
+import { reportSaveWarnings } from '../stores/saveWarningsStore';
 
 export type FlightBatchCreate = components['schemas']['FlightBatchCreate'];
 export type FlightBatchLeg = components['schemas']['FlightBatchLeg'];
@@ -16,7 +17,8 @@ export const useCreateFlightBatch = () => {
       if (error) throw error;
       return data as FlightBatchResult;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      reportSaveWarnings(data?.flights?.flatMap((f) => f.warnings ?? []));
       invalidateFlightDependentQueries(queryClient);
     },
   });
