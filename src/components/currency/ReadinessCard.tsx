@@ -130,7 +130,7 @@ function ReadinessPanel({ ratings }: { ratings: ClassRatingCurrency[] }) {
       </h2>
 
       <div className="grid gap-3 sm:grid-cols-[auto_minmax(0,18rem)_auto] sm:justify-start sm:items-end mb-4">
-        <div>
+        <div className="min-w-0">
           <label htmlFor={`${ids}-date`} className="form-label">{t('readiness.date')}</label>
           <input
             id={`${ids}-date`}
