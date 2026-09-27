@@ -386,7 +386,9 @@
     "noRatingItems": "Noch keine deiner Berechtigungen erlaubt dir, allein zu fliegen.",
     "loadFailed": "Es konnte nicht geprüft werden, was du fliegen darfst. Versuche es gleich noch einmal.",
     "retry": "Erneut versuchen",
-    "basis": "Auf Grundlage der bisher eingetragenen Flüge."
+    "basis": "Auf Grundlage der bisher eingetragenen Flüge.",
+    "launchesSupervised_one": "noch 1 Start im Doppelsitzer oder unter Aufsicht",
+    "launchesSupervised_other": "noch {{count}} Starts im Doppelsitzer oder unter Aufsicht"
   },
   "seasonPlanner": {
     "title": "Um wieder zu fliegen",

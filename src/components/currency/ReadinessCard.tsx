@@ -101,7 +101,7 @@ function ReadinessPanel({ ratings }: { ratings: ClassRatingCurrency[] }) {
     const p = item.params;
     if (item.ready || !p) return null;
     if (item.reasonKey === 'remedy.launch_method_dual' && p.missing != null) {
-      return t('remedyAmount.launches', { count: p.missing });
+      return t('readiness.launchesSupervised', { count: p.missing });
     }
     if (item.reasonKey === 'pax.not_current' && p.needed != null) {
       return t(countsLaunches(item) ? 'remedyAmount.launches' : 'remedyAmount.landings', { count: p.needed });
@@ -192,14 +192,16 @@ function ReadinessPanel({ ratings }: { ratings: ClassRatingCurrency[] }) {
                           return (
                             <li
                               key={l.launchMethod}
-                              className="inline-flex items-center gap-1"
+                              className="flex items-start gap-1"
                               title={messages.readinessReason(l)}
                               data-testid={`readiness-launch-${l.launchMethod}`}
                               data-ready={l.ready}
                             >
-                              <ToneIcon tone={itemTone(l)} className="w-3.5 h-3.5" />
-                              <span>{messages.launchMethod(l.launchMethod ?? '')}</span>
-                              {short && <span className="text-red-700 dark:text-red-400">({short})</span>}
+                              <ToneIcon tone={itemTone(l)} className="w-3.5 h-3.5 mt-px" />
+                              <span>
+                                {messages.launchMethod(l.launchMethod ?? '')}
+                                {short && <span className="text-red-700 dark:text-red-400"> · {short}</span>}
+                              </span>
                               <span className="sr-only">{l.ready ? t('readiness.ready') : t('readiness.notReady')}</span>
                             </li>
                           );

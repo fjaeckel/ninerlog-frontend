@@ -81,7 +81,7 @@ describe('ReadinessCard', () => {
     const aerotow = screen.getByTestId('readiness-launch-aerotow');
     expect(aerotow).toHaveAttribute('data-ready', 'false');
     expect(aerotow).toHaveTextContent('Aerotow');
-    expect(aerotow).toHaveTextContent('(2 more launches)');
+    expect(aerotow).toHaveTextContent('· 2 more launches, dual or supervised solo');
     expect(aerotow).toHaveAttribute('title', 'Fly 2 more launches dual or supervised solo (Aerotow)');
     expect(screen.getByTestId('readiness-medical')).toHaveTextContent('Medical');
     expect(screen.getByTestId('readiness-medical')).toHaveAttribute('data-tone', 'ok');
@@ -93,7 +93,7 @@ describe('ReadinessCard', () => {
     renderCard();
     expect(screen.getByRole('heading', { name: 'Was du heute fliegen darfst' })).toBeInTheDocument();
     expect(screen.getByTestId('readiness-class-GLIDER')).toHaveTextContent('Mit Passagieren');
-    expect(screen.getByTestId('readiness-launch-aerotow')).toHaveTextContent('F-Schlepp');
+    expect(screen.getByTestId('readiness-launch-aerotow')).toHaveTextContent('F-Schlepp · noch 2 Starts im Doppelsitzer oder unter Aufsicht');
   });
 
   it('K: Karl flies the TMG, not the sailplane; flyable classes come first', () => {

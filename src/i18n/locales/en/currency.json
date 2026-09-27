@@ -386,7 +386,9 @@
     "noRatingItems": "None of your ratings lets you fly on your own yet.",
     "loadFailed": "Could not check what you can fly. Try again in a moment.",
     "retry": "Try again",
-    "basis": "Based on the flights logged so far."
+    "basis": "Based on the flights logged so far.",
+    "launchesSupervised_one": "1 more launch, dual or supervised solo",
+    "launchesSupervised_other": "{{count}} more launches, dual or supervised solo"
   },
   "seasonPlanner": {
     "title": "To fly again",
