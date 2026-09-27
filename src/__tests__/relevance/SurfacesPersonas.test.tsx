@@ -130,7 +130,7 @@ describe('Dashboard on the relevance registry', () => {
     renderPage(<DashboardPage />);
     const section = screen.getByTestId('currency-section');
     const dormant = within(section).getByTestId('dormant-rating-cr1');
-    expect(dormant).toHaveTextContent('Dormant — not flown in 24 months');
+    expect(dormant).toHaveTextContent('Not flown in the last 24 months');
     expect(dormant.className).not.toMatch(/red/);
     expect(within(dormant).queryByText(/lapsed/i)).not.toBeInTheDocument();
     expect(section.textContent!.indexOf('TMG')).toBeLessThan(section.textContent!.indexOf('Glider'));
@@ -199,9 +199,9 @@ describe('Currency page on the relevance registry', () => {
     mockCommon(stats(), [rating('cr1', 'GLIDER', 'l1', 'lapsed'), rating('cr2', 'TMG', 'l1')]);
     renderPage(<CurrencyPage />);
     const note = screen.getByTestId('dormant-note-cr1');
-    expect(note).toHaveTextContent('Dormant — not flown in 24 months');
+    expect(note).toHaveTextContent('Not flown in the last 24 months');
     const text = document.body.textContent ?? '';
-    expect(text.indexOf('TMG')).toBeLessThan(text.indexOf('Dormant — not flown'));
+    expect(text.indexOf('TMG')).toBeLessThan(text.indexOf('Not flown in the last'));
   });
 
   it('S3 Sabine: no "IFR", "SIC" or "block" on the currency page', () => {
