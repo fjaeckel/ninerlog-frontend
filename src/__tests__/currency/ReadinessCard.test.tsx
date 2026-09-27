@@ -1,16 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, within, fireEvent } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { addDays, format } from 'date-fns';
 import { ReadinessCard } from '../../components/currency/ReadinessCard';
-import { defaultReadinessAircraft, nextSaturday, readinessDateBounds } from '../../lib/readiness';
 import * as currencyHook from '../../hooks/useCurrency';
-import * as aircraftHook from '../../hooks/useAircraft';
 import * as credentialsHook from '../../hooks/useCredentials';
 import * as readinessHook from '../../hooks/useReadiness';
 import { ReadinessError, type ReadinessItem, type ReadinessReport } from '../../hooks/useReadiness';
 import i18n from '../../i18n';
-import type { Aircraft } from '../../hooks/useAircraft';
 import type { ClassRatingCurrency } from '../../types/api';
 
 const glider: ClassRatingCurrency = {
@@ -18,17 +15,7 @@ const glider: ClassRatingCurrency = {
   status: 'current', message: '', messageKey: 'rating.recency_current',
 };
 
-const ac = (registration: string, aircraftClass: Aircraft['aircraftClass'], extra: Partial<Aircraft> = {}) =>
-  ({ id: registration, registration, type: 'AS21', model: 'ASK 21', aircraftClass, isActive: true, ...extra }) as Aircraft;
-
-const lenaFleet = [ac('D-1234', 'GLIDER'), ac('D-5678', 'GLIDER', { type: 'LS4', model: 'LS4-b' })];
-
-const statsFor = (counts: Record<string, number>) => ({
-  byReg: new Map(Object.entries(counts).map(([reg, n]) => [reg, { registration: reg, totalFlights: n }])),
-  byType: new Map(),
-}) as unknown as aircraftHook.AircraftStatsData;
-
-const lenaSaturday: ReadinessItem[] = [
+const lenaToday: ReadinessItem[] = [
   { kind: 'rating', classRatingId: 'cr1', classType: 'GLIDER', ready: true, status: 'current', reasonKey: 'rating.recency_current' },
   { kind: 'launch_method', classRatingId: 'cr1', launchMethod: 'winch', ready: true, status: 'current', reasonKey: 'readiness.launch_method_current', params: { date: '2028-08-07' } },
   { kind: 'launch_method', classRatingId: 'cr1', launchMethod: 'aerotow', ready: false, status: 'lapsed', reasonKey: 'remedy.launch_method_dual', params: { method: 'aerotow', missing: 2 } },
@@ -38,19 +25,17 @@ const lenaSaturday: ReadinessItem[] = [
 
 type ReadinessResult = { data?: ReadinessReport; error?: unknown; isLoading?: boolean };
 
+const today = format(new Date(), 'yyyy-MM-dd');
+
 function mockAll({
   ratings = [glider] as ClassRatingCurrency[] | undefined,
   currencyLoading = false,
-  fleet = lenaFleet,
-  stats = statsFor({ 'D-5678': 123, 'D-1234': 16 }),
-  readiness = { data: { date: '2026-10-03', aircraftReg: 'D-5678', items: lenaSaturday } } as ReadinessResult,
+  readiness = { data: { date: today, items: lenaToday } } as ReadinessResult,
 } = {}) {
   vi.spyOn(currencyHook, 'useAllCurrencyStatus').mockReturnValue({
     data: ratings ? { ratings, passengerCurrency: [] } : undefined,
     isLoading: currencyLoading,
   } as never);
-  vi.spyOn(aircraftHook, 'useAircraft').mockReturnValue({ data: fleet, isLoading: false } as never);
-  vi.spyOn(aircraftHook, 'useAircraftStats').mockReturnValue({ data: stats, isLoading: false } as never);
   vi.spyOn(credentialsHook, 'useCredentials').mockReturnValue({
     data: [{ id: 'c1', credentialType: 'EASA_LAPL_MEDICAL' }],
   } as never);
@@ -58,6 +43,8 @@ function mockAll({
     isLoading: false, isFetching: false, refetch: vi.fn(), error: null, ...readiness,
   } as never);
 }
+
+const withItems = (items: ReadinessItem[]): ReadinessResult => ({ data: { date: today, items } });
 
 const renderCard = () =>
   render(
@@ -72,72 +59,116 @@ describe('ReadinessCard', () => {
     await i18n.changeLanguage('en');
   });
 
-  it('L4: Lena reads solo ✓ winch ✓ aerotow ✗ (2 launches) passengers ✓', () => {
-    mockAll();
+  it('asks for today, all ratings and passengers, with nothing to fill in', () => {
+    const spy = mockAll();
     renderCard();
-    const item = (id: string) => screen.getByTestId(`readiness-item-${id}`);
-    expect(item('rating')).toHaveTextContent('Solo');
-    expect(item('rating')).toHaveAttribute('data-ready', 'true');
-    expect(item('launch_method-winch')).toHaveTextContent('Winch');
-    expect(item('launch_method-winch')).toHaveAttribute('data-ready', 'true');
-    expect(item('launch_method-aerotow')).toHaveAttribute('data-ready', 'false');
-    expect(item('launch_method-aerotow')).toHaveTextContent('Aerotow');
-    expect(item('launch_method-aerotow')).toHaveTextContent('(2 more launches)');
-    expect(item('passengers')).toHaveAttribute('data-ready', 'true');
-    expect(item('credential')).toHaveTextContent('Medical');
-    expect(item('launch_method-winch')).toHaveAttribute('title', 'Current until 07.08.2028');
-    expect(screen.getByTestId('readiness-reasons')).toHaveTextContent(
-      'Aerotow: Fly 2 more launches dual or supervised solo (Aerotow)',
-    );
-    expect(screen.getByText(/Not everything is current on/)).toBeInTheDocument();
+    expect(spy).toHaveBeenLastCalledWith({ date: today, aircraftReg: null, passengers: true });
+    expect(screen.getByRole('heading', { name: 'What you can fly today' })).toBeInTheDocument();
+    expect(within(screen.getByTestId('readiness-card')).queryByRole('textbox')).not.toBeInTheDocument();
+    expect(within(screen.getByTestId('readiness-card')).queryByRole('combobox')).not.toBeInTheDocument();
+    expect(within(screen.getByTestId('readiness-card')).queryByRole('checkbox')).not.toBeInTheDocument();
   });
 
-  it('L4: the German card names what is missing in Luftsport terms', async () => {
+  it('L4: Lena flies gliders with passengers; winch ✓, aerotow ✗ (2 launches)', () => {
+    mockAll();
+    renderCard();
+    const glider = screen.getByTestId('readiness-class-GLIDER');
+    expect(glider).toHaveAttribute('data-tone', 'ok');
+    expect(glider).toHaveTextContent('Glider');
+    expect(glider).toHaveTextContent('With passengers');
+    expect(screen.getByTestId('readiness-launch-winch')).toHaveAttribute('data-ready', 'true');
+    expect(screen.getByTestId('readiness-launch-winch')).toHaveAttribute('title', 'Current until 07.08.2028');
+    const aerotow = screen.getByTestId('readiness-launch-aerotow');
+    expect(aerotow).toHaveAttribute('data-ready', 'false');
+    expect(aerotow).toHaveTextContent('Aerotow');
+    expect(aerotow).toHaveTextContent('(2 more launches)');
+    expect(aerotow).toHaveAttribute('title', 'Fly 2 more launches dual or supervised solo (Aerotow)');
+    expect(screen.getByTestId('readiness-medical')).toHaveTextContent('Medical');
+    expect(screen.getByTestId('readiness-medical')).toHaveAttribute('data-tone', 'ok');
+  });
+
+  it('L4: the German card speaks Luftsport', async () => {
     await i18n.changeLanguage('de');
     mockAll();
     renderCard();
-    expect(screen.getByRole('heading', { name: 'Bereit zum Fliegen?' })).toBeInTheDocument();
-    expect(screen.getByTestId('readiness-item-rating')).toHaveTextContent('Allein');
-    expect(screen.getByTestId('readiness-reasons')).toHaveTextContent(
-      'F-Schlepp: Noch 2 Starts im Doppelsitzer oder unter Aufsicht (F-Schlepp)',
-    );
+    expect(screen.getByRole('heading', { name: 'Was du heute fliegen darfst' })).toBeInTheDocument();
+    expect(screen.getByTestId('readiness-class-GLIDER')).toHaveTextContent('Mit Passagieren');
+    expect(screen.getByTestId('readiness-launch-aerotow')).toHaveTextContent('F-Schlepp');
   });
 
-  it('asks for next Saturday, the most-flown aircraft and passengers by default', () => {
-    const spy = mockAll();
+  it('K: Karl flies the TMG, not the sailplane; flyable classes come first', () => {
+    const tmg = { ...glider, classRatingId: 'cr2', classType: 'TMG' } as ClassRatingCurrency;
+    mockAll({
+      ratings: [glider, tmg],
+      readiness: withItems([
+        { kind: 'rating', classRatingId: 'cr1', classType: 'GLIDER', ready: false, status: 'lapsed', reasonKey: 'remedy.fly_more', params: { missing: 15, unit: 'launches' } },
+        { kind: 'rating', classRatingId: 'cr2', classType: 'TMG', ready: true, status: 'current', reasonKey: 'rating.recency_current' },
+        { kind: 'passengers', classType: 'TMG', ready: true, status: 'current', reasonKey: 'pax.current_day_no_night_privilege' },
+        { kind: 'passengers', classType: 'GLIDER', ready: false, status: 'expired', reasonKey: 'pax.not_current', params: { needed: 3 } },
+      ]),
+    });
     renderCard();
-    expect(spy).toHaveBeenLastCalledWith(
-      { date: nextSaturday(), aircraftReg: 'D-5678', passengers: true },
-      { enabled: true },
-    );
-    expect(screen.getByTestId('readiness-aircraft')).toHaveValue('D-5678');
+    const rows = screen.getAllByTestId(/^readiness-class-/);
+    expect(rows.map((r) => r.dataset.testid)).toEqual(['readiness-class-TMG', 'readiness-class-GLIDER']);
+    expect(rows[0]).toHaveTextContent('With passengers');
+    expect(rows[1]).toHaveAttribute('data-tone', 'no');
+    expect(rows[1]).toHaveTextContent('Not current');
   });
 
-  it('asks again for another aircraft, all ratings, or without passengers', () => {
-    const spy = mockAll();
+  it('solo only when passenger currency is short, counted in launches on sailplanes', () => {
+    mockAll({
+      readiness: withItems([
+        lenaToday[0],
+        { kind: 'passengers', classType: 'GLIDER', ready: false, status: 'expired', reasonKey: 'pax.not_current', params: { needed: 2 } },
+      ]),
+    });
     renderCard();
-    fireEvent.change(screen.getByTestId('readiness-aircraft'), { target: { value: 'D-1234' } });
-    expect(spy).toHaveBeenLastCalledWith(expect.objectContaining({ aircraftReg: 'D-1234' }), { enabled: true });
-    fireEvent.change(screen.getByTestId('readiness-aircraft'), { target: { value: '' } });
-    expect(spy).toHaveBeenLastCalledWith(expect.objectContaining({ aircraftReg: null }), { enabled: true });
-    fireEvent.click(screen.getByTestId('readiness-passengers'));
-    expect(spy).toHaveBeenLastCalledWith(expect.objectContaining({ passengers: false }), { enabled: true });
+    const row = screen.getByTestId('readiness-class-GLIDER');
+    expect(row).toHaveTextContent('Solo only');
+    expect(row).toHaveTextContent('For passengers: 2 more launches');
   });
 
-  it('bounds the date picker to today … +366 days and does not ask outside it', () => {
-    const spy = mockAll();
+  it('M: an expiring rating keeps its reason next to the passenger shortfall', () => {
+    mockAll({
+      readiness: withItems([
+        { kind: 'rating', classRatingId: 'cr1', classType: 'SEP_LAND', ready: true, status: 'expiring', reasonKey: 'rating.revalidation_not_met' },
+        { kind: 'passengers', classType: 'SEP_LAND', ready: false, status: 'expired', reasonKey: 'pax.not_current', params: { needed: 3 } },
+      ]),
+    });
     renderCard();
-    const input = screen.getByTestId('readiness-date');
-    const today = new Date();
-    expect(input).toHaveAttribute('min', format(today, 'yyyy-MM-dd'));
-    expect(input).toHaveAttribute('max', format(addDays(today, 366), 'yyyy-MM-dd'));
+    const row = screen.getByTestId('readiness-class-SEP_LAND');
+    expect(row).toHaveAttribute('data-tone', 'warn');
+    expect(row.querySelectorAll('p')).toHaveLength(2);
+    expect(row).toHaveTextContent('For passengers: 3 more take-offs and landings');
+  });
 
-    fireEvent.change(input, { target: { value: format(addDays(today, 367), 'yyyy-MM-dd') } });
-    expect(spy).toHaveBeenLastCalledWith(expect.anything(), { enabled: false });
-    expect(screen.getByTestId('readiness-date-error')).toHaveTextContent(/Choose a date between today and/);
+  it('flags a medical inside the renewal window', () => {
+    mockAll({
+      readiness: withItems([
+        lenaToday[0],
+        { kind: 'credential', credentialId: 'c1', ready: true, status: 'valid', reasonKey: 'readiness.credential_valid', params: { date: format(addDays(new Date(), 20), 'yyyy-MM-dd') } },
+      ]),
+    });
+    renderCard();
+    expect(screen.getByTestId('readiness-medical')).toHaveAttribute('data-tone', 'warn');
+  });
 
-    fireEvent.change(input, { target: { value: format(addDays(today, -1), 'yyyy-MM-dd') } });
-    expect(spy).toHaveBeenLastCalledWith(expect.anything(), { enabled: false });
+  it('an expired medical says nothing may be flown', () => {
+    mockAll({
+      readiness: withItems([
+        lenaToday[0],
+        { kind: 'credential', credentialId: 'c1', ready: false, status: 'expired', reasonKey: 'readiness.credential_expired', params: { date: '2026-09-30' } },
+      ]),
+    });
+    renderCard();
+    expect(screen.getByTestId('readiness-medical-blocks')).toBeInTheDocument();
+    expect(screen.getByTestId('readiness-medical')).toHaveTextContent('Expired on 30.09.2026');
+  });
+
+  it('J: a student with no rating item is not told everything is current', () => {
+    mockAll({ readiness: withItems([lenaToday[4]]) });
+    renderCard();
+    expect(screen.getByTestId('readiness-empty')).toHaveTextContent('None of your ratings lets you fly on your own yet.');
   });
 
   it('G3/R2: Ruth, with no rating, gets no card', () => {
@@ -165,54 +196,9 @@ describe('ReadinessCard', () => {
     expect(screen.getByTestId('readiness-loading')).toBeInTheDocument();
   });
 
-  it('a 404 says the aircraft is not in the fleet', () => {
-    mockAll({ readiness: { error: new ReadinessError(404, 'not found') } });
-    renderCard();
-    expect(screen.getByTestId('readiness-unknown-aircraft')).toHaveTextContent('no longer in your fleet');
-  });
-
-  it('a 400 asks for a date in range', () => {
-    mockAll({ readiness: { error: new ReadinessError(400, 'bad date') } });
-    renderCard();
-    expect(screen.getByTestId('readiness-date-error')).toBeInTheDocument();
-  });
-
-  it('any other failure offers a retry', () => {
+  it('a failure offers a retry', () => {
     mockAll({ readiness: { error: new ReadinessError(500, 'boom') } });
     renderCard();
     expect(within(screen.getByTestId('readiness-error')).getByRole('button', { name: 'Try again' })).toBeInTheDocument();
-  });
-
-  it('renders status valid and an expired medical', () => {
-    mockAll({
-      readiness: {
-        data: {
-          date: '2026-10-03',
-          items: [{ kind: 'credential', credentialId: 'c1', ready: false, status: 'expired', reasonKey: 'readiness.credential_expired', params: { date: '2026-09-30' } }],
-        },
-      },
-    });
-    renderCard();
-    expect(screen.getByTestId('readiness-reasons')).toHaveTextContent('Medical: Expired on 30.09.2026');
-  });
-});
-
-describe('readiness helpers', () => {
-  it('next Saturday is today on a Saturday and the coming one otherwise', () => {
-    expect(nextSaturday(new Date(2026, 8, 26))).toBe('2026-09-26');
-    expect(nextSaturday(new Date(2026, 8, 27))).toBe('2026-10-03');
-    expect(nextSaturday(new Date(2026, 8, 25))).toBe('2026-09-26');
-  });
-
-  it('bounds run from today to 366 days ahead', () => {
-    expect(readinessDateBounds(new Date(2026, 8, 26))).toEqual({ min: '2026-09-26', max: '2027-09-27' });
-  });
-
-  it('defaults to the most-flown active aircraft a rating covers', () => {
-    const mark = [ac('D-AIUA', 'MEP_LAND'), ac('D-EMKC', 'SEP_LAND'), ac('D-OLD', 'SEP_LAND', { isActive: false })];
-    const sep = { ...glider, classType: 'SEP_LAND' } as ClassRatingCurrency;
-    expect(defaultReadinessAircraft(mark, statsFor({ 'D-AIUA': 900, 'D-EMKC': 12, 'D-OLD': 50 }), [sep])).toBe('D-EMKC');
-    expect(defaultReadinessAircraft(mark, statsFor({ 'D-AIUA': 900 }), [])).toBe('D-AIUA');
-    expect(defaultReadinessAircraft([], undefined, [sep])).toBeNull();
   });
 });

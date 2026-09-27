@@ -416,8 +416,6 @@ export default function DashboardPage() {
                 onClick={() => navigate(`/flights/${flight.id}`)}
                 className="w-full grid grid-cols-[1fr_auto] gap-2 items-center py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded px-2 text-left transition-colors"
               >
-                {/* Departure and arrival may be free-text field names ("UL-Platz
-                    Musterstadt"), not four-letter ICAO codes, so they truncate. */}
                 <div className="flex items-center gap-1 min-w-0">
                   <span className="font-medium font-mono text-slate-800 dark:text-slate-100 truncate">
                     {flight.departureIcao || '—'}

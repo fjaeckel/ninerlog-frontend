@@ -269,8 +269,7 @@
     @apply dark:focus:border-blue-400 dark:focus:ring-blue-400;
   }
 
-  /* iOS Safari gives date and time inputs an intrinsic min-width wider than a
-     phone column, so w-full alone does not keep them inside their card. */
+  /* Date and time inputs shrink with their container. */
   input.input[type='date'],
   input.input[type='time'],
   input.input[type='datetime-local'] {
