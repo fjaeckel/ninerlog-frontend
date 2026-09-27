@@ -269,6 +269,17 @@
     @apply dark:focus:border-blue-400 dark:focus:ring-blue-400;
   }
 
+  /* iOS Safari gives date and time inputs an intrinsic min-width wider than a
+     phone column, so w-full alone does not keep them inside their card. */
+  input.input[type='date'],
+  input.input[type='time'],
+  input.input[type='datetime-local'] {
+    @apply min-w-0 appearance-none;
+  }
+  input.input::-webkit-date-and-time-value {
+    text-align: left;
+  }
+
   /* ── Inline link ──
      The vertical padding is the touch target; the negative margin keeps it
      from growing the line box it sits in. */
