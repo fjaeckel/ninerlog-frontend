@@ -1,6 +1,6 @@
 import { useId, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, Moon } from 'lucide-react';
+import { ChevronDown, History } from 'lucide-react';
 import type { ClassRatingCurrency } from '../../types/api';
 import { cn } from '../../lib/cn';
 
@@ -33,7 +33,7 @@ export function DormantRating({ rating, children }: DormantRatingProps) {
             )}
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400 inline-flex items-center gap-1.5 mt-0.5">
-            <Moon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <History className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             {t('relevance:dormant.note')}
           </p>
         </div>
