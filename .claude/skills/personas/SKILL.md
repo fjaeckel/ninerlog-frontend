@@ -5,10 +5,12 @@ description: Check any screen, form field, dashboard card, report, nav entry, on
 
 # Persona check
 
-`../ninerlog-api/docs/PERSONAS.md` is binding on this repo. Nine personas — Lena (club
+`../ninerlog-api/docs/PERSONAS.md` is binding on this repo. Thirteen personas — Lena (club
 glider), Jonas (glider student), Karl (TMG), Petra (cross-country, self-launch, tow pilot,
-FI(S)), Mehmet (three-axis UL), Sabine (trike + powered paraglider), and the guards Mark
-(airline), Anna (PPL converting to gliders) and Ruth (empty account). Each has "must see",
+FI(S)), Mehmet (three-axis UL), Sabine (trike + powered paraglider); the guards Mark
+(airline), Anna (PPL converting to gliders) and Ruth (empty account); and the core
+powered-aeroplane pilots Tom (FAA private + instrument), Claudia (EASA owner, SEP/MEP/IR),
+Ines (FI(A)) and Heinz (40 years of records, migrating in). Each has "must see",
 "must fold away" and numbered acceptance scenarios. **A UI change is not done until you have
 looked at it as the personas it touches.**
 
@@ -38,13 +40,14 @@ guess about the user.
 | F5 | Does the wording match the persona's world, in **both** en and de? | "Off-block" for a glider; "Recency" as a German noun; "schwerkraftgesteuert" instead of "gewichtskraftgesteuert" |
 | F6 | Does quick-add / import leave the data the persona's currency needs? | Quick-added `D-M…` with no class or UL kind (M3) |
 | F7 | Guards: is it unchanged for Mark, Anna and Ruth? | Screenshot diff on the airline fixture |
+| F8 | Core: does it hold for Tom, Claudia, Ines and Heinz? | EASA wording or `DD.MM.YYYY` on Tom's screens (T1, T7); a screen that slows on Heinz's 1,500 flights |
 
 ## 3. Screenshots per persona
 
 The `screenshots` skill is mandatory for rendered changes; the persona check extends it.
 Every persona has a fixture set in `scripts/screenshots/personas/<id>.mjs`, selected with
 `--persona=<id>` or `SHOT_PERSONA=<id>` (ids `lena`, `jonas`, `karl`, `petra`, `mehmet`,
-`sabine`, `mark`, `anna`, `ruth`, or `all`):
+`sabine`, `mark`, `anna`, `ruth`, `tom`, `claudia`, `ines`, `heinz`, or `all`):
 
 ```bash
 npm run shots -- before --persona=all --theme=light     # .screenshots/before/<persona>/…
@@ -56,7 +59,8 @@ npm run shots -- after  --persona=lena,karl,mark flights-modal-primary currency
 - `flights-modal-primary` / `-secondary` open the flight form with the persona's own aircraft
   selected (Lena `D-1234`, Karl `D-KOFA`, Petra `D-KXYZ` then the DR400 `D-EPTW`, Mehmet
   `D-MXYZ`, Sabine `D-MTRK` then the paramotor, Mark `D-AIUA` then the club C172, Anna the
-  C172 then the ASK 21) — the aircraft-scope check for L3, K1, P1, M1, S3, A1.
+  C172 then the ASK 21, Tom `N734TB`, Claudia `D-EMCK` then the Seminole `D-GSEM`, Ines
+  `D-EFSA` then the DA40, Heinz `D-EHVG` then the club C172) — the aircraft-scope check for L3, K1, P1, M1, S3, A1.
 - Each set serves `GET /users/me/pilot-profile` derived from the persona's records; a run
   prints `! pilot profile …` where the derivation disagrees with PERSONAS.md.
 - Look at each: does Lena's form lead with launch method and take-off/landing? Does Mark's

@@ -175,7 +175,7 @@ export function flight(spec) {
     simulatedInstrumentTime: 0,
     approaches: approaches.map((a, i) => ({ id: `ap${i}`, type: a.type, airport: a.airport, runway: a.runway ?? null, count: 1 })),
     approachesCount: approaches.length,
-    holds: 0,
+    holds: spec.holds ?? 0,
     landingsDay: sim || role === 'passenger' ? 0 : landings - nightLandings,
     landingsNight: sim || role === 'passenger' ? 0 : nightLandings,
     allLandings: sim || role === 'passenger' ? 0 : landings,
@@ -196,8 +196,8 @@ export function flight(spec) {
     isSimulator: !!sim,
     isPassenger: role === 'passenger',
     fstdType: sim ? sim.fstdType : null,
-    isIpc: false,
-    isFlightReview: false,
+    isIpc: !!spec.ipc,
+    isFlightReview: !!spec.flightReview,
     isProficiencyCheck: !!spec.proficiencyCheck,
     remarks,
     instructorName,
@@ -696,6 +696,35 @@ const sum = (list, key) => list.reduce((a, f) => a + (f[key] ?? 0), 0);
 const realFlights = (flights) => flights.filter((f) => !f.isSimulator);
 const loggedFlights = (flights) => flights.filter((f) => !f.isSimulator && !f.isPassenger);
 
+/** An aircraft reminder with its status and days until due at TODAY. */
+export function reminder(id, aircraftId, aircraftRegistration, kind, dueDate, extra = {}) {
+  const daysUntilDue = Math.round((Date.parse(dueDate) - Date.parse(day(0))) / DAY_MS);
+  const status = daysUntilDue < 0 ? 'overdue' : daysUntilDue <= 30 ? 'due_soon' : 'ok';
+  return {
+    id, aircraftId, aircraftRegistration, kind, dueDate, status, daysUntilDue,
+    createdAt: iso('2025-09-01'), updatedAt: iso('2026-01-01'), ...extra,
+  };
+}
+
+const BASELINE_FIELDS = [
+  'totalFlights', 'totalMinutes', 'picMinutes', 'sicMinutes', 'dualMinutes', 'dualGivenMinutes', 'multiPilotMinutes',
+  'nightMinutes', 'ifrMinutes', 'soloMinutes', 'crossCountryMinutes', 'picusMinutes', 'spicMinutes', 'examinerMinutes',
+  'reliefMinutes', 'landingsDay', 'landingsNight',
+];
+
+/** Statistics with an initial-hours snapshot added to the totals; unchanged without one. */
+function withBaseline(stats, baseline) {
+  if (!baseline) return stats;
+  const out = { ...stats };
+  const contribution = { baselineDate: baseline.baselineDate };
+  for (const k of BASELINE_FIELDS) {
+    const v = baseline[k] ?? 0;
+    contribution[k] = v;
+    if (k in out) out[k] += v;
+  }
+  return { ...out, baseline: contribution };
+}
+
 export function deriveStatistics(flights) {
   const fl = realFlights(flights);
   return {
@@ -1135,7 +1164,7 @@ export function buildFixtureSet(persona) {
   const aircraft = persona.aircraft ?? [];
   const aircraftByReg = Object.fromEntries(aircraft.map((a) => [a.registration, a]));
   const airports = persona.airports ?? {};
-  const statistics = deriveStatistics(flights);
+  const statistics = withBaseline(deriveStatistics(flights), persona.baseline);
   const currency = typeof persona.currency === 'function'
     ? persona.currency(flights, aircraftByReg)
     : persona.currency ?? { ratings: [], passengerCurrency: [] };
@@ -1152,13 +1181,14 @@ export function buildFixtureSet(persona) {
     '/users/me/statistics': statistics,
     '/users/me/notifications': { emailOnCurrencyExpiry: true, emailOnCredentialExpiry: true, daysBeforeExpiry: 30 },
     '/users/me/notifications/history': EMPTY_PAGE,
-    '/users/me/baseline': null,
+    '/users/me/baseline': persona.baseline ?? null,
     '/users/me/pilot-profile': pilotProfile,
     '/aircraft/stats': deriveAircraftStats(flights),
     '/licenses': licenses,
     '/credentials': persona.credentials ?? [],
     '/contacts': persona.contacts ?? [],
     '/currency': currency,
+    '/aircraft-reminders': persona.reminders ?? [],
     '/custom-currency': [],
     '/reports/trends': deriveTrends(flights),
     '/reports/stats-by-class': deriveStatsByClass(flights, aircraftByReg),
@@ -1195,6 +1225,8 @@ export function buildFixtureSet(persona) {
     if (path === '/training/progress') return deriveTrainingProgress({ pilotProfile, licenses, flights, aircraftByReg, search });
     const ratingsMatch = path.match(/^\/licenses\/([^/]+)\/(?:class-)?ratings$/);
     if (ratingsMatch) return classRatings[ratingsMatch[1]] ?? [];
+    const remindersMatch = path.match(/^\/aircraft\/([^/]+)\/reminders$/);
+    if (remindersMatch) return (persona.reminders ?? []).filter((r) => r.aircraftId === remindersMatch[1]);
     const privilegesMatch = path.match(/^\/licenses\/([^/]+)\/privileges$/);
     if (privilegesMatch) return (persona.privileges ?? []).filter((p) => p.licenseId === privilegesMatch[1]);
     if (/^\/licenses\/[^/]+\/currency$/.test(path)) return currency;

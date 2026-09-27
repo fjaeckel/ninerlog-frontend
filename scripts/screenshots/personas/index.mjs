@@ -7,7 +7,7 @@
  */
 import { buildFixtureSet } from './build.mjs';
 
-export const PERSONA_IDS = ['lena', 'jonas', 'karl', 'petra', 'mehmet', 'sabine', 'mark', 'anna', 'ruth'];
+export const PERSONA_IDS = ['lena', 'jonas', 'karl', 'petra', 'mehmet', 'sabine', 'mark', 'anna', 'ruth', 'tom', 'claudia', 'ines', 'heinz'];
 
 /** The fixture set for a persona id: `{ user, bodyFor, pilotProfile, shotAircraft, … }`. */
 export async function loadPersona(id) {
