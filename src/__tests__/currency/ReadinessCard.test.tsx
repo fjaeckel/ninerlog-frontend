@@ -111,8 +111,21 @@ describe('ReadinessCard', () => {
     const rows = screen.getAllByTestId(/^readiness-class-/);
     expect(rows.map((r) => r.dataset.testid)).toEqual(['readiness-class-TMG', 'readiness-class-GLIDER']);
     expect(rows[0]).toHaveTextContent('With passengers');
-    expect(rows[1]).toHaveAttribute('data-tone', 'no');
-    expect(rows[1]).toHaveTextContent('Not current');
+    expect(rows[1]).toHaveAttribute('data-tone', 'off');
+    expect(rows[1]).toHaveTextContent('Fly 15 more launches');
+    expect(within(screen.getByTestId('readiness-not-today')).getByRole('heading', { name: 'Not today' })).toBeInTheDocument();
+    expect(screen.getByTestId('readiness-not-today')).toContainElement(rows[1]);
+  });
+
+  it('with nothing current, says so plainly and lists the way back', () => {
+    mockAll({
+      readiness: withItems([
+        { kind: 'rating', classRatingId: 'cr1', classType: 'GLIDER', ready: false, status: 'lapsed', reasonKey: 'remedy.fly_more', params: { missing: 15, unit: 'launches' } },
+      ]),
+    });
+    renderCard();
+    expect(screen.getByTestId('readiness-nothing-current')).toHaveTextContent('None of your ratings is current today.');
+    expect(screen.getByTestId('readiness-class-GLIDER')).toHaveAttribute('data-tone', 'off');
   });
 
   it('solo only when passenger currency is short, counted in launches on sailplanes', () => {
