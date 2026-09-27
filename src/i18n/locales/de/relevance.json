@@ -15,7 +15,7 @@
   "status": {
     "active": "Aktiv",
     "training": "In Ausbildung",
-    "dormant": "Ruhend",
+    "dormant": "Länger nicht geflogen",
     "off": "Aus"
   },
   "intent": {
@@ -78,7 +78,7 @@
   "moreClasses": "Weitere Klassen",
   "moreSections": "Weitere Bereiche ({{count}})",
   "dormant": {
-    "note": "Ruhend — seit 24 Monaten nicht geflogen",
+    "note": "In den letzten 24 Monaten nicht geflogen",
     "show": "Status anzeigen",
     "hide": "Status ausblenden"
   },

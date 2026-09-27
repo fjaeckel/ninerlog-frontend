@@ -18,7 +18,7 @@ const INTENTS: readonly DisciplineIntent[] = ['auto', 'on', 'off', 'goal'];
 const STATUS_BADGE: Record<string, string> = {
   active: 'badge-current',
   training: 'badge-info',
-  dormant: 'badge-expiring',
+  dormant: 'badge-neutral',
   off: 'badge-neutral',
 };
 

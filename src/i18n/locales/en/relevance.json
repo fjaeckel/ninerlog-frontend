@@ -15,7 +15,7 @@
   "status": {
     "active": "Active",
     "training": "Training",
-    "dormant": "Dormant",
+    "dormant": "Not flown recently",
     "off": "Off"
   },
   "intent": {
@@ -78,7 +78,7 @@
   "moreClasses": "More classes",
   "moreSections": "More sections ({{count}})",
   "dormant": {
-    "note": "Dormant — not flown in 24 months",
+    "note": "Not flown in the last 24 months",
     "show": "Show status",
     "hide": "Hide status"
   },
