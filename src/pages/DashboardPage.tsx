@@ -416,12 +416,14 @@ export default function DashboardPage() {
                 onClick={() => navigate(`/flights/${flight.id}`)}
                 className="w-full grid grid-cols-[1fr_auto] gap-2 items-center py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded px-2 text-left transition-colors"
               >
+                {/* Departure and arrival may be free-text field names ("UL-Platz
+                    Musterstadt"), not four-letter ICAO codes, so they truncate. */}
                 <div className="flex items-center gap-1 min-w-0">
-                  <span className="font-medium font-mono text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                  <span className="font-medium font-mono text-slate-800 dark:text-slate-100 truncate">
                     {flight.departureIcao || '—'}
                   </span>
                   <ArrowRight className="w-3.5 h-3.5 shrink-0 text-slate-400 dark:text-slate-500" aria-hidden="true" />
-                  <span className="font-medium font-mono text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                  <span className="font-medium font-mono text-slate-800 dark:text-slate-100 truncate">
                     {flight.arrivalIcao || '—'}
                   </span>
                   {/* On a phone the row is route, time and date — a registration
