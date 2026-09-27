@@ -375,7 +375,6 @@
   "readiness": {
     "titleToday": "What you can fly today",
     "current": "Current",
-    "notCurrent": "Not current",
     "withPassengers": "With passengers",
     "soloOnly": "Solo only",
     "forPassengers": "For passengers: {{what}}",
@@ -388,7 +387,9 @@
     "retry": "Try again",
     "basis": "Based on the flights logged so far.",
     "launchesSupervised_one": "1 more launch, dual or supervised solo",
-    "launchesSupervised_other": "{{count}} more launches, dual or supervised solo"
+    "launchesSupervised_other": "{{count}} more launches, dual or supervised solo",
+    "notToday": "Not today",
+    "nothingCurrent": "None of your ratings is current today."
   },
   "seasonPlanner": {
     "title": "To fly again",

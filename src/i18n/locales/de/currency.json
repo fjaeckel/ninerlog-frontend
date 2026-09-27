@@ -375,7 +375,6 @@
   "readiness": {
     "titleToday": "Was du heute fliegen darfst",
     "current": "Gültig",
-    "notCurrent": "Nicht gültig",
     "withPassengers": "Mit Passagieren",
     "soloOnly": "Nur allein",
     "forPassengers": "Für Passagiere noch {{what}}",
@@ -388,7 +387,9 @@
     "retry": "Erneut versuchen",
     "basis": "Auf Grundlage der bisher eingetragenen Flüge.",
     "launchesSupervised_one": "noch 1 Start im Doppelsitzer oder unter Aufsicht",
-    "launchesSupervised_other": "noch {{count}} Starts im Doppelsitzer oder unter Aufsicht"
+    "launchesSupervised_other": "noch {{count}} Starts im Doppelsitzer oder unter Aufsicht",
+    "notToday": "Heute nicht",
+    "nothingCurrent": "Heute ist keine deiner Berechtigungen gültig."
   },
   "seasonPlanner": {
     "title": "Um wieder zu fliegen",
