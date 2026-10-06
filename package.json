@@ -79,7 +79,7 @@
     "happy-dom": "^20.14.5",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
-    "msw": "^2.15.0",
+    "msw": "^3.0.2",
     "openapi-typescript": "^7.13.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.9.9",
