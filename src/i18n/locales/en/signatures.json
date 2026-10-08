@@ -89,5 +89,16 @@
     "submit": "Sign this entry",
     "submitting": "Submitting...",
     "signatureRequired": "Please draw a signature before submitting."
+  },
+  "history": {
+    "title_one": "{{count}} voided signature",
+    "title_other": "{{count}} voided signatures",
+    "statusVoided": "Voided",
+    "unknownSigner": "Unknown instructor",
+    "signedAt": "Signed on {{date}}",
+    "voidedAt": "Voided on {{date}}",
+    "reasonLabel": "Reason",
+    "viewSignature": "View signature",
+    "hideSignature": "Hide signature"
   }
 }

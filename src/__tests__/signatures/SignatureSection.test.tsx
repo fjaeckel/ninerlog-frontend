@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SignatureSection } from '../../components/flights/SignatureSection';
 import * as useSignaturesHook from '../../hooks/useSignatures';
@@ -163,5 +163,78 @@ describe('SignatureSection', () => {
     const img = screen.getByRole('img', { name: /signature/i }) as HTMLImageElement;
     expect(img.src).toBe('blob:http://localhost/fake-signature-image');
     expect(revokeSpy).not.toHaveBeenCalled();
+  });
+
+  describe('voided signatures', () => {
+    const completed = {
+      id: 'sig-active',
+      flightId: 'flight-1',
+      method: 'live',
+      status: 'completed',
+      instructorName: 'Jane Instructor',
+      signedAt: '2026-01-16T12:00:00Z',
+      emailSendCount: 0,
+      createdAt: '2026-01-16T12:00:00Z',
+      updatedAt: '2026-01-16T12:00:00Z',
+    } as FlightSignature;
+    const voided = {
+      id: 'sig-old',
+      flightId: 'flight-1',
+      method: 'live',
+      status: 'voided',
+      instructorName: 'Old Instructor',
+      instructorCredentialNumber: 'DE.FCL.999',
+      signedAt: '2026-01-15T12:00:00Z',
+      voidedAt: '2026-01-16T09:00:00Z',
+      voidedReason: 'Wrong landing count',
+      emailSendCount: 0,
+      createdAt: '2026-01-15T12:00:00Z',
+      updatedAt: '2026-01-16T09:00:00Z',
+    } as FlightSignature;
+    const signedFlight: Flight = { ...baseFlight, signatureId: 'sig-active' };
+
+    it('is absent when no signature was voided', () => {
+      mockSignatureHooks([completed]);
+      renderWithProviders(signedFlight);
+
+      expect(screen.queryByRole('button', { name: /voided signature/i })).not.toBeInTheDocument();
+    });
+
+    it('shows a collapsed count and expands to the voided entries', () => {
+      mockSignatureHooks([completed, voided]);
+      renderWithProviders(signedFlight);
+
+      const toggle = screen.getByRole('button', { name: /1 voided signature/i });
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByText('Old Instructor')).not.toBeInTheDocument();
+
+      fireEvent.click(toggle);
+
+      expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      expect(screen.getByText('Old Instructor')).toBeInTheDocument();
+      expect(screen.getByText(/DE\.FCL\.999/)).toBeInTheDocument();
+      expect(screen.getByText(/Wrong landing count/)).toBeInTheDocument();
+    });
+
+    it('shows voided entries on an unsigned flight', () => {
+      mockSignatureHooks([voided]);
+      renderWithProviders(baseFlight);
+
+      expect(screen.getByRole('button', { name: /sign now/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /1 voided signature/i })).toBeInTheDocument();
+    });
+
+    it('requests the voided image only when asked', () => {
+      mockSignatureHooks([completed, voided]);
+      const imageSpy = vi.mocked(useSignaturesHook.useFlightSignatureImageUrl);
+      renderWithProviders(signedFlight);
+
+      fireEvent.click(screen.getByRole('button', { name: /1 voided signature/i }));
+      expect(imageSpy).not.toHaveBeenCalledWith('flight-1', 'sig-old');
+
+      fireEvent.click(screen.getByRole('button', { name: /view signature/i }));
+      expect(imageSpy).toHaveBeenCalledWith('flight-1', 'sig-old');
+      expect(screen.getByRole('button', { name: /hide signature/i })).toBeInTheDocument();
+    });
   });
 });

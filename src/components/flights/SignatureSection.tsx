@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
-import { PenLine, Mail, Link as LinkIcon, ShieldCheck, Copy, Check } from 'lucide-react';
+import { PenLine, Mail, Link as LinkIcon, ShieldCheck, Copy, Check, History, ChevronDown } from 'lucide-react';
 import type { components } from '../../api/schema';
 import {
   useFlightSignatures,
@@ -40,6 +40,7 @@ export function SignatureSection({ flight }: { flight: Flight }) {
     ? signatures?.find((s) => s.id === flight.signatureId)
     : undefined;
   const pendingRequest = signatures?.find((s) => s.status === 'pending');
+  const voidedSignatures = signatures?.filter((s) => s.status === 'voided') ?? [];
 
   const imageUrl = useFlightSignatureImageUrl(flight.id, activeSignature?.id);
 
@@ -93,6 +94,10 @@ export function SignatureSection({ flight }: { flight: Flight }) {
             {t('section.requestByEmail')}
           </button>
         </div>
+      )}
+
+      {voidedSignatures.length > 0 && (
+        <VoidedSignatures flightId={flight.id} signatures={voidedSignatures} />
       )}
 
       {showLiveDialog && (
@@ -169,6 +174,101 @@ function VoidSignatureDialog({
         </div>
       </form>
     </Dialog>
+  );
+}
+
+function VoidedSignatures({
+  flightId,
+  signatures,
+}: {
+  flightId: string;
+  signatures: FlightSignature[];
+}) {
+  const { t } = useTranslation('signatures');
+  const [isOpen, setIsOpen] = useState(false);
+  const listId = useId();
+
+  return (
+    <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+      <button
+        type="button"
+        onClick={() => setIsOpen((open) => !open)}
+        aria-expanded={isOpen}
+        aria-controls={listId}
+        className="flex items-center justify-between w-full min-h-11 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
+      >
+        <span className="flex items-center gap-2">
+          <History className="w-4 h-4" />
+          {t('history.title', { count: signatures.length })}
+        </span>
+        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <ul id={listId} className="mt-2 space-y-3">
+          {signatures.map((sig) => (
+            <VoidedSignatureEntry key={sig.id} flightId={flightId} signature={sig} />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function VoidedSignatureEntry({ flightId, signature }: { flightId: string; signature: FlightSignature }) {
+  const { t } = useTranslation('signatures');
+  const { fmtDateTime } = useFormatPrefs();
+  const [showImage, setShowImage] = useState(false);
+  const imageUrl = useFlightSignatureImageUrl(flightId, showImage ? signature.id : null);
+
+  return (
+    <li className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-3 text-sm space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-medium text-slate-900 dark:text-slate-100 break-words">
+            {signature.instructorName || t('history.unknownSigner')}
+          </p>
+          {signature.instructorCredentialNumber && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 break-words">
+              {t('stampPrefix')} {signature.instructorCredentialNumber}
+            </p>
+          )}
+        </div>
+        <span className="badge-neutral shrink-0">{t('history.statusVoided')}</span>
+      </div>
+
+      <div className="text-xs text-slate-500 dark:text-slate-400 space-y-0.5">
+        {signature.signedAt && <p>{t('history.signedAt', { date: fmtDateTime(signature.signedAt) })}</p>}
+        {signature.voidedAt && <p>{t('history.voidedAt', { date: fmtDateTime(signature.voidedAt) })}</p>}
+      </div>
+
+      {signature.voidedReason && (
+        <p className="text-slate-700 dark:text-slate-300">
+          <span className="font-medium">{t('history.reasonLabel')}:</span> {signature.voidedReason}
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setShowImage((shown) => !shown)}
+        aria-expanded={showImage}
+        className="text-sm font-medium text-sky-600 dark:text-sky-400 hover:underline"
+      >
+        {showImage ? t('history.hideSignature') : t('history.viewSignature')}
+      </button>
+      {showImage &&
+        (imageUrl.data ? (
+          <img
+            src={imageUrl.data}
+            alt={t('signaturePad.ariaLabel')}
+            className="border border-slate-200 dark:border-slate-700 rounded-lg bg-white max-w-full h-auto max-h-28 object-contain"
+          />
+        ) : imageUrl.isLoading ? (
+          <div className="h-24 w-48 max-w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 animate-pulse" />
+        ) : (
+          <p className="text-xs text-slate-400 dark:text-slate-500">{t('section.noSignature')}</p>
+        ))}
+    </li>
   );
 }
 

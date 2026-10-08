@@ -89,5 +89,16 @@
     "submit": "Diesen Eintrag unterschreiben",
     "submitting": "Wird übermittelt...",
     "signatureRequired": "Bitte zeichnen Sie eine Unterschrift, bevor Sie fortfahren."
+  },
+  "history": {
+    "title_one": "{{count}} widerrufene Unterschrift",
+    "title_other": "{{count}} widerrufene Unterschriften",
+    "statusVoided": "Widerrufen",
+    "unknownSigner": "Unbekannter Fluglehrer",
+    "signedAt": "Unterschrieben am {{date}}",
+    "voidedAt": "Widerrufen am {{date}}",
+    "reasonLabel": "Grund",
+    "viewSignature": "Unterschrift anzeigen",
+    "hideSignature": "Unterschrift ausblenden"
   }
 }
