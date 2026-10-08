@@ -661,6 +661,42 @@ export const customReportResults = {
 
 const EMPTY_PAGE = { data: [], pagination: { page: 1, pageSize: 20, total: 0, totalPages: 0 } };
 
+export const SIGNATURE_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120"><path d="M20 80 C60 20 90 110 130 60 S200 30 230 75 S280 90 300 50" stroke="#1e293b" stroke-width="3" fill="none"/></svg>';
+
+const signature = (id, status, fields) => ({
+  id,
+  flightId: 'f2',
+  method: 'live',
+  status,
+  instructorName: 'Jacqueline Cochran',
+  instructorCredentialNumber: 'DE.FCL.12345',
+  instructorEmail: null,
+  emailSendCount: 0,
+  createdAt: shift(-5),
+  updatedAt: shift(-3),
+  ...fields,
+});
+
+const flightSignatures = {
+  f2: [
+    signature('sig1', 'completed', { signedAt: shift(-3) }),
+    signature('sig0', 'voided', {
+      signedAt: shift(-4.2),
+      voidedAt: shift(-3.4),
+      voidedReason: 'Wrong landing count entered',
+    }),
+    signature('sigx', 'voided', {
+      method: 'deferred',
+      instructorName: null,
+      instructorCredentialNumber: null,
+      signedAt: shift(-5),
+      voidedAt: shift(-4.6),
+      voidedReason: 'Signed on the wrong flight',
+    }),
+  ],
+};
+
 const ROUTES = {
   '/users/me': user,
   '/users/me/statistics': statistics,
@@ -725,6 +761,8 @@ export function bodyFor(pathname) {
   if (/^\/licenses\/[^/]+\/statistics$/.test(path)) return statistics;
   const flightMatch = path.match(/^\/flights\/([^/]+)$/);
   if (flightMatch) return flights.find((f) => f.id === flightMatch[1]) ?? flights[0];
+  const signaturesMatch = path.match(/^\/flights\/([^/]+)\/signatures$/);
+  if (signaturesMatch) return flightSignatures[signaturesMatch[1]] ?? [];
   const reportResultMatch = path.match(/^\/reports\/custom\/([^/]+)\/result$/);
   if (reportResultMatch) return customReportResults[reportResultMatch[1]] ?? customReportResults.cr1;
   if (path.startsWith('/documents')) return EMPTY_PAGE;

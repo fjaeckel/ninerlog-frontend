@@ -89,6 +89,15 @@ export const TARGETS = [
   { name: 'flight-detail-simulator', path: '/flights/f6' },
   { name: 'flight-detail-signed', path: '/flights/f2' },
   {
+    name: 'flight-detail-voided-signatures',
+    path: '/flights/f2',
+    act: async (page) => {
+      await page.getByRole('button', { name: /voided signatures|widerrufene unterschriften/i }).click();
+      await page.getByRole('button', { name: /view signature|unterschrift anzeigen/i }).first().click();
+      await page.waitForTimeout(400);
+    },
+  },
+  {
     name: 'flight-detail-crew-rename',
     path: '/flights/f1',
     act: async (page) => {

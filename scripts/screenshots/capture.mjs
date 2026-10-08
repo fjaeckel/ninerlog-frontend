@@ -21,7 +21,7 @@
 import { mkdirSync, rmSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { user, bodyFor } from './fixtures.mjs';
+import { user, bodyFor, SIGNATURE_SVG } from './fixtures.mjs';
 import { TARGETS, FAILING_PATHS, EMPTY_BODIES } from './targets.mjs';
 import { collectReport, formatReport, TARGET_MIN } from './audit.mjs';
 import { startDevServer, launchBrowser } from './lib.mjs';
@@ -125,6 +125,9 @@ async function shoot(browser, target, theme) {
         contentType: 'application/json',
         body: JSON.stringify({ error: 'Internal server error' }),
       });
+    }
+    if (/^\/flights\/[^/]+\/signatures\/[^/]+\/image$/.test(path)) {
+      return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: SIGNATURE_SVG });
     }
     const body = target.empty && path in EMPTY_BODIES ? EMPTY_BODIES[path] : bodyFor(path);
     return route.fulfill({
