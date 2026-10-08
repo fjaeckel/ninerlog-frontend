@@ -268,141 +268,140 @@ export default function FlightDetailPage() {
         </div>
       )}
 
-      {/* Flight details — multi-column flow; each panel carries
-          break-inside-avoid and its own bottom margin */}
-      <div className="columns-1 gap-4 md:columns-2 xl:columns-3">
+      {/* Flight details — md: route over sign-off | times; xl: route | times | sign-off */}
+      <div className="grid items-start gap-4 md:grid-cols-2 md:grid-rows-[auto_1fr] xl:grid-cols-3 xl:grid-rows-none">
         {/* Aircraft & Route */}
-        <div className="mb-4 break-inside-avoid">
-          <FlightRouteCard flight={flight} />
-        </div>
+        <FlightRouteCard flight={flight} />
 
-        {/* Flight Times */}
-        <div className="card mb-4 break-inside-avoid">
-          <h2 className="section-title mb-3">{t('detail.blockTimes')}</h2>
-          <DataTileGrid>
-            <DataTile
-              label={t('detail.totalBlockTime')}
-              value={fmtDuration(flight.totalTime)}
-              mono
-              emphasis
-            />
-            <DataTile label={t('detail.pilotFunction')} value={pilotFunction} />
-            {timeTiles.map(({ key, label, minutes }) => (
-              <DataTile key={key} label={label} value={fmtDuration(minutes)} mono />
-            ))}
-            {flight.picName && (
-              <DataTile className="col-span-2" label={t('fields.picName')} value={flight.picName} />
-            )}
-          </DataTileGrid>
-        </div>
-
-        {/* Takeoffs & Landings */}
-        {!flight.isSimulator && (
-        <div className="card mb-4 break-inside-avoid">
-          <h2 className="section-title mb-3">{t('detail.takeoffsAndLandings')}</h2>
-          <DataTileGrid>
-            <DataTile
-              icon={<PlaneTakeoff className="h-3 w-3" />}
-              label={t('detail.totalTakeoffs')}
-              value={String(totalTakeoffs)}
-              hint={t('detail.dayNightSplit', { day: flight.takeoffsDay, night: flight.takeoffsNight })}
-              mono
-            />
-            <DataTile
-              icon={<PlaneLanding className="h-3 w-3" />}
-              label={t('detail.totalLandings')}
-              value={String(totalLandings)}
-              hint={t('detail.dayNightSplit', { day: flight.landingsDay, night: flight.landingsNight })}
-              mono
-            />
-          </DataTileGrid>
-        </div>
-        )}
-
-        {/* Instrument & Approaches */}
-        {hasInstrumentData && (
-          <div className="card mb-4 break-inside-avoid">
-            <h2 className="section-title mb-3">{t('detail.instrumentAndApproaches')}</h2>
-            {instrumentTiles.length > 0 && (
-              <DataTileGrid>
-                {instrumentTiles.map(({ key, label, value, format }) => (
-                  <DataTile key={key} label={label} value={format(value)} mono />
-                ))}
-              </DataTileGrid>
-            )}
-            {flight.isIpc && (
-              <p className="mt-3">
-                <span className="badge-info">{t('fields.isIpc')}</span>
-              </p>
-            )}
-            {flight.approaches && flight.approaches.length > 0 && (
-              <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-700">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
-                  {t('fields.approaches')}
-                </p>
-                <ul className="space-y-1.5">
-                  {flight.approaches.map((a, idx) => (
-                    <li
-                      key={idx}
-                      className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-700/30"
-                    >
-                      <span className="badge-info text-xs">
-                        {t(`approachTypes.${a.type}`, { defaultValue: a.type })}
-                      </span>
-                      <span className="font-mono tabular-nums text-slate-700 dark:text-slate-200">
-                        {a.airport || '—'}
-                        {a.runway ? ` · RWY ${a.runway}` : ''}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Training & Currency */}
-        {hasTrainingData && (
-          <div className="card mb-4 break-inside-avoid">
-            <h2 className="section-title mb-3">{t('detail.trainingAndCurrency')}</h2>
+        <div className="flex flex-col gap-4 md:col-start-2 md:row-span-2 xl:row-span-1">
+          {/* Flight Times */}
+          <div className="card">
+            <h2 className="section-title mb-3">{t('detail.blockTimes')}</h2>
             <DataTileGrid>
-              {trainingTiles.map(({ key, label, minutes }) => (
+              <DataTile
+                label={t('detail.totalBlockTime')}
+                value={fmtDuration(flight.totalTime)}
+                mono
+                emphasis
+              />
+              <DataTile label={t('detail.pilotFunction')} value={pilotFunction} />
+              {timeTiles.map(({ key, label, minutes }) => (
                 <DataTile key={key} label={label} value={fmtDuration(minutes)} mono />
               ))}
-              {flight.fstdType && <DataTile label={t('fields.fstdType')} value={flight.fstdType} />}
+              {flight.picName && (
+                <DataTile className="col-span-2" label={t('fields.picName')} value={flight.picName} />
+              )}
             </DataTileGrid>
-            {trainingFlags.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {trainingFlags.map(({ key, label }) => (
-                  <span key={key} className="badge-info">
-                    {label}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
-        )}
 
-        {/* Remarks & Comments */}
-        {hasRemarksData && (
-          <div className="card mb-4 break-inside-avoid">
-            <h2 className="section-title mb-3">{t('detail.remarksAndComments')}</h2>
-            <div className="space-y-2.5">
-              <TextBlock label={t('fields.remarks')} value={flight.remarks} />
-              <TextBlock label={t('detail.instructor')} value={flight.instructorName} />
-              <TextBlock label={t('detail.instructorComments')} value={flight.instructorComments} />
-              <TextBlock label={t('fields.endorsements')} value={flight.endorsements} />
+          {/* Takeoffs & Landings */}
+          {!flight.isSimulator && (
+          <div className="card">
+            <h2 className="section-title mb-3">{t('detail.takeoffsAndLandings')}</h2>
+            <DataTileGrid>
+              <DataTile
+                icon={<PlaneTakeoff className="h-3 w-3" />}
+                label={t('detail.totalTakeoffs')}
+                value={String(totalTakeoffs)}
+                hint={t('detail.dayNightSplit', { day: flight.takeoffsDay, night: flight.takeoffsNight })}
+                mono
+              />
+              <DataTile
+                icon={<PlaneLanding className="h-3 w-3" />}
+                label={t('detail.totalLandings')}
+                value={String(totalLandings)}
+                hint={t('detail.dayNightSplit', { day: flight.landingsDay, night: flight.landingsNight })}
+                mono
+              />
+            </DataTileGrid>
+          </div>
+          )}
+
+          {/* Instrument & Approaches */}
+          {hasInstrumentData && (
+            <div className="card">
+              <h2 className="section-title mb-3">{t('detail.instrumentAndApproaches')}</h2>
+              {instrumentTiles.length > 0 && (
+                <DataTileGrid>
+                  {instrumentTiles.map(({ key, label, value, format }) => (
+                    <DataTile key={key} label={label} value={format(value)} mono />
+                  ))}
+                </DataTileGrid>
+              )}
+              {flight.isIpc && (
+                <p className="mt-3">
+                  <span className="badge-info">{t('fields.isIpc')}</span>
+                </p>
+              )}
+              {flight.approaches && flight.approaches.length > 0 && (
+                <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-700">
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                    {t('fields.approaches')}
+                  </p>
+                  <ul className="space-y-1.5">
+                    {flight.approaches.map((a, idx) => (
+                      <li
+                        key={idx}
+                        className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-700/30"
+                      >
+                        <span className="badge-info text-xs">
+                          {t(`approachTypes.${a.type}`, { defaultValue: a.type })}
+                        </span>
+                        <span className="font-mono tabular-nums text-slate-700 dark:text-slate-200">
+                          {a.airport || '—'}
+                          {a.runway ? ` · RWY ${a.runway}` : ''}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Instructor Signature */}
-        <div className="mb-4 break-inside-avoid">
-          <SignatureSection flight={flight} />
+          {/* Training & Currency */}
+          {hasTrainingData && (
+            <div className="card">
+              <h2 className="section-title mb-3">{t('detail.trainingAndCurrency')}</h2>
+              <DataTileGrid>
+                {trainingTiles.map(({ key, label, minutes }) => (
+                  <DataTile key={key} label={label} value={fmtDuration(minutes)} mono />
+                ))}
+                {flight.fstdType && <DataTile label={t('fields.fstdType')} value={flight.fstdType} />}
+              </DataTileGrid>
+              {trainingFlags.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {trainingFlags.map(({ key, label }) => (
+                    <span key={key} className="badge-info">
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Remarks & Comments */}
+          {hasRemarksData && (
+            <div className="card">
+              <h2 className="section-title mb-3">{t('detail.remarksAndComments')}</h2>
+              <div className="space-y-2.5">
+                <TextBlock label={t('fields.remarks')} value={flight.remarks} />
+                <TextBlock label={t('detail.instructor')} value={flight.instructorName} />
+                <TextBlock label={t('detail.instructorComments')} value={flight.instructorComments} />
+                <TextBlock label={t('fields.endorsements')} value={flight.endorsements} />
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Crew Members */}
-        <FlightCrewCard flight={flight} />
+        <div className="flex flex-col gap-4 md:col-start-1 md:row-start-2 xl:col-start-3 xl:row-start-1">
+          {/* Instructor Signature */}
+          <SignatureSection flight={flight} />
+
+          {/* Crew Members */}
+          <FlightCrewCard flight={flight} />
+        </div>
       </div>
 
       {/* Metadata */}
