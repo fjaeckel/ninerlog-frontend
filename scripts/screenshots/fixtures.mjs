@@ -679,6 +679,14 @@ const signature = (id, status, fields) => ({
 });
 
 const flightSignatures = {
+  f3: [
+    signature('sigv3', 'voided', {
+      flightId: 'f3',
+      signedAt: shift(-10.5),
+      voidedAt: shift(-2),
+      voidedReason: 'Correcting the block-off time',
+    }),
+  ],
   f2: [
     signature('sig1', 'completed', { signedAt: shift(-3) }),
     signature('sig0', 'voided', {

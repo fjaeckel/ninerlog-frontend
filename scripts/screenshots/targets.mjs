@@ -88,6 +88,15 @@ export const TARGETS = [
   },
   { name: 'flight-detail-simulator', path: '/flights/f6' },
   { name: 'flight-detail-signed', path: '/flights/f2' },
+  { name: 'flight-detail-unsigned-voided', path: '/flights/f3' },
+  {
+    name: 'flight-detail-unsigned-voided-open',
+    path: '/flights/f3',
+    act: async (page) => {
+      await page.getByRole('button', { name: /voided signature|widerrufene unterschrift/i }).click();
+      await page.waitForTimeout(300);
+    },
+  },
   {
     name: 'flight-detail-voided-signatures',
     path: '/flights/f2',
