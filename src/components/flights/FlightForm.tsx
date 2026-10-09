@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Controller, useForm } from 'react-hook-form';
+import { AirportInput } from './AirportInput';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
@@ -769,13 +770,19 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <label htmlFor="departureIcao" className="form-label">
               {t('fields.departureIcao')} <span className="text-red-500">*</span>
             </label>
-            <input
-              {...register('departureIcao')}
-              type="text"
-              id="departureIcao"
-              className="input"
-              placeholder={t('form.locationPlaceholder')}
-              maxLength={100}
+            <Controller
+              name="departureIcao"
+              control={control}
+              render={({ field }) => (
+                <AirportInput
+                  id="departureIcao"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder={t('form.locationPlaceholder')}
+                  invalid={!!errors.departureIcao}
+                />
+              )}
             />
             {errors.departureIcao && (
               <p className="form-error">{errors.departureIcao.message}</p>
@@ -785,13 +792,19 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <label htmlFor="arrivalIcao" className="form-label">
               {t('fields.arrivalIcao')} <span className="text-red-500">*</span>
             </label>
-            <input
-              {...register('arrivalIcao')}
-              type="text"
-              id="arrivalIcao"
-              className="input"
-              placeholder={t('form.locationPlaceholder')}
-              maxLength={100}
+            <Controller
+              name="arrivalIcao"
+              control={control}
+              render={({ field }) => (
+                <AirportInput
+                  id="arrivalIcao"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder={t('form.locationPlaceholder')}
+                  invalid={!!errors.arrivalIcao}
+                />
+              )}
             />
             {errors.arrivalIcao && (
               <p className="form-error">{errors.arrivalIcao.message}</p>
@@ -1199,7 +1212,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                       onChange={(e) => { const a = [...approaches]; a[idx] = { ...a[idx], airport: e.target.value.toUpperCase() }; setApproaches(a); }}
                       className="input text-sm py-1.5"
                       placeholder="ICAO"
-                      maxLength={4}
+                      maxLength={10}
                     />
                     <input
                       value={appr.runway}

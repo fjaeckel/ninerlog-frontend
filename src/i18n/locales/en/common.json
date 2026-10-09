@@ -373,5 +373,8 @@
     "HELICOPTER": "Ultralight helicopter",
     "POWERED_PARAGLIDER": "Powered paraglider",
     "SAILPLANE": "Ultralight sailplane"
+  },
+  "airportInput": {
+    "suggestions": "Airport suggestions"
   }
 }

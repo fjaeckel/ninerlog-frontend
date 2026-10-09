@@ -28,6 +28,11 @@ describe('normalizeLocation', () => {
     expect(normalizeLocation('eddfx')).toBe('eddfx');
   });
 
+  it('upper-cases hyphenated local identifiers', () => {
+    expect(normalizeLocation('de-0249')).toBe('DE-0249');
+    expect(normalizeLocation('Bad-Ems')).toBe('Bad-Ems');
+  });
+
   it('trims surrounding whitespace', () => {
     expect(normalizeLocation('  eddf  ')).toBe('EDDF');
     expect(normalizeLocation('  Meadow strip  ')).toBe('Meadow strip');

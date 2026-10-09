@@ -520,7 +520,7 @@ export default function FlightsPage() {
                 value={departureIcao}
                 onChange={(e) => updateParams({ departureIcao: e.target.value.toUpperCase() })}
                 placeholder="EDDF"
-                maxLength={4}
+                maxLength={10}
                 className="input text-sm uppercase"
               />
             </div>
@@ -531,7 +531,7 @@ export default function FlightsPage() {
                 value={arrivalIcao}
                 onChange={(e) => updateParams({ arrivalIcao: e.target.value.toUpperCase() })}
                 placeholder="EDDH"
-                maxLength={4}
+                maxLength={10}
                 className="input text-sm uppercase"
               />
             </div>
