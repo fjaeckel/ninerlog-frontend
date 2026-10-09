@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
+import { AirportInput } from '../flights/AirportInput';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateAircraft, useUpdateAircraft, useAircraftById, useAircraftStats } from '../../hooks/useAircraft';
@@ -64,6 +65,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
     reset,
     setValue,
     watch,
+    control,
   } = useForm<AircraftFormData>({
     resolver: zodResolver(aircraftSchema),
     defaultValues: {
@@ -373,26 +375,36 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
             <label htmlFor="defaultDepartureIcao" className="sr-only">
               {t('fields.defaultDepartureIcao')}
             </label>
-            <input
-              {...register('defaultDepartureIcao')}
-              type="text"
-              id="defaultDepartureIcao"
-              className="input"
-              placeholder={t('form.departurePlaceholder')}
-              maxLength={100}
+            <Controller
+              name="defaultDepartureIcao"
+              control={control}
+              render={({ field }) => (
+                <AirportInput
+                  id="defaultDepartureIcao"
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder={t('form.departurePlaceholder')}
+                />
+              )}
             />
           </div>
           <div>
             <label htmlFor="defaultArrivalIcao" className="sr-only">
               {t('fields.defaultArrivalIcao')}
             </label>
-            <input
-              {...register('defaultArrivalIcao')}
-              type="text"
-              id="defaultArrivalIcao"
-              className="input"
-              placeholder={t('form.arrivalPlaceholder')}
-              maxLength={100}
+            <Controller
+              name="defaultArrivalIcao"
+              control={control}
+              render={({ field }) => (
+                <AirportInput
+                  id="defaultArrivalIcao"
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder={t('form.arrivalPlaceholder')}
+                />
+              )}
             />
           </div>
         </div>

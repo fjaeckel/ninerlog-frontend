@@ -1,11 +1,13 @@
+/** Matches an airport code: up to 4 alphanumerics, or a local identifier such as DE-0249. */
+const AIRPORT_CODE = /^(?:[a-z0-9]{1,4}|[a-z]{2}-[0-9]{3,5})$/i;
+
 /**
- * Normalizes a departure/arrival location value: code-like values (up to 4
- * alphanumeric characters) are upper-cased; free-text site names keep their
- * casing.
+ * Normalizes a departure/arrival location value: code-like values are
+ * upper-cased; free-text site names keep their casing.
  */
 export function normalizeLocation(value: string): string {
   const trimmed = value.trim();
-  return /^[a-z0-9]{1,4}$/i.test(trimmed) ? trimmed.toUpperCase() : trimmed;
+  return AIRPORT_CODE.test(trimmed) ? trimmed.toUpperCase() : trimmed;
 }
 
 /**
@@ -65,7 +67,7 @@ export function splitAirportLabel(
   if (!value) return { code: fallback, name: null };
 
   const resolvedName = name?.trim() || null;
-  if (/^[a-z0-9]{1,4}$/i.test(value)) {
+  if (AIRPORT_CODE.test(value)) {
     return { code: value.toUpperCase(), name: resolvedName };
   }
   // Resolved name when available, else the free-text value.

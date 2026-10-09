@@ -21,6 +21,30 @@ export const TARGETS = [
     },
   },
   {
+    name: 'flights-modal-airport-search',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#departureIcao').fill('kon');
+      await page.waitForTimeout(800);
+      await page.keyboard.press('ArrowDown');
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'flights-modal-airport-picked',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#departureIcao').fill('kon');
+      await page.waitForTimeout(800);
+      await page.getByRole('listbox', { name: /airport suggestions|flugplatzvorschläge/i }).getByRole('option').first().click();
+      await page.waitForTimeout(200);
+    },
+  },
+  {
     name: 'flights-modal-takeoffs-mismatch',
     path: '/flights',
     act: async (page) => {

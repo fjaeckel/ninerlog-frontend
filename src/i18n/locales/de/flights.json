@@ -292,7 +292,7 @@
     "lockedBySignature": "Dieser Flug ist durch eine Fluglehrer-Unterschrift gesperrt und kann nicht bearbeitet werden. Widerrufe die Unterschrift (auf der Flugdetailseite), um Änderungen vorzunehmen.",
     "routeAndTimesUtc": "Strecke & Zeiten (UTC)",
     "locationPlaceholder": "EDDF oder Ortsname",
-    "locationHelper": "ICAO-Code eingeben, um den Ort auf der Karte anzuzeigen, oder einen beliebigen Ortsnamen für Landungen abseits von Flugplätzen (Außenlandefelder, Segelflug- und Hubschrauberlandeplätze).",
+    "locationHelper": "Code oder Namen eingeben und den Flugplatz aus der Liste wählen, oder einen beliebigen Ortsnamen für Landungen abseits von Flugplätzen (Außenlandefelder, Segelflug- und Hubschrauberlandeplätze).",
     "takeoffsAndLandings": "Starts & Landungen",
     "autoCalculatedValues": "Automatisch berechnete Werte",
     "fillFromLastFlight": "Vom letzten Flug übernehmen ({{aircraft}}, {{from}} → {{to}})",

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
+import { useDebounced } from './useDebounced';
 import type {
   CustomReport,
   CustomReportDefinition,
@@ -48,15 +48,6 @@ export const useCustomReportResult = (reportId: string) =>
   });
 
 /** Value that settles `delayMs` after its last change. */
-function useDebounced<T>(value: T, delayMs: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delayMs);
-    return () => clearTimeout(timer);
-  }, [value, delayMs]);
-  return debounced;
-}
-
 /** Debounced evaluation of an unsaved definition; keeps the previous result while loading. */
 export const useCustomReportPreview = (definition: CustomReportDefinition, enabled: boolean) => {
   const serialized = JSON.stringify(definition);

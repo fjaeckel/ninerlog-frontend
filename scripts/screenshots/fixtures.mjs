@@ -683,6 +683,11 @@ const ROUTES = {
       { departureIcao: 'EDMO', arrivalIcao: 'LOWI', flightCount: 6, departureCoords: { lat: 48.081, lng: 11.283 }, arrivalCoords: { lat: 47.260, lng: 11.344 } },
     ],
   },
+  '/airports/search': [
+    { icao: 'DE-0249', name: 'Konz-Könen Glider Field', latitude: 49.676, longitude: 6.543, elevation: 725, country: 'DE' },
+    { icao: 'EDRK', name: 'Koblenz-Winningen Airfield', latitude: 50.325, longitude: 7.528, elevation: 640, country: 'DE' },
+    { icao: 'FR-0009', name: 'Altisurface Notre-Dame-des-Neiges-Abbaye', latitude: 45.1, longitude: 6.2, elevation: 5000, country: 'FR', localCode: 'LF0723' },
+  ],
   '/reports/airport-stats': [
     { icao: 'EDDF', name: 'Frankfurt am Main', latitude: 50.033, longitude: 8.570, totalFlights: 40, departures: 21, arrivals: 19 },
     { icao: 'EDDH', name: 'Hamburg', latitude: 53.630, longitude: 9.988, totalFlights: 20, departures: 9, arrivals: 11 },

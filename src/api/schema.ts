@@ -1559,7 +1559,7 @@ export interface paths {
         };
         /**
          * Search airports
-         * @description Search airports by ICAO code prefix
+         * @description Search airports by identifier prefix, then local-code prefix, then name. Identifier-prefix matches come first in identifier order, then local-code prefix matches in code order, then airports with a name word starting with the query (case- and diacritic-insensitive).
          */
         get: operations["searchAirports"];
         put?: never;
@@ -4968,7 +4968,7 @@ export interface components {
              */
             aircraftReg?: string | null;
             /**
-             * @description Explicit airport for this event (departure for offblock/takeoff, arrival for landing/onblock). Takes precedence over lat/lon.
+             * @description Explicit airport for this event (departure for offblock/takeoff, arrival for landing/onblock), as a 4-character ICAO code or a known airport identifier such as DE-0249. Takes precedence over lat/lon.
              * @example EDDF
              */
             icao?: string | null;
@@ -4985,7 +4985,7 @@ export interface components {
         };
         Airport: {
             /**
-             * @description ICAO airport code
+             * @description Airport identifier — the 4-character ICAO code, or the OurAirports local identifier (e.g. DE-0249) for a field without one
              * @example EDDF
              */
             icao: string;
@@ -5016,6 +5016,11 @@ export interface components {
              * @example DE
              */
             country?: string;
+            /**
+             * @description National airport code containing a digit (e.g. FAA 5M6, French ULM LF0723), when the field has one distinct from its identifier
+             * @example LF0723
+             */
+            localCode?: string;
         };
         AirportPackStatus: {
             /**
@@ -10493,7 +10498,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description ICAO airport code (4 characters) */
+                /** @description Airport identifier: the 4-character ICAO code, or the OurAirports local identifier (e.g. DE-0249) for a field without one */
                 icaoCode: string;
             };
             cookie?: never;
@@ -10516,7 +10521,7 @@ export interface operations {
     searchAirports: {
         parameters: {
             query: {
-                /** @description Search query (ICAO code prefix) */
+                /** @description Search query (identifier or local-code prefix, or start of a name word) */
                 q: string;
                 limit?: number;
             };

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import type { components } from '../api/schema';
 
@@ -41,5 +41,6 @@ export const useAirportSearch = (query: string) => {
       return data as Airport[];
     },
     enabled: query.length >= 2,
+    placeholderData: keepPreviousData,
   });
 };

@@ -373,5 +373,8 @@
     "HELICOPTER": "UL-Hubschrauber",
     "POWERED_PARAGLIDER": "Motorschirm",
     "SAILPLANE": "UL-Segelflugzeug"
+  },
+  "airportInput": {
+    "suggestions": "Flugplatzvorschläge"
   }
 }
