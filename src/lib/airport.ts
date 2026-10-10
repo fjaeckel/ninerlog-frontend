@@ -10,9 +10,33 @@ export function normalizeLocation(value: string): string {
   return AIRPORT_CODE.test(trimmed) ? trimmed.toUpperCase() : trimmed;
 }
 
+/** Matches an OurAirports local identifier such as DE-0249. */
+const LOCAL_IDENT = /^[A-Z]{2}-[A-Z0-9]+$/;
+
+/** Reports whether a stored location is an OurAirports local identifier. */
+export function isLocalIdent(location: string | null | undefined): boolean {
+  return LOCAL_IDENT.test(location?.trim() ?? '');
+}
+
 /**
- * Formats a stored location for display as "Name (CODE)", falling back to the
- * raw stored value when no airport name resolved.
+ * Text shown for a stored location: the airport name for an OurAirports local
+ * identifier, otherwise the stored location.
+ */
+export function airportDisplay(
+  location: string | null | undefined,
+  name: string | null | undefined,
+  fallback = '—'
+): string {
+  const value = location?.trim();
+  if (!value) return fallback;
+  const resolved = name?.trim();
+  return isLocalIdent(value) && resolved ? resolved : value;
+}
+
+/**
+ * Formats a stored location for display as "Name (CODE)", or the name alone
+ * for an OurAirports local identifier, falling back to the raw stored value
+ * when no airport name resolved.
  */
 export function formatAirportLabel(
   location: string | null | undefined,
@@ -21,7 +45,8 @@ export function formatAirportLabel(
 ): string {
   const code = location?.trim();
   if (!code) return fallback;
-  return name ? `${name} (${code})` : code;
+  if (!name) return code;
+  return isLocalIdent(code) ? name : `${name} (${code})`;
 }
 
 /** A stored location split into its code and its human-readable name. */
@@ -67,6 +92,9 @@ export function splitAirportLabel(
   if (!value) return { code: fallback, name: null };
 
   const resolvedName = name?.trim() || null;
+  if (isLocalIdent(value)) {
+    return { code: null, name: resolvedName ?? value };
+  }
   if (AIRPORT_CODE.test(value)) {
     return { code: value.toUpperCase(), name: resolvedName };
   }

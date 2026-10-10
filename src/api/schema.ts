@@ -4922,6 +4922,16 @@ export interface components {
              */
             arrivalIcao?: string | null;
             /**
+             * @description Airport name resolved live from the airport database. Null when departureIcao does not resolve.
+             * @example Frankfurt am Main Airport
+             */
+            readonly departureAirportName?: string | null;
+            /**
+             * @description Airport name resolved live from the airport database. Null when arrivalIcao does not resolve.
+             * @example Hamburg Airport
+             */
+            readonly arrivalAirportName?: string | null;
+            /**
              * Format: date-time
              * @description Off-block instant (chocks off / engine start) in UTC
              */
@@ -6878,6 +6888,16 @@ export interface components {
             departureIcao: string;
             /** @example LSZH */
             arrivalIcao: string;
+            /**
+             * @description Airport name resolved live from the airport database. Null when departureIcao does not resolve.
+             * @example Kiel-Holtenau Airport
+             */
+            departureAirportName?: string | null;
+            /**
+             * @description Airport name resolved live from the airport database. Null when arrivalIcao does not resolve.
+             * @example Zürich Airport
+             */
+            arrivalAirportName?: string | null;
             flights: number;
             totalMinutes: number;
             /**
@@ -6976,6 +6996,10 @@ export interface components {
             aircraftType?: string | null;
             departureIcao?: string | null;
             arrivalIcao?: string | null;
+            /** @description Airport name resolved live from the airport database. Null when departureIcao does not resolve. */
+            departureAirportName?: string | null;
+            /** @description Airport name resolved live from the airport database. Null when arrivalIcao does not resolve. */
+            arrivalAirportName?: string | null;
             totalMinutes: number;
             /** Format: double */
             distanceNm: number;

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import { useFlightRoutes, useAirportStats } from '../../hooks/useMaps';
+import { airportDisplay, isLocalIdent } from '../../lib/airport';
 import { useTheme } from '../../hooks/useTheme';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
@@ -49,6 +50,7 @@ export default function MapPage() {
   }
 
   const routes = routeData?.routes ?? [];
+  const airportNames = new Map((routeData?.airports ?? []).map((a) => [a.icao, a.name]));
   const stats = airportStats ?? [];
   const hasData = routes.length > 0 || stats.length > 0;
 
@@ -134,7 +136,8 @@ export default function MapPage() {
                     }}
                   >
                     <Tooltip>
-                      {route.departureIcao} → {route.arrivalIcao} ({t('map.flightCount', { count: route.flightCount })})
+                      {airportDisplay(route.departureIcao, airportNames.get(route.departureIcao))} →{' '}
+                      {airportDisplay(route.arrivalIcao, airportNames.get(route.arrivalIcao))} ({t('map.flightCount', { count: route.flightCount })})
                     </Tooltip>
                   </Polyline>
                 ))}
@@ -153,7 +156,7 @@ export default function MapPage() {
                     }}
                   >
                     <Tooltip>
-                      <strong>{ap.icao}</strong> — {ap.name}
+                      {isLocalIdent(ap.icao) ? <strong>{ap.name}</strong> : <><strong>{ap.icao}</strong> — {ap.name}</>}
                       {ap.country ? ` (${ap.country})` : ''}
                     </Tooltip>
                   </CircleMarker>
@@ -181,7 +184,7 @@ export default function MapPage() {
                       }}
                     >
                       <Tooltip>
-                        <strong>{s.icao}</strong> — {s.name}
+                        {isLocalIdent(s.icao) ? <strong>{s.name}</strong> : <><strong>{s.icao}</strong> — {s.name}</>}
                         <br />
                         {t('map.tooltipCounts', { departures: s.departures, arrivals: s.arrivals, total: s.totalFlights })}
                       </Tooltip>
@@ -214,7 +217,7 @@ export default function MapPage() {
                   .sort((a, b) => b.totalFlights - a.totalFlights)
                   .map((s) => (
                     <tr key={s.icao} className="border-b border-slate-100 dark:border-slate-800">
-                      <td className="py-2 px-3 font-mono font-medium text-slate-800 dark:text-slate-200">{s.icao}</td>
+                      <td className="py-2 px-3 font-mono font-medium text-slate-800 dark:text-slate-200">{isLocalIdent(s.icao) ? '—' : s.icao}</td>
                       <td className="py-2 px-3 text-slate-600 dark:text-slate-400">{s.name}</td>
                       <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300 font-mono tabular-nums">{s.departures}</td>
                       <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300 font-mono tabular-nums">{s.arrivals}</td>

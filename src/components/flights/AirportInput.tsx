@@ -1,6 +1,7 @@
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAirportSearch, type Airport } from '../../hooks/useMaps';
+import { useAirport, useAirportSearch, type Airport } from '../../hooks/useMaps';
+import { isLocalIdent } from '../../lib/airport';
 import { useDebounced } from '../../hooks/useDebounced';
 import { cn } from '../../lib/cn';
 
@@ -18,12 +19,17 @@ interface AirportInputProps {
   className?: string;
 }
 
-/** Location input with airport suggestions; picking one stores its identifier, free text stays allowed. */
+/**
+ * Location input with airport suggestions; picking one stores its identifier,
+ * free text stays allowed. An OurAirports local identifier is shown by its
+ * airport name.
+ */
 export function AirportInput({ id, value, onChange, onBlur, placeholder, invalid, maxLength = 100, className }: AirportInputProps) {
   const { t } = useTranslation('common');
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(-1);
   const [picked, setPicked] = useState<Airport | null>(null);
+  const [editing, setEditing] = useState(false);
   const debounced = useDebounced(query.trim(), SEARCH_DEBOUNCE_MS);
   const { data } = useAirportSearch(debounced);
   const listId = useId();
@@ -40,8 +46,15 @@ export function AirportInput({ id, value, onChange, onBlur, placeholder, invalid
   const pick = (airport: Airport) => {
     onChange(airport.icao);
     setPicked(airport);
+    setEditing(false);
     close();
   };
+
+  const localIdent = isLocalIdent(value);
+  const pickedMatch = picked && picked.icao === value ? picked : null;
+  const { data: stored } = useAirport(value, localIdent && !pickedMatch);
+  const localName = localIdent ? (pickedMatch?.name ?? stored?.name ?? null) : null;
+  const shown = !editing && localName ? localName : value;
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (!open) return;
@@ -60,7 +73,7 @@ export function AirportInput({ id, value, onChange, onBlur, placeholder, invalid
     }
   };
 
-  const pickedName = picked && picked.icao === value ? picked.name : null;
+  const pickedName = pickedMatch && !localIdent ? pickedMatch.name : null;
 
   return (
     <div className={cn('relative', className)}>
@@ -68,8 +81,9 @@ export function AirportInput({ id, value, onChange, onBlur, placeholder, invalid
         ref={inputRef}
         id={id}
         type="text"
-        value={value}
+        value={shown}
         onChange={(e) => {
+          setEditing(true);
           onChange(e.target.value);
           setQuery(e.target.value);
           setActive(-1);
@@ -77,6 +91,7 @@ export function AirportInput({ id, value, onChange, onBlur, placeholder, invalid
         onKeyDown={onKeyDown}
         onBlur={() => {
           close();
+          setEditing(false);
           onBlur?.();
         }}
         placeholder={placeholder}
@@ -115,7 +130,9 @@ export function AirportInput({ id, value, onChange, onBlur, placeholder, invalid
                 i === active && 'bg-blue-50 dark:bg-blue-900/20'
               )}
             >
-              <span className="w-16 shrink-0 font-mono text-xs font-semibold tabular-nums text-slate-800 dark:text-slate-100">{a.icao}</span>
+              <span className="w-16 shrink-0 font-mono text-xs font-semibold tabular-nums text-slate-800 dark:text-slate-100">
+                {isLocalIdent(a.icao) ? '' : a.icao}
+              </span>
               <span className="min-w-0 flex-1 line-clamp-2">{a.name}</span>
               {a.localCode && (
                 <span className="badge-neutral shrink-0 font-mono">{a.localCode}</span>

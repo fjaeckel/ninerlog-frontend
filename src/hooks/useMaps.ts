@@ -44,3 +44,19 @@ export const useAirportSearch = (query: string) => {
     placeholderData: keepPreviousData,
   });
 };
+
+export const useAirport = (code: string, enabled = true) => {
+  return useQuery({
+    queryKey: ['airports', 'byCode', code],
+    queryFn: async (): Promise<Airport> => {
+      const { data, error } = await apiClient.GET('/airports/{icaoCode}', {
+        params: { path: { icaoCode: code } },
+      });
+      if (error) throw error;
+      return data as Airport;
+    },
+    enabled: enabled && code.length > 0,
+    staleTime: Infinity,
+    retry: false,
+  });
+};

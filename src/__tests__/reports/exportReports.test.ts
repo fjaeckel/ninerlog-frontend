@@ -108,6 +108,20 @@ describe('exportAnalyticsToCSV', () => {
     expect(captured).toContain('"Ciampino, G. B. Pastine"');
   });
 
+  it('writes OurAirports fields by name, never by identifier', () => {
+    exportAnalyticsToCSV({
+      ...empty,
+      byAirport: [
+        { icao: 'DE-0249', name: 'Konz-Könen Glider Field', country: 'DE', latitude: 0, longitude: 0, departures: 2, arrivals: 1, flights: 3 },
+      ],
+      byRoute: [
+        { departureIcao: 'DE-0249', arrivalIcao: 'EDRK', departureAirportName: 'Konz-Könen Glider Field', arrivalAirportName: 'Koblenz-Winningen Airfield', flights: 3, totalMinutes: 90, distanceNm: 48 },
+      ],
+    });
+    expect(captured).toContain('Konz-Könen Glider Field,EDRK');
+    expect(captured).not.toContain('DE-0249');
+  });
+
   it('neutralises spreadsheet formula injection in user-supplied text', () => {
     // A leading =, +, - or @ is neutralised.
     exportAnalyticsToCSV({

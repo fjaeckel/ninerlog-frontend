@@ -8,6 +8,7 @@ import { PageWrapper, PageHeader } from '../../components/ui/PageWrapper';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { extractApiError } from '../../lib/errors';
+import { airportDisplay } from '../../lib/airport';
 import {
   useCurrentFlightSession,
   useRecordFlightSessionEvent,
@@ -399,9 +400,9 @@ export default function QuickLogPage() {
           </ol>
           {(openSession.departureIcao || openSession.arrivalIcao) && (
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              {openSession.departureIcao ?? '????'}
+              {airportDisplay(openSession.departureIcao, openSession.departureAirportName, '????')}
               {' → '}
-              {openSession.arrivalIcao ?? '????'}
+              {airportDisplay(openSession.arrivalIcao, openSession.arrivalAirportName, '????')}
             </p>
           )}
           <button
