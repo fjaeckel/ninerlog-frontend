@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
+  airportDisplay,
+  isLocalIdent,
   normalizeLocation,
   formatAirportLabel,
   splitAirportLabel,
@@ -125,3 +127,27 @@ describe('abbreviateSiteName', () => {
     expect(abbreviateSiteName(', North field')).toBe('North field');
   });
 });
+
+describe('OurAirports local identifiers', () => {
+  it('recognises upper-case DE-0249 style identifiers only', () => {
+    expect(isLocalIdent('DE-0249')).toBe(true);
+    expect(isLocalIdent('EDDF')).toBe(false);
+    expect(isLocalIdent('LF0723')).toBe(false);
+    expect(isLocalIdent('St-Moritz')).toBe(false);
+    expect(isLocalIdent(null)).toBe(false);
+  });
+
+  it('shows the airport name instead of the identifier', () => {
+    expect(airportDisplay('DE-0249', 'Konz-Könen Glider Field')).toBe('Konz-Könen Glider Field');
+    expect(formatAirportLabel('DE-0249', 'Konz-Könen Glider Field')).toBe('Konz-Könen Glider Field');
+    expect(splitAirportLabel('DE-0249', 'Konz-Könen Glider Field')).toEqual({ code: null, name: 'Konz-Könen Glider Field' });
+  });
+
+  it('keeps codes as codes and falls back to the identifier without a name', () => {
+    expect(airportDisplay('EDDF', 'Frankfurt Airport')).toBe('EDDF');
+    expect(formatAirportLabel('EDDF', 'Frankfurt Airport')).toBe('Frankfurt Airport (EDDF)');
+    expect(airportDisplay('DE-0249', null)).toBe('DE-0249');
+    expect(airportDisplay(null, null)).toBe('—');
+  });
+});
+

@@ -92,6 +92,11 @@ const simulatorSession = (i, type, minutes, fstdType, offset) => ({
 
 export const flights = [
   {
+    ...flight(8, 'DE-0249', 'EDRK', 'D-MABC', 'C42', 45, -1),
+    departureAirportName: 'Konz-Könen Glider Field',
+    arrivalAirportName: 'Koblenz-Winningen Airfield',
+  },
+  {
     ...flight(1, 'EDDF', 'EDDH', 'D-EABC', 'C172', 95, -2),
     crewMembers: [
       { id: 'cm1', flightId: 'f1', contactId: 'p1', name: 'Amelia Earhart', role: 'Student' },
@@ -505,7 +510,8 @@ export const analytics = {
     { country: 'AT', airports: 2, flights: 8 },
   ],
   byRoute: [
-    { departureIcao: 'EDDF', arrivalIcao: 'EDDH', flights: 12, totalMinutes: 1140, distanceNm: 2100 },
+    { departureIcao: 'EDDF', arrivalIcao: 'EDDH', departureAirportName: 'Frankfurt am Main Airport', arrivalAirportName: 'Hamburg Airport', flights: 12, totalMinutes: 1140, distanceNm: 2100 },
+    { departureIcao: 'DE-0249', arrivalIcao: 'EDRK', departureAirportName: 'Konz-Könen Glider Field', arrivalAirportName: 'Koblenz-Winningen Airfield', flights: 7, totalMinutes: 315, distanceNm: 48 },
     { departureIcao: 'EDMO', arrivalIcao: 'LOWI', flights: 6, totalMinutes: 870, distanceNm: 620 },
   ],
   byInstructor: [

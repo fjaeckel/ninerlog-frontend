@@ -33,6 +33,7 @@ import {
 } from '../../hooks/useAnalytics';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { exportAnalyticsToCSV, exportAnalyticsToPDF } from '../../lib/exportReports';
+import { airportDisplay, isLocalIdent } from '../../lib/airport';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { PageWrapper } from '../../components/ui/PageWrapper';
@@ -525,8 +526,8 @@ export default function ReportsPage() {
                     emptyLabel={t('noAirportData')}
                     rows={data.byAirport.slice(0, 12).map((a) => ({
                       key: a.icao,
-                      label: a.icao,
-                      subLabel: a.name,
+                      label: airportDisplay(a.icao, a.name),
+                      subLabel: isLocalIdent(a.icao) ? null : a.name,
                       value: a.flights,
                       formatted: num(a.flights),
                       meta: t('flightsShort'),
@@ -564,7 +565,7 @@ export default function ReportsPage() {
                   emptyLabel={t('noAirportData')}
                   rows={data.byRoute.slice(0, 10).map((r) => ({
                     key: `${r.departureIcao}-${r.arrivalIcao}`,
-                    label: `${r.departureIcao} → ${r.arrivalIcao}`,
+                    label: `${airportDisplay(r.departureIcao, r.departureAirportName)} → ${airportDisplay(r.arrivalIcao, r.arrivalAirportName)}`,
                     subLabel: r.distanceNm > 0 ? nm(r.distanceNm) : null,
                     value: r.flights,
                     formatted: num(r.flights),
@@ -809,7 +810,10 @@ function pct(value: number, total: number) {
 }
 
 function flightRefLabel(ref: AnalyticsFlightRef, fmtDate: (d: string) => string) {
-  const route = [ref.departureIcao, ref.arrivalIcao].filter(Boolean).join(' → ');
+  const route = [ref.departureIcao, ref.arrivalIcao]
+    .map((code, i) => (code ? airportDisplay(code, i === 0 ? ref.departureAirportName : ref.arrivalAirportName) : ''))
+    .filter(Boolean)
+    .join(' → ');
   return [fmtDate(ref.date), ref.aircraftReg, route].filter(Boolean).join(' · ');
 }
 
@@ -887,7 +891,7 @@ function groupColumns(t: Translate, fmtDuration: (m: number) => string): TableCo
 
 function airportColumns(t: Translate): TableColumn<AnalyticsAirportRow>[] {
   return [
-    { key: 'icao', header: t('table.airport'), numeric: false, render: (r) => r.icao },
+    { key: 'icao', header: t('table.airport'), numeric: false, render: (r) => (isLocalIdent(r.icao) ? '—' : r.icao) },
     { key: 'name', header: t('table.name'), numeric: false, render: (r) => r.name ?? '—' },
     { key: 'country', header: t('table.country'), numeric: false, render: (r) => r.country ?? '—' },
     { key: 'dep', header: t('table.departures'), render: (r) => r.departures },
@@ -910,8 +914,8 @@ function routeColumns(
   nm: (v: number) => string
 ): TableColumn<AnalyticsRouteRow>[] {
   return [
-    { key: 'from', header: t('table.from'), numeric: false, render: (r) => r.departureIcao },
-    { key: 'to', header: t('table.to'), numeric: false, render: (r) => r.arrivalIcao },
+    { key: 'from', header: t('table.from'), numeric: false, render: (r) => airportDisplay(r.departureIcao, r.departureAirportName) },
+    { key: 'to', header: t('table.to'), numeric: false, render: (r) => airportDisplay(r.arrivalIcao, r.arrivalAirportName) },
     { key: 'flights', header: t('flights'), render: (r) => r.flights },
     { key: 'time', header: t('table.blockTime'), render: (r) => fmtDuration(r.totalMinutes) },
     { key: 'dist', header: t('table.distance'), render: (r) => (r.distanceNm > 0 ? nm(r.distanceNm) : '—') },

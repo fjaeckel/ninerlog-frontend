@@ -15,6 +15,8 @@ import { PageWrapper } from '../components/ui/PageWrapper';
 import { useFormatPrefs } from '../hooks/useFormatPrefs';
 import { useRecencyPrefs } from '../hooks/useRecencyPrefs';
 import { recencyLevel, RECENCY_DOT_CLASSES } from '../lib/recency';
+import { abbreviateSiteName, airportDisplay, isLocalIdent } from '../lib/airport';
+import { cn } from '../lib/cn';
 
 /** Renders an API `YYYY-MM` key as a locale-aware short month name. */
 function shortMonth(month: string, locale: string) {
@@ -341,13 +343,9 @@ export default function DashboardPage() {
                 className="w-full grid grid-cols-[1fr_auto] gap-2 items-center py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded px-2 text-left transition-colors"
               >
                 <div className="flex items-center gap-1 min-w-0">
-                  <span className="font-medium font-mono text-slate-800 dark:text-slate-100 whitespace-nowrap">
-                    {flight.departureIcao || '—'}
-                  </span>
+                  <RoutePlace location={flight.departureIcao} name={flight.departureAirportName} />
                   <ArrowRight className="w-3.5 h-3.5 shrink-0 text-slate-400 dark:text-slate-500" aria-hidden="true" />
-                  <span className="font-medium font-mono text-slate-800 dark:text-slate-100 whitespace-nowrap">
-                    {flight.arrivalIcao || '—'}
-                  </span>
+                  <RoutePlace location={flight.arrivalIcao} name={flight.arrivalAirportName} />
                   {/* On a phone the row is route, time and date — a registration
                       squeezed to "D-E…" tells the reader nothing. */}
                   <span className="ml-2 hidden sm:inline text-sm font-mono text-slate-500 dark:text-slate-400 truncate">
@@ -385,5 +383,19 @@ export default function DashboardPage() {
         )}
       </div>
     </PageWrapper>
+  );
+}
+
+/** One end of a recent flight's route: a code, or an OurAirports field's name shortened to fit. */
+function RoutePlace({ location, name }: { location?: string | null; name?: string | null }) {
+  const text = airportDisplay(location, name);
+  const named = isLocalIdent(location) && text !== location?.trim();
+  return (
+    <span
+      className={cn('font-medium text-slate-800 dark:text-slate-100 whitespace-nowrap', !named && 'font-mono')}
+      title={named ? text : undefined}
+    >
+      {named ? abbreviateSiteName(text, 16) : text}
+    </span>
   );
 }

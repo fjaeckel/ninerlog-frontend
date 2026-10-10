@@ -31,6 +31,7 @@ vi.mock('../../hooks/useContacts', () => ({
 
 vi.mock('../../hooks/useMaps', () => ({
   useAirportSearch: () => ({ data: undefined }),
+  useAirport: () => ({ data: undefined }),
 }));
 
 describe('FlightForm Crew Section', () => {

@@ -92,6 +92,7 @@ export const TARGETS = [
     },
   },
   { name: 'flight-detail', path: '/flights/f1' },
+  { name: 'flight-detail-local-ident', path: '/flights/f8' },
   {
     name: 'flights-modal-edit',
     path: '/flights/f1',

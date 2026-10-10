@@ -9,7 +9,7 @@ import { useCreateFlight, useUpdateFlight, useFlight, useFlights } from '../../h
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { useCreateContact } from '../../hooks/useContacts';
 import { formatDuration, blockMinutes, type TimeDisplayFormat } from '../../lib/duration';
-import { normalizeLocation } from '../../lib/airport';
+import { airportDisplay, normalizeLocation } from '../../lib/airport';
 import { cn } from '../../lib/cn';
 import { extractApiError } from '../../lib/errors';
 import { useAuthStore } from '../../stores/authStore';
@@ -561,7 +561,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           <div className="min-w-0">
             <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">{t('form.fillFromLastFlightTitle')}</p>
             <p className="text-xs text-blue-600 dark:text-blue-400 truncate">
-              {lastFlight.aircraftReg} · {lastFlight.departureIcao || '?'} → {lastFlight.arrivalIcao || '?'}
+              {lastFlight.aircraftReg} · {airportDisplay(lastFlight.departureIcao, lastFlight.departureAirportName, '?')} → {airportDisplay(lastFlight.arrivalIcao, lastFlight.arrivalAirportName, '?')}
             </p>
           </div>
           <button
