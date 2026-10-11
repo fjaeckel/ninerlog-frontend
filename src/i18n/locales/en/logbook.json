@@ -120,5 +120,15 @@
       "beforeLatest": "The date cannot be before your latest certification ({{date}}).",
       "failed": "Could not certify the logbook."
     }
+  },
+  "errors": {
+    "reasonRequired": "This change needs a reason: the entry is past its draft window, signed or in a certified period.",
+    "overrideExceeds": "A manual override may only reduce an auto-calculated value.",
+    "overrideFields": "Overrides above the calculated value: {{fields}}.",
+    "reasonTooLong": "The reason is too long. Use at most 500 characters.",
+    "locked": "This flight is locked by a completed signature. Void the signature to change it.",
+    "notFound": "This flight no longer exists.",
+    "deleteFailed": "Could not delete the flight. Please try again.",
+    "saveFailed": "Could not save the change. Please try again."
   }
 }

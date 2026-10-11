@@ -14,6 +14,7 @@ vi.mock('../../hooks/useFlights', () => ({
 }));
 vi.mock('../../hooks/useLogbook', () => ({
   useIsStrictLogbook: () => true,
+  useLogbookStrictness: () => 'strict',
   useLogbookMode: () => ({ data: { strict: true, since: '2026-07-17T10:00:00Z' } }),
   useFlightRevisions: () => ({ data: [], isError: false }),
 }));

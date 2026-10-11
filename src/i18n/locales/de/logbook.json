@@ -120,5 +120,15 @@
       "beforeLatest": "Das Datum darf nicht vor deiner letzten Bestätigung ({{date}}) liegen.",
       "failed": "Das Flugbuch konnte nicht bestätigt werden."
     }
+  },
+  "errors": {
+    "reasonRequired": "Diese Änderung braucht einen Grund: Der Eintrag liegt außerhalb seines Bearbeitungsfensters, ist unterschrieben oder liegt in einem bestätigten Zeitraum.",
+    "overrideExceeds": "Ein manueller Wert darf einen automatisch berechneten Wert nur verringern.",
+    "overrideFields": "Manuelle Werte über dem berechneten Wert: {{fields}}.",
+    "reasonTooLong": "Der Grund ist zu lang. Verwende höchstens 500 Zeichen.",
+    "locked": "Dieser Flug ist durch eine abgeschlossene Unterschrift gesperrt. Mache die Unterschrift ungültig, um ihn zu ändern.",
+    "notFound": "Diesen Flug gibt es nicht mehr.",
+    "deleteFailed": "Der Flug konnte nicht gelöscht werden. Bitte versuche es erneut.",
+    "saveFailed": "Die Änderung konnte nicht gespeichert werden. Bitte versuche es erneut."
   }
 }

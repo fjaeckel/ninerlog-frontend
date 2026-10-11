@@ -261,12 +261,74 @@ export const TARGETS = [
     },
   },
   {
+    name: 'flights-modal-edit-override-hidden',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'PUT' && path === '/flights/f1'
+        ? {
+            status: 422,
+            body: {
+              error: 'A manual override may only reduce an auto-calculated time',
+              code: 'override_exceeds_calculated',
+              details: [
+                { field: 'nightTime', message: 'Must not exceed the calculated 0 min' },
+                { field: 'landingsDay', message: 'Must not exceed the calculated 1' },
+                { field: 'sicTime', message: 'Must not exceed the calculated 0 min' },
+              ],
+            },
+          }
+        : undefined,
+    act: async (page) => {
+      await editFlight(page);
+      await page.locator('#offBlockTime').fill('09:05');
+      await page.locator('#onBlockTime').fill('10:50');
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForTimeout(600);
+      await page.getByRole('dialog').getByRole('radiogroup').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+    },
+  },
+  {
     name: 'flight-delete-strict',
     path: '/flights/f1',
     act: async (page) => {
       await page.getByRole('button', { name: /delete flight|flug .*löschen/i }).first().click();
       await page.waitForTimeout(400);
       await page.locator('#delete-reason').fill('Duplicate entry');
+    },
+  },
+  {
+    name: 'flight-delete-error',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'DELETE' && path === '/flights/f1'
+        ? { status: 409, body: { error: 'Flight is signed and cannot be deleted' } }
+        : undefined,
+    act: async (page) => {
+      await page.getByRole('button', { name: /delete flight|flug .*löschen/i }).first().click();
+      await page.waitForTimeout(400);
+      await page.locator('#delete-reason').fill('Duplicate entry');
+      await page.getByRole('dialog').getByRole('button', { name: /^(delete flight|flug löschen)$/i }).click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: 'flight-detail-crew-correction',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'PUT' && path === '/flights/f1'
+        ? {
+            status: 422,
+            body: { error: 'This edit is a correction and needs a reason', code: 'correction_reason_required' },
+          }
+        : undefined,
+    act: async (page) => {
+      await page.getByRole('button', { name: /change name of amelia|namen von amelia/i }).first().click();
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Control+A');
+      await page.keyboard.type('Amelia M. Earhart');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(600);
     },
   },
   { name: 'flights-voided', path: '/flights/voided' },
@@ -468,6 +530,21 @@ export const TARGETS = [
     act: async (page) => {
       await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
       await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: 'profile-logbook-certify-error',
+    path: '/profile',
+    respond: (method, path) =>
+      method === 'POST' && path === '/logbook/certifications'
+        ? { status: 422, body: { error: 'certifiedThrough is in the future', code: 'certification_in_future' } }
+        : undefined,
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+      await page.getByRole('button', { name: /^(certify|bestätigen)$/i }).click();
+      await page.waitForTimeout(400);
+      await page.locator('#certified-through').scrollIntoViewIfNeeded();
     },
   },
   {

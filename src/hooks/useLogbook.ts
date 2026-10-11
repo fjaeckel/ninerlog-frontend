@@ -29,6 +29,14 @@ export const useLogbookMode = () =>
 /** True when the loaded logbook mode is strict; false while loading or on error. */
 export const useIsStrictLogbook = (): boolean => useLogbookMode().data?.strict === true;
 
+/** The logbook mode as 'strict' or 'standard', or 'unknown' while it is loading or failed to load. */
+export const useLogbookStrictness = (): 'strict' | 'standard' | 'unknown' => {
+  const strict = useLogbookMode().data?.strict;
+  if (strict === true) return 'strict';
+  if (strict === false) return 'standard';
+  return 'unknown';
+};
+
 export const useUpdateLogbookMode = () => {
   const queryClient = useQueryClient();
   return useMutation({

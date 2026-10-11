@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import FlightForm from '../../components/flights/FlightForm';
+import { FormModal } from '../../components/ui/FormModal';
 import * as useFlightsHook from '../../hooks/useFlights';
 import * as useAircraftHook from '../../hooks/useAircraft';
 
@@ -110,5 +111,55 @@ describe('FlightForm strict-mode errors', () => {
     expect(screen.getByLabelText(/^night time/i)).toHaveClass('input-error');
     expect(screen.queryByRole('dialog', { name: /reason for the correction/i })).not.toBeInTheDocument();
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('lists rejected overrides without an inline input by their label', async () => {
+    update.mutateAsync.mockRejectedValueOnce({
+      error: 'A manual override may only reduce an auto-calculated time',
+      code: 'override_exceeds_calculated',
+      httpStatus: 422,
+      details: [
+        { field: 'nightTime', message: 'Must not exceed the calculated 20 min' },
+        { field: 'landingsDay', message: 'Must not exceed 1' },
+        { field: 'landingsNight', message: 'Must not exceed 0' },
+        { field: 'sicTime', message: 'Must not exceed 0 min' },
+      ],
+    });
+
+    renderForm();
+    await waitFor(() => expect(screen.getByLabelText(/^night time/i)).toHaveValue(30));
+    submit();
+
+    const banner = await screen.findByRole('alert');
+    expect(banner).toHaveTextContent(/a manual override may only reduce an auto-calculated value/i);
+    expect(banner).toHaveTextContent('Overrides above the calculated value: Day Landings, Night Landings, SIC (Co-Pilot) Time.');
+    expect(banner).not.toHaveTextContent(/night time/i);
+    expect(screen.getByText('Must not exceed the calculated 20 min')).toBeInTheDocument();
+  });
+
+  it('Escape in the reason dialog keeps the edit modal open', async () => {
+    const user = userEvent.setup();
+    const closeModal = vi.fn();
+    update.mutateAsync.mockRejectedValueOnce({ error: 'needs a reason', code: 'correction_reason_required' });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <FormModal open onClose={closeModal} title="Edit Flight">
+            <FlightForm flightId="flight-1" onClose={closeModal} />
+          </FormModal>
+        </BrowserRouter>
+      </QueryClientProvider>
+    );
+    await waitFor(() => expect(screen.getByLabelText(/^night time/i)).toHaveValue(30));
+    submit();
+    const dialog = await screen.findByRole('dialog', { name: /reason for the correction/i });
+
+    await user.click(within(dialog).getByRole('textbox', { name: /^reason/i }));
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog', { name: /reason for the correction/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /edit flight/i })).toBeInTheDocument();
+    expect(closeModal).not.toHaveBeenCalled();
   });
 });

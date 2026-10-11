@@ -5,7 +5,7 @@ import { AirportInput } from './AirportInput';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
-import { useCreateFlight, useUpdateFlight, useFlight, useFlights } from '../../hooks/useFlights';
+import { useCreateFlight, useFlight, useFlights } from '../../hooks/useFlights';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { useCreateContact } from '../../hooks/useContacts';
 import { formatDuration, blockMinutes, type TimeDisplayFormat } from '../../lib/duration';
@@ -19,13 +19,18 @@ import type { Aircraft } from '../../hooks/useAircraft';
 import type { FlightCrewMemberInput } from '../../types/api';
 import { CrewEditor } from './CrewEditor';
 import { crewDerivedNames, toCrewInputs } from './crewRoles';
-import { CorrectionReasonDialog } from '../logbook/CorrectionReasonDialog';
+import { useCorrectableFlightUpdate } from '../logbook/useCorrectableFlightUpdate';
+import { logbookErrorMessage } from '../../lib/logbookErrors';
+import { revisionFieldLabelKey } from '../../lib/flightRevisions';
 import type { components } from '../../api/schema';
 
 type FlightUpdate = components['schemas']['FlightUpdate'];
 
-/** Form fields that carry an `*Override` flag on the server. */
+/** Override fields with an inline input in this form. */
 const OVERRIDE_FORM_FIELDS = ['nightTime', 'crossCountryTime', 'takeoffsDay', 'takeoffsNight', 'multiPilotTime'] as const;
+
+/** Override fields the API can report without an inline input in this form. */
+const OVERRIDE_BANNER_FIELDS = ['landingsDay', 'landingsNight', 'sicTime'] as const;
 
 /** Returns the current UTC time as "HH:MM". Used to pre-fill Off-Block on new flights. */
 const getCurrentUtcTime = (): string => {
@@ -105,9 +110,9 @@ interface FlightFormProps {
 }
 
 export default function FlightForm({ flightId, onClose }: FlightFormProps) {
-  const { t } = useTranslation(['flights', 'common']);
+  const { t } = useTranslation(['flights', 'common', 'logbook']);
   const createFlight = useCreateFlight();
-  const updateFlight = useUpdateFlight();
+  const correctable = useCorrectableFlightUpdate();
   const { data: existingFlight } = useFlight(flightId || '');
   const isLocked = !!existingFlight?.signatureId;
   const { data: aircraftList } = useAircraft();
@@ -132,9 +137,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   // Form error state
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // Strict-mode correction awaiting a reason
-  const [pendingCorrection, setPendingCorrection] = useState<FlightUpdate | null>(null);
-  const [correctionError, setCorrectionError] = useState<string | null>(null);
+  // Override fields without an inline input that the API rejected
+  const [bannerOverrideFields, setBannerOverrideFields] = useState<string[]>([]);
 
   // Collapsible section state
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -519,18 +523,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             launchMethod: (data.launchMethod || null) as any,
           };
 
+      setApiError(null);
+      setBannerOverrideFields([]);
       if (isEditing && flightId) {
-        try {
-          await updateFlight.mutateAsync({ id: flightId, data: basePayload });
-        } catch (error) {
-          if (extractApiCode(error) === 'correction_reason_required') {
-            setApiError(null);
-            setCorrectionError(null);
-            setPendingCorrection(basePayload as FlightUpdate);
-            return;
-          }
-          throw error;
-        }
+        const outcome = await correctable.save(flightId, basePayload as FlightUpdate);
+        if (outcome.status === 'cancelled') return;
       } else {
         await createFlight.mutateAsync(basePayload);
       }
@@ -546,25 +543,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       for (const field of OVERRIDE_FORM_FIELDS) {
         if (fieldErrors[field]) setError(field, { type: 'server', message: fieldErrors[field] });
       }
+      setBannerOverrideFields(OVERRIDE_BANNER_FIELDS.filter((field) => field in fieldErrors));
     }
-    setApiError(extractApiError(error, t('form.failedToSave')));
+    setApiError(logbookErrorMessage(error, t) ?? extractApiError(error, t('form.failedToSave')));
   };
 
-  const submitCorrection = async (reason: string) => {
-    if (!pendingCorrection || !flightId) return;
-    try {
-      setCorrectionError(null);
-      await updateFlight.mutateAsync({ id: flightId, data: { ...pendingCorrection, correctionReason: reason } });
-      setPendingCorrection(null);
-      onClose();
-    } catch (error) {
-      if (extractApiCode(error) === 'override_exceeds_calculated') {
-        setPendingCorrection(null);
-        showSubmitError(error);
-        return;
-      }
-      setCorrectionError(extractApiError(error, t('form.failedToSave')));
-    }
+  const overrideFieldLabel = (field: string) => {
+    const key = revisionFieldLabelKey(field);
+    return key ? t(key) : field;
   };
 
   const overrideError = (field: (typeof OVERRIDE_FORM_FIELDS)[number]) =>
@@ -573,8 +559,15 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-full overflow-x-hidden">
       {apiError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-          {apiError}
+        <div role="alert" className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+          <p>{apiError}</p>
+          {bannerOverrideFields.length > 0 && (
+            <p className="mt-1">
+              {t('logbook:errors.overrideFields', {
+                fields: bannerOverrideFields.map(overrideFieldLabel).join(', '),
+              })}
+            </p>
+          )}
         </div>
       )}
       {isLocked && (
@@ -1500,13 +1493,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         </button>
       </div>
 
-      <CorrectionReasonDialog
-        open={pendingCorrection !== null}
-        onCancel={() => setPendingCorrection(null)}
-        onSubmit={submitCorrection}
-        isSubmitting={updateFlight.isPending}
-        error={correctionError}
-      />
+      {correctable.dialog}
     </form>
   );
 }

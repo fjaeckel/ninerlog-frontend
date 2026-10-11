@@ -3,44 +3,69 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { Dialog } from '../ui/Dialog';
-import { useIsStrictLogbook } from '../../hooks/useLogbook';
+import { useLogbookStrictness } from '../../hooks/useLogbook';
+import { logbookErrorMessage } from '../../lib/logbookErrors';
 
 interface DeleteFlightDialogProps {
   open: boolean;
   onCancel: () => void;
-  /** Called with the optional void reason (strict mode only). */
+  /** Called with the optional void reason; a rejection is shown in the dialog, which stays open. */
   onConfirm: (reason?: string) => void | Promise<void>;
   isLoading?: boolean;
 }
 
-/** Delete confirmation; in strict mode it also takes an optional void reason. */
+/**
+ * Delete confirmation. Takes an optional void reason unless the logbook is
+ * known to be in standard mode.
+ */
 export function DeleteFlightDialog({ open, onCancel, onConfirm, isLoading = false }: DeleteFlightDialogProps) {
   const { t } = useTranslation(['flights', 'logbook', 'common']);
-  const strict = useIsStrictLogbook();
+  const strictness = useLogbookStrictness();
+  const [error, setError] = useState<string | null>(null);
 
-  if (!strict) {
+  const cancel = () => {
+    setError(null);
+    onCancel();
+  };
+
+  const confirm = async (reason?: string) => {
+    setError(null);
+    try {
+      await onConfirm(reason);
+    } catch (err) {
+      setError(logbookErrorMessage(err, t) ?? t('logbook:errors.deleteFailed'));
+    }
+  };
+
+  if (strictness === 'standard') {
     return (
       <ConfirmDialog
         open={open}
-        onConfirm={() => onConfirm()}
-        onCancel={onCancel}
+        onConfirm={() => confirm()}
+        onCancel={cancel}
         title={t('flights:deleteTitle')}
         description={t('flights:deleteDescription')}
         confirmLabel={t('flights:deleteFlight')}
         variant="danger"
         isLoading={isLoading}
+        error={error}
       />
     );
   }
 
   return (
-    <Dialog open={open} onClose={onCancel} title={t('flights:deleteTitle')}>
-      <DeleteReasonForm onCancel={onCancel} onConfirm={onConfirm} isLoading={isLoading} />
+    <Dialog open={open} onClose={cancel} title={t('flights:deleteTitle')}>
+      <DeleteReasonForm onCancel={cancel} onConfirm={confirm} isLoading={isLoading} error={error} />
     </Dialog>
   );
 }
 
-function DeleteReasonForm({ onCancel, onConfirm, isLoading }: Omit<DeleteFlightDialogProps, 'open'>) {
+function DeleteReasonForm({
+  onCancel,
+  onConfirm,
+  isLoading,
+  error,
+}: Omit<DeleteFlightDialogProps, 'open'> & { error: string | null }) {
   const { t } = useTranslation(['flights', 'logbook', 'common']);
   const [reason, setReason] = useState('');
 
@@ -52,6 +77,14 @@ function DeleteReasonForm({ onCancel, onConfirm, isLoading }: Omit<DeleteFlightD
         </div>
         <p className="text-sm text-slate-500 dark:text-slate-400">{t('logbook:delete.strictDescription')}</p>
       </div>
+      {error && (
+        <p
+          role="alert"
+          className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
+        >
+          {error}
+        </p>
+      )}
       <label htmlFor="delete-reason" className="form-label">
         {t('logbook:delete.reasonLabel')}
       </label>

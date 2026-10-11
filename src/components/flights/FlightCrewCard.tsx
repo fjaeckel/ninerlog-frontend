@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Check, Loader2, Lock, Undo2 } from 'lucide-react';
-import { useUpdateFlight } from '../../hooks/useFlights';
 import { extractApiError } from '../../lib/errors';
+import { logbookErrorMessage } from '../../lib/logbookErrors';
+import { useCorrectableFlightUpdate } from '../logbook/useCorrectableFlightUpdate';
 import type { components } from '../../api/schema';
 import type { FlightCrewMemberInput } from '../../types/api';
 import { CrewEditor } from './CrewEditor';
@@ -18,8 +19,8 @@ interface Draft {
 
 /** Crew card of the flight detail page; edits save immediately while the flight is unsigned. */
 export function FlightCrewCard({ flight }: { flight: Flight }) {
-  const { t } = useTranslation('flights');
-  const updateFlight = useUpdateFlight();
+  const { t } = useTranslation(['flights', 'logbook']);
+  const correctable = useCorrectableFlightUpdate();
   const locked = !!flight.signatureId;
   const [draft, setDraft] = useState<Draft | null>(null);
   const [status, setStatus] = useState<SaveStatus>('idle');
@@ -43,11 +44,13 @@ export function FlightCrewCard({ flight }: { flight: Flight }) {
     setStatus('saving');
     setError(null);
     try {
-      await updateFlight.mutateAsync({
-        id: flight.id,
-        data: { crewMembers: next, ...crewDerivedNames(next) },
-      });
+      const outcome = await correctable.save(flight.id, { crewMembers: next, ...crewDerivedNames(next) });
       if (mine !== seq.current) return;
+      if (outcome.status === 'cancelled') {
+        setDraft(null);
+        setStatus('idle');
+        return;
+      }
       setPrevious(undoTo);
       setStatus('saved');
     } catch (err) {
@@ -55,7 +58,7 @@ export function FlightCrewCard({ flight }: { flight: Flight }) {
       setDraft(null);
       setPrevious(null);
       setStatus('error');
-      setError(extractApiError(err, t('crewEditor.saveFailed')));
+      setError(logbookErrorMessage(err, t) ?? extractApiError(err, t('crewEditor.saveFailed')));
     }
   };
 
@@ -97,6 +100,7 @@ export function FlightCrewCard({ flight }: { flight: Flight }) {
         disabled={locked}
         onChange={(next) => save(next, crew)}
       />
+      {correctable.dialog}
     </div>
   );
 }

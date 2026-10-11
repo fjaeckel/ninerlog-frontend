@@ -86,6 +86,29 @@ describe('LogbookSection', () => {
     expect(await screen.findByText(/cannot be before your latest certification/i)).toBeInTheDocument();
   });
 
+  it('defaults to local today as the latest date and maps the other certification errors inline', async () => {
+    state.mode = { ...baseMode, strict: true, since: '2026-07-17T10:00:00Z' };
+    certify
+      .mockRejectedValueOnce({ error: 'certifiedThrough is in the future', code: 'certification_in_future', httpStatus: 422 })
+      .mockRejectedValueOnce({ error: 'Strict mode is required', code: 'strict_mode_required', httpStatus: 409 });
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    render(<LogbookSection />);
+
+    const input = screen.getByLabelText(/certified through/i);
+    expect(input).toHaveValue(today);
+    expect(input).toHaveAttribute('max', today);
+
+    await userEvent.click(screen.getByRole('button', { name: /^certify$/i }));
+    expect(await screen.findByText('The date cannot be in the future.')).toBeInTheDocument();
+    expect(screen.queryByText('certifiedThrough is in the future')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /^certify$/i }));
+    expect(await screen.findByText('Switch strict mode on to certify the logbook.')).toBeInTheDocument();
+    expect(screen.queryByText('The date cannot be in the future.')).not.toBeInTheDocument();
+  });
+
   it('disables certification outside strict mode', () => {
     state.mode = baseMode;
     render(<LogbookSection />);
