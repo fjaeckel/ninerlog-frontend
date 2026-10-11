@@ -18,6 +18,8 @@ const RESULT: ImportJSONResult = {
   contactsCreated: 0,
   customCurrencyRulesImported: 1,
   customReportsImported: 1,
+  flightRevisionsImported: 0,
+  logbookCertificationsImported: 0,
   notificationPreferencesImported: true,
   flightBaselineImported: true,
   mode: 'restore',

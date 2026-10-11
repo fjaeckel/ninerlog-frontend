@@ -114,9 +114,11 @@ export const useDeleteFlight = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string): Promise<void> => {
+    mutationFn: async (target: string | { id: string; reason?: string }): Promise<void> => {
+      const { id, reason } = typeof target === 'string' ? { id: target, reason: undefined } : target;
+      const trimmed = reason?.trim();
       const { error } = await apiClient.DELETE('/flights/{flightId}', {
-        params: { path: { flightId: id } },
+        params: { path: { flightId: id }, query: trimmed ? { reason: trimmed } : undefined },
       });
       if (error) throw error;
     },
