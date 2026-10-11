@@ -4790,7 +4790,7 @@ export interface components {
             issuingAuthority?: string;
             notes?: string | null;
         };
-        /** @description Column sums over every flight matching the request's filters, not just the returned page. Times are in minutes. */
+        /** @description Column sums over every flight matching the request's filters, not just the returned page. updatedSince is a filter too, so a delta request sums only the changed flights. Times are in minutes. */
         FlightTotals: {
             /** @description Number of flights matching the filters */
             flights: number;
@@ -4858,7 +4858,7 @@ export interface components {
         };
         PaginatedFlights: {
             totals: components["schemas"]["FlightTotals"];
-            /** @description Column sums per calendar month over every flight matching the filters, for each month that has a flight on the returned page. Ordered by month, oldest first. */
+            /** @description Column sums per calendar month over every flight matching the filters, for each month that has a flight on the returned page. Ordered by month, oldest first. Empty unless the list is sorted by date and updatedSince is not set. */
             monthTotals: components["schemas"]["FlightMonthTotals"][];
             data: components["schemas"]["Flight"][];
             pagination: {

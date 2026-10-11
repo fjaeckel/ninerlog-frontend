@@ -8,6 +8,7 @@ import FlightRouteHeading from './FlightRouteHeading';
 import {
   flightFunctionKind,
   flightFunctionLabel,
+  landingsText,
   type FlightCardColumns,
 } from './flightTableColumns';
 
@@ -62,9 +63,7 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
           key: 'ldg',
           // At six columns the day/night split moves its letters into the heading.
           label: columns.landingsSplit ? t('tableLdgSplit') : t('tableLdg'),
-          value: columns.landingsSplit
-            ? `${flight.landingsDay}/${flight.landingsNight}`
-            : String(flight.allLandings),
+          value: landingsText(flight.landingsDay, flight.landingsNight, columns.landingsSplit),
         },
       ]
     : [];

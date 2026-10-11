@@ -166,7 +166,7 @@ const detailTierSpan = (column: FlightDetailColumn) => (column.numeric ? 1 : 2);
 const AUTO_MAX_TIME_COLUMNS = 4;
 
 /** Translates a key in the `flights` namespace. */
-type FlightsT = (key: string) => string;
+type FlightsT = (key: string, options?: { defaultValue?: string }) => string;
 
 /** Formats a time of day in the user's clock format. */
 type TimeFormat = (value?: string | null) => string;
@@ -198,7 +198,7 @@ interface FlightColumnDef {
   total?: (totals: FlightTotals) => string;
   /** Detail columns holding a number, right-aligned in the table */
   numeric?: boolean;
-  /** Whether a flight actually uses this column — drives automatic mode */
+  /** Whether a flight actually uses this column — drives automatic mode; always false for detail columns */
   hasValue: (flight: Flight) => boolean;
 }
 
@@ -216,13 +216,17 @@ const detailColumn = (
   text,
   numeric: !!options.numeric,
   total: options.total,
-  hasValue: (flight) => text(flight, (k) => k) !== '',
+  hasValue: () => false,
 });
 
 const countText = (n: number | undefined) => (n ? String(n) : '');
 
 /** A day/night pair as "D/N", empty when both are zero. */
 const dayNightText = (day: number, night: number) => (day || night ? `${day}/${night}` : '');
+
+/** Landings as "D/N" when the page splits them, otherwise their sum. */
+export const landingsText = (day: number, night: number, split: boolean) =>
+  split ? `${day}/${night}` : String(day + night);
 
 /** Whether any flight on the page has night landings. */
 export const hasNightLandings = (flights: Flight[]) => flights.some((f) => f.landingsNight > 0);
@@ -234,7 +238,7 @@ function takeoffLandingText(flight: Flight, _t: FlightsT, fmtTime: TimeFormat = 
 
 function approachTypesText(flight: Flight, t: FlightsT): string {
   const types = [...new Set((flight.approaches ?? []).map((a) => a.type))];
-  return types.map((type) => t(`approachTypes.${type.replace('/', '_')}`)).join(', ');
+  return types.map((type) => t(`approachTypes.${type.replace('/', '_')}`, { defaultValue: type })).join(', ');
 }
 
 function checksText(flight: Flight, t: FlightsT): string {
@@ -254,9 +258,20 @@ function crewText(flight: Flight, t: FlightsT): string {
     .join(', ');
 }
 
+/** Launch methods with a `launchMethods.*` translation, by API value. */
+const LAUNCH_METHOD_KEYS: Record<string, string> = {
+  winch: 'winch',
+  aerotow: 'aerotow',
+  'self-launch': 'selfLaunch',
+  car: 'car',
+  bungee: 'bungee',
+};
+
 function launchMethodText(flight: Flight, t: FlightsT): string {
-  if (!flight.launchMethod) return '';
-  return t(`launchMethods.${flight.launchMethod === 'self-launch' ? 'selfLaunch' : flight.launchMethod}`);
+  const method = flight.launchMethod;
+  if (!method || method === 'null') return '';
+  const key = LAUNCH_METHOD_KEYS[method];
+  return key ? t(`launchMethods.${key}`) : method;
 }
 
 const minutesColumn = (
@@ -443,6 +458,8 @@ export interface FlightCardColumn {
   key: FlightColumnKey;
   labelKey: string;
   minutes: (flight: Flight) => number;
+  /** Minutes from the list totals */
+  total: (totals: FlightTotals) => number;
 }
 
 export interface FlightCardColumns {
@@ -485,7 +502,12 @@ export function selectFlightCardColumns(
     time: order
       .slice(0, MAX_CARD_TIME_COLUMNS)
       .map((key) => byKey.get(key)!)
-      .map((column) => ({ key: column.key, labelKey: column.labelKey, minutes: column.minutes! })),
+      .map((column) => ({
+        key: column.key,
+        labelKey: column.labelKey,
+        minutes: column.minutes!,
+        total: column.totalMinutes!,
+      })),
     details: custom ? selectedDetails(selected) : [],
   };
 }

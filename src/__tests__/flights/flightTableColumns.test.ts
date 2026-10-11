@@ -255,6 +255,16 @@ describe('detail columns', () => {
     expect(text(layout, 'waypoints', f)).toBe('EDDF, KNG, EDDH');
   });
 
+  it('fall back to the raw value for an approach type or launch method with no translation', () => {
+    const missing = (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? `missing:${key}`;
+    const layout = selectFlightColumns([flight()], custom(['approachTypes', 'launchMethod']));
+    const [approachTypes, launchMethod] = layout.details;
+
+    expect(approachTypes.text(flight({ approaches: [{ type: 'Unknown' }] }), missing)).toBe('Unknown');
+    expect(launchMethod.text(flight({ launchMethod: 'null' }), missing)).toBe('');
+    expect(launchMethod.text(flight({ launchMethod: 'winch' }), missing)).toBe('missing:launchMethods.winch');
+  });
+
   it('format takeoff and landing times with the formatter given', () => {
     const f = flight({ departureTime: '14:05:00', arrivalTime: null });
     const layout = selectFlightColumns([f], custom(['takeoffLandingTime']));

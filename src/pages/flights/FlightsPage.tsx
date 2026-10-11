@@ -20,7 +20,7 @@ import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, FLIGHT_FUNCTION_BADGE } from '../../components/flights/flightTableColumns';
+import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, landingsText, FLIGHT_FUNCTION_BADGE } from '../../components/flights/flightTableColumns';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
 import type { components, operations } from '../../api/schema';
@@ -278,6 +278,16 @@ export default function FlightsPage() {
     [flights, columnPrefs]
   );
   // Month headings with running totals for the mobile card list.
+  // Whole-month sums from the API, by YYYY-MM.
+  const monthTotals = useMemo(
+    () =>
+      new Map(
+        (isWide ? data?.monthTotals ?? [] : (infinite.data?.pages ?? []).flatMap((p) => p.monthTotals ?? [])).map(
+          (m) => [m.month, m.totals]
+        )
+      ),
+    [isWide, data, infinite.data]
+  );
   const monthGroups = useMemo(
     () => groupFlightsByMonth(flights, i18n.language, sortBy === 'date'),
     [flights, i18n.language, sortBy]
@@ -361,18 +371,12 @@ export default function FlightsPage() {
   const pagination = lastPage?.pagination;
   // Sums over every flight matching the view, not just what is loaded.
   const listTotals = lastPage?.totals;
-  const monthTotals = new Map(
-    (isWide ? data?.monthTotals ?? [] : (infinitePages ?? []).flatMap((p) => p.monthTotals ?? [])).map((m) => [
-      m.month,
-      m.totals,
-    ])
-  );
   const monthSummary = (group: FlightGroup) =>
     t('flights:monthTotal', {
       count: monthTotals.get(group.key)?.flights ?? group.flights.length,
       duration: fmtDuration(monthTotals.get(group.key)?.totalTime ?? group.totalMinutes),
     });
-  const landingsText = (day: number, night: number, split: boolean) => (split ? `${day}/${night}` : String(day + night));
+
   // Enough for a month heading to span whatever the table is currently showing.
   const tableColumnCount =
     5 +
@@ -606,7 +610,7 @@ export default function FlightsPage() {
                     ...cardColumns.time.map((col) => ({
                       key: col.key,
                       label: t(`flights:${col.labelKey}`),
-                      value: fmtDuration(Number(listTotals[col.key as keyof typeof listTotals] ?? 0)),
+                      value: fmtDuration(col.total(listTotals)),
                     })),
                     ...(cardColumns.landings
                       ? [
@@ -832,7 +836,7 @@ export default function FlightsPage() {
                       </td>
                     )}
                     {columns.details.map((col) => {
-                      const text = col.text(flight, (k) => t(`flights:${k}`), fmtTimeOfDay);
+                      const text = col.text(flight, (k, o) => t(`flights:${k}`, o ?? {}), fmtTimeOfDay);
                       return (
                         <td
                           key={col.key}
