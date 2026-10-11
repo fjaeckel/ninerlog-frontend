@@ -78,6 +78,7 @@ describe('FlightsPage filter persistence', () => {
       mutateAsync: vi.fn(),
       isPending: false,
     } as any);
+    vi.spyOn(useFlightsHook, 'useFlightNeighbors').mockReturnValue({ data: undefined } as never);
     vi.spyOn(useLicensesHook, 'useLicenses').mockReturnValue({ data: [] } as any);
   });
 

@@ -6,6 +6,7 @@ import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
 import FlightForm from '../../components/flights/FlightForm';
 import FlightRouteCard from '../../components/flights/FlightRouteCard';
 import FlightRouteHeading from '../../components/flights/FlightRouteHeading';
+import FlightNeighborNav from '../../components/flights/FlightNeighborNav';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { FormModal } from '../../components/ui/FormModal';
 import { PageWrapper } from '../../components/ui/PageWrapper';
@@ -151,13 +152,20 @@ export default function FlightDetailPage() {
 
   return (
     <PageWrapper maxWidth="list">
-      <button
-        onClick={() => navigate(flightsListPath)}
-        className="mb-3 inline-flex min-h-[44px] items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {t('detail.backToFlights')}
-      </button>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <button
+          onClick={() => navigate(flightsListPath)}
+          className="inline-flex min-h-[44px] items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t('detail.backToFlights')}
+        </button>
+        <FlightNeighborNav
+          flightId={flight.id}
+          listSearch={listSearch}
+          keyboard={!showEditForm && !showDeleteConfirm}
+        />
+      </div>
 
       {/* Hero — the list card's header at page scale */}
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">

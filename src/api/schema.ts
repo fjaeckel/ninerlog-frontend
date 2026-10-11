@@ -1346,6 +1346,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/flights/{flightId}/neighbors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Previous and next flight in a list
+         * @description The flights directly before and after this one in the flights list described by the query parameters, which take the same filter and sort values as GET /flights. The order is exactly the list's, so stepping through it visits every flight of the list once, across page boundaries. When the flight does not match the filters, previousId, nextId and position are null. With q set, the request counts against the search rate limit.
+         */
+        get: operations["getFlightNeighbors"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/flights/{flightId}/signatures": {
         parameters: {
             query?: never;
@@ -4847,6 +4867,28 @@ export interface components {
              * @description Nautical miles
              */
             distance: number;
+        };
+        FlightNeighbors: {
+            /**
+             * Format: uuid
+             * @description The flight listed directly before this one; null at the start of the list
+             */
+            previousId: string | null;
+            /**
+             * Format: uuid
+             * @description The flight listed directly after this one; null at the end of the list
+             */
+            nextId: string | null;
+            /**
+             * @description 1-based position of this flight in the list; null when it does not match the filters
+             * @example 3
+             */
+            position: number | null;
+            /**
+             * @description Number of flights in the list
+             * @example 142
+             */
+            total: number;
         };
         FlightMonthTotals: {
             /**
@@ -10219,6 +10261,57 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+        };
+    };
+    getFlightNeighbors: {
+        parameters: {
+            query?: {
+                /** @description As on GET /flights */
+                startDate?: string;
+                /** @description As on GET /flights */
+                endDate?: string;
+                /** @description As on GET /flights */
+                aircraftReg?: string;
+                /** @description As on GET /flights */
+                departureIcao?: string;
+                /** @description As on GET /flights */
+                arrivalIcao?: string;
+                /** @description As on GET /flights */
+                isPic?: boolean;
+                /** @description As on GET /flights */
+                isDual?: boolean;
+                /** @description As on GET /flights */
+                search?: string;
+                /** @description Advanced search query, as on GET /flights */
+                q?: string;
+                /** @description As on GET /flights */
+                sortBy?: "date" | "totalTime" | "createdAt";
+                /** @description As on GET /flights */
+                sortOrder?: "asc" | "desc";
+                /** @description As on GET /flights */
+                logbookLicenseId?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Flight UUID */
+                flightId: components["parameters"]["FlightId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The flight's neighbours in the list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightNeighbors"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
     listFlightSignatures: {

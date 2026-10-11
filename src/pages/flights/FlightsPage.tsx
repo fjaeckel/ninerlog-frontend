@@ -24,12 +24,10 @@ import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, fligh
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
 import type { components, operations } from '../../api/schema';
+import { flightListQueryFromSearch, FLIGHT_SORT_FIELDS as SORT_FIELDS, type FlightSortField as SortField } from './flightListQuery';
 
 type Flight = components['schemas']['Flight'];
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
-type SortField = 'date' | 'totalTime' | 'createdAt';
-
-const SORT_FIELDS: SortField[] = ['date', 'totalTime', 'createdAt'];
 
 /** A secondary toolbar action: icon-only on phones, labelled from `sm`. */
 const TOOLBAR_ACTION =
@@ -214,17 +212,7 @@ export default function FlightsPage() {
   const params: ListFlightsParams = {
     page,
     pageSize: 20,
-    sortBy,
-    sortOrder,
-    ...(searchQuery ? { q: searchQuery } : {}),
-    ...(startDate ? { startDate } : {}),
-    ...(endDate ? { endDate } : {}),
-    ...(aircraftReg ? { aircraftReg } : {}),
-    ...(departureIcao ? { departureIcao: departureIcao.toUpperCase() } : {}),
-    ...(arrivalIcao ? { arrivalIcao: arrivalIcao.toUpperCase() } : {}),
-    ...(functionFilter === 'pic' ? { isPic: true } : {}),
-    ...(functionFilter === 'dual' ? { isDual: true } : {}),
-    ...(logbookLicenseId ? { logbookLicenseId } : {}),
+    ...flightListQueryFromSearch(searchParams),
   };
 
   // The search without the page: the export carries every match.

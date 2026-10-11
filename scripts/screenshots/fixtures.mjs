@@ -778,6 +778,16 @@ export function bodyFor(pathname) {
   if (classRatingsMatch) return classRatings[classRatingsMatch[1]] ?? [];
   if (/^\/licenses\/[^/]+\/currency$/.test(path)) return currency;
   if (/^\/licenses\/[^/]+\/statistics$/.test(path)) return statistics;
+  const neighborsMatch = path.match(/^\/flights\/([^/]+)\/neighbors$/);
+  if (neighborsMatch) {
+    const i = flights.findIndex((f) => f.id === neighborsMatch[1]);
+    return {
+      previousId: i > 0 ? flights[i - 1].id : null,
+      nextId: i >= 0 && i < flights.length - 1 ? flights[i + 1].id : null,
+      position: i >= 0 ? i + 1 : null,
+      total: flights.length,
+    };
+  }
   const flightMatch = path.match(/^\/flights\/([^/]+)$/);
   if (flightMatch) return flights.find((f) => f.id === flightMatch[1]) ?? flights[0];
   const reportResultMatch = path.match(/^\/reports\/custom\/([^/]+)\/result$/);

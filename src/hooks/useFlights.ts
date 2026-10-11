@@ -56,6 +56,26 @@ export const useInfiniteFlights = (
   });
 };
 
+type FlightNeighbors = components['schemas']['FlightNeighbors'];
+type FlightNeighborsQuery = operations['getFlightNeighbors']['parameters']['query'];
+
+/** The flights before and after one flight in the list described by `query`. */
+export const useFlightNeighbors = (flightId: string, query: FlightNeighborsQuery) => {
+  return useQuery({
+    queryKey: ['flights', flightId, 'neighbors', query],
+    queryFn: async (): Promise<FlightNeighbors> => {
+      const { data, error } = await apiClient.GET('/flights/{flightId}/neighbors', {
+        params: { path: { flightId }, query: query || {} },
+      });
+      if (error) throw error;
+      return data as FlightNeighbors;
+    },
+    placeholderData: keepPreviousData,
+    staleTime: FLIGHTS_STALE_TIME_MS,
+    enabled: !!flightId,
+  });
+};
+
 // Get a single flight by ID
 export const useFlight = (flightId: string) => {
   return useQuery({

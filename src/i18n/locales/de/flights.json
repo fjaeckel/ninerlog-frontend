@@ -281,6 +281,10 @@
   "editFlightAriaLabel": "Flug {{departure}} nach {{arrival}} bearbeiten",
   "deleteFlightAriaLabel": "Flug {{departure}} nach {{arrival}} löschen",
   "detail": {
+    "neighborNav": "Flüge in dieser Liste",
+    "previousFlight": "Vorheriger Flug",
+    "nextFlight": "Nächster Flug",
+    "position": "{{position}} von {{total}}",
     "backToFlights": "Zurück zu den Flügen",
     "flightNotFound": "Flug nicht gefunden",
     "flightNotFoundMessage": "Der gesuchte Flug existiert nicht oder wurde gelöscht.",
