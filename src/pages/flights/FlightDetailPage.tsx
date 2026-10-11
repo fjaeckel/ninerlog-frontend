@@ -29,7 +29,9 @@ export default function FlightDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   // The list's query string, passed back on return navigation.
-  const listSearch = (location.state as { listSearch?: string } | null)?.listSearch ?? '';
+  const listState = location.state as { listSearch?: string; listIndex?: number } | null;
+  const listSearch = listState?.listSearch ?? '';
+  const listIndex = listState?.listIndex;
   const flightsListPath = `/flights${listSearch}`;
   const { t } = useTranslation('flights');
   const { data: flight, isLoading, error } = useFlight(flightId || '');
@@ -163,6 +165,7 @@ export default function FlightDetailPage() {
         <FlightNeighborNav
           flightId={flight.id}
           listSearch={listSearch}
+          listIndex={listIndex}
           keyboard={!showEditForm && !showDeleteConfirm}
         />
       </div>

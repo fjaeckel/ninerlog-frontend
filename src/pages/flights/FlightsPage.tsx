@@ -24,7 +24,12 @@ import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, fligh
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
 import type { components, operations } from '../../api/schema';
-import { flightListQueryFromSearch, FLIGHT_SORT_FIELDS as SORT_FIELDS, type FlightSortField as SortField } from './flightListQuery';
+import {
+  FLIGHT_LIST_PAGE_SIZE,
+  flightListQueryFromSearch,
+  FLIGHT_SORT_FIELDS as SORT_FIELDS,
+  type FlightSortField as SortField,
+} from './flightListQuery';
 
 type Flight = components['schemas']['Flight'];
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
@@ -211,7 +216,7 @@ export default function FlightsPage() {
 
   const params: ListFlightsParams = {
     page,
-    pageSize: 20,
+    pageSize: FLIGHT_LIST_PAGE_SIZE,
     ...flightListQueryFromSearch(searchParams),
   };
 
@@ -268,6 +273,12 @@ export default function FlightsPage() {
     () => selectFlightCardColumns(flights, columnPrefs),
     [flights, columnPrefs]
   );
+  // A flight's 0-based position in the whole list, for previous/next on its page.
+  const listOffset = isWide ? (page - 1) * FLIGHT_LIST_PAGE_SIZE : 0;
+  const indexById = useMemo(() => new Map(flights.map((f, i) => [f.id, listOffset + i])), [flights, listOffset]);
+  const openFlight = (id: string) =>
+    navigate(`/flights/${id}`, { state: { listSearch: location.search, listIndex: indexById.get(id) } });
+
   // Month headings with running totals for the mobile card list.
   // Whole-month sums from the API, by YYYY-MM.
   const monthTotals = useMemo(
@@ -647,7 +658,7 @@ export default function FlightsPage() {
                       key={flight.id}
                       flight={flight}
                       columns={cardColumns}
-                      onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
+                      onClick={() => openFlight(flight.id)}
                     />
                   ))}
                 </div>
@@ -754,7 +765,7 @@ export default function FlightsPage() {
                   <tr
                     key={flight.id}
                     className="group hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition-colors"
-                    onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
+                    onClick={() => openFlight(flight.id)}
                   >
                     <td className="px-3 py-2 whitespace-nowrap text-slate-800 dark:text-slate-200">
                       <span className="text-xs text-slate-400 dark:text-slate-500">

@@ -5,29 +5,50 @@ import { MemoryRouter, Routes, Route, useLocation } from 'react-router';
 import FlightNeighborNav from '../../components/flights/FlightNeighborNav';
 import * as useFlightsHook from '../../hooks/useFlights';
 
+const TOTAL = 45;
+const ids = Array.from({ length: TOTAL }, (_, i) => `f${i}`);
+
+/** Serves the list's pages of 20 from `ids`, the way GET /flights would. */
+function serveList({ placeholder = false } = {}) {
+  return vi.spyOn(useFlightsHook, 'useFlights').mockImplementation(
+    (params, options) =>
+      ({
+        data:
+          options?.enabled === false
+            ? undefined
+            : {
+                data: ids.slice(((params?.page ?? 1) - 1) * 20, (params?.page ?? 1) * 20).map((id) => ({ id })),
+                pagination: { page: params?.page ?? 1, pageSize: 20, total: TOTAL, totalPages: 3 },
+              },
+        isPlaceholderData: placeholder,
+      }) as never
+  );
+}
+
 function LocationProbe() {
   const location = useLocation();
+  const state = location.state as { listSearch?: string; listIndex?: number } | null;
   return (
     <p data-testid="location">
-      {location.pathname}|{(location.state as { listSearch?: string } | null)?.listSearch ?? ''}
+      {location.pathname}|{state?.listSearch ?? ''}|{state?.listIndex ?? ''}
     </p>
   );
 }
 
-const neighbors = (over: Record<string, unknown> = {}) =>
-  vi.spyOn(useFlightsHook, 'useFlightNeighbors').mockReturnValue({
-    data: { previousId: 'prev', nextId: 'next', position: 3, total: 12, ...over },
-  } as never);
-
-function renderNav({ keyboard = true, listSearch = '?q=night%3E0&sortBy=totalTime' } = {}) {
+function renderNav({
+  flightId = 'f5',
+  listIndex = 5 as number | null,
+  keyboard = true,
+  listSearch = '?q=night%3E0&sortBy=totalTime',
+} = {}) {
   return render(
-    <MemoryRouter initialEntries={['/flights/current']}>
+    <MemoryRouter initialEntries={[`/flights/${flightId}`]}>
       <Routes>
         <Route
           path="/flights/:flightId"
           element={
             <>
-              <FlightNeighborNav flightId="current" listSearch={listSearch} keyboard={keyboard} />
+              <FlightNeighborNav flightId={flightId} listSearch={listSearch} listIndex={listIndex ?? undefined} keyboard={keyboard} />
               <input aria-label="notes" />
               <LocationProbe />
             </>
@@ -41,55 +62,84 @@ function renderNav({ keyboard = true, listSearch = '?q=night%3E0&sortBy=totalTim
 describe('FlightNeighborNav', () => {
   beforeEach(() => vi.restoreAllMocks());
 
-  it('asks for the neighbours in the list order and filters it came from', () => {
-    const spy = neighbors();
-    renderNav();
+  it('reads the list page holding the flight, with the list query', () => {
+    const spy = serveList();
+    renderNav({ flightId: 'f25', listIndex: 25 });
 
-    expect(spy).toHaveBeenCalledWith('current', expect.objectContaining({ q: 'night>0', sortBy: 'totalTime', sortOrder: 'desc' }));
-    expect(screen.getByText('3 of 12')).toBeInTheDocument();
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({ page: 2, pageSize: 20, q: 'night>0', sortBy: 'totalTime' }),
+      expect.objectContaining({ enabled: true })
+    );
+    expect(screen.getByText('26 of 45')).toBeInTheDocument();
   });
 
-  it('steps to the next flight and keeps the list query for the way back', async () => {
-    neighbors();
+  it('steps to the next flight and carries its position and the list query', async () => {
+    serveList();
     renderNav();
 
     await userEvent.click(screen.getByRole('button', { name: 'Next flight' }));
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/flights/next|?q=night%3E0&sortBy=totalTime');
+    expect(screen.getByTestId('location')).toHaveTextContent('/flights/f6|?q=night%3E0&sortBy=totalTime|6');
+  });
+
+  it('crosses a page boundary using the neighbouring page', async () => {
+    serveList();
+    renderNav({ flightId: 'f19', listIndex: 19 });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next flight' }));
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/flights/f20');
   });
 
   it('disables the buttons at either end of the list', () => {
-    neighbors({ previousId: null, position: 1 });
-    renderNav();
-
+    serveList();
+    const { unmount } = renderNav({ flightId: 'f0', listIndex: 0 });
     expect(screen.getByRole('button', { name: 'Previous flight' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Next flight' })).toBeEnabled();
+    unmount();
+
+    renderNav({ flightId: 'f44', listIndex: 44 });
+    expect(screen.getByRole('button', { name: 'Next flight' })).toBeDisabled();
   });
 
   it('follows the left and right arrow keys', () => {
-    neighbors();
+    serveList();
     renderNav();
 
     fireEvent.keyDown(window, { key: 'ArrowLeft' });
-    expect(screen.getByTestId('location')).toHaveTextContent('/flights/prev');
+    expect(screen.getByTestId('location')).toHaveTextContent('/flights/f4|?q=night%3E0&sortBy=totalTime|4');
   });
 
   it('leaves arrow keys alone while typing, with modifiers, or when switched off', () => {
-    neighbors();
+    serveList();
     const { unmount } = renderNav();
 
     fireEvent.keyDown(screen.getByLabelText('notes'), { key: 'ArrowRight' });
     fireEvent.keyDown(window, { key: 'ArrowRight', altKey: true });
-    expect(screen.getByTestId('location')).toHaveTextContent('/flights/current');
+    expect(screen.getByTestId('location')).toHaveTextContent('/flights/f5');
     unmount();
 
     renderNav({ keyboard: false });
     fireEvent.keyDown(window, { key: 'ArrowRight' });
-    expect(screen.getByTestId('location')).toHaveTextContent('/flights/current');
+    expect(screen.getByTestId('location')).toHaveTextContent('/flights/f5');
   });
 
-  it('does not render for a flight outside the list', () => {
-    neighbors({ previousId: null, nextId: null, position: null });
+  it('hides without a list position, e.g. on a direct link', () => {
+    serveList();
+    renderNav({ listIndex: null });
+
+    expect(screen.queryByTestId('flight-neighbor-nav')).not.toBeInTheDocument();
+  });
+
+  it('hides when the list no longer has the flight at that position', () => {
+    serveList();
+    renderNav({ flightId: 'f5', listIndex: 7 });
+
+    expect(screen.queryByTestId('flight-neighbor-nav')).not.toBeInTheDocument();
+  });
+
+  it('does not trust a placeholder page shown while the real one loads', () => {
+    serveList({ placeholder: true });
     renderNav();
 
     expect(screen.queryByTestId('flight-neighbor-nav')).not.toBeInTheDocument();

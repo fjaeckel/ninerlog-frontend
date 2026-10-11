@@ -5,6 +5,9 @@ type ListFlightsParams = NonNullable<operations['listFlights']['parameters']['qu
 /** The flights list's filters and sort, without paging. */
 export type FlightListQuery = Omit<ListFlightsParams, 'page' | 'pageSize' | 'updatedSince'>;
 
+/** Flights per page in the flights list, table and card list alike. */
+export const FLIGHT_LIST_PAGE_SIZE = 20;
+
 export type FlightSortField = 'date' | 'totalTime' | 'createdAt';
 
 export const FLIGHT_SORT_FIELDS: FlightSortField[] = ['date', 'totalTime', 'createdAt'];
