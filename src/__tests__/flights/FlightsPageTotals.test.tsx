@@ -91,11 +91,11 @@ function setViewport(wide: boolean) {
   }));
 }
 
-function renderPage() {
+function renderPage(entry = '/flights') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/flights']}>
+      <MemoryRouter initialEntries={[entry]}>
         <Routes>
           <Route path="/flights" element={<FlightsPage />} />
         </Routes>
@@ -147,6 +147,17 @@ describe('FlightsPage — totals', () => {
 
     const table = screen.getByRole('table');
     expect(within(table).getByText(/7 flights · 10h 0m/)).toBeInTheDocument();
+  });
+
+  it('foots a search with the totals of what it matched', () => {
+    mockQueries(true);
+    renderPage('/flights?q=night%3E0');
+
+    expect(vi.mocked(useFlightsHook.useFlights)).toHaveBeenCalledWith(
+      expect.objectContaining({ q: 'night>0' }),
+      expect.anything()
+    );
+    expect(screen.getByTestId('flight-totals-row')).toHaveTextContent('42 flights');
   });
 
   it('shows a totals strip above the cards on a phone', () => {
