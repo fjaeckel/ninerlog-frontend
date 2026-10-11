@@ -860,7 +860,7 @@ export default function FlightsPage() {
                       </td>
                     )}
                     <td
-                      className={`px-3 py-2 whitespace-nowrap text-right bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-[linear-gradient(rgb(51_65_85/0.4),rgb(51_65_85/0.4))] transition-colors ${PINNED_CELL}`}
+                      className={`px-3 py-2 whitespace-nowrap text-right bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 dark:group-hover:bg-[linear-gradient(rgb(51_65_85/0.4),rgb(51_65_85/0.4))] transition-colors ${PINNED_CELL}`}
                       data-testid="flight-row-actions"
                     >
                       <button

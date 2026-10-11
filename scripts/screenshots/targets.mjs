@@ -24,6 +24,14 @@ export const TARGETS = [
   },
   { name: 'flights-narrow', path: '/flights', viewport: { width: 1024, height: 900 } },
   {
+    name: 'flights-row-hover',
+    path: '/flights',
+    act: async (page) => {
+      await page.locator('tbody tr[class*="cursor-pointer"]').nth(1).hover();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
     name: 'flights-custom-columns-ifr',
     path: '/flights',
     user: {
