@@ -9,6 +9,7 @@ import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { DocumentFileStrip } from '../documents/DocumentFileStrip';
 import { isGermanULAuthority, UL_RATING_KINDS, type ULRatingKind } from '../../lib/ultralight';
 import { ULAuthorityHint } from './ULAuthorityHint';
+import { countryName } from '../../lib/countries';
 
 const CLASS_TYPE_OPTIONS = [
   'SEP_LAND', 'SEP_SEA', 'MEP_LAND', 'MEP_SEA',
@@ -71,7 +72,7 @@ interface LicenseCardProps {
 }
 
 export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardProps) {
-  const { t } = useTranslation('licenses');
+  const { t, i18n } = useTranslation('licenses');
   const { fmtDate } = useFormatPrefs();
   const { data: classRatings, isLoading: ratingsLoading } = useClassRatings(license.id);
   const createRating = useCreateClassRating();
@@ -187,6 +188,12 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
               </dt>
               <dd className="mt-0.5 font-medium text-slate-700 dark:text-slate-200 break-words">
                 {license.issuingAuthority}
+                {license.issuingCountry && (
+                  <span className="font-normal text-slate-500 dark:text-slate-400">
+                    {' · '}
+                    <span title={t('card.issuingCountry')}>{countryName(license.issuingCountry, i18n.language)}</span>
+                  </span>
+                )}
               </dd>
             </div>
             <div>

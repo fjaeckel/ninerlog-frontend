@@ -213,32 +213,32 @@ export const aircraftStats = {
 export const licenses = [
   {
     id: 'l1', userId: 'u1', regulatoryAuthority: 'EASA', licenseType: 'PPL(A)', licenseNumber: 'DE.FCL.12345',
-    issueDate: '2019-06-14', issuingAuthority: 'LBA', requiresSeparateLogbook: false,
+    issueDate: '2019-06-14', issuingAuthority: 'LBA', requiresSeparateLogbook: false, issuingCountry: 'DE',
     createdAt: iso('2024-01-01'), updatedAt: iso('2026-01-01'),
   },
   {
     id: 'l2', userId: 'u1', regulatoryAuthority: 'FAA', licenseType: 'PPL', licenseNumber: 'US-4459102',
-    issueDate: '2021-09-02', issuingAuthority: 'FAA', requiresSeparateLogbook: true,
+    issueDate: '2021-09-02', issuingAuthority: 'FAA', requiresSeparateLogbook: true, issuingCountry: 'US',
     createdAt: iso('2024-01-01'), updatedAt: iso('2026-01-01'),
   },
   {
     id: 'l3', userId: 'u1', regulatoryAuthority: 'EASA', licenseType: 'SPL', licenseNumber: 'DE.FCL.S.2231',
-    issueDate: '2016-04-09', issuingAuthority: 'LBA', requiresSeparateLogbook: false,
+    issueDate: '2016-04-09', issuingAuthority: 'LBA', requiresSeparateLogbook: false, issuingCountry: 'DE',
     createdAt: iso('2024-01-01'), updatedAt: iso('2026-01-01'),
   },
   {
     id: 'l4', userId: 'u1', regulatoryAuthority: 'DULV', licenseType: 'UL', licenseNumber: 'UL-77410',
-    issueDate: '2018-07-21', issuingAuthority: 'DULV', requiresSeparateLogbook: false,
+    issueDate: '2018-07-21', issuingAuthority: 'DULV', requiresSeparateLogbook: false, issuingCountry: 'DE',
     createdAt: iso('2024-01-01'), updatedAt: iso('2026-01-01'),
   },
   {
     id: 'l5', userId: 'u1', regulatoryAuthority: 'EASA', licenseType: 'LAPL(A)', licenseNumber: 'DE.FCL.L.5521',
-    issueDate: '2022-05-03', issuingAuthority: 'LBA', requiresSeparateLogbook: false,
+    issueDate: '2022-05-03', issuingAuthority: 'LBA', requiresSeparateLogbook: false, issuingCountry: null,
     createdAt: iso('2024-01-01'), updatedAt: iso('2026-01-01'),
   },
   {
     id: 'l6', userId: 'u1', regulatoryAuthority: 'EASA', licenseType: 'GPL', licenseNumber: 'DE.FCL.G.0418',
-    issueDate: '2026-03-02', issuingAuthority: 'LBA', requiresSeparateLogbook: false,
+    issueDate: '2026-03-02', issuingAuthority: 'LBA', requiresSeparateLogbook: false, issuingCountry: null,
     createdAt: iso('2026-03-02'), updatedAt: iso('2026-03-02'),
   },
 ];
@@ -391,10 +391,110 @@ export const adminStats = {
   totalAircraft: 312, totalContacts: 517, activeSessions: 194, totalCredentials: 244,
   totalImports: 87, flightsThisMonth: 216, newUsersThisWeek: 6, lockedAccounts: 2, disabledAccounts: 1,
   totalCustomReports: 57,
+  strictLogbookUsers: 23, flightRevisions: 1418, flightCorrections: 96, voidedFlights: 41, logbookCertifications: 17,
   importsByFormat: { FOREFLIGHT_CSV: 31, LOGTEN_CSV: 18, MYFLIGHTBOOK_CSV: 14,
     VEREINSFLIEGER_EXTENDED_CSV: 9, SKYDEMON_CSV: 7, CSV: 5, VEREINSFLIEGER_CSV: 3 },
   cloudBackupDestinations: { total: 34, byProvider: { s3: 18, webdav: 9, dropbox: 7 } },
 };
+
+/** Strict logbook mode, switched on by the German PPL. */
+export const logbookMode = {
+  strict: true,
+  since: shift(-30),
+  draftWindow: 'flight_day',
+  overridesDownwardOnly: false,
+  latestCertifiedThrough: day(-14),
+  requiredBy: [
+    { licenseId: 'l1', regulatoryAuthority: 'EASA', licenseType: 'PPL(A)', issuingCountry: 'DE',
+      draftWindow: 'flight_day', basis: 'NfL 2212-21 §4.3.2' },
+  ],
+  suggestedBy: [
+    { licenseId: 'l2', regulatoryAuthority: 'FAA', licenseType: 'PPL', issuingCountry: 'US',
+      draftWindow: null, basis: 'AC 120-78B' },
+  ],
+  events: [{ strict: true, trigger: 'licence', licenseId: 'l1', createdAt: shift(-30) }],
+};
+
+/** Standard mode, after strict mode was switched on and off by hand. */
+export const logbookModeOff = {
+  strict: false,
+  since: null,
+  draftWindow: null,
+  overridesDownwardOnly: false,
+  latestCertifiedThrough: day(-14),
+  requiredBy: [],
+  suggestedBy: [
+    { licenseId: 'l2', regulatoryAuthority: 'FAA', licenseType: 'PPL', issuingCountry: 'US',
+      draftWindow: null, basis: 'AC 120-78B' },
+  ],
+  events: [
+    { strict: true, trigger: 'manual', licenseId: null, createdAt: shift(-30) },
+    { strict: false, trigger: 'manual', licenseId: null, createdAt: shift(-2) },
+  ],
+};
+
+/** Revisions per flight id, newest first. */
+export const flightRevisions = {
+  f1: [
+    {
+      id: 'rv3', flightId: 'f1', revisionNo: 3, kind: 'update', source: 'user_edit',
+      reason: 'On-block time corrected from the tech log', isCorrection: true, changedAt: shift(-1),
+      changes: [
+        { field: 'onBlockTime', oldValue: '10:45:00', newValue: '10:50:00' },
+        { field: 'totalTime', oldValue: 90, newValue: 95 },
+        { field: 'picTime', oldValue: 90, newValue: 95 },
+      ],
+    },
+    {
+      id: 'rv2', flightId: 'f1', revisionNo: 2, kind: 'update', source: 'recalc',
+      reason: null, isCorrection: false, changedAt: iso(day(-2) + 'T15:30:00Z'),
+      changes: [{ field: 'crossCountryTime', oldValue: 0, newValue: 90 }],
+    },
+    {
+      id: 'rv1', flightId: 'f1', revisionNo: 1, kind: 'update', source: 'user_edit',
+      reason: null, isCorrection: false, changedAt: iso(day(-2) + 'T12:05:00Z'),
+      changes: [
+        { field: 'remarks', oldValue: null, newValue: 'Pattern work before the cross-country' },
+        {
+          field: 'crewMembers',
+          oldValue: [{ name: 'Amelia Earhart', role: 'Student' }],
+          newValue: [{ name: 'Amelia Earhart', role: 'Student' }, { name: 'Bessie Coleman', role: 'Passenger' }],
+        },
+      ],
+    },
+  ],
+  fv1: [
+    {
+      id: 'rv5', flightId: 'fv1', revisionNo: 2, kind: 'delete', source: 'user_edit',
+      reason: 'Duplicate of the entry imported from the club system', isCorrection: false, changedAt: shift(-3),
+      changes: [],
+    },
+    {
+      id: 'rv4', flightId: 'fv1', revisionNo: 1, kind: 'update', source: 'aircraft_rename',
+      reason: null, isCorrection: false, changedAt: shift(-6),
+      changes: [{ field: 'aircraftReg', oldValue: 'D-EABD', newValue: 'D-EABC' }],
+    },
+  ],
+};
+
+/** Deleted flights kept as void records, newest first. */
+export const voidedFlights = [
+  {
+    flightId: 'fv1', revisionId: 'rv5', deletedAt: shift(-3), reason: 'Duplicate of the entry imported from the club system',
+    source: 'user_edit', isCorrection: false, date: day(-7), aircraftReg: 'D-EABC', aircraftType: 'C172',
+    departureIcao: 'EDDF', arrivalIcao: 'EDDH', totalTime: 95, remarks: null,
+  },
+  {
+    flightId: 'fv2', revisionId: 'rv6', deletedAt: shift(-9), reason: null,
+    source: 'user_edit', isCorrection: true, date: day(-24), aircraftReg: 'D-EFGH', aircraftType: 'PA28',
+    departureIcao: 'EDMO', arrivalIcao: 'EDMO', totalTime: 40, remarks: 'Aborted take-off, logged by mistake',
+  },
+];
+
+export const logbookCertifications = [
+  { id: 'c2', certifiedThrough: day(-14), certifiedAt: shift(-13) },
+  { id: 'c1', certifiedThrough: day(-45), certifiedAt: shift(-44) },
+];
 
 export const adminConfig = {
   adminCount: 2,
@@ -769,6 +869,9 @@ const ROUTES = {
   '/auth/webauthn/credentials': [],
   '/auth/sessions': sessions,
   '/flight-sessions/current': null,
+  '/logbook/mode': logbookMode,
+  '/logbook/certifications': logbookCertifications,
+  '/flights/voided': voidedFlights,
 };
 
 /**
@@ -783,6 +886,8 @@ export function bodyFor(pathname) {
   if (classRatingsMatch) return classRatings[classRatingsMatch[1]] ?? [];
   if (/^\/licenses\/[^/]+\/currency$/.test(path)) return currency;
   if (/^\/licenses\/[^/]+\/statistics$/.test(path)) return statistics;
+  const revisionsMatch = path.match(/^\/flights\/([^/]+)\/revisions$/);
+  if (revisionsMatch) return flightRevisions[revisionsMatch[1]] ?? [];
   const flightMatch = path.match(/^\/flights\/([^/]+)$/);
   if (flightMatch) return flights.find((f) => f.id === flightMatch[1]) ?? flights[0];
   const reportResultMatch = path.match(/^\/reports\/custom\/([^/]+)\/result$/);

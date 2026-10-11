@@ -13,7 +13,8 @@
     "licenseNumber": "License Number",
     "issueDate": "Issue Date",
     "issuingAuthority": "Issuing Authority",
-    "requiresSeparateLogbook": "Requires Separate Logbook"
+    "requiresSeparateLogbook": "Requires Separate Logbook",
+    "issuingCountry": "Issuing Country"
   },
   "classRatings": "Class Ratings",
   "addClassRating": "Add Class Rating",
@@ -52,7 +53,9 @@
     "licenseTypePlaceholder": "e.g. PPL",
     "issuingAuthorityPlaceholder": "LBA (Germany)",
     "failedToSave": "Failed to save license. Please try again.",
-    "ulAuthorityHint": "Ultralight recency (LuftPersV §45) is only tracked for LBA, DULV or DAeC. With another authority, ultralight ratings are tracked by expiry date only."
+    "ulAuthorityHint": "Ultralight recency (LuftPersV §45) is only tracked for LBA, DULV or DAeC. With another authority, ultralight ratings are tracked by expiry date only.",
+    "issuingCountryNone": "Not set",
+    "issuingCountryHelp": "The state that issued the licence. NinerLog applies that country’s logbook rules only when it is set."
   },
   "card": {
     "regulatoryAuthority": "Regulatory Authority",
@@ -71,7 +74,8 @@
     "noExpiry": "No expiry",
     "expired": "Expired",
     "expiresInDays": "Expires in {{days}}d",
-    "ulKind": "Ultralight kind"
+    "ulKind": "Ultralight kind",
+    "issuingCountry": "Issuing Country"
   },
   "classTypeLabels": {
     "SEP_LAND": "SEP (Land)",
@@ -86,5 +90,11 @@
     "ULTRALIGHT": "Ultralight",
     "GYROPLANE": "Gyroplane",
     "OTHER": "Other"
+  },
+  "countryPrompt": {
+    "title": "Add the issuing country",
+    "body": "Some countries require a logbook that keeps every change; NinerLog can apply those rules only when it knows which country issued your licence.",
+    "add": "Add country to {{licence}}",
+    "dismiss": "Dismiss"
   }
 }

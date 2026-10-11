@@ -8,11 +8,20 @@
  *   anonymous  do not seed a session — for the public/auth routes
  *   user       fields merged over the fixture user, in the session and /users/me
  *   viewport   a desktop viewport other than the default 1440×1100
- *   respond(method, path, searchParams)  a { status, body } answer overriding
- *              the fixtures, or undefined to fall through to them
+ *   routes     `{ path: body }` served in place of the default fixtures
+ *   respond(method, path, searchParams, state)  a { status, body } answer
+ *              overriding the fixtures, or undefined to fall through to them;
+ *              `state` lives for one shot
  *
  * Add a target whenever you add a screen.
  */
+import { licenses, logbookMode, logbookModeOff } from './fixtures.mjs';
+
+const editFlight = async (page) => {
+  await page.getByRole('button', { name: /edit flight|flug .*bearbeiten/i }).first().click();
+  await page.waitForTimeout(600);
+};
+
 async function openRestoreTab(page) {
   await page.getByRole('tab', { name: /^(restore json backup|json-sicherung wiederherstellen)$/i }).click();
   await page.waitForTimeout(300);
@@ -43,6 +52,7 @@ const RESTORE_SUCCESS = {
   body: {
     aircraftImported: 3, aircraftSkipped: 0, licensesImported: 2, classRatingsImported: 4,
     credentialsImported: 2, flightsImported: 214, crewMembersImported: 31, contactsImported: 12,
+    flightRevisionsImported: 37, logbookCertificationsImported: 5,
     contactsSkipped: 0, contactsCreated: 3, customCurrencyRulesImported: 2, customReportsImported: 2,
     notificationPreferencesImported: true, flightBaselineImported: true, mode: 'restore',
     warnings: [
@@ -197,6 +207,70 @@ export const TARGETS = [
       await page.waitForTimeout(200);
     },
   },
+  {
+    name: 'flight-detail-history-system',
+    path: '/flights/f1',
+    act: async (page) => {
+      await page.getByRole('button', { name: /show 1 system change|1 systemänderung anzeigen/i }).click();
+      await page.getByRole('heading', { name: /^(history|verlauf)$/i }).scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flights-modal-edit-correction',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'PUT' && path === '/flights/f1'
+        ? {
+            status: 422,
+            body: { error: 'This edit is a correction and needs a reason', code: 'correction_reason_required' },
+          }
+        : undefined,
+    act: async (page) => {
+      await editFlight(page);
+      await page.locator('#offBlockTime').fill('09:05');
+      await page.locator('#onBlockTime').fill('10:50');
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForTimeout(600);
+      await page.locator('#correction-reason').fill('On-block time corrected from the tech log');
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'flights-modal-edit-override',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'PUT' && path === '/flights/f1'
+        ? {
+            status: 422,
+            body: {
+              error: 'A manual override may only reduce an auto-calculated time',
+              code: 'override_exceeds_calculated',
+              details: [{ field: 'nightTime', message: 'Must not exceed the calculated 0 min' }],
+            },
+          }
+        : undefined,
+    act: async (page) => {
+      await editFlight(page);
+      await page.locator('#offBlockTime').fill('09:05');
+      await page.locator('#onBlockTime').fill('10:50');
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForTimeout(600);
+      await page.locator('#nightTime').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'flight-delete-strict',
+    path: '/flights/f1',
+    act: async (page) => {
+      await page.getByRole('button', { name: /delete flight|flug .*löschen/i }).first().click();
+      await page.waitForTimeout(400);
+      await page.locator('#delete-reason').fill('Duplicate entry');
+    },
+  },
+  { name: 'flights-voided', path: '/flights/voided' },
+  { name: 'flight-history-voided', path: '/flights/fv1/history' },
   { name: 'flight-detail-simulator', path: '/flights/f6' },
   { name: 'flight-detail-signed', path: '/flights/f2' },
   {
@@ -257,6 +331,36 @@ export const TARGETS = [
       await page.waitForTimeout(300);
       await page.locator('select').first().selectOption('ULTRALIGHT');
       await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'licenses-modal-country',
+    path: '/licenses',
+    act: async (page) => {
+      await page.getByRole('button', { name: /add country to easa lapl|staat für easa lapl/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#issuingCountry').selectOption('CH');
+      await page.locator('#issuingCountry').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'licenses-strict-notice',
+    path: '/licenses',
+    respond: (method, path, _params, state) => {
+      if (method === 'PATCH' && path === '/licenses/l5') {
+        state.saved = true;
+        return { body: { ...licenses.find((l) => l.id === 'l5'), issuingCountry: 'CH' } };
+      }
+      if (path === '/logbook/mode') return { body: state.saved ? logbookMode : logbookModeOff };
+      return undefined;
+    },
+    act: async (page) => {
+      await page.getByRole('button', { name: /add country to easa lapl|staat für easa lapl/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#issuingCountry').selectOption('CH');
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForTimeout(1200);
     },
   },
   { name: 'credentials', path: '/credentials' },
@@ -359,6 +463,33 @@ export const TARGETS = [
     },
   },
   {
+    name: 'profile-logbook',
+    path: '/profile',
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: 'profile-logbook-off',
+    path: '/profile',
+    routes: { '/logbook/mode': logbookModeOff },
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: 'profile-logbook-records',
+    path: '/profile',
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+      await page.getByRole('button', { name: /^(what ninerlog records|was ninerlog aufzeichnet)$/i }).click();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
     name: 'update-indicator',
     path: '/dashboard',
     act: async (page) => {
@@ -390,6 +521,7 @@ export const TARGETS = [
   { name: 'empty-licenses', path: '/licenses', empty: true },
   { name: 'empty-credentials', path: '/credentials', empty: true },
   { name: 'empty-reports-custom', path: '/reports#custom', empty: true },
+  { name: 'empty-flights-voided', path: '/flights/voided', empty: true },
 
   // Error states — reached by failing the page's own list request.
   { name: 'error-flights', path: '/flights', fail: true },
@@ -413,4 +545,5 @@ export const EMPTY_BODIES = {
   '/credentials': [],
   '/contacts': [],
   '/reports/custom': [],
+  '/flights/voided': [],
 };
