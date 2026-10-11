@@ -35,6 +35,9 @@ const SORT_FIELDS: SortField[] = ['date', 'totalTime', 'createdAt'];
 const TOOLBAR_ACTION =
   'inline-flex items-center justify-center gap-1.5 w-11 sm:w-auto sm:px-3 h-11 rounded-lg text-sm font-medium transition-colors border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700';
 
+/** Keeps the edit/delete column on screen while the table scrolls sideways. */
+const PINNED_CELL = 'sticky right-0 z-[1] shadow-[-8px_0_8px_-8px_rgb(15_23_42/0.15)]';
+
 /** A run of consecutive cards sharing a heading in the mobile list. */
 interface FlightGroup {
   key: string;
@@ -737,7 +740,7 @@ export default function FlightsPage() {
                       {t('flights:tableRemarks')}
                     </th>
                   )}
-                  <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400" />
+                  <th className={`px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 ${PINNED_CELL}`} />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -762,7 +765,7 @@ export default function FlightsPage() {
                     {group.flights.map((flight) => (
                   <tr
                     key={flight.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition-colors"
+                    className="group hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition-colors"
                     onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
                   >
                     <td className="px-3 py-2 whitespace-nowrap text-slate-800 dark:text-slate-200">
@@ -857,7 +860,10 @@ export default function FlightsPage() {
                         </span>
                       </td>
                     )}
-                    <td className="px-3 py-2 whitespace-nowrap text-right">
+                    <td
+                      className={`px-3 py-2 whitespace-nowrap text-right bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-[linear-gradient(rgb(51_65_85/0.4),rgb(51_65_85/0.4))] transition-colors ${PINNED_CELL}`}
+                      data-testid="flight-row-actions"
+                    >
                       <button
                         onClick={(e) => { e.stopPropagation(); handleEdit(flight.id); }}
                         className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mr-2 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
@@ -920,7 +926,7 @@ export default function FlightsPage() {
                       </td>
                     ))}
                     {columns.remarksRevealClass && <td className={columns.remarksRevealClass} />}
-                    <td />
+                    <td className={`bg-slate-50 dark:bg-slate-800 ${PINNED_CELL}`} />
                   </tr>
                 </tfoot>
               )}

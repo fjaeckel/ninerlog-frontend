@@ -96,6 +96,7 @@ const onboardingStorage = JSON.stringify({ state: { completedUserIds: [user.id] 
 async function shoot(browser, target, theme) {
   const context = await browser.newContext({
     ...device,
+    viewport: target.viewport ?? device.viewport,
     deviceScaleFactor: 2,
     colorScheme: theme,
     // Native date/time inputs render in the *browser's* locale, not the app's,

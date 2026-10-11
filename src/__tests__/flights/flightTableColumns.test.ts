@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
+  TYPICAL_DESKTOP_TABLE_WIDTH,
+  columnsHiddenAt,
   DEFAULT_CUSTOM_COLUMNS,
   FLIGHT_COLUMNS,
   flightFunctionKind,
@@ -359,6 +361,28 @@ function revealWidth(revealClass: string): number {
   if (!match) throw new Error(`no reveal threshold in ${revealClass}`);
   return Number(match[1]);
 }
+
+describe('columnsHiddenAt', () => {
+  it('lists nothing for a selection that fits', () => {
+    expect(columnsHiddenAt(['picTime', 'nightTime', 'landings', 'picName'], TYPICAL_DESKTOP_TABLE_WIDTH)).toEqual([]);
+  });
+
+  it('lists the picked columns past the width, in display order, remarks included', () => {
+    const everything = FLIGHT_COLUMNS.map((c) => c.key);
+    const hidden = columnsHiddenAt(everything, TYPICAL_DESKTOP_TABLE_WIDTH);
+
+    expect(hidden).toContain('remarks');
+    expect(hidden).toContain('instructorComments');
+    expect(hidden).not.toContain('picTime');
+    expect(hidden).not.toContain('landings');
+    expect(hidden).toEqual(everything.filter((key) => hidden.includes(key)));
+  });
+
+  it('never lists a column that was not picked', () => {
+    expect(columnsHiddenAt(['picTime'], 100)).toEqual(['picTime']);
+    expect(columnsHiddenAt(['landings', 'offOnBlock'], 100)).toEqual([]);
+  });
+});
 
 describe('column registry', () => {
   it('does not offer the columns that are always shown', () => {

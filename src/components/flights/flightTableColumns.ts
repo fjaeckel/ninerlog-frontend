@@ -574,3 +574,29 @@ export function selectFlightColumns(
     remarksRevealClass: has('remarks') ? REMARKS_TIERS[tiersTaken] ?? null : null,
   };
 }
+
+/** Table width the flights list gets on a 1920px-wide desktop window. */
+export const TYPICAL_DESKTOP_TABLE_WIDTH = 1600;
+
+/** The container width a reveal class switches its column on at. */
+export function revealWidth(revealClass: string): number {
+  const match = /@min-\[(\d+)px\]/.exec(revealClass);
+  return match ? Number(match[1]) : 0;
+}
+
+/**
+ * The picked columns a table `width` pixels wide cannot show, in display
+ * order. Columns without a reveal tier always show and are never listed.
+ */
+export function columnsHiddenAt(columns: FlightColumnKey[], width: number): FlightColumnKey[] {
+  const layout = selectFlightColumns([], { mode: 'custom', columns });
+  const tiered = [
+    ...layout.time.map((c) => ({ key: c.key, revealClass: c.revealClass })),
+    ...layout.details.map((c) => ({ key: c.key, revealClass: c.revealClass })),
+  ];
+  const hidden = new Set(tiered.filter((c) => revealWidth(c.revealClass) > width).map((c) => c.key));
+  if (columns.includes('remarks') && (!layout.remarksRevealClass || revealWidth(layout.remarksRevealClass) > width)) {
+    hidden.add('remarks');
+  }
+  return FLIGHT_COLUMNS.map((c) => c.key).filter((key) => hidden.has(key));
+}

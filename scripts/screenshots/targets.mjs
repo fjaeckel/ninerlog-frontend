@@ -7,6 +7,7 @@
  *   fail       serve 500s for the page's own list, to capture the error state
  *   anonymous  do not seed a session — for the public/auth routes
  *   user       fields merged over the fixture user, in the session and /users/me
+ *   viewport   a desktop viewport other than the default 1440×1100
  *
  * Add a target whenever you add a screen.
  */
@@ -21,6 +22,7 @@ export const TARGETS = [
       flightListColumns: ['function', 'landings', 'instructorName', 'crew'],
     },
   },
+  { name: 'flights-narrow', path: '/flights', viewport: { width: 1024, height: 900 } },
   {
     name: 'flights-custom-columns-ifr',
     path: '/flights',
@@ -233,6 +235,17 @@ export const TARGETS = [
   { name: 'import', path: '/import' },
   { name: 'help', path: '/help' },
   { name: 'profile', path: '/profile' },
+  {
+    name: 'profile-columns-too-wide',
+    path: '/profile',
+    user: {
+      flightListColumnMode: 'custom',
+      flightListColumns: [
+        'picTime', 'nightTime', 'dualTime', 'ifrTime', 'crossCountryTime', 'sicTime', 'picusTime',
+        'soloTime', 'picName', 'instructorName', 'crew', 'remarks',
+      ],
+    },
+  },
   {
     name: 'profile-custom-columns',
     path: '/profile',
