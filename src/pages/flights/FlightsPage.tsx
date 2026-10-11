@@ -1,8 +1,8 @@
 import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
-import { ArrowDown, ArrowRight, ArrowUp, BookmarkPlus, FileSpreadsheet, ListFilter, Loader2, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
+import { Archive, ArrowDown, ArrowRight, ArrowUp, BookmarkPlus, FileSpreadsheet, ListFilter, Loader2, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { useFlights, useInfiniteFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
@@ -12,7 +12,8 @@ import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { CustomReportDialog } from '../../components/reports/CustomReportDialog';
 import { definitionFromSearchParams } from '../../lib/customReports';
 import { exportFlightSearchCSV } from '../../hooks/useExport';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { DeleteFlightDialog } from '../../components/logbook/DeleteFlightDialog';
+import { useIsStrictLogbook } from '../../hooks/useLogbook';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { FormModal } from '../../components/ui/FormModal';
@@ -119,6 +120,7 @@ export default function FlightsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
+  const strictLogbook = useIsStrictLogbook();
 
   // Search, filters, sort and page live in the URL query string.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -319,9 +321,9 @@ export default function FlightsPage() {
     setDeleteTarget(id);
   };
 
-  const confirmDelete = async () => {
+  const confirmDelete = async (reason?: string) => {
     if (deleteTarget) {
-      await deleteFlight.mutateAsync(deleteTarget);
+      await deleteFlight.mutateAsync({ id: deleteTarget, reason });
       setDeleteTarget(null);
     }
   };
@@ -399,10 +401,18 @@ export default function FlightsPage() {
         titleAdornment={<HelpLink topic="flights" />}
         className="mb-4"
         action={
-          <button onClick={() => setShowForm(true)} className="btn-primary whitespace-nowrap">
-            <Plus className="w-4 h-4" aria-hidden="true" />
-            {t('flights:logFlight')}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {strictLogbook && (
+              <Link to="/flights/voided" className="btn-secondary whitespace-nowrap">
+                <Archive className="w-4 h-4" aria-hidden="true" />
+                {t('logbook:voided.link')}
+              </Link>
+            )}
+            <button onClick={() => setShowForm(true)} className="btn-primary whitespace-nowrap">
+              <Plus className="w-4 h-4" aria-hidden="true" />
+              {t('flights:logFlight')}
+            </button>
+          </div>
         }
       />
 
@@ -872,13 +882,17 @@ export default function FlightsPage() {
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(flight.id); }}
-                        className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
-                        aria-label={t('flights:deleteFlightAriaLabel', { departure: flight.departureIcao || '', arrival: flight.arrivalIcao || '' })}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {flight.signatureId ? (
+                        <span className="inline-block min-w-[44px]" aria-hidden="true" />
+                      ) : (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(flight.id); }}
+                          className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
+                          aria-label={t('flights:deleteFlightAriaLabel', { departure: flight.departureIcao || '', arrival: flight.arrivalIcao || '' })}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                     ))}
@@ -968,14 +982,10 @@ export default function FlightsPage() {
       )}
 
       {/* Delete Confirm Dialog */}
-      <ConfirmDialog
+      <DeleteFlightDialog
         open={!!deleteTarget}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        title={t('flights:deleteTitle')}
-        description={t('flights:deleteDescription')}
-        confirmLabel={t('flights:deleteFlight')}
-        variant="danger"
         isLoading={deleteFlight.isPending}
       />
     </PageWrapper>

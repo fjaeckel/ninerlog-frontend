@@ -11,7 +11,7 @@ import { useCreateContact } from '../../hooks/useContacts';
 import { formatDuration, blockMinutes, type TimeDisplayFormat } from '../../lib/duration';
 import { airportDisplay, normalizeLocation } from '../../lib/airport';
 import { cn } from '../../lib/cn';
-import { extractApiError } from '../../lib/errors';
+import { extractApiCode, extractApiError, extractApiFieldErrors } from '../../lib/errors';
 import { useAuthStore } from '../../stores/authStore';
 import { isCanonicalTime, type ClockFormat } from '../../lib/timeOfDay';
 import { TimeOfDayInput } from '../ui/TimeOfDayInput';
@@ -19,6 +19,13 @@ import type { Aircraft } from '../../hooks/useAircraft';
 import type { FlightCrewMemberInput } from '../../types/api';
 import { CrewEditor } from './CrewEditor';
 import { crewDerivedNames, toCrewInputs } from './crewRoles';
+import { CorrectionReasonDialog } from '../logbook/CorrectionReasonDialog';
+import type { components } from '../../api/schema';
+
+type FlightUpdate = components['schemas']['FlightUpdate'];
+
+/** Form fields that carry an `*Override` flag on the server. */
+const OVERRIDE_FORM_FIELDS = ['nightTime', 'crossCountryTime', 'takeoffsDay', 'takeoffsNight', 'multiPilotTime'] as const;
 
 /** Returns the current UTC time as "HH:MM". Used to pre-fill Off-Block on new flights. */
 const getCurrentUtcTime = (): string => {
@@ -125,6 +132,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   // Form error state
   const [apiError, setApiError] = useState<string | null>(null);
 
+  // Strict-mode correction awaiting a reason
+  const [pendingCorrection, setPendingCorrection] = useState<FlightUpdate | null>(null);
+  const [correctionError, setCorrectionError] = useState<string | null>(null);
+
   // Collapsible section state
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     basic: true,
@@ -158,6 +169,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     watch,
     setValue,
     getValues,
+    setError,
   } = useForm<FlightFormData>({
     resolver: zodResolver(flightSchema),
     defaultValues: {
@@ -378,9 +390,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         id={field}
         min="0"
         step="1"
-        className="input"
+        className={cn('input', errors[field] && 'input-error')}
         placeholder={t('form.autoPlaceholder')}
       />
+      {overrideError(field)}
       <p className="form-helper flex flex-wrap items-baseline justify-between gap-x-2">
         <span>{overrideTimeHelper(field, autoHint)}</span>
         {watch(field) !== undefined && (
@@ -507,15 +520,55 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           };
 
       if (isEditing && flightId) {
-        await updateFlight.mutateAsync({ id: flightId, data: basePayload });
+        try {
+          await updateFlight.mutateAsync({ id: flightId, data: basePayload });
+        } catch (error) {
+          if (extractApiCode(error) === 'correction_reason_required') {
+            setApiError(null);
+            setCorrectionError(null);
+            setPendingCorrection(basePayload as FlightUpdate);
+            return;
+          }
+          throw error;
+        }
       } else {
         await createFlight.mutateAsync(basePayload);
       }
       onClose();
     } catch (error) {
-      setApiError(extractApiError(error, t('form.failedToSave')));
+      showSubmitError(error);
     }
   };
+
+  const showSubmitError = (error: unknown) => {
+    if (extractApiCode(error) === 'override_exceeds_calculated') {
+      const fieldErrors = extractApiFieldErrors(error);
+      for (const field of OVERRIDE_FORM_FIELDS) {
+        if (fieldErrors[field]) setError(field, { type: 'server', message: fieldErrors[field] });
+      }
+    }
+    setApiError(extractApiError(error, t('form.failedToSave')));
+  };
+
+  const submitCorrection = async (reason: string) => {
+    if (!pendingCorrection || !flightId) return;
+    try {
+      setCorrectionError(null);
+      await updateFlight.mutateAsync({ id: flightId, data: { ...pendingCorrection, correctionReason: reason } });
+      setPendingCorrection(null);
+      onClose();
+    } catch (error) {
+      if (extractApiCode(error) === 'override_exceeds_calculated') {
+        setPendingCorrection(null);
+        showSubmitError(error);
+        return;
+      }
+      setCorrectionError(extractApiError(error, t('form.failedToSave')));
+    }
+  };
+
+  const overrideError = (field: (typeof OVERRIDE_FORM_FIELDS)[number]) =>
+    errors[field]?.message ? <p className="form-error">{errors[field]?.message}</p> : null;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-full overflow-x-hidden">
@@ -952,9 +1005,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               type="number"
               id="takeoffsDay"
               min="0"
-              className="input"
+              className={cn('input', errors.takeoffsDay && 'input-error')}
               placeholder={t('form.autoPlaceholder')}
             />
+            {overrideError('takeoffsDay')}
           </div>
           <div>
               <label htmlFor="takeoffsNight" className="form-label">
@@ -965,9 +1019,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 type="number"
                 id="takeoffsNight"
                 min="0"
-                className="input"
+                className={cn('input', errors.takeoffsNight && 'input-error')}
                 placeholder={t('form.autoPlaceholder')}
               />
+              {overrideError('takeoffsNight')}
             </div>
           <div>
             <label htmlFor="landings" className="form-label">
@@ -1292,8 +1347,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
                 id="multiPilotTime"
                 step="1"
                 min="0"
-                className="input"
+                className={cn('input', errors.multiPilotTime && 'input-error')}
               />
+              {overrideError('multiPilotTime')}
               <p className="form-helper">
                 {crewMembers.some((m) => m.role === 'PIC' || m.role === 'SIC')
                   ? t('form.multiPilotAutoHelper')
@@ -1443,6 +1499,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           {t('common:cancel')}
         </button>
       </div>
+
+      <CorrectionReasonDialog
+        open={pendingCorrection !== null}
+        onCancel={() => setPendingCorrection(null)}
+        onSubmit={submitCorrection}
+        isSubmitting={updateFlight.isPending}
+        error={correctionError}
+      />
     </form>
   );
 }

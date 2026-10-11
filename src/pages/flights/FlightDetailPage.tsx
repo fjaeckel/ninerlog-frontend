@@ -8,7 +8,8 @@ import FlightForm from '../../components/flights/FlightForm';
 import FlightRouteCard from '../../components/flights/FlightRouteCard';
 import FlightRouteHeading from '../../components/flights/FlightRouteHeading';
 import FlightNeighborNav from '../../components/flights/FlightNeighborNav';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { DeleteFlightDialog } from '../../components/logbook/DeleteFlightDialog';
+import { FlightHistoryCard } from '../../components/logbook/FlightHistory';
 import { FormModal } from '../../components/ui/FormModal';
 import { PageWrapper } from '../../components/ui/PageWrapper';
 import { SignatureSection } from '../../components/flights/SignatureSection';
@@ -107,8 +108,8 @@ export default function FlightDetailPage() {
   const hasRemarksData =
     !!flight.remarks || !!flight.instructorName || !!flight.instructorComments || !!flight.endorsements;
 
-  const handleDelete = async () => {
-    await deleteFlight.mutateAsync(flight.id);
+  const handleDelete = async (reason?: string) => {
+    await deleteFlight.mutateAsync({ id: flight.id, reason });
     navigate(flightsListPath);
   };
 
@@ -245,25 +246,23 @@ export default function FlightDetailPage() {
           <Pencil className="w-4 h-4" />
           {t('detail.edit')}
         </button>
-        <button
-          onClick={() => setShowDeleteConfirm(true)}
-          className="btn-secondary min-h-[44px] flex-1 sm:flex-none hover:bg-red-50 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-          aria-label={t('deleteFlightAriaLabel', { departure: flight.departureIcao, arrival: flight.arrivalIcao })}
-        >
-          <Trash2 className="w-4 h-4" />
-          {t('detail.delete')}
-        </button>
+        {!flight.signatureId && (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="btn-secondary min-h-[44px] flex-1 sm:flex-none hover:bg-red-50 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+            aria-label={t('deleteFlightAriaLabel', { departure: flight.departureIcao, arrival: flight.arrivalIcao })}
+          >
+            <Trash2 className="w-4 h-4" />
+            {t('detail.delete')}
+          </button>
+        )}
       </div>
 
       {/* Delete Confirm Dialog */}
-      <ConfirmDialog
+      <DeleteFlightDialog
         open={showDeleteConfirm}
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirm(false)}
-        title={t('deleteTitle')}
-        description={t('deleteDescription')}
-        confirmLabel={t('deleteFlight')}
-        variant="danger"
         isLoading={deleteFlight.isPending}
       />
 
@@ -416,6 +415,8 @@ export default function FlightDetailPage() {
 
           {/* Crew Members */}
           <FlightCrewCard flight={flight} />
+
+          <FlightHistoryCard flightId={flight.id} />
         </div>
       </div>
 

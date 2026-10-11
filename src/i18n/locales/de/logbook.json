@@ -1,0 +1,124 @@
+{
+  "records": {
+    "title": "Was NinerLog aufzeichnet",
+    "logbook": "Dein Flugbuch: Flüge, Luftfahrzeuge, Lizenzen und alles andere, was du einträgst.",
+    "standard": "Im Standardmodus überschreiben Änderungen die alten Werte und Löschen löscht; es wird kein Verlauf gespeichert.",
+    "strict": "Wenn du den strengen Modus einschaltest oder eine Lizenz aus einem Land hinzufügst, das ihn verlangt: jede spätere Änderung an einem Flug mit altem Wert, Datum und Grund, und gelöschte Flüge als stornierte Einträge. Das bleibt bei deinem Flugbuch, bis du dein Konto löschst.",
+    "never": "Nie mit dem Verlauf gespeichert: IP-Adresse, Gerät, Browser, Standort.",
+    "link": "Was NinerLog aufzeichnet"
+  },
+  "notice": {
+    "title": "Strenger Flugbuchmodus ist an",
+    "byLicence": "Deine Lizenz {{licence}} verlangt ein Flugbuch, das jede Änderung festhält – NinerLog zeichnet sie ab jetzt auf.",
+    "manual": "Ab jetzt hält NinerLog jede Änderung an deinen Flügen fest.",
+    "ok": "Verstanden"
+  },
+  "offer": {
+    "title": "Änderungsverlauf führen?",
+    "body": "Die Regeln für deine Lizenz {{licence}} empfehlen ein Flugbuch, das jede Änderung festhält. Du kannst den strengen Modus jetzt oder später in den Einstellungen einschalten.",
+    "enable": "Strengen Modus einschalten",
+    "later": "Nicht jetzt"
+  },
+  "history": {
+    "title": "Verlauf",
+    "since": "Verlauf wird seit {{date}} aufgezeichnet.",
+    "empty": "Noch keine Änderungen aufgezeichnet.",
+    "error": "Der Verlauf konnte nicht geladen werden.",
+    "correction": "Korrektur",
+    "deleted": "Gelöscht",
+    "reason": "Grund: {{reason}}",
+    "noFieldChanges": "Keine Feldänderungen",
+    "showSystem_one": "{{count}} Systemänderung anzeigen",
+    "showSystem_other": "{{count}} Systemänderungen anzeigen",
+    "hideSystem": "Systemänderungen ausblenden",
+    "crew": "Besatzung",
+    "unset": "—",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "source": {
+    "user_edit": "Bearbeitet",
+    "recalc": "Neu berechnet",
+    "aircraft_rename": "Luftfahrzeug umbenannt",
+    "import": "Importiert",
+    "unknown": "Geändert"
+  },
+  "correction": {
+    "title": "Grund der Korrektur",
+    "body": "Dieser Eintrag lässt sich nicht mehr frei ändern: Sein Entwurfszeitraum ist abgelaufen, er wurde unterschrieben oder liegt in einem Zeitraum, den du bestätigt hast. Die Änderung wird als Korrektur mit ihrem Grund festgehalten.",
+    "label": "Grund",
+    "placeholder": "z. B. On-Block-Zeit laut Bordbuch korrigiert",
+    "submit": "Korrektur speichern",
+    "required": "Gib einen Grund für die Korrektur ein."
+  },
+  "delete": {
+    "reasonLabel": "Grund (optional)",
+    "reasonHelp": "Der Flug bleibt mit diesem Grund als stornierter Eintrag erhalten.",
+    "reasonPlaceholder": "z. B. Doppelter Eintrag",
+    "strictDescription": "Der Flug verlässt dein Flugbuch und bleibt mit dem angegebenen Grund als stornierter Eintrag erhalten."
+  },
+  "voided": {
+    "title": "Stornierte Einträge",
+    "description": "Im strengen Modus gelöschte Flüge, aufbewahrt als stornierte Einträge.",
+    "link": "Stornierte Einträge",
+    "empty": "Keine stornierten Einträge",
+    "emptyDescription": "Flüge, die du im strengen Modus löschst, erscheinen hier.",
+    "error": "Die stornierten Einträge konnten nicht geladen werden.",
+    "deletedAt": "Gelöscht",
+    "date": "Flugdatum",
+    "aircraft": "Luftfahrzeug",
+    "route": "Strecke",
+    "total": "Gesamt",
+    "reason": "Grund",
+    "viewHistory": "Verlauf",
+    "viewHistoryAria": "Verlauf des Flugs am {{date}} mit {{reg}}"
+  },
+  "historyPage": {
+    "title": "Flugverlauf",
+    "voidedTitle": "Stornierter Flug",
+    "back": "Zurück zum Flug",
+    "backToVoided": "Zurück zu den stornierten Einträgen",
+    "notFound": "Für diesen Flug wurde kein Verlauf aufgezeichnet."
+  },
+  "settings": {
+    "title": "Flugbuch",
+    "strict": "Strenger Flugbuchmodus",
+    "strictHelp": "Hält jede Änderung an einem Flug mit altem Wert, Datum und Grund fest und bewahrt gelöschte Flüge als stornierte Einträge auf.",
+    "since": "Verlauf wird seit {{date}} aufgezeichnet.",
+    "requiredBy": "Verlangt von {{licences}}.",
+    "suggestedBy": "Empfohlen für {{licences}}.",
+    "draftWindow": {
+      "flight_day": "Änderungen sind bis zum Ende des Flugtags frei; spätere Änderungen sind Korrekturen.",
+      "hours_48": "Änderungen sind 48 Stunden nach dem Anlegen eines Eintrags frei; spätere Änderungen sind Korrekturen."
+    },
+    "overridesDownwardOnly": "Manuelle Überschreibungen dürfen eine automatisch berechnete Zeit nur verringern.",
+    "turnOffTitle": "Strengen Modus ausschalten?",
+    "turnOffWarning": "{{licences}} verlangt ein Flugbuch, das jede Änderung festhält. Beim Ausschalten endet die Aufzeichnung; der bisherige Verlauf bleibt bei deinem Flugbuch.",
+    "turnOff": "Ausschalten",
+    "updateFailed": "Der Flugbuchmodus konnte nicht geändert werden.",
+    "loadFailed": "Der Flugbuchmodus konnte nicht geladen werden.",
+    "events": "Moduswechsel",
+    "noEvents": "Der strenge Modus war noch nie eingeschaltet.",
+    "eventOn": "Eingeschaltet",
+    "eventOff": "Ausgeschaltet",
+    "trigger": {
+      "licence": "durch eine Lizenz",
+      "manual": "durch dich",
+      "import": "durch einen Import"
+    },
+    "certify": {
+      "title": "Flugbuch bestätigen",
+      "help": "Bestätige, dass das Flugbuch bis zu einem Datum vollständig und richtig ist. Spätere Änderungen an Flügen bis zu diesem Datum werden als Korrekturen festgehalten. Nichts wird gesperrt.",
+      "date": "Bestätigt bis",
+      "submit": "Bestätigen",
+      "success": "Flugbuch bis {{date}} bestätigt.",
+      "list": "Bisherige Bestätigungen",
+      "empty": "Noch keine Bestätigungen.",
+      "certifiedAt": "bestätigt am {{date}}",
+      "strictRequired": "Schalte den strengen Modus ein, um das Flugbuch zu bestätigen.",
+      "inFuture": "Das Datum darf nicht in der Zukunft liegen.",
+      "beforeLatest": "Das Datum darf nicht vor deiner letzten Bestätigung ({{date}}) liegen.",
+      "failed": "Das Flugbuch konnte nicht bestätigt werden."
+    }
+  }
+}

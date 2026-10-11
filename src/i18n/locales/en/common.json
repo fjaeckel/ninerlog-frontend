@@ -135,7 +135,12 @@
       "totalPassengerFlights": "Passenger Flights",
       "totalContacts": "Contacts",
       "totalCustomReports": "Custom Reports",
-      "activeSessions": "Active Sessions"
+      "activeSessions": "Active Sessions",
+      "strictLogbookUsers": "Strict Logbook Users",
+      "flightRevisions": "Flight Revisions",
+      "flightCorrections": "Corrections",
+      "voidedFlights": "Voided Flights",
+      "logbookCertifications": "Logbook Certifications"
     },
     "users": {
       "searchPlaceholder": "Search by email or name...",

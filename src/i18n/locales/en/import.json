@@ -164,6 +164,7 @@
     "title": "This account already holds logbook data",
     "body": "A backup restores into an empty account only, so nothing has been changed yet.",
     "deletes": "Replace everything deletes the current logbook data of this account — flights, aircraft, licenses, ratings, credentials, people, custom currency rules and custom reports — and restores the backup in its place.",
+    "strict": "Your logbook is in strict mode: every replaced flight is kept as a void record, and its history, mode changes and certifications stay. The backup's history is added to them.",
     "atomic": "It is all-or-nothing: if anything goes wrong, your current data stays exactly as it is.",
     "file": "Backup: {{name}}",
     "confirm": "Replace your current logbook data with this backup? This cannot be undone.",
@@ -193,5 +194,7 @@
     "customReports": "Custom reports",
     "notificationPreferences": "Notification settings",
     "flightBaseline": "Carried-forward hours"
-  }
+  },
+  "restoreSummaryFlightRevisions": "Flight revisions",
+  "restoreSummaryLogbookCertifications": "Logbook certifications"
 }

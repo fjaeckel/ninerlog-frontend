@@ -5,6 +5,9 @@ import * as useImportHook from '../../hooks/useImport';
 import { RestoreError } from '../../hooks/useImport';
 import type { ImportJSONResult } from '../../hooks/useImport';
 
+const logbook = vi.hoisted(() => ({ strict: false }));
+vi.mock('../../hooks/useLogbook', () => ({ useIsStrictLogbook: () => logbook.strict }));
+
 const RESULT: ImportJSONResult = {
   aircraftImported: 2,
   aircraftSkipped: 0,
@@ -38,6 +41,7 @@ function selectBackup() {
 describe('RestoreBackup', () => {
   beforeEach(() => {
     mutateAsync.mockReset();
+    logbook.strict = false;
     vi.spyOn(useImportHook, 'useRestoreJSON').mockReturnValue(
       { mutateAsync, isPending: false } as unknown as ReturnType<typeof useImportHook.useRestoreJSON>
     );
@@ -66,12 +70,33 @@ describe('RestoreBackup', () => {
     expect(screen.getByText(/deletes the current logbook data of this account/)).toBeInTheDocument();
     expect(screen.getByText(/all-or-nothing/)).toBeInTheDocument();
     expect(screen.getByText('Backup: logbook.json')).toBeInTheDocument();
+    expect(screen.queryByText(/every replaced flight is kept as a void record/)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Replace everything' }));
 
     await screen.findByText('Backup restored');
     expect(mutateAsync).toHaveBeenLastCalledWith({ file, mode: 'replace' });
     expect(screen.getByText('Your previous logbook data was replaced with the backup.')).toBeInTheDocument();
+  });
+
+  it('says a strict logbook keeps its history when replacing', async () => {
+    logbook.strict = true;
+    mutateAsync.mockRejectedValueOnce(new RestoreError('account_not_empty', '', 409));
+    render(<RestoreBackup />);
+    selectBackup();
+
+    await screen.findByRole('button', { name: 'Replace everything' });
+    expect(screen.getByText(/every replaced flight is kept as a void record/)).toBeInTheDocument();
+  });
+
+  it('shows the logbook history counts in the summary', async () => {
+    mutateAsync.mockResolvedValueOnce({ ...RESULT, flightRevisionsImported: 37, logbookCertificationsImported: 5 });
+    render(<RestoreBackup />);
+    selectBackup();
+
+    await screen.findByText('Backup restored');
+    expect(screen.getByText('Flight revisions').parentElement).toHaveTextContent('37');
+    expect(screen.getByText('Logbook certifications').parentElement).toHaveTextContent('5');
   });
 
   it('cancelling the replace confirmation returns to the file picker without a second request', async () => {
