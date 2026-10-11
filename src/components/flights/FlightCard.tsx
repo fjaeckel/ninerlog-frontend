@@ -1,5 +1,6 @@
 import { ChevronRight, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../../stores/authStore';
 import type { components } from '../../api/schema';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { splitAirportLabel } from '../../lib/airport';
@@ -39,6 +40,7 @@ interface Cell {
 export default function FlightCard({ flight, columns, onClick }: FlightCardProps) {
   const { t, i18n } = useTranslation('flights');
   const { fmtDuration, fmtDate, fmtTimeOfDay } = useFormatPrefs();
+  const selfName = useAuthStore((s) => s.user?.name);
 
   const functionKind = flightFunctionKind(flight);
 
@@ -69,7 +71,7 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
     : [];
 
   const details = columns.details
-    .map((column) => ({ key: column.key, label: t(column.labelKey), value: column.text(flight, t, fmtTimeOfDay) }))
+    .map((column) => ({ key: column.key, label: t(column.labelKey), value: column.text(flight, t, fmtTimeOfDay, selfName) }))
     .filter((detail) => detail.value !== '');
 
   const cells: Cell[] = [

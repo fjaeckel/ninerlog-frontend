@@ -66,6 +66,7 @@ const flight = (i, dep, arr, reg, type, minutes, offset) => ({
   remarks: i % 2 === 0 ? 'Training flight, crosswind circuits' : null,
   instructorName: null,
   instructorComments: null,
+  displayPicName: 'SELF',
   crewMembers: [],
   createdAt: iso('2026-01-01'),
   updatedAt: iso('2026-01-01'),
@@ -87,6 +88,7 @@ const simulatorSession = (i, type, minutes, fstdType, offset) => ({
   takeoffsNight: 0,
   simulatedFlightTime: minutes,
   fstdType,
+  displayPicName: null,
   remarks: 'IR renewal — partial panel, holds',
 });
 
@@ -99,6 +101,7 @@ export const flights = [
   {
     ...flight(1, 'EDDF', 'EDDH', 'D-EABC', 'C172', 95, -2),
     picName: 'Alex Fischer',
+    displayPicName: 'Alex Fischer',
     crewMembers: [
       { id: 'cm1', flightId: 'f1', contactId: 'p1', name: 'Amelia Earhart', role: 'Student' },
       { id: 'cm2', flightId: 'f1', contactId: null, name: 'Bessie Coleman', role: 'Passenger' },
@@ -114,6 +117,7 @@ export const flights = [
     isIpc: true,
     picName: 'Jacqueline Cochran',
     instructorName: 'Jacqueline Cochran',
+    displayPicName: 'Jacqueline Cochran',
     crewMembers: [
       { id: 'cm3', flightId: 'f2', contactId: null, name: 'Jacqueline Cochran', role: 'Instructor' },
     ],

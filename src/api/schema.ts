@@ -3740,6 +3740,11 @@ export interface components {
              */
             arrivalIcao?: string | null;
             /**
+             * @description The pilot-in-command to show for this flight, resolved like the logbook exports: picName, else the instructor (instructorName, then an Instructor, Examiner or PIC crew member other than the user), else "SELF" for the user. A stale "Self" picName gives way to a known instructor. Null for an FSTD session. Not stored and not accepted on create or update.
+             * @example SELF
+             */
+            readonly displayPicName?: string | null;
+            /**
              * @description Airport name resolved live from the airport database for display. Not stored with the flight. Null when departureIcao does not resolve against the airport database (e.g. a free-text off-airport site).
              * @example Frankfurt am Main Airport
              */

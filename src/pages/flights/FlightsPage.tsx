@@ -1,6 +1,7 @@
 import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../../stores/authStore';
 import { ArrowDown, ArrowRight, ArrowUp, BookmarkPlus, FileSpreadsheet, ListFilter, Loader2, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { useFlights, useInfiniteFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
@@ -114,6 +115,7 @@ export default function FlightsPage() {
   const isWide = useMediaQuery('(min-width: 1024px)');
   const { fmtDate, fmtDuration, fmtTimeOfDay } = useFormatPrefs();
   const columnPrefs = useFlightColumnPrefs();
+  const selfName = useAuthStore((s) => s.user?.name);
   const navigate = useNavigate();
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
@@ -838,7 +840,7 @@ export default function FlightsPage() {
                       </td>
                     )}
                     {columns.details.map((col) => {
-                      const text = col.text(flight, (k, o) => t(`flights:${k}`, o ?? {}), fmtTimeOfDay);
+                      const text = col.text(flight, (k, o) => t(`flights:${k}`, o ?? {}), fmtTimeOfDay, selfName);
                       return (
                         <td
                           key={col.key}

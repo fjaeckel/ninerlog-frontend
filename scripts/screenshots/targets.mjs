@@ -19,7 +19,7 @@ export const TARGETS = [
     path: '/flights',
     user: {
       flightListColumnMode: 'custom',
-      flightListColumns: ['function', 'landings', 'instructorName', 'crew'],
+      flightListColumns: ['function', 'landings', 'picName', 'crew'],
     },
   },
   { name: 'flights-narrow', path: '/flights', viewport: { width: 1024, height: 900 } },

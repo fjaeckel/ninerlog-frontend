@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../../stores/authStore';
 import { ArrowLeft, Pencil, Trash2, Plane, PlaneTakeoff, PlaneLanding, ShieldCheck } from 'lucide-react';
 import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
 import FlightForm from '../../components/flights/FlightForm';
@@ -14,6 +15,7 @@ import { SignatureSection } from '../../components/flights/SignatureSection';
 import { FlightCrewCard } from '../../components/flights/FlightCrewCard';
 import {
   FLIGHT_FUNCTION_BADGE,
+  displayPicName,
   flightFunctionKind,
   flightFunctionLabel,
 } from '../../components/flights/flightTableColumns';
@@ -38,6 +40,7 @@ export default function FlightDetailPage() {
   const deleteFlight = useDeleteFlight();
   const [showEditForm, setShowEditForm] = useState(false);
   const { fmtDateTime, fmtDateLong, fmtDuration } = useFormatPrefs();
+  const selfName = useAuthStore((s) => s.user?.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (isLoading) {
@@ -71,6 +74,7 @@ export default function FlightDetailPage() {
     );
   }
 
+  const picName = displayPicName(flight, selfName);
   const totalLandings = flight.allLandings;
   const totalTakeoffs = flight.takeoffsDay + flight.takeoffsNight;
 
@@ -299,8 +303,8 @@ export default function FlightDetailPage() {
               {timeTiles.map(({ key, label, minutes }) => (
                 <DataTile key={key} label={label} value={fmtDuration(minutes)} mono />
               ))}
-              {flight.picName && (
-                <DataTile className="col-span-2" label={t('fields.picName')} value={flight.picName} />
+              {picName && (
+                <DataTile className="col-span-2" label={t('fields.picName')} value={picName} />
               )}
             </DataTileGrid>
           </div>
