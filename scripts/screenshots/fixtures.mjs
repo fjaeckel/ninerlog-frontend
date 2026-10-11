@@ -98,6 +98,7 @@ export const flights = [
   },
   {
     ...flight(1, 'EDDF', 'EDDH', 'D-EABC', 'C172', 95, -2),
+    picName: 'Alex Fischer',
     crewMembers: [
       { id: 'cm1', flightId: 'f1', contactId: 'p1', name: 'Amelia Earhart', role: 'Student' },
       { id: 'cm2', flightId: 'f1', contactId: null, name: 'Bessie Coleman', role: 'Passenger' },
@@ -107,6 +108,8 @@ export const flights = [
   {
     ...flight(2, 'EDDH', 'EDDF', 'D-EABC', 'C172', 88, -5),
     signatureId: 'sig1',
+    picName: 'Jacqueline Cochran',
+    instructorName: 'Jacqueline Cochran',
     crewMembers: [
       { id: 'cm3', flightId: 'f2', contactId: null, name: 'Jacqueline Cochran', role: 'Instructor' },
     ],

@@ -1303,7 +1303,7 @@ export interface paths {
         };
         /**
          * List flights
-         * @description Get flights for the authenticated user
+         * @description Get flights for the authenticated user. Each flight carries its crewMembers, as on GET /flights/{id}.
          */
         get: operations["listFlights"];
         put?: never;
@@ -3102,7 +3102,7 @@ export interface components {
          * @example picTime
          * @enum {string}
          */
-        FlightListColumn: "offOnBlock" | "picTime" | "nightTime" | "dualTime" | "ifrTime" | "crossCountryTime" | "sicTime" | "picusTime" | "spicTime" | "reliefTime" | "dualGivenTime" | "examinerTime" | "multiPilotTime" | "soloTime" | "simulatedFlightTime" | "function" | "landings" | "remarks";
+        FlightListColumn: "offOnBlock" | "picTime" | "nightTime" | "dualTime" | "ifrTime" | "crossCountryTime" | "sicTime" | "picusTime" | "spicTime" | "reliefTime" | "dualGivenTime" | "examinerTime" | "multiPilotTime" | "soloTime" | "simulatedFlightTime" | "actualInstrumentTime" | "simulatedInstrumentTime" | "groundTrainingTime" | "function" | "landings" | "approaches" | "distance" | "picName" | "instructorName" | "crew" | "launchMethod" | "remarks";
         TwoFactorSetup: {
             /**
              * @description Base32-encoded TOTP secret for manual entry

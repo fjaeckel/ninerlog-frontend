@@ -46,8 +46,8 @@ export const FLIGHT_FUNCTION_BADGE: Record<FlightFunctionKind, string> = {
 /**
  * Reveal tiers for the optional flight table columns, narrowest first.
  * Container queries, not viewport queries. The class strings must stay
- * literal for the Tailwind scanner to emit them. One tier per time column
- * plus one for remarks.
+ * literal for the Tailwind scanner to emit them. One tier per time column,
+ * two per detail column.
  */
 const REVEAL_TIERS = [
   'hidden @min-[1020px]:table-cell',
@@ -64,11 +64,26 @@ const REVEAL_TIERS = [
   'hidden @min-[2030px]:table-cell',
   'hidden @min-[2120px]:table-cell',
   'hidden @min-[2210px]:table-cell',
+  'hidden @min-[2300px]:table-cell',
+  'hidden @min-[2390px]:table-cell',
+  'hidden @min-[2480px]:table-cell',
+  'hidden @min-[2570px]:table-cell',
+  'hidden @min-[2660px]:table-cell',
+  'hidden @min-[2750px]:table-cell',
+  'hidden @min-[2840px]:table-cell',
+  'hidden @min-[2930px]:table-cell',
+  'hidden @min-[3020px]:table-cell',
+  'hidden @min-[3110px]:table-cell',
+  'hidden @min-[3200px]:table-cell',
+  'hidden @min-[3290px]:table-cell',
+  'hidden @min-[3380px]:table-cell',
+  'hidden @min-[3470px]:table-cell',
+  'hidden @min-[3560px]:table-cell',
 ] as const;
 
 /**
- * Reveal tiers for the remarks column, indexed by how many time columns are
- * already showing.
+ * Reveal tiers for the remarks column, indexed by how many tiers the time
+ * and detail columns already take.
  */
 const REMARKS_TIERS = [
   'hidden @min-[1180px]:table-cell',
@@ -86,26 +101,80 @@ const REMARKS_TIERS = [
   'hidden @min-[2280px]:table-cell',
   'hidden @min-[2370px]:table-cell',
   'hidden @min-[2460px]:table-cell',
+  'hidden @min-[2550px]:table-cell',
+  'hidden @min-[2640px]:table-cell',
+  'hidden @min-[2730px]:table-cell',
+  'hidden @min-[2820px]:table-cell',
+  'hidden @min-[2910px]:table-cell',
+  'hidden @min-[3000px]:table-cell',
+  'hidden @min-[3090px]:table-cell',
+  'hidden @min-[3180px]:table-cell',
+  'hidden @min-[3270px]:table-cell',
+  'hidden @min-[3360px]:table-cell',
+  'hidden @min-[3450px]:table-cell',
+  'hidden @min-[3540px]:table-cell',
+  'hidden @min-[3630px]:table-cell',
+  'hidden @min-[3720px]:table-cell',
+  'hidden @min-[3810px]:table-cell',
 ] as const;
+
+/** Reveal tiers one detail column takes. */
+const DETAIL_TIER_SPAN = 2;
 
 /** How many time columns automatic mode may claim. */
 const AUTO_MAX_TIME_COLUMNS = 4;
 
+/** Translates a key in the `flights` namespace. */
+type FlightsT = (key: string) => string;
+
 interface FlightColumnDef {
   key: FlightColumnKey;
   /**
-   * `time` columns are the ones that reveal progressively as the table gets
-   * wider; `fixed` columns are either there or not.
+   * `time` columns reveal progressively as the table gets wider; `fixed`
+   * columns are either there or not; `detail` columns are text or counts
+   * that only custom mode shows.
    */
-  kind: 'fixed' | 'time';
+  kind: 'fixed' | 'time' | 'detail';
   /** Short column heading, `flights` namespace */
   labelKey: string;
   /** Full name — heading tooltip and settings label, `flights` namespace */
   titleKey: string;
   /** Minutes shown in the cell; time columns only */
   minutes?: (flight: Flight) => number;
+  /** Cell text, empty when the flight has none; detail columns only */
+  text?: (flight: Flight, t: FlightsT) => string;
+  /** Detail columns holding a number, right-aligned in the table */
+  numeric?: boolean;
   /** Whether a flight actually uses this column — drives automatic mode */
   hasValue: (flight: Flight) => boolean;
+}
+
+const detailColumn = (
+  key: FlightColumnKey,
+  labelKey: string,
+  titleKey: string,
+  text: (flight: Flight, t: FlightsT) => string,
+  numeric = false
+): FlightColumnDef => ({
+  key,
+  kind: 'detail',
+  labelKey,
+  titleKey,
+  text,
+  numeric,
+  hasValue: (flight) => text(flight, (k) => k) !== '',
+});
+
+/** The crew list as "Name (Role)", comma-separated. */
+function crewText(flight: Flight, t: FlightsT): string {
+  return (flight.crewMembers ?? [])
+    .map((member) => `${member.name} (${t(`crewRoles.${member.role}`)})`)
+    .join(', ');
+}
+
+function launchMethodText(flight: Flight, t: FlightsT): string {
+  if (!flight.launchMethod) return '';
+  return t(`launchMethods.${flight.launchMethod === 'self-launch' ? 'selfLaunch' : flight.launchMethod}`);
 }
 
 const minutesColumn = (
@@ -151,6 +220,9 @@ export const FLIGHT_COLUMNS: FlightColumnDef[] = [
   minutesColumn('multiPilotTime', 'tableMultiPilot', 'fields.multiPilotTime', (f) => f.multiPilotTime ?? 0),
   minutesColumn('soloTime', 'tableSolo', 'fields.soloTime', (f) => f.soloTime),
   minutesColumn('simulatedFlightTime', 'tableSim', 'fields.simulatedFlightTime', (f) => f.simulatedFlightTime ?? 0),
+  minutesColumn('actualInstrumentTime', 'tableActualInstrument', 'fields.actualInstrumentTime', (f) => f.actualInstrumentTime ?? 0),
+  minutesColumn('simulatedInstrumentTime', 'tableSimulatedInstrument', 'fields.simulatedInstrumentTime', (f) => f.simulatedInstrumentTime ?? 0),
+  minutesColumn('groundTrainingTime', 'tableGroundTraining', 'fields.groundTrainingTime', (f) => f.groundTrainingTime ?? 0),
   {
     key: 'function',
     kind: 'fixed',
@@ -165,6 +237,12 @@ export const FLIGHT_COLUMNS: FlightColumnDef[] = [
     titleKey: 'fields.landings',
     hasValue: (f) => f.allLandings > 0,
   },
+  detailColumn('approaches', 'tableApproaches', 'fields.approaches', (f) => (f.approachesCount ? String(f.approachesCount) : ''), true),
+  detailColumn('distance', 'tableDistance', 'fields.distance', (f) => (f.distance ? String(Math.round(f.distance)) : ''), true),
+  detailColumn('picName', 'tablePicName', 'fields.picName', (f) => f.picName?.trim() ?? ''),
+  detailColumn('instructorName', 'tableInstructor', 'fields.instructorName', (f) => f.instructorName?.trim() ?? ''),
+  detailColumn('crew', 'tableCrew', 'sections.crew', crewText),
+  detailColumn('launchMethod', 'tableLaunch', 'fields.launchMethod', launchMethodText),
   {
     key: 'remarks',
     kind: 'fixed',
@@ -186,11 +264,26 @@ export interface FlightTimeColumn {
   revealClass: string;
 }
 
+export interface FlightDetailColumn {
+  key: FlightColumnKey;
+  labelKey: string;
+  titleKey: string;
+  text: (flight: Flight, t: FlightsT) => string;
+  numeric: boolean;
+}
+
+export interface FlightTableDetailColumn extends FlightDetailColumn {
+  /** Tailwind classes that reveal this column once the table is wide enough */
+  revealClass: string;
+}
+
 export interface FlightColumnLayout {
   offOnBlock: boolean;
   function: boolean;
   landings: boolean;
   time: FlightTimeColumn[];
+  /** People and other details, in display order; custom mode only */
+  details: FlightTableDetailColumn[];
   /** Reveal classes for the remarks column, or null when it is not shown */
   remarksRevealClass: string | null;
 }
@@ -251,6 +344,8 @@ export interface FlightCardColumns {
   /** Whether the landings column splits day from night. Decided per page. */
   landingsSplit: boolean;
   time: FlightCardColumn[];
+  /** People and other details, shown as one line under the header. */
+  details: FlightDetailColumn[];
 }
 
 /**
@@ -281,7 +376,18 @@ export function selectFlightCardColumns(
       .slice(0, MAX_CARD_TIME_COLUMNS)
       .map((key) => byKey.get(key)!)
       .map((column) => ({ key: column.key, labelKey: column.labelKey, minutes: column.minutes! })),
+    details: custom ? selectedDetails(selected) : [],
   };
+}
+
+function selectedDetails(selected: Set<FlightColumnKey>): FlightDetailColumn[] {
+  return FLIGHT_COLUMNS.filter((c) => c.kind === 'detail' && selected.has(c.key)).map((c) => ({
+    key: c.key,
+    labelKey: c.labelKey,
+    titleKey: c.titleKey,
+    text: c.text!,
+    numeric: !!c.numeric,
+  }));
 }
 
 /**
@@ -300,7 +406,8 @@ export function selectFlightColumns(
   const shows = (column: FlightColumnDef) =>
     custom
       ? selected.has(column.key)
-      : AUTO_ALWAYS_ON.includes(column.key) || flights.some((f) => column.hasValue(f));
+      : column.kind !== 'detail' &&
+        (AUTO_ALWAYS_ON.includes(column.key) || flights.some((f) => column.hasValue(f)));
 
   const visible = FLIGHT_COLUMNS.filter(shows);
 
@@ -315,13 +422,20 @@ export function selectFlightColumns(
 
   const has = (key: FlightColumnKey) => visible.some((c) => c.key === key);
 
+  const details = (custom ? selectedDetails(selected) : []).map((col, i) => ({
+    ...col,
+    revealClass: REVEAL_TIERS[time.length + (i + 1) * DETAIL_TIER_SPAN - 1],
+  }));
+  const tiersTaken = time.length + details.length * DETAIL_TIER_SPAN;
+
   return {
     offOnBlock: has('offOnBlock'),
     function: has('function'),
     landings: has('landings'),
     time,
-    // Remarks takes the tier its own ladder gives for this many time columns,
+    details,
+    // Remarks takes the tier its own ladder gives for the tiers already taken,
     // and only exists while there is a tier left to give it.
-    remarksRevealClass: has('remarks') ? REMARKS_TIERS[time.length] ?? null : null,
+    remarksRevealClass: has('remarks') ? REMARKS_TIERS[tiersTaken] ?? null : null,
   };
 }

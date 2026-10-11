@@ -11,6 +11,7 @@ import {
 
 const TIME_COLUMNS = FLIGHT_COLUMNS.filter((c) => c.kind === 'time');
 const OTHER_COLUMNS = FLIGHT_COLUMNS.filter((c) => c.kind === 'fixed');
+const DETAIL_COLUMNS = FLIGHT_COLUMNS.filter((c) => c.kind === 'detail');
 
 /**
  * Lets a pilot decide which optional columns the flights list shows.
@@ -124,6 +125,16 @@ export function FlightColumnsSection() {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
             {OTHER_COLUMNS.map(renderCheckbox)}
+          </div>
+
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mt-4 mb-2">
+            {t('settings:flightColumns.detailsHeading')}
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+            {t('settings:flightColumns.detailsHint')}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            {DETAIL_COLUMNS.map(renderCheckbox)}
           </div>
 
           <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">

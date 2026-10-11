@@ -69,6 +69,10 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
       ]
     : [];
 
+  const details = columns.details
+    .map((column) => ({ key: column.key, label: t(column.labelKey), value: column.text(flight, t) }))
+    .filter((detail) => detail.value !== '');
+
   const cells: Cell[] = [
     ...offOnCells,
     ...landingCells,
@@ -164,6 +168,18 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
             {flight.aircraftType}
           </span>
         </p>
+
+        {details.length > 0 && (
+          <p className="truncate text-xs text-slate-500 dark:text-slate-400" data-testid="flight-card-details">
+            {details.map((detail, i) => (
+              <span key={detail.key}>
+                {i > 0 && ' · '}
+                <span className="text-slate-400 dark:text-slate-500">{detail.label}</span>{' '}
+                <span className="text-slate-600 dark:text-slate-300">{detail.value}</span>
+              </span>
+            ))}
+          </p>
+        )}
       </div>
 
       {/* Readout — the table's columns, picked once for the page */}

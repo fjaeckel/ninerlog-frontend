@@ -195,6 +195,22 @@ describe('FlightCard', () => {
     expect(screen.getByText('Night')).toBeInTheDocument();
   });
 
+  it('lists the people the setting picks under the header, skipping empty ones', () => {
+    const custom = { mode: 'custom' as const, columns: ['picName', 'instructorName', 'crew'] as FlightColumnKey[] };
+    const flight = {
+      ...mockFlight,
+      picName: 'Amelia Earhart',
+      instructorName: null,
+      crewMembers: [{ id: 'c1', flightId: mockFlight.id, name: 'Bessie Coleman', role: 'Passenger' as const }],
+    };
+    render(<FlightCard flight={flight} columns={selectFlightCardColumns([flight], custom)} onClick={vi.fn()} />);
+
+    const details = screen.getByTestId('flight-card-details');
+    expect(details).toHaveTextContent('PIC Name Amelia Earhart');
+    expect(details).toHaveTextContent('Crew Bessie Coleman (Passenger)');
+    expect(details).not.toHaveTextContent('Instructor');
+  });
+
   it('drops the readout entirely when the setting leaves nothing in it', () => {
     const none = { mode: 'custom' as const, columns: [] as FlightColumnKey[] };
     const { container } = render(

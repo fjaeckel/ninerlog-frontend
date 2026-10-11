@@ -122,6 +122,7 @@ describe('selectFlightColumns — custom mode', () => {
       function: false,
       landings: false,
       time: [],
+      details: [],
       remarksRevealClass: null,
     });
   });
@@ -145,8 +146,10 @@ describe('selectFlightColumns — custom mode', () => {
 
     const layout = selectFlightColumns([flight()], custom(everything));
 
-    expect(layout.time).toHaveLength(14);
+    expect(layout.time).toHaveLength(17);
     expect(layout.time.every((c) => !!c.revealClass)).toBe(true);
+    expect(layout.details).toHaveLength(6);
+    expect(layout.details.every((c) => !!c.revealClass)).toBe(true);
     expect(layout.remarksRevealClass).not.toBeNull();
   });
 
@@ -162,6 +165,70 @@ describe('selectFlightColumns — custom mode', () => {
 
     // Remarks has its own ladder.
     expect(revealWidth(layout.remarksRevealClass!)).toBeGreaterThan(revealWidth(layout.time[1].revealClass));
+  });
+});
+
+describe('detail columns', () => {
+  const tKey = (key: string) => key;
+  const text = (layout: ReturnType<typeof selectFlightColumns>, key: FlightColumnKey, f: Flight) =>
+    layout.details.find((c) => c.key === key)!.text(f, tKey);
+
+  it('never appear in automatic mode, even when flights carry the data', () => {
+    const layout = selectFlightColumns([flight({ picName: 'A. Earhart', instructorName: 'B. Coleman' })], auto);
+
+    expect(layout.details).toEqual([]);
+  });
+
+  it('appear in canonical order in custom mode', () => {
+    const layout = selectFlightColumns([flight()], custom(['crew', 'picName', 'distance']));
+
+    expect(layout.details.map((c) => c.key)).toEqual(['distance', 'picName', 'crew']);
+  });
+
+  it('render people, crew roles, launch method and numbers', () => {
+    const f = flight({
+      picName: ' A. Earhart ',
+      instructorName: 'B. Coleman',
+      launchMethod: 'self-launch',
+      distance: 123.6,
+      approachesCount: 2,
+      crewMembers: [
+        { id: 'c1', flightId: 'flight-1', name: 'H. Hanna', role: 'Passenger' },
+        { id: 'c2', flightId: 'flight-1', name: 'B. Coleman', role: 'Instructor' },
+      ],
+    });
+    const layout = selectFlightColumns(
+      [f],
+      custom(['picName', 'instructorName', 'crew', 'launchMethod', 'distance', 'approaches'])
+    );
+
+    expect(text(layout, 'picName', f)).toBe('A. Earhart');
+    expect(text(layout, 'instructorName', f)).toBe('B. Coleman');
+    expect(text(layout, 'crew', f)).toBe('H. Hanna (crewRoles.Passenger), B. Coleman (crewRoles.Instructor)');
+    expect(text(layout, 'launchMethod', f)).toBe('launchMethods.selfLaunch');
+    expect(text(layout, 'distance', f)).toBe('124');
+    expect(text(layout, 'approaches', f)).toBe('2');
+  });
+
+  it('render an empty string when the flight has nothing for them', () => {
+    const f = flight();
+    const layout = selectFlightColumns([f], custom(['picName', 'crew', 'launchMethod', 'distance', 'approaches']));
+
+    expect(layout.details.map((c) => c.text(f, tKey))).toEqual(['', '', '', '', '']);
+  });
+
+  it('reveal after the time columns, and push remarks further out', () => {
+    const withDetail = selectFlightColumns([flight({ remarks: 'x' })], custom(['picTime', 'picName', 'remarks']));
+    const without = selectFlightColumns([flight({ remarks: 'x' })], custom(['picTime', 'remarks']));
+
+    expect(revealWidth(withDetail.details[0].revealClass)).toBeGreaterThan(revealWidth(withDetail.time[0].revealClass));
+    expect(revealWidth(withDetail.remarksRevealClass!)).toBeGreaterThan(revealWidth(without.remarksRevealClass!));
+  });
+
+  it('reach the phone card too', () => {
+    const card = selectFlightCardColumns([flight()], custom(['instructorName']));
+
+    expect(card.details.map((c) => c.key)).toEqual(['instructorName']);
   });
 });
 

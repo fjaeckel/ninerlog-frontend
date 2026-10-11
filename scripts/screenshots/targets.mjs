@@ -6,12 +6,21 @@
  *   empty      serve empty collections, to capture the empty state
  *   fail       serve 500s for the page's own list, to capture the error state
  *   anonymous  do not seed a session — for the public/auth routes
+ *   user       fields merged over the fixture user, in the session and /users/me
  *
  * Add a target whenever you add a screen.
  */
 export const TARGETS = [
   { name: 'dashboard', path: '/dashboard' },
   { name: 'flights', path: '/flights' },
+  {
+    name: 'flights-custom-columns',
+    path: '/flights',
+    user: {
+      flightListColumnMode: 'custom',
+      flightListColumns: ['function', 'landings', 'instructorName', 'crew'],
+    },
+  },
   {
     name: 'flights-modal',
     path: '/flights',
@@ -216,6 +225,11 @@ export const TARGETS = [
   { name: 'import', path: '/import' },
   { name: 'help', path: '/help' },
   { name: 'profile', path: '/profile' },
+  {
+    name: 'profile-custom-columns',
+    path: '/profile',
+    user: { flightListColumnMode: 'custom', flightListColumns: ['picTime', 'nightTime', 'landings', 'picName', 'crew'] },
+  },
   {
     name: 'profile-sessions',
     path: '/profile',

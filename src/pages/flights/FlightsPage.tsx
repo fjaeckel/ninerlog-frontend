@@ -364,6 +364,7 @@ export default function FlightsPage() {
   const tableColumnCount =
     5 +
     columns.time.length +
+    columns.details.length +
     (columns.offOnBlock ? 1 : 0) +
     (columns.function ? 1 : 0) +
     (columns.landings ? 1 : 0) +
@@ -664,6 +665,15 @@ export default function FlightsPage() {
                   {columns.landings && (
                     <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLdg')}</th>
                   )}
+                  {columns.details.map((col) => (
+                    <th
+                      key={col.key}
+                      title={t(`flights:${col.titleKey}`)}
+                      className={`px-3 py-2.5 font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap ${col.numeric ? 'text-right' : 'text-left'} ${col.revealClass}`}
+                    >
+                      {t(`flights:${col.labelKey}`)}
+                    </th>
+                  ))}
                   {columns.remarksRevealClass && (
                     <th className={`px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}>
                       {t('flights:tableRemarks')}
@@ -770,6 +780,21 @@ export default function FlightsPage() {
                         {flight.allLandings}
                       </td>
                     )}
+                    {columns.details.map((col) => {
+                      const text = col.text(flight, (k) => t(`flights:${k}`));
+                      return (
+                        <td
+                          key={col.key}
+                          className={`px-3 py-2 whitespace-nowrap ${
+                            col.numeric ? 'text-right font-mono tabular-nums' : 'text-left'
+                          } ${text ? 'text-slate-600 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'} ${col.revealClass}`}
+                        >
+                          <span className="block max-w-[16ch] truncate" title={text || undefined}>
+                            {text || '—'}
+                          </span>
+                        </td>
+                      );
+                    })}
                     {columns.remarksRevealClass && (
                       <td className={`px-3 py-2 text-slate-500 dark:text-slate-400 ${columns.remarksRevealClass}`}>
                         <span className="block max-w-[28ch] truncate" title={flight.remarks || undefined}>
