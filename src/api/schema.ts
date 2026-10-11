@@ -1303,7 +1303,7 @@ export interface paths {
         };
         /**
          * List flights
-         * @description Get flights for the authenticated user. Each flight carries its crewMembers, as on GET /flights/{id}.
+         * @description Get flights for the authenticated user. Each flight carries its crewMembers, as on GET /flights/{id}. The response also carries the column totals over all matching flights and per month for the months on the page.
          */
         get: operations["listFlights"];
         put?: never;
@@ -3102,7 +3102,7 @@ export interface components {
          * @example picTime
          * @enum {string}
          */
-        FlightListColumn: "offOnBlock" | "picTime" | "nightTime" | "dualTime" | "ifrTime" | "crossCountryTime" | "sicTime" | "picusTime" | "spicTime" | "reliefTime" | "dualGivenTime" | "examinerTime" | "multiPilotTime" | "soloTime" | "simulatedFlightTime" | "actualInstrumentTime" | "simulatedInstrumentTime" | "groundTrainingTime" | "function" | "landings" | "approaches" | "distance" | "picName" | "instructorName" | "crew" | "launchMethod" | "remarks";
+        FlightListColumn: "offOnBlock" | "picTime" | "nightTime" | "dualTime" | "ifrTime" | "crossCountryTime" | "sicTime" | "picusTime" | "spicTime" | "reliefTime" | "dualGivenTime" | "examinerTime" | "multiPilotTime" | "soloTime" | "simulatedFlightTime" | "actualInstrumentTime" | "simulatedInstrumentTime" | "groundTrainingTime" | "function" | "landings" | "takeoffLandingTime" | "takeoffs" | "approaches" | "approachTypes" | "holds" | "distance" | "waypoints" | "picName" | "instructorName" | "crew" | "launchMethod" | "fstdType" | "checks" | "signed" | "endorsements" | "instructorComments" | "remarks";
         TwoFactorSetup: {
             /**
              * @description Base32-encoded TOTP secret for manual entry
@@ -4790,7 +4790,76 @@ export interface components {
             issuingAuthority?: string;
             notes?: string | null;
         };
+        /** @description Column sums over every flight matching the request's filters, not just the returned page. Times are in minutes. */
+        FlightTotals: {
+            /** @description Number of flights matching the filters */
+            flights: number;
+            /** @description Minutes */
+            totalTime: number;
+            /** @description Minutes */
+            picTime: number;
+            /** @description Minutes */
+            dualTime: number;
+            /** @description Minutes */
+            nightTime: number;
+            /** @description Minutes */
+            ifrTime: number;
+            /** @description Minutes */
+            crossCountryTime: number;
+            /** @description Minutes */
+            sicTime: number;
+            /** @description Minutes */
+            picusTime: number;
+            /** @description Minutes */
+            spicTime: number;
+            /** @description Minutes */
+            reliefTime: number;
+            /** @description Minutes */
+            dualGivenTime: number;
+            /** @description Minutes */
+            examinerTime: number;
+            /** @description Minutes */
+            multiPilotTime: number;
+            /** @description Minutes */
+            soloTime: number;
+            /** @description Minutes */
+            simulatedFlightTime: number;
+            /** @description Minutes */
+            actualInstrumentTime: number;
+            /** @description Minutes */
+            simulatedInstrumentTime: number;
+            /** @description Minutes */
+            groundTrainingTime: number;
+            /** @description Count */
+            landingsDay: number;
+            /** @description Count */
+            landingsNight: number;
+            /** @description Count */
+            takeoffsDay: number;
+            /** @description Count */
+            takeoffsNight: number;
+            /** @description Sum of approachesCount */
+            approaches: number;
+            /** @description Count */
+            holds: number;
+            /**
+             * Format: double
+             * @description Nautical miles
+             */
+            distance: number;
+        };
+        FlightMonthTotals: {
+            /**
+             * @description Calendar month (YYYY-MM)
+             * @example 2026-08
+             */
+            month: string;
+            totals: components["schemas"]["FlightTotals"];
+        };
         PaginatedFlights: {
+            totals: components["schemas"]["FlightTotals"];
+            /** @description Column sums per calendar month over every flight matching the filters, for each month that has a flight on the returned page. Ordered by month, oldest first. */
+            monthTotals: components["schemas"]["FlightMonthTotals"][];
             data: components["schemas"]["Flight"][];
             pagination: {
                 /**

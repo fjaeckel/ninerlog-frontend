@@ -70,7 +70,7 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
     : [];
 
   const details = columns.details
-    .map((column) => ({ key: column.key, label: t(column.labelKey), value: column.text(flight, t) }))
+    .map((column) => ({ key: column.key, label: t(column.labelKey), value: column.text(flight, t, fmtTimeOfDay) }))
     .filter((detail) => detail.value !== '');
 
   const cells: Cell[] = [

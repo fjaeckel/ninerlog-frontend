@@ -357,9 +357,22 @@ export default function FlightsPage() {
   // Whichever query ran carries the totals — the infinite one reports them on
   // every page, so the newest page is the one to trust.
   const infinitePages = infinite.data?.pages;
-  const pagination = isWide
-    ? data?.pagination
-    : infinitePages && infinitePages[infinitePages.length - 1]?.pagination;
+  const lastPage = isWide ? data : infinitePages?.[infinitePages.length - 1];
+  const pagination = lastPage?.pagination;
+  // Sums over every flight matching the view, not just what is loaded.
+  const listTotals = lastPage?.totals;
+  const monthTotals = new Map(
+    (isWide ? data?.monthTotals ?? [] : (infinitePages ?? []).flatMap((p) => p.monthTotals ?? [])).map((m) => [
+      m.month,
+      m.totals,
+    ])
+  );
+  const monthSummary = (group: FlightGroup) =>
+    t('flights:monthTotal', {
+      count: monthTotals.get(group.key)?.flights ?? group.flights.length,
+      duration: fmtDuration(monthTotals.get(group.key)?.totalTime ?? group.totalMinutes),
+    });
+  const landingsText = (day: number, night: number, split: boolean) => (split ? `${day}/${night}` : String(day + night));
   // Enough for a month heading to span whatever the table is currently showing.
   const tableColumnCount =
     5 +
@@ -575,6 +588,48 @@ export default function FlightsPage() {
           {/* Phones and tablets get a card per flight: the table below needs a
               horizontal scroll to reach even the total time on a narrow screen. */}
           <div className="lg:hidden space-y-4">
+            {listTotals && (
+              <section
+                aria-label={t('flights:totalsSummaryLabel')}
+                className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800"
+                data-testid="flight-totals-strip"
+              >
+                <p className="bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-slate-700/40 dark:text-slate-300">
+                  {t('flights:totalsHeading')}
+                  <span className="ml-2 font-normal text-slate-400 dark:text-slate-500">
+                    {t('flights:totalsRow', { count: listTotals.flights })}
+                  </span>
+                </p>
+                <dl className="flex divide-x divide-slate-100 dark:divide-slate-700/60">
+                  {[
+                    { key: 'total', label: t('flights:tableTotal'), value: fmtDuration(listTotals.totalTime) },
+                    ...cardColumns.time.map((col) => ({
+                      key: col.key,
+                      label: t(`flights:${col.labelKey}`),
+                      value: fmtDuration(Number(listTotals[col.key as keyof typeof listTotals] ?? 0)),
+                    })),
+                    ...(cardColumns.landings
+                      ? [
+                          {
+                            key: 'ldg',
+                            label: cardColumns.landingsSplit ? t('flights:tableLdgSplit') : t('flights:tableLdg'),
+                            value: landingsText(listTotals.landingsDay, listTotals.landingsNight, cardColumns.landingsSplit),
+                          },
+                        ]
+                      : []),
+                  ].map((cell) => (
+                    <div key={cell.key} className="min-w-0 flex-1 px-1 py-1.5 text-center">
+                      <dt className="truncate text-xs font-medium uppercase leading-tight tracking-wider text-slate-400 dark:text-slate-500">
+                        {cell.label}
+                      </dt>
+                      <dd className="truncate font-mono text-xs font-semibold leading-tight tabular-nums text-slate-700 dark:text-slate-200">
+                        {cell.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            )}
             {monthGroups.map((group) => (
               <section key={group.key} aria-label={group.label ?? undefined}>
                 {group.label && (
@@ -585,10 +640,7 @@ export default function FlightsPage() {
                       {group.label}
                     </h2>
                     <span className="shrink-0 text-xs tabular-nums text-slate-500 dark:text-slate-400">
-                      {t('flights:monthTotal', {
-                        count: group.flights.length,
-                        duration: fmtDuration(group.totalMinutes),
-                      })}
+                      {monthSummary(group)}
                     </span>
                   </div>
                 )}
@@ -663,7 +715,9 @@ export default function FlightsPage() {
                     <th className="px-3 py-2.5 text-center font-medium text-slate-500 dark:text-slate-400">{t('flights:tableFunction')}</th>
                   )}
                   {columns.landings && (
-                    <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLdg')}</th>
+                    <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                      {columns.landingsSplit ? t('flights:tableLdgSplit') : t('flights:tableLdg')}
+                    </th>
                   )}
                   {columns.details.map((col) => (
                     <th
@@ -696,10 +750,7 @@ export default function FlightsPage() {
                         >
                           {group.label}
                           <span className="ml-2 font-normal text-slate-400 dark:text-slate-500">
-                            {t('flights:monthTotal', {
-                              count: group.flights.length,
-                              duration: fmtDuration(group.totalMinutes),
-                            })}
+                            {monthSummary(group)}
                           </span>
                         </th>
                       </tr>
@@ -777,11 +828,11 @@ export default function FlightsPage() {
                     )}
                     {columns.landings && (
                       <td className="px-3 py-2 whitespace-nowrap text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
-                        {flight.allLandings}
+                        {landingsText(flight.landingsDay, flight.landingsNight, columns.landingsSplit)}
                       </td>
                     )}
                     {columns.details.map((col) => {
-                      const text = col.text(flight, (k) => t(`flights:${k}`));
+                      const text = col.text(flight, (k) => t(`flights:${k}`), fmtTimeOfDay);
                       return (
                         <td
                           key={col.key}
@@ -823,6 +874,52 @@ export default function FlightsPage() {
                   </Fragment>
                 ))}
               </tbody>
+              {listTotals && (
+                <tfoot
+                  className="border-t-2 border-slate-200 bg-slate-50 font-semibold dark:border-slate-600 dark:bg-slate-800/60"
+                  data-testid="flight-totals-row"
+                >
+                  <tr>
+                    <th
+                      scope="row"
+                      colSpan={3 + (columns.offOnBlock ? 1 : 0)}
+                      className="px-3 py-2.5 text-left text-slate-700 dark:text-slate-200"
+                    >
+                      {t('flights:tableTotalsLabel')}
+                      <span className="ml-2 font-normal text-slate-400 dark:text-slate-500">
+                        {t('flights:totalsRow', { count: listTotals.flights })}
+                      </span>
+                    </th>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-right font-mono tabular-nums text-slate-800 dark:text-slate-100">
+                      {fmtDuration(listTotals.totalTime)}
+                    </td>
+                    {columns.time.map((col) => (
+                      <td
+                        key={col.key}
+                        className={`px-2 py-2.5 whitespace-nowrap text-right font-mono tabular-nums text-slate-700 dark:text-slate-200 ${col.revealClass}`}
+                      >
+                        {fmtDuration(col.total(listTotals))}
+                      </td>
+                    ))}
+                    {columns.function && <td />}
+                    {columns.landings && (
+                      <td className="px-3 py-2.5 whitespace-nowrap text-right font-mono tabular-nums text-slate-700 dark:text-slate-200">
+                        {landingsText(listTotals.landingsDay, listTotals.landingsNight, columns.landingsSplit)}
+                      </td>
+                    )}
+                    {columns.details.map((col) => (
+                      <td
+                        key={col.key}
+                        className={`px-3 py-2.5 whitespace-nowrap text-right font-mono tabular-nums text-slate-700 dark:text-slate-200 ${col.revealClass}`}
+                      >
+                        {col.total?.(listTotals) ?? ''}
+                      </td>
+                    ))}
+                    {columns.remarksRevealClass && <td className={columns.remarksRevealClass} />}
+                    <td />
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
 

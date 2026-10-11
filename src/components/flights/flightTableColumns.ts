@@ -1,6 +1,7 @@
 import type { components } from '../../api/schema';
 
 type Flight = components['schemas']['Flight'];
+export type FlightTotals = components['schemas']['FlightTotals'];
 
 /** The optional flights-list columns, as named by the API. */
 export type FlightColumnKey = components['schemas']['FlightListColumn'];
@@ -47,7 +48,7 @@ export const FLIGHT_FUNCTION_BADGE: Record<FlightFunctionKind, string> = {
  * Reveal tiers for the optional flight table columns, narrowest first.
  * Container queries, not viewport queries. The class strings must stay
  * literal for the Tailwind scanner to emit them. One tier per time column,
- * two per detail column.
+ * one or two per detail column.
  */
 const REVEAL_TIERS = [
   'hidden @min-[1020px]:table-cell',
@@ -79,6 +80,26 @@ const REVEAL_TIERS = [
   'hidden @min-[3380px]:table-cell',
   'hidden @min-[3470px]:table-cell',
   'hidden @min-[3560px]:table-cell',
+  'hidden @min-[3650px]:table-cell',
+  'hidden @min-[3740px]:table-cell',
+  'hidden @min-[3830px]:table-cell',
+  'hidden @min-[3920px]:table-cell',
+  'hidden @min-[4010px]:table-cell',
+  'hidden @min-[4100px]:table-cell',
+  'hidden @min-[4190px]:table-cell',
+  'hidden @min-[4280px]:table-cell',
+  'hidden @min-[4370px]:table-cell',
+  'hidden @min-[4460px]:table-cell',
+  'hidden @min-[4550px]:table-cell',
+  'hidden @min-[4640px]:table-cell',
+  'hidden @min-[4730px]:table-cell',
+  'hidden @min-[4820px]:table-cell',
+  'hidden @min-[4910px]:table-cell',
+  'hidden @min-[5000px]:table-cell',
+  'hidden @min-[5090px]:table-cell',
+  'hidden @min-[5180px]:table-cell',
+  'hidden @min-[5270px]:table-cell',
+  'hidden @min-[5360px]:table-cell',
 ] as const;
 
 /**
@@ -116,16 +137,44 @@ const REMARKS_TIERS = [
   'hidden @min-[3630px]:table-cell',
   'hidden @min-[3720px]:table-cell',
   'hidden @min-[3810px]:table-cell',
+  'hidden @min-[3900px]:table-cell',
+  'hidden @min-[3990px]:table-cell',
+  'hidden @min-[4080px]:table-cell',
+  'hidden @min-[4170px]:table-cell',
+  'hidden @min-[4260px]:table-cell',
+  'hidden @min-[4350px]:table-cell',
+  'hidden @min-[4440px]:table-cell',
+  'hidden @min-[4530px]:table-cell',
+  'hidden @min-[4620px]:table-cell',
+  'hidden @min-[4710px]:table-cell',
+  'hidden @min-[4800px]:table-cell',
+  'hidden @min-[4890px]:table-cell',
+  'hidden @min-[4980px]:table-cell',
+  'hidden @min-[5070px]:table-cell',
+  'hidden @min-[5160px]:table-cell',
+  'hidden @min-[5250px]:table-cell',
+  'hidden @min-[5340px]:table-cell',
+  'hidden @min-[5430px]:table-cell',
+  'hidden @min-[5520px]:table-cell',
+  'hidden @min-[5610px]:table-cell',
 ] as const;
 
-/** Reveal tiers one detail column takes. */
-const DETAIL_TIER_SPAN = 2;
+/** Reveal tiers one detail column takes: one for a number, two for text. */
+const detailTierSpan = (column: FlightDetailColumn) => (column.numeric ? 1 : 2);
 
 /** How many time columns automatic mode may claim. */
 const AUTO_MAX_TIME_COLUMNS = 4;
 
 /** Translates a key in the `flights` namespace. */
 type FlightsT = (key: string) => string;
+
+/** Formats a time of day in the user's clock format. */
+type TimeFormat = (value?: string | null) => string;
+
+const plainTime: TimeFormat = (value) => value?.slice(0, 5) ?? '';
+
+/** Builds a detail cell's text. */
+type DetailText = (flight: Flight, t: FlightsT, fmtTime?: TimeFormat) => string;
 
 interface FlightColumnDef {
   key: FlightColumnKey;
@@ -141,8 +190,12 @@ interface FlightColumnDef {
   titleKey: string;
   /** Minutes shown in the cell; time columns only */
   minutes?: (flight: Flight) => number;
+  /** Minutes in the footer, from the list totals; time columns only */
+  totalMinutes?: (totals: FlightTotals) => number;
   /** Cell text, empty when the flight has none; detail columns only */
-  text?: (flight: Flight, t: FlightsT) => string;
+  text?: DetailText;
+  /** Footer text from the list totals; detail columns that add up only */
+  total?: (totals: FlightTotals) => string;
   /** Detail columns holding a number, right-aligned in the table */
   numeric?: boolean;
   /** Whether a flight actually uses this column — drives automatic mode */
@@ -153,17 +206,46 @@ const detailColumn = (
   key: FlightColumnKey,
   labelKey: string,
   titleKey: string,
-  text: (flight: Flight, t: FlightsT) => string,
-  numeric = false
+  text: DetailText,
+  options: { numeric?: boolean; total?: (totals: FlightTotals) => string } = {}
 ): FlightColumnDef => ({
   key,
   kind: 'detail',
   labelKey,
   titleKey,
   text,
-  numeric,
+  numeric: !!options.numeric,
+  total: options.total,
   hasValue: (flight) => text(flight, (k) => k) !== '',
 });
+
+const countText = (n: number | undefined) => (n ? String(n) : '');
+
+/** A day/night pair as "D/N", empty when both are zero. */
+const dayNightText = (day: number, night: number) => (day || night ? `${day}/${night}` : '');
+
+/** Whether any flight on the page has night landings. */
+export const hasNightLandings = (flights: Flight[]) => flights.some((f) => f.landingsNight > 0);
+
+function takeoffLandingText(flight: Flight, _t: FlightsT, fmtTime: TimeFormat = plainTime): string {
+  if (!flight.departureTime && !flight.arrivalTime) return '';
+  return `${fmtTime(flight.departureTime) || '—'} / ${fmtTime(flight.arrivalTime) || '—'}`;
+}
+
+function approachTypesText(flight: Flight, t: FlightsT): string {
+  const types = [...new Set((flight.approaches ?? []).map((a) => a.type))];
+  return types.map((type) => t(`approachTypes.${type.replace('/', '_')}`)).join(', ');
+}
+
+function checksText(flight: Flight, t: FlightsT): string {
+  return [
+    flight.isIpc && t('fields.isIpc'),
+    flight.isFlightReview && t('fields.isFlightReview'),
+    flight.isProficiencyCheck && t('fields.isProficiencyCheck'),
+  ]
+    .filter(Boolean)
+    .join(', ');
+}
 
 /** The crew list as "Name (Role)", comma-separated. */
 function crewText(flight: Flight, t: FlightsT): string {
@@ -188,6 +270,7 @@ const minutesColumn = (
   labelKey,
   titleKey,
   minutes,
+  totalMinutes: (totals) => Number(totals[key as keyof FlightTotals] ?? 0),
   hasValue: (flight) => minutes(flight) > 0,
 });
 
@@ -237,12 +320,34 @@ export const FLIGHT_COLUMNS: FlightColumnDef[] = [
     titleKey: 'fields.landings',
     hasValue: (f) => f.allLandings > 0,
   },
-  detailColumn('approaches', 'tableApproaches', 'fields.approaches', (f) => (f.approachesCount ? String(f.approachesCount) : ''), true),
-  detailColumn('distance', 'tableDistance', 'fields.distance', (f) => (f.distance ? String(Math.round(f.distance)) : ''), true),
+  detailColumn('takeoffLandingTime', 'tableTakeoffLanding', 'fields.takeoffLandingTime', takeoffLandingText),
+  detailColumn('takeoffs', 'tableTakeoffs', 'fields.takeoffsDayNight', (f) => dayNightText(f.takeoffsDay, f.takeoffsNight), {
+    numeric: true,
+    total: (s) => dayNightText(s.takeoffsDay, s.takeoffsNight),
+  }),
+  detailColumn('approaches', 'tableApproaches', 'fields.approaches', (f) => countText(f.approachesCount), {
+    numeric: true,
+    total: (s) => countText(s.approaches),
+  }),
+  detailColumn('approachTypes', 'tableApproachTypes', 'fields.approachTypes', approachTypesText),
+  detailColumn('holds', 'tableHolds', 'fields.holds', (f) => countText(f.holds), {
+    numeric: true,
+    total: (s) => countText(s.holds),
+  }),
+  detailColumn('distance', 'tableDistance', 'fields.distance', (f) => countText(Math.round(f.distance ?? 0)), {
+    numeric: true,
+    total: (s) => countText(Math.round(s.distance)),
+  }),
+  detailColumn('waypoints', 'tableWaypoints', 'fields.routeWaypoints', (f) => f.route?.trim() ?? ''),
   detailColumn('picName', 'tablePicName', 'fields.picName', (f) => f.picName?.trim() ?? ''),
   detailColumn('instructorName', 'tableInstructor', 'fields.instructorName', (f) => f.instructorName?.trim() ?? ''),
   detailColumn('crew', 'tableCrew', 'sections.crew', crewText),
   detailColumn('launchMethod', 'tableLaunch', 'fields.launchMethod', launchMethodText),
+  detailColumn('fstdType', 'tableFstd', 'fields.fstdType', (f) => f.fstdType?.trim() ?? ''),
+  detailColumn('checks', 'tableChecks', 'fields.checks', checksText),
+  detailColumn('signed', 'tableSigned', 'fields.signedStatus', (f, t) => (f.signatureId ? t('signed') : '')),
+  detailColumn('endorsements', 'tableEndorsements', 'fields.endorsements', (f) => f.endorsements?.trim() ?? ''),
+  detailColumn('instructorComments', 'tableInstructorComments', 'fields.instructorComments', (f) => f.instructorComments?.trim() ?? ''),
   {
     key: 'remarks',
     kind: 'fixed',
@@ -257,6 +362,8 @@ const AUTO_ALWAYS_ON: FlightColumnKey[] = ['offOnBlock', 'function', 'landings']
 
 export interface FlightTimeColumn {
   key: FlightColumnKey;
+  /** Minutes in the footer, from the list totals */
+  total: (totals: FlightTotals) => number;
   labelKey: string;
   titleKey: string;
   minutes: (flight: Flight) => number;
@@ -268,8 +375,9 @@ export interface FlightDetailColumn {
   key: FlightColumnKey;
   labelKey: string;
   titleKey: string;
-  text: (flight: Flight, t: FlightsT) => string;
+  text: DetailText;
   numeric: boolean;
+  total?: (totals: FlightTotals) => string;
 }
 
 export interface FlightTableDetailColumn extends FlightDetailColumn {
@@ -281,6 +389,8 @@ export interface FlightColumnLayout {
   offOnBlock: boolean;
   function: boolean;
   landings: boolean;
+  /** Whether the landings column splits day from night. Decided per page. */
+  landingsSplit: boolean;
   time: FlightTimeColumn[];
   /** People and other details, in display order; custom mode only */
   details: FlightTableDetailColumn[];
@@ -371,7 +481,7 @@ export function selectFlightCardColumns(
     offOnBlock: shows('offOnBlock'),
     function: shows('function'),
     landings: shows('landings'),
-    landingsSplit: flights.some((f) => f.landingsNight > 0),
+    landingsSplit: hasNightLandings(flights),
     time: order
       .slice(0, MAX_CARD_TIME_COLUMNS)
       .map((key) => byKey.get(key)!)
@@ -387,6 +497,7 @@ function selectedDetails(selected: Set<FlightColumnKey>): FlightDetailColumn[] {
     titleKey: c.titleKey,
     text: c.text!,
     numeric: !!c.numeric,
+    total: c.total,
   }));
 }
 
@@ -417,21 +528,23 @@ export function selectFlightColumns(
     labelKey: col.labelKey,
     titleKey: col.titleKey,
     minutes: col.minutes!,
+    total: col.totalMinutes!,
     revealClass: REVEAL_TIERS[i],
   }));
 
   const has = (key: FlightColumnKey) => visible.some((c) => c.key === key);
 
-  const details = (custom ? selectedDetails(selected) : []).map((col, i) => ({
-    ...col,
-    revealClass: REVEAL_TIERS[time.length + (i + 1) * DETAIL_TIER_SPAN - 1],
-  }));
-  const tiersTaken = time.length + details.length * DETAIL_TIER_SPAN;
+  let tiersTaken = time.length;
+  const details = (custom ? selectedDetails(selected) : []).map((col) => {
+    tiersTaken += detailTierSpan(col);
+    return { ...col, revealClass: REVEAL_TIERS[tiersTaken - 1] };
+  });
 
   return {
     offOnBlock: has('offOnBlock'),
     function: has('function'),
     landings: has('landings'),
+    landingsSplit: hasNightLandings(flights),
     time,
     details,
     // Remarks takes the tier its own ladder gives for the tiers already taken,

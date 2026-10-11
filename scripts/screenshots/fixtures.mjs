@@ -108,6 +108,10 @@ export const flights = [
   {
     ...flight(2, 'EDDH', 'EDDF', 'D-EABC', 'C172', 88, -5),
     signatureId: 'sig1',
+    holds: 1,
+    approachesCount: 2,
+    approaches: [{ type: 'ILS', airport: 'EDDF' }, { type: 'RNAV/GPS', airport: 'EDDF' }],
+    isIpc: true,
     picName: 'Jacqueline Cochran',
     instructorName: 'Jacqueline Cochran',
     crewMembers: [
@@ -119,6 +123,35 @@ export const flights = [
   flight(4, 'LOWI', 'EDMO', 'D-EFGH', 'PA28', 152, -12),
   flight(5, 'EDDB', 'EDDB', 'D-EABC', 'C172', 60, -20),
 ];
+
+const flightTotals = {
+  flights: 142,
+  totalTime: 14_655,
+  picTime: 11_820,
+  dualTime: 2_310,
+  nightTime: 1_085,
+  ifrTime: 1_640,
+  crossCountryTime: 6_930,
+  sicTime: 0,
+  picusTime: 0,
+  spicTime: 0,
+  reliefTime: 0,
+  dualGivenTime: 0,
+  examinerTime: 0,
+  multiPilotTime: 0,
+  soloTime: 525,
+  simulatedFlightTime: 1_440,
+  actualInstrumentTime: 410,
+  simulatedInstrumentTime: 690,
+  groundTrainingTime: 0,
+  landingsDay: 388,
+  landingsNight: 27,
+  takeoffsDay: 390,
+  takeoffsNight: 25,
+  approaches: 64,
+  holds: 18,
+  distance: 18_412.6,
+};
 
 export const aircraft = [
   {
@@ -676,7 +709,15 @@ const ROUTES = {
   '/users/me/notifications': { emailOnCurrencyExpiry: true, emailOnCredentialExpiry: true, daysBeforeExpiry: 30 },
   '/users/me/notifications/history': EMPTY_PAGE,
   '/users/me/baseline': null,
-  '/flights': { data: flights, pagination: { page: 1, pageSize: 25, total: flights.length, totalPages: 1 } },
+  '/flights': {
+    data: flights,
+    pagination: { page: 1, pageSize: 25, total: 142, totalPages: 6 },
+    totals: flightTotals,
+    monthTotals: [
+      { month: day(-20).slice(0, 7), totals: { ...flightTotals, flights: 9, totalTime: 714 } },
+      { month: day(-1).slice(0, 7), totals: { ...flightTotals, flights: 11, totalTime: 802 } },
+    ],
+  },
   '/aircraft': { data: aircraft, pagination: { page: 1, pageSize: 100, total: aircraft.length, totalPages: 1 } },
   '/aircraft/stats': aircraftStats,
   '/licenses': licenses,

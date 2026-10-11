@@ -121,6 +121,7 @@ describe('selectFlightColumns — custom mode', () => {
       offOnBlock: false,
       function: false,
       landings: false,
+      landingsSplit: false,
       time: [],
       details: [],
       remarksRevealClass: null,
@@ -148,7 +149,7 @@ describe('selectFlightColumns — custom mode', () => {
 
     expect(layout.time).toHaveLength(17);
     expect(layout.time.every((c) => !!c.revealClass)).toBe(true);
-    expect(layout.details).toHaveLength(6);
+    expect(layout.details).toHaveLength(16);
     expect(layout.details.every((c) => !!c.revealClass)).toBe(true);
     expect(layout.remarksRevealClass).not.toBeNull();
   });
@@ -225,10 +226,85 @@ describe('detail columns', () => {
     expect(revealWidth(withDetail.remarksRevealClass!)).toBeGreaterThan(revealWidth(without.remarksRevealClass!));
   });
 
+  it('render takeoffs, times, approach types, checks and the signature', () => {
+    const f = flight({
+      takeoffsDay: 2,
+      takeoffsNight: 1,
+      departureTime: '09:15:00',
+      arrivalTime: '10:45:00',
+      approaches: [{ type: 'ILS' }, { type: 'RNAV/GPS' }, { type: 'ILS' }],
+      holds: 1,
+      isIpc: true,
+      isFlightReview: true,
+      signatureId: 'sig-1',
+      fstdType: 'FNPT II',
+      route: 'EDDF, KNG, EDDH',
+    });
+    const layout = selectFlightColumns(
+      [f],
+      custom(['takeoffLandingTime', 'takeoffs', 'approachTypes', 'holds', 'checks', 'signed', 'fstdType', 'waypoints'])
+    );
+
+    expect(text(layout, 'takeoffLandingTime', f)).toBe('09:15 / 10:45');
+    expect(text(layout, 'takeoffs', f)).toBe('2/1');
+    expect(text(layout, 'approachTypes', f)).toBe('approachTypes.ILS, approachTypes.RNAV_GPS');
+    expect(text(layout, 'holds', f)).toBe('1');
+    expect(text(layout, 'checks', f)).toBe('fields.isIpc, fields.isFlightReview');
+    expect(text(layout, 'signed', f)).toBe('signed');
+    expect(text(layout, 'fstdType', f)).toBe('FNPT II');
+    expect(text(layout, 'waypoints', f)).toBe('EDDF, KNG, EDDH');
+  });
+
+  it('format takeoff and landing times with the formatter given', () => {
+    const f = flight({ departureTime: '14:05:00', arrivalTime: null });
+    const layout = selectFlightColumns([f], custom(['takeoffLandingTime']));
+
+    expect(layout.details[0].text(f, tKey, (v) => (v ? `<${v}>` : ''))).toBe('<14:05:00> / —');
+  });
+
+  it('total only the columns that add up', () => {
+    const layout = selectFlightColumns([flight()], custom(['takeoffs', 'approaches', 'distance', 'picName']));
+    const sums = {
+      takeoffsDay: 40,
+      takeoffsNight: 2,
+      approaches: 12,
+      distance: 1234.6,
+    } as Parameters<NonNullable<(typeof layout.details)[number]['total']>>[0];
+
+    expect(layout.details.map((c) => c.total?.(sums) ?? null)).toEqual(['40/2', '12', '1235', null]);
+  });
+
+  it('let a number take one width tier and text two', () => {
+    const numberFirst = selectFlightColumns([flight()], custom(['approaches', 'holds']));
+    const textFirst = selectFlightColumns([flight()], custom(['holds', 'picName']));
+
+    const step = revealWidth(numberFirst.details[1].revealClass) - revealWidth(numberFirst.details[0].revealClass);
+    const textStep = revealWidth(textFirst.details[1].revealClass) - revealWidth(textFirst.details[0].revealClass);
+    expect(textStep).toBeGreaterThan(step);
+  });
+
   it('reach the phone card too', () => {
     const card = selectFlightCardColumns([flight()], custom(['instructorName']));
 
     expect(card.details.map((c) => c.key)).toEqual(['instructorName']);
+  });
+});
+
+describe('time column totals', () => {
+  it('read each time column from the list totals by its own key', () => {
+    const layout = selectFlightColumns([flight()], custom(['picTime', 'nightTime', 'groundTrainingTime']));
+    const sums = { picTime: 600, nightTime: 45, groundTrainingTime: 90 } as Parameters<
+      (typeof layout.time)[number]['total']
+    >[0];
+
+    expect(layout.time.map((c) => c.total(sums))).toEqual([600, 45, 90]);
+  });
+});
+
+describe('landings split', () => {
+  it('splits day from night in the table once any flight has a night landing', () => {
+    expect(selectFlightColumns([flight(), flight({ landingsNight: 1 })], auto).landingsSplit).toBe(true);
+    expect(selectFlightColumns([flight()], auto).landingsSplit).toBe(false);
   });
 });
 

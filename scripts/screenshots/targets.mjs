@@ -22,6 +22,14 @@ export const TARGETS = [
     },
   },
   {
+    name: 'flights-custom-columns-ifr',
+    path: '/flights',
+    user: {
+      flightListColumnMode: 'custom',
+      flightListColumns: ['ifrTime', 'landings', 'approaches', 'approachTypes', 'holds', 'checks'],
+    },
+  },
+  {
     name: 'flights-modal',
     path: '/flights',
     act: async (page) => {
