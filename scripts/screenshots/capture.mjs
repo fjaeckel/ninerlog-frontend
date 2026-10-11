@@ -78,9 +78,9 @@ if (unknown.length) {
 }
 
 // ── Session seeding ──────────────────────────────────────────────────────────
-const authStorage = JSON.stringify({
+const authStorageFor = (target) => JSON.stringify({
   state: {
-    user,
+    user: { ...user, ...target.user },
     isAuthenticated: true,
     accessToken: 'fixture-access-token',
     refreshToken: 'fixture-refresh-token',
@@ -96,6 +96,7 @@ const onboardingStorage = JSON.stringify({ state: { completedUserIds: [user.id] 
 async function shoot(browser, target, theme) {
   const context = await browser.newContext({
     ...device,
+    viewport: target.viewport ?? device.viewport,
     deviceScaleFactor: 2,
     colorScheme: theme,
     // Native date/time inputs render in the *browser's* locale, not the app's,
@@ -114,7 +115,7 @@ async function shoot(browser, target, theme) {
       localStorage.setItem('ninerlog-theme', JSON.stringify({ state: { theme: themeName }, version: 0 }));
       localStorage.setItem('ninerlog-language', lang);
     },
-    [authStorage, onboardingStorage, theme, !!target.anonymous, LANG]
+    [authStorageFor(target), onboardingStorage, theme, !!target.anonymous, LANG]
   );
 
   await context.route('**/api/v1/**', async (route) => {
@@ -126,7 +127,12 @@ async function shoot(browser, target, theme) {
         body: JSON.stringify({ error: 'Internal server error' }),
       });
     }
-    const body = target.empty && path in EMPTY_BODIES ? EMPTY_BODIES[path] : bodyFor(path);
+    const body =
+      target.empty && path in EMPTY_BODIES
+        ? EMPTY_BODIES[path]
+        : target.user && path === '/users/me'
+          ? { ...user, ...target.user }
+          : bodyFor(path);
     return route.fulfill({
       status: 200,
       contentType: 'application/json',
