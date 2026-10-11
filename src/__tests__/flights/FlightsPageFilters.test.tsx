@@ -127,7 +127,7 @@ describe('FlightsPage filter persistence', () => {
       data: { data: [flight], pagination: { page: 2, pageSize: 20, total: 25, totalPages: 2 } },
       isLoading: false,
       error: null,
-    } as any);
+    } as never);
     const user = userEvent.setup();
     renderAt('/flights?q=night&page=2');
 
