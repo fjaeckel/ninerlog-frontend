@@ -13,7 +13,7 @@ import { CustomReportDialog } from '../../components/reports/CustomReportDialog'
 import { definitionFromSearchParams } from '../../lib/customReports';
 import { exportFlightSearchCSV } from '../../hooks/useExport';
 import { DeleteFlightDialog } from '../../components/logbook/DeleteFlightDialog';
-import { useIsStrictLogbook } from '../../hooks/useLogbook';
+import { useIsStrictLogbook, useVoidedFlights } from '../../hooks/useLogbook';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { FormModal } from '../../components/ui/FormModal';
@@ -121,6 +121,8 @@ export default function FlightsPage() {
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
   const strictLogbook = useIsStrictLogbook();
+  const { data: voidedFlights } = useVoidedFlights();
+  const showVoidedLink = strictLogbook || (voidedFlights?.length ?? 0) > 0;
 
   // Search, filters, sort and page live in the URL query string.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -402,7 +404,7 @@ export default function FlightsPage() {
         className="mb-4"
         action={
           <div className="flex flex-wrap items-center gap-2">
-            {strictLogbook && (
+            {showVoidedLink && (
               <Link to="/flights/voided" className="btn-secondary whitespace-nowrap">
                 <Archive className="w-4 h-4" aria-hidden="true" />
                 {t('logbook:voided.link')}

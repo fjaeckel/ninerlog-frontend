@@ -22,7 +22,8 @@ function addIds(key: string, ids: string[]): void {
   }
 }
 
-export const isCountryPromptDismissed = (licenseId: string) => readIds(COUNTRY_PROMPT_KEY).includes(licenseId);
+/** Licence ids whose "add issuing country" prompt was dismissed. */
+export const readDismissedCountryPrompts = (): Set<string> => new Set(readIds(COUNTRY_PROMPT_KEY));
 export const dismissCountryPrompt = (licenseIds: string[]) => addIds(COUNTRY_PROMPT_KEY, licenseIds);
 
 export const wasStrictOffered = (licenseId: string) => readIds(STRICT_OFFER_KEY).includes(licenseId);

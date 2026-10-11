@@ -180,7 +180,7 @@ describe('LicenseForm', () => {
         data: expect.objectContaining({ issuingCountry: 'CH' }),
       });
     });
-    expect(onSaved).toHaveBeenCalledWith(saved);
+    expect(onSaved).toHaveBeenCalledWith(saved, expect.any(Number));
 
     mockUpdate.mutateAsync.mockResolvedValueOnce(existingLicense);
     await user.selectOptions(select, '');

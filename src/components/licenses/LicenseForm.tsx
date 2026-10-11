@@ -26,8 +26,8 @@ type LicenseFormData = z.infer<typeof licenseSchema>;
 interface LicenseFormProps {
   licenseId?: string | null;
   onClose: () => void;
-  /** Called with the saved licence before `onClose`. */
-  onSaved?: (license: License) => void;
+  /** Called with the saved licence and the save's start (epoch ms) before `onClose`. */
+  onSaved?: (license: License, startedAt: number) => void;
 }
 
 export default function LicenseForm({ licenseId, onClose, onSaved }: LicenseFormProps) {
@@ -88,6 +88,7 @@ export default function LicenseForm({ licenseId, onClose, onSaved }: LicenseForm
     looksLikeULLicence(watchedFields.licenseType) && !isGermanULAuthority(watchedFields.regulatoryAuthority);
 
   const onSubmit = async (data: LicenseFormData) => {
+    const startedAt = Date.now();
     try {
       setApiError(null);
       let saved: License;
@@ -113,7 +114,7 @@ export default function LicenseForm({ licenseId, onClose, onSaved }: LicenseForm
         };
         saved = await createLicense.mutateAsync(createData);
       }
-      onSaved?.(saved);
+      onSaved?.(saved, startedAt);
       onClose();
     } catch (error) {
       setApiError(extractApiError(error, t('form.failedToSave')));

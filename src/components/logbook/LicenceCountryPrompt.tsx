@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe, X } from 'lucide-react';
-import { dismissCountryPrompt, isCountryPromptDismissed } from '../../lib/logbookPrompts';
+import { dismissCountryPrompt, readDismissedCountryPrompts } from '../../lib/logbookPrompts';
 import type { License } from '../../types/api';
 
 interface LicenceCountryPromptProps {
@@ -12,17 +12,15 @@ interface LicenceCountryPromptProps {
 /** One-time prompt to set the issuing country on licences that have none. */
 export function LicenceCountryPrompt({ licences, onAddCountry }: LicenceCountryPromptProps) {
   const { t } = useTranslation('licenses');
-  const [dismissedNow, setDismissedNow] = useState<string[]>([]);
+  const [dismissed, setDismissed] = useState<Set<string>>(readDismissedCountryPrompts);
 
-  const missing = licences.filter(
-    (l) => !l.issuingCountry && !dismissedNow.includes(l.id) && !isCountryPromptDismissed(l.id)
-  );
+  const missing = licences.filter((l) => !l.issuingCountry && !dismissed.has(l.id));
   if (missing.length === 0) return null;
 
   const dismiss = () => {
     const ids = missing.map((l) => l.id);
     dismissCountryPrompt(ids);
-    setDismissedNow((prev) => [...prev, ...ids]);
+    setDismissed((prev) => new Set([...prev, ...ids]));
   };
 
   return (

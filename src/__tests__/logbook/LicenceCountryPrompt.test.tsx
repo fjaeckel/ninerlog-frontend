@@ -37,4 +37,28 @@ describe('LicenceCountryPrompt', () => {
     const { container } = render(<LicenceCountryPrompt licences={[licence('a', 'CH')]} onAddCountry={vi.fn()} />);
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('reads the dismissed list from storage once, not per licence or render', () => {
+    localStorage.setItem(COUNTRY_PROMPT_KEY, JSON.stringify(['a']));
+    const getItem = vi.spyOn(localStorage, 'getItem');
+    const licences = [licence('a', null), licence('b', null), licence('c', null)];
+    const { rerender } = render(<LicenceCountryPrompt licences={licences} onAddCountry={vi.fn()} />);
+    rerender(<LicenceCountryPrompt licences={[...licences]} onAddCountry={vi.fn()} />);
+    rerender(<LicenceCountryPrompt licences={[...licences]} onAddCountry={vi.fn()} />);
+
+    const reads = getItem.mock.calls.filter(([key]) => key === COUNTRY_PROMPT_KEY).length;
+    getItem.mockRestore();
+    expect(reads).toBe(1);
+    expect(screen.queryByRole('button', { name: /ppl-a/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ppl-b/i })).toBeInTheDocument();
+  });
+
+  it('still renders when storage is unavailable', () => {
+    const getItem = vi.spyOn(localStorage, 'getItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    render(<LicenceCountryPrompt licences={[licence('b', null)]} onAddCountry={vi.fn()} />);
+    getItem.mockRestore();
+    expect(screen.getByRole('button', { name: /ppl-b/i })).toBeInTheDocument();
+  });
 });

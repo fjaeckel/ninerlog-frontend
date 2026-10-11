@@ -19,9 +19,14 @@ const licence: License = {
   createdAt: '', updatedAt: '',
 };
 
-const mode = (strict: boolean, suggested: string[] = []) => ({
-  strict, requiredBy: [], suggestedBy: suggested.map((licenseId) => ({ licenseId })), events: [],
+type Event = { strict: boolean; trigger: 'licence' | 'manual' | 'import'; licenseId?: string | null; createdAt: string };
+
+const mode = (strict: boolean, suggested: string[] = [], events: Event[] = []) => ({
+  strict, requiredBy: [], suggestedBy: suggested.map((licenseId) => ({ licenseId })), events,
 });
+
+const ago = (ms: number) => new Date(Date.now() - ms).toISOString();
+const licenceOn = (createdAt: string, licenseId = 'l9'): Event => ({ strict: true, trigger: 'licence', licenseId, createdAt });
 
 function Harness() {
   const { onLicenceSaved, dialogs } = useLicenceStrictFollowUp();
@@ -45,7 +50,7 @@ describe('useLicenceStrictFollowUp', () => {
 
   it('shows the strict-mode notice when the save switched strict mode on', async () => {
     state.before = mode(false);
-    state.after = mode(true);
+    state.after = mode(true, [], [licenceOn(ago(0))]);
     render(<Harness />);
     await act(async () => trigger());
     const notice = screen.getByRole('dialog', { name: /strict logbook mode is on/i });
@@ -73,6 +78,42 @@ describe('useLicenceStrictFollowUp', () => {
     render(<Harness />);
     await act(async () => trigger());
     await userEvent.click(screen.getByRole('button', { name: /not now/i }));
+    await act(async () => trigger());
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('shows the notice when the earlier mode query had not loaded', async () => {
+    state.before = undefined;
+    state.after = mode(true, [], [licenceOn(ago(2_000))]);
+    render(<Harness />);
+    await act(async () => trigger());
+    expect(screen.getByRole('dialog', { name: /strict logbook mode is on/i })).toBeInTheDocument();
+  });
+
+  it('stays quiet when already strict and the mode query had not loaded', async () => {
+    state.before = undefined;
+    state.after = mode(true, [], [
+      { strict: true, trigger: 'manual', createdAt: ago(86_400_000) },
+      licenceOn(ago(3_600_000)),
+    ]);
+    render(<Harness />);
+    await act(async () => trigger());
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('stays quiet when the switch-on came from another licence', async () => {
+    state.before = mode(false);
+    state.after = mode(true, [], [licenceOn(ago(0), 'other')]);
+    render(<Harness />);
+    await act(async () => trigger());
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('stays quiet when the event was already known before the save', async () => {
+    const event = licenceOn(ago(1_000));
+    state.before = mode(true, [], [event]);
+    state.after = mode(true, [], [event]);
+    render(<Harness />);
     await act(async () => trigger());
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
