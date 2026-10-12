@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, MapPin, Mountain, Trophy } from 'lucide-react';
 import { useSoaringSeason, type SoaringSeason } from '../../hooks/useSoaringSeason';
 import { useDisciplines } from '../../hooks/usePilotProfile';
+import { useStatsByClass, type StatsByClassResponse } from '../../hooks/useStatsByClass';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useRelevance } from '../../lib/relevance';
 import { Skeleton } from '../ui/Skeleton';
@@ -15,6 +16,14 @@ const METHODS: readonly MethodKey[] = ['winch', 'aerotow', 'selfLaunch', 'car', 
 
 const currentYear = () => new Date().getUTCFullYear();
 
+/** All-time glider and sailplane-ultralight flights in the class statistics. */
+const soaringFlightsEver = (stats: StatsByClassResponse | undefined): number =>
+  (stats?.byClass ?? []).reduce((sum, row) => {
+    if (row.class === 'GLIDER') return sum + row.flights;
+    if (row.class === 'ULTRALIGHT') return sum + (row.byUlKind?.find((k) => k.ulKind === 'SAILPLANE')?.flights ?? 0);
+    return sum;
+  }, 0);
+
 /** Dashboard card: one calendar year of soaring flights. */
 export function SoaringSeasonCard() {
   const { t } = useTranslation('dashboard');
@@ -23,7 +32,12 @@ export function SoaringSeasonCard() {
   const disciplines = useDisciplines();
   const current = useSoaringSeason(thisYear);
   const shown = useSoaringSeason(year);
-  const record = useMemo(() => ({ flights: current.data?.flights ?? 0 }), [current.data?.flights]);
+  const { data: classStats } = useStatsByClass();
+  const everFlights = soaringFlightsEver(classStats);
+  const record = useMemo(
+    () => ({ flights: Math.max(current.data?.flights ?? 0, everFlights) }),
+    [current.data?.flights, everFlights],
+  );
   const relevance = useRelevance('dashboard.soaringSeason', { record });
 
   if (disciplines.isLoading || current.isLoading) {
