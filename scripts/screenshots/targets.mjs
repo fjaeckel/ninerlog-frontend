@@ -19,10 +19,18 @@ export const TARGETS = [
     path: '/flights',
     user: {
       flightListColumnMode: 'custom',
-      flightListColumns: ['function', 'landings', 'instructorName', 'crew'],
+      flightListColumns: ['function', 'landings', 'picName', 'crew'],
     },
   },
   { name: 'flights-narrow', path: '/flights', viewport: { width: 1024, height: 900 } },
+  {
+    name: 'flights-row-hover',
+    path: '/flights',
+    act: async (page) => {
+      await page.locator('tbody tr[class*="cursor-pointer"]').nth(1).hover();
+      await page.waitForTimeout(300);
+    },
+  },
   {
     name: 'flights-custom-columns-ifr',
     path: '/flights',
@@ -111,6 +119,16 @@ export const TARGETS = [
     },
   },
   { name: 'flight-detail', path: '/flights/f1' },
+  {
+    name: 'flight-detail-from-list',
+    path: '/flights',
+    act: async (page) => {
+      const row = page.locator('tbody tr[class*="cursor-pointer"]').nth(1);
+      if (await row.isVisible()) await row.click();
+      else await page.locator('article[role="button"]').nth(1).click();
+      await page.waitForTimeout(600);
+    },
+  },
   { name: 'flight-detail-local-ident', path: '/flights/f8' },
   {
     name: 'flights-modal-edit',

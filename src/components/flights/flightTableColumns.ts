@@ -173,8 +173,18 @@ type TimeFormat = (value?: string | null) => string;
 
 const plainTime: TimeFormat = (value) => value?.slice(0, 5) ?? '';
 
-/** Builds a detail cell's text. */
-type DetailText = (flight: Flight, t: FlightsT, fmtTime?: TimeFormat) => string;
+/** Builds a detail cell's text; `selfName` stands in for the API's "SELF". */
+type DetailText = (flight: Flight, t: FlightsT, fmtTime?: TimeFormat, selfName?: string) => string;
+
+/**
+ * The flight's pilot-in-command as the API resolves it for the logbook
+ * (`displayPicName`), with the "SELF" placeholder shown as `selfName`.
+ */
+export function displayPicName(flight: Flight, selfName?: string): string {
+  const name = (flight.displayPicName ?? flight.picName ?? '').trim();
+  if (!name) return '';
+  return selfName && name.toLowerCase() === 'self' ? selfName : name;
+}
 
 interface FlightColumnDef {
   key: FlightColumnKey;
@@ -354,7 +364,7 @@ export const FLIGHT_COLUMNS: FlightColumnDef[] = [
     total: (s) => countText(Math.round(s.distance)),
   }),
   detailColumn('waypoints', 'tableWaypoints', 'fields.routeWaypoints', (f) => f.route?.trim() ?? ''),
-  detailColumn('picName', 'tablePicName', 'fields.picName', (f) => f.picName?.trim() ?? ''),
+  detailColumn('picName', 'tablePicName', 'fields.picName', (f, _t, _fmt, selfName) => displayPicName(f, selfName)),
   detailColumn('instructorName', 'tableInstructor', 'fields.instructorName', (f) => f.instructorName?.trim() ?? ''),
   detailColumn('crew', 'tableCrew', 'sections.crew', crewText),
   detailColumn('launchMethod', 'tableLaunch', 'fields.launchMethod', launchMethodText),

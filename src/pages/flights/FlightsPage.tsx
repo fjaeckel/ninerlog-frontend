@@ -1,6 +1,7 @@
 import { Fragment, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../../stores/authStore';
 import { ArrowDown, ArrowRight, ArrowUp, BookmarkPlus, FileSpreadsheet, ListFilter, Loader2, Pencil, Plane, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { useFlights, useInfiniteFlights, useDeleteFlight } from '../../hooks/useFlights';
 import HelpLink from '../../components/ui/HelpLink';
@@ -24,12 +25,15 @@ import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, fligh
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
 import type { components, operations } from '../../api/schema';
+import {
+  FLIGHT_LIST_PAGE_SIZE,
+  flightListQueryFromSearch,
+  FLIGHT_SORT_FIELDS as SORT_FIELDS,
+  type FlightSortField as SortField,
+} from './flightListQuery';
 
 type Flight = components['schemas']['Flight'];
 type ListFlightsParams = operations['listFlights']['parameters']['query'];
-type SortField = 'date' | 'totalTime' | 'createdAt';
-
-const SORT_FIELDS: SortField[] = ['date', 'totalTime', 'createdAt'];
 
 /** A secondary toolbar action: icon-only on phones, labelled from `sm`. */
 const TOOLBAR_ACTION =
@@ -111,6 +115,7 @@ export default function FlightsPage() {
   const isWide = useMediaQuery('(min-width: 1024px)');
   const { fmtDate, fmtDuration, fmtTimeOfDay } = useFormatPrefs();
   const columnPrefs = useFlightColumnPrefs();
+  const selfName = useAuthStore((s) => s.user?.name);
   const navigate = useNavigate();
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
@@ -213,18 +218,8 @@ export default function FlightsPage() {
 
   const params: ListFlightsParams = {
     page,
-    pageSize: 20,
-    sortBy,
-    sortOrder,
-    ...(searchQuery ? { q: searchQuery } : {}),
-    ...(startDate ? { startDate } : {}),
-    ...(endDate ? { endDate } : {}),
-    ...(aircraftReg ? { aircraftReg } : {}),
-    ...(departureIcao ? { departureIcao: departureIcao.toUpperCase() } : {}),
-    ...(arrivalIcao ? { arrivalIcao: arrivalIcao.toUpperCase() } : {}),
-    ...(functionFilter === 'pic' ? { isPic: true } : {}),
-    ...(functionFilter === 'dual' ? { isDual: true } : {}),
-    ...(logbookLicenseId ? { logbookLicenseId } : {}),
+    pageSize: FLIGHT_LIST_PAGE_SIZE,
+    ...flightListQueryFromSearch(searchParams),
   };
 
   // The search without the page: the export carries every match.
@@ -280,6 +275,12 @@ export default function FlightsPage() {
     () => selectFlightCardColumns(flights, columnPrefs),
     [flights, columnPrefs]
   );
+  // A flight's 0-based position in the whole list, for previous/next on its page.
+  const listOffset = isWide ? (page - 1) * FLIGHT_LIST_PAGE_SIZE : 0;
+  const indexById = useMemo(() => new Map(flights.map((f, i) => [f.id, listOffset + i])), [flights, listOffset]);
+  const openFlight = (id: string) =>
+    navigate(`/flights/${id}`, { state: { listSearch: location.search, listIndex: indexById.get(id) } });
+
   // Month headings with running totals for the mobile card list.
   // Whole-month sums from the API, by YYYY-MM.
   const monthTotals = useMemo(
@@ -659,7 +660,7 @@ export default function FlightsPage() {
                       key={flight.id}
                       flight={flight}
                       columns={cardColumns}
-                      onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
+                      onClick={() => openFlight(flight.id)}
                     />
                   ))}
                 </div>
@@ -766,7 +767,7 @@ export default function FlightsPage() {
                   <tr
                     key={flight.id}
                     className="group hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition-colors"
-                    onClick={() => navigate(`/flights/${flight.id}`, { state: { listSearch: location.search } })}
+                    onClick={() => openFlight(flight.id)}
                   >
                     <td className="px-3 py-2 whitespace-nowrap text-slate-800 dark:text-slate-200">
                       <span className="text-xs text-slate-400 dark:text-slate-500">
@@ -839,7 +840,7 @@ export default function FlightsPage() {
                       </td>
                     )}
                     {columns.details.map((col) => {
-                      const text = col.text(flight, (k, o) => t(`flights:${k}`, o ?? {}), fmtTimeOfDay);
+                      const text = col.text(flight, (k, o) => t(`flights:${k}`, o ?? {}), fmtTimeOfDay, selfName);
                       return (
                         <td
                           key={col.key}
@@ -861,7 +862,7 @@ export default function FlightsPage() {
                       </td>
                     )}
                     <td
-                      className={`px-3 py-2 whitespace-nowrap text-right bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-[linear-gradient(rgb(51_65_85/0.4),rgb(51_65_85/0.4))] transition-colors ${PINNED_CELL}`}
+                      className={`px-3 py-2 whitespace-nowrap text-right bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 dark:group-hover:bg-[linear-gradient(rgb(51_65_85/0.4),rgb(51_65_85/0.4))] transition-colors ${PINNED_CELL}`}
                       data-testid="flight-row-actions"
                     >
                       <button

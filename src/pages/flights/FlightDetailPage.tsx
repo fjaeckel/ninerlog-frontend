@@ -1,11 +1,13 @@
 import { useState, type ReactNode } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../../stores/authStore';
 import { ArrowLeft, Pencil, Trash2, Plane, PlaneTakeoff, PlaneLanding, ShieldCheck } from 'lucide-react';
 import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
 import FlightForm from '../../components/flights/FlightForm';
 import FlightRouteCard from '../../components/flights/FlightRouteCard';
 import FlightRouteHeading from '../../components/flights/FlightRouteHeading';
+import FlightNeighborNav from '../../components/flights/FlightNeighborNav';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { FormModal } from '../../components/ui/FormModal';
 import { PageWrapper } from '../../components/ui/PageWrapper';
@@ -13,6 +15,7 @@ import { SignatureSection } from '../../components/flights/SignatureSection';
 import { FlightCrewCard } from '../../components/flights/FlightCrewCard';
 import {
   FLIGHT_FUNCTION_BADGE,
+  displayPicName,
   flightFunctionKind,
   flightFunctionLabel,
 } from '../../components/flights/flightTableColumns';
@@ -28,13 +31,16 @@ export default function FlightDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   // The list's query string, passed back on return navigation.
-  const listSearch = (location.state as { listSearch?: string } | null)?.listSearch ?? '';
+  const listState = location.state as { listSearch?: string; listIndex?: number } | null;
+  const listSearch = listState?.listSearch ?? '';
+  const listIndex = listState?.listIndex;
   const flightsListPath = `/flights${listSearch}`;
   const { t } = useTranslation('flights');
   const { data: flight, isLoading, error } = useFlight(flightId || '');
   const deleteFlight = useDeleteFlight();
   const [showEditForm, setShowEditForm] = useState(false);
   const { fmtDateTime, fmtDateLong, fmtDuration } = useFormatPrefs();
+  const selfName = useAuthStore((s) => s.user?.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (isLoading) {
@@ -68,6 +74,7 @@ export default function FlightDetailPage() {
     );
   }
 
+  const picName = displayPicName(flight, selfName);
   const totalLandings = flight.allLandings;
   const totalTakeoffs = flight.takeoffsDay + flight.takeoffsNight;
 
@@ -151,13 +158,21 @@ export default function FlightDetailPage() {
 
   return (
     <PageWrapper maxWidth="list">
-      <button
-        onClick={() => navigate(flightsListPath)}
-        className="mb-3 inline-flex min-h-[44px] items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {t('detail.backToFlights')}
-      </button>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <button
+          onClick={() => navigate(flightsListPath)}
+          className="inline-flex min-h-[44px] items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t('detail.backToFlights')}
+        </button>
+        <FlightNeighborNav
+          flightId={flight.id}
+          listSearch={listSearch}
+          listIndex={listIndex}
+          keyboard={!showEditForm && !showDeleteConfirm}
+        />
+      </div>
 
       {/* Hero — the list card's header at page scale */}
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
@@ -288,8 +303,8 @@ export default function FlightDetailPage() {
               {timeTiles.map(({ key, label, minutes }) => (
                 <DataTile key={key} label={label} value={fmtDuration(minutes)} mono />
               ))}
-              {flight.picName && (
-                <DataTile className="col-span-2" label={t('fields.picName')} value={flight.picName} />
+              {picName && (
+                <DataTile className="col-span-2" label={t('fields.picName')} value={picName} />
               )}
             </DataTileGrid>
           </div>

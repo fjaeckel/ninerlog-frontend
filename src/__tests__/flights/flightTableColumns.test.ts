@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  displayPicName,
   TYPICAL_DESKTOP_TABLE_WIDTH,
   columnsHiddenAt,
   DEFAULT_CUSTOM_COLUMNS,
@@ -299,6 +300,32 @@ describe('detail columns', () => {
     const card = selectFlightCardColumns([flight()], custom(['instructorName']));
 
     expect(card.details.map((c) => c.key)).toEqual(['instructorName']);
+  });
+});
+
+describe('displayPicName', () => {
+  it('uses the name the API resolves for the logbook', () => {
+    expect(displayPicName(flight({ picName: null, displayPicName: 'Jacqueline Cochran' }), 'Alex Fischer')).toBe(
+      'Jacqueline Cochran'
+    );
+  });
+
+  it('shows the user for the SELF placeholder, whatever its case', () => {
+    expect(displayPicName(flight({ displayPicName: 'SELF' }), 'Alex Fischer')).toBe('Alex Fischer');
+    expect(displayPicName(flight({ displayPicName: 'Self' }), 'Alex Fischer')).toBe('Alex Fischer');
+    expect(displayPicName(flight({ displayPicName: 'SELF' }))).toBe('SELF');
+  });
+
+  it('falls back to the stored PIC name, and is empty for an FSTD session', () => {
+    expect(displayPicName(flight({ picName: 'Bessie Coleman' }))).toBe('Bessie Coleman');
+    expect(displayPicName(flight({ displayPicName: null, picName: null }))).toBe('');
+  });
+
+  it('feeds the PIC Name column', () => {
+    const f = flight({ displayPicName: 'SELF' });
+    const layout = selectFlightColumns([f], custom(['picName']));
+
+    expect(layout.details[0].text(f, (k) => k, undefined, 'Alex Fischer')).toBe('Alex Fischer');
   });
 });
 
