@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertOctagon, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
-import { differenceInDays } from 'date-fns';
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 import type { ClassRatingCurrency, FlightReviewStatus } from '../../types/api';
 import { isRatingAlert, isRatingNotCurrent, ratingStatus } from '../../lib/ratingStatus';
 
@@ -60,7 +60,7 @@ export function CurrencyExpiryBanner({ ratings, flightReview }: CurrencyExpiryBa
       sublabel: r.regulatoryAuthority,
       isExpired: isRatingNotCurrent(r.status),
       isLapsed,
-      days: r.expiryDate && !isLapsed ? differenceInDays(new Date(r.expiryDate), now) : null,
+      days: r.expiryDate && !isLapsed ? differenceInCalendarDays(parseISO(r.expiryDate), now) : null,
       category: RULE_KEY_CATEGORY[r.ruleDescriptionKey ?? ''] ?? 'generic',
     });
   }
@@ -70,7 +70,7 @@ export function CurrencyExpiryBanner({ ratings, flightReview }: CurrencyExpiryBa
       id: 'flight-review',
       label: t('flightReview'),
       isExpired: flightReview.status === 'expired',
-      days: flightReview.expiresOn ? differenceInDays(new Date(flightReview.expiresOn), now) : null,
+      days: flightReview.expiresOn ? differenceInCalendarDays(parseISO(flightReview.expiresOn), now) : null,
       category: 'flight_review',
     });
   }
