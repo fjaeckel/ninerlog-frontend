@@ -102,6 +102,10 @@ describe('FlightForm — launch method, fill from last flight, quick-add', () =>
       await waitFor(() => {
         expect((document.getElementById('launchMethod') as HTMLSelectElement).value).toBe('winch');
       });
+      const options = [...(document.getElementById('launchMethod') as HTMLSelectElement).options].slice(1);
+      expect(options.map((o) => [o.value, o.text])).toEqual([
+        ['winch', 'Winch'], ['aerotow', 'Aerotow'], ['self-launch', 'Self-Launch'], ['car', 'Car Tow'], ['bungee', 'Bungee'],
+      ]);
     });
   });
 
