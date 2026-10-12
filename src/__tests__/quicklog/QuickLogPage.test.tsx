@@ -129,6 +129,27 @@ describe('QuickLogPage', () => {
     expect(screen.getByText(/Take-off, landing and total time were filled in/)).toBeInTheDocument();
   });
 
+  it('shows a failed launch-method save on the completion card and clears it on Log another', async () => {
+    const user = userEvent.setup();
+    sessionState.current = openSession({ takeoffAt: '2026-08-08T10:00:00Z' });
+    recordEvent.mockResolvedValue({
+      session: openSession({ status: 'completed', takeoffAt: '2026-08-08T10:00:00Z', landingAt: '2026-08-08T10:08:00Z', flightId: 'f9' }),
+      queued: false,
+    });
+    updateFlight.mockRejectedValue(new Error('boom'));
+    renderPage();
+
+    await user.click(screen.getByRole('radio', { name: 'Winch' }));
+    await user.click(screen.getByRole('button', { name: 'LANDING' }));
+
+    expect(await screen.findByText('Flight logged!')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('the launch method could not be saved');
+
+    sessionState.current = null;
+    await user.click(screen.getByRole('button', { name: 'Log another flight' }));
+    expect(screen.queryByText(/the launch method could not be saved/)).not.toBeInTheDocument();
+  });
+
   it('a block-time session keeps its order and the on-block skip, even for a glider', () => {
     sessionState.current = openSession({ offBlockAt: '2026-08-08T09:55:00Z' });
     renderPage();

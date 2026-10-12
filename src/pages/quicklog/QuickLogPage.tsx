@@ -254,12 +254,23 @@ export default function QuickLogPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {completedAirborne ? t('quicklog:flightLoggedHintAirborne') : t('quicklog:flightLoggedHint')}
           </p>
+          {errorMessage && (
+            <div className="px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm text-left" role="alert">
+              {errorMessage}
+            </div>
+          )}
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <Link to={`/flights/${completedFlightId}`} className="btn-primary justify-center">
               {t('quicklog:reviewFlight')}
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </Link>
-            <button onClick={() => setCompletedFlightId(null)} className="btn-secondary justify-center">
+            <button
+              onClick={() => {
+                setCompletedFlightId(null);
+                setErrorMessage(null);
+              }}
+              className="btn-secondary justify-center"
+            >
               {t('quicklog:logAnother')}
             </button>
           </div>
