@@ -1213,6 +1213,8 @@ export function buildFixtureSet(persona) {
     }
     const ratingsMatch = path.match(/^\/licenses\/([^/]+)\/(?:class-)?ratings$/);
     if (ratingsMatch) return classRatings[ratingsMatch[1]] ?? [];
+    const remindersMatch = path.match(/^\/aircraft\/([^/]+)\/reminders$/);
+    if (remindersMatch) return (persona.reminders ?? []).filter((r) => r.aircraftId === remindersMatch[1]);
     const privilegesMatch = path.match(/^\/licenses\/([^/]+)\/privileges$/);
     if (privilegesMatch) return (persona.privileges ?? []).filter((p) => p.licenseId === privilegesMatch[1]);
     if (/^\/licenses\/[^/]+\/currency$/.test(path)) return currency;
