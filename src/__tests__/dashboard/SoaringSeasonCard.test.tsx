@@ -13,6 +13,7 @@ const state = vi.hoisted(() => ({
   seasons: {} as Record<number, unknown>,
   loading: false,
   years: [] as number[],
+  byClass: [] as unknown[],
 }));
 
 vi.mock('../../hooks/usePilotProfile', async (importOriginal) => {
@@ -28,6 +29,10 @@ vi.mock('../../hooks/useSoaringSeason', () => ({
     state.years.push(year);
     return { data: state.loading ? undefined : state.seasons[year] ?? empty(year), isLoading: state.loading, isFetching: state.loading, isError: false };
   },
+}));
+
+vi.mock('../../hooks/useStatsByClass', () => ({
+  useStatsByClass: () => ({ data: { byClass: state.byClass, byAuthority: [] } }),
 }));
 
 const THIS_YEAR = new Date().getUTCFullYear();
@@ -54,6 +59,7 @@ beforeEach(() => {
   state.seasons = { [THIS_YEAR]: LENA_SEASON };
   state.loading = false;
   state.years = [];
+  state.byClass = [];
 });
 
 describe('Soaring season card', () => {
@@ -124,6 +130,36 @@ describe('Soaring season card', () => {
   it('K Karl (SAILPLANE dormant, no soaring flights): no card', () => {
     state.profile = PERSONA_PROFILES.karl();
     state.seasons = {};
+    renderCard();
+    expect(screen.queryByTestId('soaring-season')).not.toBeInTheDocument();
+  });
+
+  it('K Karl with glider flights in an earlier season sees the card on an empty year', async () => {
+    const user = userEvent.setup();
+    state.profile = PERSONA_PROFILES.karl();
+    state.byClass = [{ class: 'GLIDER', flights: 120, minutes: 9000, picMinutes: 9000, landings: 120 }];
+    state.seasons = { [THIS_YEAR - 3]: { ...LENA_SEASON, year: THIS_YEAR - 3 } };
+    renderCard();
+    expect(screen.getByTestId('soaring-empty')).toBeInTheDocument();
+    for (let i = 0; i < 3; i++) await user.click(screen.getByRole('button', { name: 'Previous year' }));
+    expect(within(screen.getByTestId('soaring-launches')).getByText('52')).toBeInTheDocument();
+  });
+
+  it('a sailplane ultralight in an earlier season keeps the card', () => {
+    state.profile = PERSONA_PROFILES.mark();
+    state.seasons = {};
+    state.byClass = [{
+      class: 'ULTRALIGHT', flights: 9, minutes: 600, picMinutes: 600, landings: 9,
+      byUlKind: [{ ulKind: 'SAILPLANE', flights: 4, minutes: 300, picMinutes: 300, dualMinutes: 0, landings: 4 }],
+    }];
+    renderCard();
+    expect(screen.getByTestId('soaring-season')).toBeInTheDocument();
+  });
+
+  it('A1 Mark with only powered flights: no card', () => {
+    state.profile = PERSONA_PROFILES.mark();
+    state.seasons = {};
+    state.byClass = [{ class: 'MEP_LAND', flights: 900, minutes: 90000, picMinutes: 0, landings: 900 }];
     renderCard();
     expect(screen.queryByTestId('soaring-season')).not.toBeInTheDocument();
   });
