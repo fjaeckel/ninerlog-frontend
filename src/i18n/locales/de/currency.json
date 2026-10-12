@@ -310,7 +310,8 @@
     "readiness": {
       "launch_method_current": "Gültig bis {{date}}",
       "credential_valid": "Gültig bis {{date}}",
-      "credential_expired": "Abgelaufen am {{date}}"
+      "credential_expired": "Abgelaufen am {{date}}",
+      "no_rating": "Keine deiner Berechtigungen deckt dieses Luftfahrzeug ab — du darfst es nicht als verantwortlicher Pilot fliegen."
     },
     "privilege": {
       "valid": "Gültig — keine fortlaufende Flugerfahrung erforderlich.",

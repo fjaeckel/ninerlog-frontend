@@ -27,7 +27,7 @@ const MESSAGE_KEYS = [
   'launch_method.progress',
   'remedy.fly_more', 'remedy.training_flight', 'remedy.proficiency_check', 'remedy.launch_method_dual',
   'remedy.privilege_with_instructor',
-  'readiness.launch_method_current', 'readiness.credential_valid', 'readiness.credential_expired',
+  'readiness.launch_method_current', 'readiness.credential_valid', 'readiness.credential_expired', 'readiness.no_rating',
 ];
 
 /** Requirement name keys (`CurrencyRequirement.nameKey`). */

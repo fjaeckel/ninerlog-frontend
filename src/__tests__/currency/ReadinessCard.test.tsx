@@ -178,6 +178,20 @@ describe('ReadinessCard', () => {
     expect(screen.getByTestId('readiness-medical')).toHaveTextContent('Expired on 30.09.2026');
   });
 
+  it('an aircraft no rating covers is listed by its class with the reason, without borrowing launches', () => {
+    mockAll({
+      readiness: withItems([
+        { kind: 'rating', classType: 'GLIDER', ready: false, status: 'unknown', reasonKey: 'readiness.no_rating' },
+        { kind: 'launch_method', launchMethod: 'winch', ready: true, status: 'current', reasonKey: 'readiness.launch_method_current', params: { date: '2028-08-07' } },
+      ]),
+    });
+    renderCard();
+    const row = within(screen.getByTestId('readiness-not-today')).getByTestId('readiness-class-GLIDER');
+    expect(row).toHaveTextContent('Glider');
+    expect(row).toHaveTextContent('None of your ratings covers this aircraft — you may not fly it as pilot in command.');
+    expect(screen.queryByTestId('readiness-launch-winch')).not.toBeInTheDocument();
+  });
+
   it('J: a student with no rating item is not told everything is current', () => {
     mockAll({ readiness: withItems([lenaToday[4]]) });
     renderCard();
