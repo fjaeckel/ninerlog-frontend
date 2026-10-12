@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { UTCDate } from '@date-fns/utc';
 import type { ClockFormat } from './timeOfDay';
 
 export type DateFormatPref = 'DD.MM.YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD';
@@ -20,39 +21,44 @@ const dateFnsLongPatterns: Record<DateFormatPref, string> = {
   'YYYY-MM-DD': 'EEEE, yyyy-MM-dd',
 };
 
+/** Parses a date or instant for formatting in UTC; a bare `YYYY-MM-DD` is that UTC day. */
+function toUtc(date: Date | string): UTCDate {
+  return new UTCDate(typeof date === 'string' ? date : date.getTime());
+}
+
 /**
- * Format a date using the user's preferred date format.
+ * Format a date in UTC using the user's preferred date format.
  */
 export function formatDate(date: Date | string, dateFormat: DateFormatPref = 'DD.MM.YYYY'): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = toUtc(date);
   return format(d, dateFnsPatterns[dateFormat] || dateFnsPatterns['DD.MM.YYYY']);
 }
 
 /**
- * Format a date with time using the user's preferred date and clock formats.
+ * Format a date with time in UTC using the user's preferred date and clock formats.
  */
 export function formatDateTime(
   date: Date | string,
   dateFormat: DateFormatPref = 'DD.MM.YYYY',
   clock: ClockFormat = '24h',
 ): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = toUtc(date);
   const datePattern = dateFnsPatterns[dateFormat] || dateFnsPatterns['DD.MM.YYYY'];
   return format(d, `${datePattern} ${clockPatterns[clock] || clockPatterns['24h']}`);
 }
 
 /**
- * Format the local time-of-day part of an instant using the user's clock format.
+ * Format the UTC time-of-day part of an instant using the user's clock format.
  */
 export function formatClockTime(date: Date | string, clock: ClockFormat = '24h'): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = toUtc(date);
   return format(d, clockPatterns[clock] || clockPatterns['24h']);
 }
 
 /**
- * Format a date in long/verbose format (for detail pages).
+ * Format a date in UTC in long/verbose format (for detail pages).
  */
 export function formatDateLong(date: Date | string, dateFormat: DateFormatPref = 'DD.MM.YYYY'): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = toUtc(date);
   return format(d, dateFnsLongPatterns[dateFormat] || dateFnsLongPatterns['DD.MM.YYYY']);
 }

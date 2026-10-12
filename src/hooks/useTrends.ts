@@ -29,7 +29,7 @@ export function fillTrendMonths(trends: TrendMonth[] | undefined, months: number
   const out: TrendMonth[] = [];
   const now = new Date();
   for (let i = months - 1; i >= 0; i--) {
-    const d = new Date(Date.UTC(now.getFullYear(), now.getMonth() - i, 1));
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
     const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
     out.push(byMonth.get(key) ?? { month: key, totalMinutes: 0, flights: 0 });
   }

@@ -131,6 +131,16 @@ describe('CurrencyCard', () => {
     expect(screen.queryByText(/Expires:/)).not.toBeInTheDocument();
   });
 
+  it('renders the recency lapse date', () => {
+    render(<CurrencyCard rating={{ ...baseRating, expiryDate: undefined, recencyExpiresOn: '2027-03-16' }} />);
+    expect(screen.getByTestId('currency-recency-expires')).toHaveTextContent('Current until 16.03.2027 without further flying');
+  });
+
+  it('does not render a recency lapse date when missing', () => {
+    render(<CurrencyCard rating={baseRating} />);
+    expect(screen.queryByTestId('currency-recency-expires')).not.toBeInTheDocument();
+  });
+
   it('renders FAA passenger currency card', () => {
     const faaRating: ClassRatingCurrency = {
       classRatingId: 'cr-2',

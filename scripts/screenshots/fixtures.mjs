@@ -66,6 +66,7 @@ const flight = (i, dep, arr, reg, type, minutes, offset) => ({
   remarks: i % 2 === 0 ? 'Training flight, crosswind circuits' : null,
   instructorName: null,
   instructorComments: null,
+  displayPicName: 'SELF',
   crewMembers: [],
   createdAt: iso('2026-01-01'),
   updatedAt: iso('2026-01-01'),
@@ -87,12 +88,20 @@ const simulatorSession = (i, type, minutes, fstdType, offset) => ({
   takeoffsNight: 0,
   simulatedFlightTime: minutes,
   fstdType,
+  displayPicName: null,
   remarks: 'IR renewal — partial panel, holds',
 });
 
 export const flights = [
   {
+    ...flight(8, 'DE-0249', 'EDRK', 'D-MABC', 'C42', 45, -1),
+    departureAirportName: 'Konz-Könen Glider Field',
+    arrivalAirportName: 'Koblenz-Winningen Airfield',
+  },
+  {
     ...flight(1, 'EDDF', 'EDDH', 'D-EABC', 'C172', 95, -2),
+    picName: 'Alex Fischer',
+    displayPicName: 'Alex Fischer',
     crewMembers: [
       { id: 'cm1', flightId: 'f1', contactId: 'p1', name: 'Amelia Earhart', role: 'Student' },
       { id: 'cm2', flightId: 'f1', contactId: null, name: 'Bessie Coleman', role: 'Passenger' },
@@ -102,6 +111,13 @@ export const flights = [
   {
     ...flight(2, 'EDDH', 'EDDF', 'D-EABC', 'C172', 88, -5),
     signatureId: 'sig1',
+    holds: 1,
+    approachesCount: 2,
+    approaches: [{ type: 'ILS', airport: 'EDDF' }, { type: 'RNAV/GPS', airport: 'EDDF' }],
+    isIpc: true,
+    picName: 'Jacqueline Cochran',
+    instructorName: 'Jacqueline Cochran',
+    displayPicName: 'Jacqueline Cochran',
     crewMembers: [
       { id: 'cm3', flightId: 'f2', contactId: null, name: 'Jacqueline Cochran', role: 'Instructor' },
     ],
@@ -111,6 +127,35 @@ export const flights = [
   flight(4, 'LOWI', 'EDMO', 'D-EFGH', 'PA28', 152, -12),
   flight(5, 'EDDB', 'EDDB', 'D-EABC', 'C172', 60, -20),
 ];
+
+const flightTotals = {
+  flights: 142,
+  totalTime: 14_655,
+  picTime: 11_820,
+  dualTime: 2_310,
+  nightTime: 1_085,
+  ifrTime: 1_640,
+  crossCountryTime: 6_930,
+  sicTime: 0,
+  picusTime: 0,
+  spicTime: 0,
+  reliefTime: 0,
+  dualGivenTime: 0,
+  examinerTime: 0,
+  multiPilotTime: 0,
+  soloTime: 525,
+  simulatedFlightTime: 1_440,
+  actualInstrumentTime: 410,
+  simulatedInstrumentTime: 690,
+  groundTrainingTime: 0,
+  landingsDay: 388,
+  landingsNight: 27,
+  takeoffsDay: 390,
+  takeoffsNight: 25,
+  approaches: 64,
+  holds: 18,
+  distance: 18_412.6,
+};
 
 export const aircraft = [
   {
@@ -284,7 +329,7 @@ export const currency = {
     },
     {
       classRatingId: 'cr3', classType: 'GLIDER', licenseId: 'l3', regulatoryAuthority: 'EASA', licenseType: 'SPL',
-      status: 'current', windowOpen: false, messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_spl',
+      status: 'current', windowOpen: false, recencyExpiresOn: day(212), messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_spl',
       ruleDescription: 'EASA SFCL.160(a) — 5 h, 15 launches, 2 training flights in 24 months.',
       countedClasses: ['GLIDER', 'TMG'],
       creditedUltralightKinds: ['SAILPLANE', 'THREE_AXIS_MOTORGLIDER'],
@@ -334,19 +379,19 @@ export const currency = {
     },
     {
       classRatingId: 'cr5', classType: 'SEP_LAND', licenseId: 'l5', regulatoryAuthority: 'EASA', licenseType: 'LAPL(A)',
-      status: 'current', windowOpen: false, messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_lapl',
+      status: 'current', windowOpen: false, recencyExpiresOn: day(388), messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_lapl',
       countedClasses: LAPL_POOL,
       requirements: LAPL_REQS,
     },
     {
       classRatingId: 'cr6', classType: 'TMG', licenseId: 'l5', regulatoryAuthority: 'EASA', licenseType: 'LAPL(A)',
-      status: 'current', windowOpen: false, messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_lapl',
+      status: 'current', windowOpen: false, recencyExpiresOn: day(388), messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_lapl',
       countedClasses: LAPL_POOL,
       requirements: LAPL_REQS,
     },
     {
       classRatingId: 'cr7', classType: 'GYROPLANE', licenseId: 'l6', regulatoryAuthority: 'EASA', licenseType: 'GPL',
-      status: 'current', windowOpen: false, messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_gpl',
+      status: 'current', windowOpen: false, recencyExpiresOn: day(96), messageKey: 'rating.recency_current', ruleDescriptionKey: 'easa_gpl',
       creditedUltralightKinds: ['GYROPLANE'],
       requirements: [
         { nameKey: 'requirement.total_time', met: true, current: 810, required: 720, unit: 'minutes', messageKey: 'requirement.progress' },
@@ -457,9 +502,9 @@ export const adminUpdate = {
 
 export const adminUsers = {
   data: [
-    { id: 'u1', email: 'pilot@example.com', name: 'Alex Fischer', isAdmin: true, emailVerified: true, twoFactorEnabled: true, locked: false, disabled: false, flightCount: 66, aircraftCount: 3, createdAt: iso('2024-01-01'), lastLoginAt: iso('2026-08-15') },
-    { id: 'u2', email: 'anna.mueller@example.com', name: 'Anna Müller', isAdmin: false, emailVerified: true, twoFactorEnabled: false, locked: false, disabled: false, flightCount: 214, aircraftCount: 5, createdAt: iso('2024-04-11'), lastLoginAt: iso('2026-08-14') },
-    { id: 'u3', email: 'tom.becker@example.com', name: 'Tom Becker', isAdmin: false, emailVerified: false, twoFactorEnabled: false, locked: true, disabled: false, flightCount: 3, aircraftCount: 1, createdAt: iso('2026-07-30'), lastLoginAt: null },
+    { id: 'u1', email: 'pilot@example.com', name: 'Alex Fischer', isAdmin: true, emailVerified: true, twoFactorEnabled: true, locked: false, disabled: false, flightCount: 66, aircraftCount: 3, createdAt: iso('2024-01-01'), lastLoginAt: iso('2026-08-15'), lastActiveAt: iso('2026-08-16T08:42:00Z') },
+    { id: 'u2', email: 'anna.mueller@example.com', name: 'Anna Müller', isAdmin: false, emailVerified: true, twoFactorEnabled: false, locked: false, disabled: false, flightCount: 214, aircraftCount: 5, createdAt: iso('2024-04-11'), lastLoginAt: iso('2026-08-14'), lastActiveAt: iso('2026-08-15T19:05:00Z') },
+    { id: 'u3', email: 'tom.becker@example.com', name: 'Tom Becker', isAdmin: false, emailVerified: false, twoFactorEnabled: false, locked: true, disabled: false, flightCount: 3, aircraftCount: 1, createdAt: iso('2026-07-30'), lastLoginAt: null, lastActiveAt: null },
   ],
   pagination: { page: 1, pageSize: 20, total: 3, totalPages: 1 },
 };
@@ -550,7 +595,8 @@ export const analytics = {
     { country: 'AT', airports: 2, flights: 8 },
   ],
   byRoute: [
-    { departureIcao: 'EDDF', arrivalIcao: 'EDDH', flights: 12, totalMinutes: 1140, distanceNm: 2100 },
+    { departureIcao: 'EDDF', arrivalIcao: 'EDDH', departureAirportName: 'Frankfurt am Main Airport', arrivalAirportName: 'Hamburg Airport', flights: 12, totalMinutes: 1140, distanceNm: 2100 },
+    { departureIcao: 'DE-0249', arrivalIcao: 'EDRK', departureAirportName: 'Konz-Könen Glider Field', arrivalAirportName: 'Koblenz-Winningen Airfield', flights: 7, totalMinutes: 315, distanceNm: 48 },
     { departureIcao: 'EDMO', arrivalIcao: 'LOWI', flights: 6, totalMinutes: 870, distanceNm: 620 },
   ],
   byInstructor: [
@@ -712,7 +758,15 @@ const ROUTES = {
   '/users/me/notifications': { emailOnCurrencyExpiry: true, emailOnCredentialExpiry: true, daysBeforeExpiry: 30 },
   '/users/me/notifications/history': EMPTY_PAGE,
   '/users/me/baseline': null,
-  '/flights': { data: flights, pagination: { page: 1, pageSize: 25, total: flights.length, totalPages: 1 } },
+  '/flights': {
+    data: flights,
+    pagination: { page: 1, pageSize: 25, total: 142, totalPages: 6 },
+    totals: flightTotals,
+    monthTotals: [
+      { month: day(-20).slice(0, 7), totals: { ...flightTotals, flights: 9, totalTime: 714 } },
+      { month: day(-1).slice(0, 7), totals: { ...flightTotals, flights: 11, totalTime: 802 } },
+    ],
+  },
   '/aircraft': { data: aircraft, pagination: { page: 1, pageSize: 100, total: aircraft.length, totalPages: 1 } },
   '/aircraft/stats': aircraftStats,
   '/licenses': licenses,
@@ -728,6 +782,11 @@ const ROUTES = {
       { departureIcao: 'EDMO', arrivalIcao: 'LOWI', flightCount: 6, departureCoords: { lat: 48.081, lng: 11.283 }, arrivalCoords: { lat: 47.260, lng: 11.344 } },
     ],
   },
+  '/airports/search': [
+    { icao: 'DE-0249', name: 'Konz-Könen Glider Field', latitude: 49.676, longitude: 6.543, elevation: 725, country: 'DE' },
+    { icao: 'EDRK', name: 'Koblenz-Winningen Airfield', latitude: 50.325, longitude: 7.528, elevation: 640, country: 'DE' },
+    { icao: 'FR-0009', name: 'Altisurface Notre-Dame-des-Neiges-Abbaye', latitude: 45.1, longitude: 6.2, elevation: 5000, country: 'FR', localCode: 'LF0723' },
+  ],
   '/reports/airport-stats': [
     { icao: 'EDDF', name: 'Frankfurt am Main', latitude: 50.033, longitude: 8.570, totalFlights: 40, departures: 21, arrivals: 19 },
     { icao: 'EDDH', name: 'Hamburg', latitude: 53.630, longitude: 9.988, totalFlights: 20, departures: 9, arrivals: 11 },
