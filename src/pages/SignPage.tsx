@@ -85,7 +85,7 @@ export default function SignPage() {
               <div>
                 <dt className="text-slate-400 dark:text-slate-500">{t('publicPage.date')}</dt>
                 <dd className="text-slate-800 dark:text-slate-100 font-medium">
-                  {new Date(flight.flightDate).toLocaleDateString()}
+                  {new Date(flight.flightDate).toLocaleDateString(undefined, { timeZone: 'UTC' })}
                 </dd>
               </div>
               <div>

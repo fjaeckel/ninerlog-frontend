@@ -1,16 +1,42 @@
+/** Matches an airport code: up to 4 alphanumerics, or a local identifier such as DE-0249. */
+const AIRPORT_CODE = /^(?:[a-z0-9]{1,4}|[a-z]{2}-[0-9]{3,5})$/i;
+
 /**
- * Normalizes a departure/arrival location value: code-like values (up to 4
- * alphanumeric characters) are upper-cased; free-text site names keep their
- * casing.
+ * Normalizes a departure/arrival location value: code-like values are
+ * upper-cased; free-text site names keep their casing.
  */
 export function normalizeLocation(value: string): string {
   const trimmed = value.trim();
-  return /^[a-z0-9]{1,4}$/i.test(trimmed) ? trimmed.toUpperCase() : trimmed;
+  return AIRPORT_CODE.test(trimmed) ? trimmed.toUpperCase() : trimmed;
+}
+
+/** Matches an OurAirports local identifier such as DE-0249. */
+const LOCAL_IDENT = /^[A-Z]{2}-[A-Z0-9]+$/;
+
+/** Reports whether a stored location is an OurAirports local identifier. */
+export function isLocalIdent(location: string | null | undefined): boolean {
+  return LOCAL_IDENT.test(location?.trim() ?? '');
 }
 
 /**
- * Formats a stored location for display as "Name (CODE)", falling back to the
- * raw stored value when no airport name resolved.
+ * Text shown for a stored location: the airport name for an OurAirports local
+ * identifier, otherwise the stored location.
+ */
+export function airportDisplay(
+  location: string | null | undefined,
+  name: string | null | undefined,
+  fallback = '—'
+): string {
+  const value = location?.trim();
+  if (!value) return fallback;
+  const resolved = name?.trim();
+  return isLocalIdent(value) && resolved ? resolved : value;
+}
+
+/**
+ * Formats a stored location for display as "Name (CODE)", or the name alone
+ * for an OurAirports local identifier, falling back to the raw stored value
+ * when no airport name resolved.
  */
 export function formatAirportLabel(
   location: string | null | undefined,
@@ -19,7 +45,8 @@ export function formatAirportLabel(
 ): string {
   const code = location?.trim();
   if (!code) return fallback;
-  return name ? `${name} (${code})` : code;
+  if (!name) return code;
+  return isLocalIdent(code) ? name : `${name} (${code})`;
 }
 
 /** A stored location split into its code and its human-readable name. */
@@ -65,7 +92,10 @@ export function splitAirportLabel(
   if (!value) return { code: fallback, name: null };
 
   const resolvedName = name?.trim() || null;
-  if (/^[a-z0-9]{1,4}$/i.test(value)) {
+  if (isLocalIdent(value)) {
+    return { code: null, name: resolvedName ?? value };
+  }
+  if (AIRPORT_CODE.test(value)) {
     return { code: value.toUpperCase(), name: resolvedName };
   }
   // Resolved name when available, else the free-text value.

@@ -28,7 +28,7 @@ const toHours = (minutes: number) => String(Math.round(minutes / 60));
 
 function monthTick(month: string) {
   const [y, m] = month.split('-');
-  const label = new Date(Date.UTC(Number(y), Number(m) - 1, 1)).toLocaleString(undefined, { month: 'short' });
+  const label = new Date(Date.UTC(Number(y), Number(m) - 1, 1)).toLocaleString(undefined, { month: 'short', timeZone: 'UTC' });
   return `${label} ${y.slice(2)}`;
 }
 
@@ -37,6 +37,7 @@ function monthLabel(month: string) {
   const label = new Date(Date.UTC(Number(y), Number(m) - 1, 1)).toLocaleString(undefined, {
     month: 'long',
     year: 'numeric',
+    timeZone: 'UTC',
   });
   return label;
 }
