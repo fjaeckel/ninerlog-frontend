@@ -28,6 +28,15 @@ function buildOnboardingStorage(userId: string): string {
   });
 }
 
+/** Dismisses "toolkit turned on" notices whenever they cover an element a test acts on. */
+async function handleToolkitNotices(page: Page): Promise<void> {
+  const region = page.getByRole('region', { name: 'Toolkit notices' });
+  await page.addLocatorHandler(region, async (notices) => {
+    const dismiss = notices.getByRole('button', { name: 'Dismiss' });
+    while (await dismiss.count()) await dismiss.first().click();
+  });
+}
+
 async function dismissOnboardingTourIfPresent(page: Page): Promise<void> {
   const dialog = page.locator('[role="dialog"][aria-label="Welcome tour"]');
   // Give the tour a bounded window to appear.
@@ -145,6 +154,7 @@ export async function createTestUser(request: import('@playwright/test').APIRequ
  */
 export async function registerAndLogin(page: Page): Promise<AuthContext> {
   const email = uniqueEmail();
+  await handleToolkitNotices(page);
 
   await page.goto('/register');
   await page.locator('#name').fill('E2E Test Pilot');
@@ -186,6 +196,7 @@ export async function registerAndLogin(page: Page): Promise<AuthContext> {
  * Login an existing user via the UI.
  */
 export async function login(page: Page, email: string, password = TEST_PASSWORD): Promise<void> {
+  await handleToolkitNotices(page);
   await page.goto('/login');
   await page.locator('#email').fill(email);
   await page.locator('#password').fill(password);
@@ -200,6 +211,7 @@ export async function login(page: Page, email: string, password = TEST_PASSWORD)
  * the full UI login flow.  ~10× faster than login().
  */
 export async function injectAuth(page: Page, auth: AuthContext): Promise<void> {
+  await handleToolkitNotices(page);
   await page.addInitScript(
     (args: string[]) => {
       const [authJson, onboardingJson] = args;

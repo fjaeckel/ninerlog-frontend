@@ -37,7 +37,7 @@ test.describe('Aircraft', () => {
 
     // Submit - the form submit button says "Add Aircraft"
     await page.locator('button[type="submit"]').filter({ hasText: 'Add Aircraft' }).click();
-    await expect(page.getByText('D-ACR2')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'D-ACR2' })).toBeVisible({ timeout: 10000 });
   });
 
   test('should create an ultralight with its kind', async ({ page }) => {
