@@ -35,7 +35,7 @@ import { AIRCRAFT_CLASSES, classFromRegistration } from '../../lib/aircraftClass
 import { isSailplane, LAUNCH_METHODS } from '../../lib/launchMethod';
 import { launchMethodKey } from '../../lib/currencyMessages';
 import { UL_AIRCRAFT_KINDS, type ULKind } from '../../lib/ultralight';
-import { useRelevance, type RelevanceCtx } from '../../lib/relevance';
+import { logsAirborneTimes, useRelevance, type RelevanceCtx } from '../../lib/relevance';
 import { FoldDrawer, FoldScope, Relevant } from '../relevance';
 import {
   timeErrorsFromApi,
@@ -387,9 +387,10 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
   const isSim = watch('isSimulator');
   const currentAircraft = matchedAircraft ?? null;
 
-  // Take-off and landing lead for gliders, TMGs and ultralights; block times fold.
+  // Take-off and landing lead for gliders, TMGs and ultralights; without an aircraft, when block times fold.
   const blockTimesLead = useRelevance('flight.blockTimes', { aircraft: currentAircraft });
-  const timeLead: TimeLead = !isSim && blockTimesLead.folded ? 'airborne' : 'block';
+  const airborneLead = currentAircraft ? logsAirborneTimes(currentAircraft) : blockTimesLead.folded;
+  const timeLead: TimeLead = !isSim && airborneLead ? 'airborne' : 'block';
   useEffect(() => {
     leadRef.current = timeLead;
   }, [timeLead]);
