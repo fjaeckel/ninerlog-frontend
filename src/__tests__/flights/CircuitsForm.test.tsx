@@ -114,10 +114,24 @@ describe('CircuitsForm', () => {
     await user.click(screen.getByRole('button', { name: 'Log 6 flights' }));
 
     const row3 = screen.getByTestId('circuit-row-2');
-    expect(within(row3).getByRole('alert')).toHaveTextContent('releaseHeightM must be between 0 and 20000');
+    expect(within(row3).getByRole('alert')).toHaveTextContent("Check this circuit's times and the details above.");
+    expect(screen.queryByText(/releaseHeightM/)).not.toBeInTheDocument();
     expect(screen.queryByTestId('circuit-error-0')).not.toBeInTheDocument();
     expect(screen.getByText('Circuit 3 was not accepted. Nothing was saved.')).toBeInTheDocument();
     expect(onSaved).not.toHaveBeenCalled();
+  });
+
+  it('a time-pair rejection of a leg is shown on its row in the form’s wording', async () => {
+    const user = userEvent.setup();
+    batchMutate.mockRejectedValue({ error: 'Leg 1: departureTime requires arrivalTime' });
+    render(<CircuitsForm initial={lena} onBack={vi.fn()} onSaved={vi.fn()} />);
+
+    await typeSixCircuits(user);
+    await user.click(screen.getByRole('button', { name: 'Log 6 flights' }));
+
+    expect(within(screen.getByTestId('circuit-row-1')).getByRole('alert')).toHaveTextContent(
+      'Landing time is required with a take-off time.',
+    );
   });
 
   it('L1: Enter on the last landing adds a row that is not sent while it has no landing', async () => {

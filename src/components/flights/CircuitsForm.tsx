@@ -26,6 +26,7 @@ import { TimeOfDayInput } from '../ui/TimeOfDayInput';
 import { CrewEditor } from './CrewEditor';
 import { crewDerivedNames } from './crewRoles';
 import { LaunchMethodChips } from './LaunchMethodChips';
+import { timeErrorsFromApi } from './flightTimes';
 import { isLaunchMethod, type LaunchMethod } from '../../lib/launchMethod';
 
 /** Shared fields carried over from the flight form. */
@@ -223,7 +224,8 @@ export function CircuitsForm({ initial, onBack, onSaved }: CircuitsFormProps) {
       const message = extractApiError(err, t('form.failedToSave'));
       const legError = parseLegError(message);
       if (legError && legError.index < sentLegs.length) {
-        setRowErrors({ [legError.index]: legError.message });
+        const timeError = timeErrorsFromApi(legError.message, 'airborne')[0];
+        setRowErrors({ [legError.index]: t(timeError ? timeError[1] : 'circuits.problem.rejected') });
         setApiError(t('circuits.legRejected', { n: legError.index + 1 }));
       } else {
         setApiError(message);
