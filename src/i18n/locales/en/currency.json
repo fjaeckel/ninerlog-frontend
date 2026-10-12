@@ -310,7 +310,8 @@
     "readiness": {
       "launch_method_current": "Current until {{date}}",
       "credential_valid": "Valid until {{date}}",
-      "credential_expired": "Expired on {{date}}"
+      "credential_expired": "Expired on {{date}}",
+      "no_rating": "None of your ratings covers this aircraft — you may not fly it as pilot in command."
     },
     "privilege": {
       "valid": "Valid — no recency requirement attached.",

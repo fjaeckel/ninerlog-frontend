@@ -85,7 +85,7 @@ function ReadinessPanel({ ratings }: { ratings: ClassRatingCurrency[] }) {
   const groups: ClassGroup[] = ratingItems
     .map((rating) => ({
       rating,
-      launches: items.filter((i) => i.kind === 'launch_method' && i.classRatingId === rating.classRatingId),
+      launches: items.filter((i) => i.kind === 'launch_method' && !!rating.classRatingId && i.classRatingId === rating.classRatingId),
       passengers: items.find((i) => i.kind === 'passengers' && i.classType === rating.classType && (i.ulKind ?? null) === (rating.ulKind ?? null)),
     }))
     .sort((a, b) => TONE_ORDER[itemTone(a.rating)] - TONE_ORDER[itemTone(b.rating)]);
