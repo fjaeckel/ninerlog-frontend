@@ -32,7 +32,8 @@ const OVERRIDE_FORM_FIELDS = ['nightTime', 'crossCountryTime', 'takeoffsDay', 't
 /** Override fields the API can report without an inline input in this form. */
 const OVERRIDE_BANNER_FIELDS = ['landingsDay', 'landingsNight', 'sicTime'] as const;
 import { AIRCRAFT_CLASSES, classFromRegistration } from '../../lib/aircraftClass';
-import { isSailplane } from '../../lib/launchMethod';
+import { isSailplane, LAUNCH_METHODS } from '../../lib/launchMethod';
+import { launchMethodKey } from '../../lib/currencyMessages';
 import { UL_AIRCRAFT_KINDS, type ULKind } from '../../lib/ultralight';
 import { useRelevance, type RelevanceCtx } from '../../lib/relevance';
 import { FoldDrawer, FoldScope, Relevant } from '../relevance';
@@ -656,11 +657,9 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
           <label htmlFor="launchMethod" className="form-label">{t('fields.launchMethod')}</label>
           <select {...register('launchMethod')} id="launchMethod" className="input">
             <option value="">{t('form.notSpecified')}</option>
-            <option value="winch">{t('form.winchLaunch')}</option>
-            <option value="aerotow">{t('form.aerotow')}</option>
-            <option value="self-launch">{t('form.selfLaunch')}</option>
-            <option value="car">{t('form.carLaunch')}</option>
-            <option value="bungee">{t('form.bungeeLaunch')}</option>
+            {LAUNCH_METHODS.map((m) => (
+              <option key={m} value={m}>{t(launchMethodKey(m))}</option>
+            ))}
           </select>
           <p className="form-helper">{t('form.launchMethodHelper')}</p>
         </div>

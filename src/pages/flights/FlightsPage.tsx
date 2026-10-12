@@ -28,6 +28,7 @@ import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, fligh
 import { useFlightColumnRelevance } from '../../hooks/useFlightColumnRelevance';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
+import { launchMethodKey } from '../../lib/currencyMessages';
 import type { components, operations } from '../../api/schema';
 import {
   FLIGHT_LIST_PAGE_SIZE,
@@ -842,7 +843,7 @@ export default function FlightsPage() {
                       <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300" data-testid="launch-cell">
                         {hasLaunchMethod(flight)
                           ? t('flights:launchCell', {
-                              method: t(`flights:launchMethods.${flight.launchMethod === 'self-launch' ? 'selfLaunch' : flight.launchMethod}`),
+                              method: t(`flights:${launchMethodKey(flight.launchMethod ?? '')}`),
                               count: flight.launches ?? 1,
                             })
                           : '—'}
