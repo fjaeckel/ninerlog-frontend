@@ -180,6 +180,17 @@ describe('FlightCard', () => {
     expect(screen.getAllByRole('button')).toHaveLength(1);
   });
 
+  it('labels take-off and landing times as such when the flight has no block times', () => {
+    const glider = { ...mockFlight, offBlockTime: null, onBlockTime: null, departureTime: '11:20:00', arrivalTime: '12:05:00' };
+    render(<FlightCard flight={glider} columns={selectFlightCardColumns([glider])} onClick={vi.fn()} />);
+
+    expect(screen.getByText('T/O')).toBeInTheDocument();
+    expect(screen.getByText('Land')).toBeInTheDocument();
+    expect(screen.queryByText('Off')).not.toBeInTheDocument();
+    expect(screen.getByText('11:20')).toBeInTheDocument();
+    expect(screen.getByText('12:05')).toBeInTheDocument();
+  });
+
   it('drops the columns the flights-list setting switches off', () => {
     // Custom mode with only night time picked: no off/on pair, no landings,
     // no function badge — the same answer the table gives.
