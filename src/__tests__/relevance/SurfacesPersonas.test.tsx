@@ -122,6 +122,26 @@ describe('Dashboard on the relevance registry', () => {
     expect(breakdown().queryByText('Night')).not.toBeInTheDocument();
   });
 
+  it('A1 Mark: per-model recency dots stay in place, nothing folds', () => {
+    asProfile(PERSONA_PROFILES.mark());
+    mockCommon(stats(), [rating('cr1', 'MEP_LAND', 'l2', 'current', 'ATPL')], ['A320']);
+    renderPage(<DashboardPage />);
+    const models = within(screen.getByTestId('model-stats-section'));
+    expect(models.getByTitle('1 landing in the last 90 days')).toBeInTheDocument();
+    expect(models.queryByTestId('fold-drawer')).not.toBeInTheDocument();
+  });
+
+  it('L Lena: per-model recency folds into "More" on the model card', () => {
+    asProfile(PERSONA_PROFILES.lena());
+    mockCommon(stats(), [rating('cr1', 'GLIDER', 'l1')], ['ASK 21']);
+    renderPage(<DashboardPage />);
+    const models = within(screen.getByTestId('model-stats-section'));
+    expect(models.queryByTitle('1 landing in the last 90 days')).not.toBeInTheDocument();
+    fireEvent.click(models.getByRole('button', { name: 'More (1)' }));
+    expect(models.getByTestId('model-recency-folded')).toHaveTextContent('ASK 21');
+    expect(models.getByText('1 landing in the last 90 days')).toBeInTheDocument();
+  });
+
   it('K2 Karl: the dormant glider card is not first and not a red alarm', () => {
     asProfile(PERSONA_PROFILES.karl());
     mockCommon(stats(), [rating('cr1', 'GLIDER', 'l1', 'lapsed'), rating('cr2', 'TMG', 'l1')]);
