@@ -1,5 +1,37 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import i18n from '../../i18n';
+
+const LOCALES = resolve(__dirname, '../../i18n/locales');
+
+/** Keys repeated within one JSON object of `text`. */
+function duplicateKeys(text: string): string[] {
+  const dupes: string[] = [];
+  const stack: Array<{ keys: Set<string>; expectKey: boolean } | null> = [];
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '{') stack.push({ keys: new Set(), expectKey: true });
+    else if (c === '[') stack.push(null);
+    else if (c === '}' || c === ']') stack.pop();
+    else if (c === ',') {
+      const top = stack[stack.length - 1];
+      if (top) top.expectKey = true;
+    } else if (c === '"') {
+      let j = i + 1;
+      while (text[j] !== '"') j += text[j] === '\\' ? 2 : 1;
+      const str = text.slice(i + 1, j);
+      i = j;
+      const top = stack[stack.length - 1];
+      if (top?.expectKey) {
+        if (top.keys.has(str)) dupes.push(str);
+        top.keys.add(str);
+        top.expectKey = false;
+      }
+    }
+  }
+  return dupes;
+}
 
 describe('i18n setup', () => {
   beforeEach(async () => {
@@ -77,5 +109,19 @@ describe('i18n setup', () => {
     expect(one).toContain('1');
     expect(many).toContain('3');
     expect(one).not.toBe(many);
+  });
+
+  it('has no duplicate keys in any locale file', () => {
+    const found: string[] = [];
+    for (const lang of readdirSync(LOCALES)) {
+      for (const file of readdirSync(join(LOCALES, lang)).filter((f) => f.endsWith('.json'))) {
+        for (const key of duplicateKeys(readFileSync(join(LOCALES, lang, file), 'utf8'))) found.push(`${lang}/${file}: ${key}`);
+      }
+    }
+    expect(found).toEqual([]);
+  });
+
+  it('keeps the compact take-off/landing detail heading', () => {
+    expect(i18n.t('flights:tableTakeoffLanding')).toBe('T/O / Ldg');
   });
 });

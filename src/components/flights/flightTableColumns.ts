@@ -407,7 +407,7 @@ export const rowClockTimes = (f: Flight): [string | null | undefined, string | n
 
 /** Heading of the times column: block times when any flight on the page has them. */
 export const offOnBlockLabelKey = (flights: Flight[]): string =>
-  flights.length === 0 || flights.some(hasBlockTimes) ? 'tableOffOnBlock' : 'tableTakeoffLanding';
+  flights.length === 0 || flights.some(hasBlockTimes) ? 'tableOffOnBlock' : 'tableTakeoffLandingTimes';
 
 export interface FlightDetailColumn {
   key: FlightColumnKey;

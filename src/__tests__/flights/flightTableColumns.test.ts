@@ -471,7 +471,7 @@ describe('times column without block times (WP-20)', () => {
   it('S3: a page of flights without block times heads the column take-off / landing', () => {
     const layout = selectFlightColumns([glider]);
     expect(layout.offOnBlock).toBe(true);
-    expect(layout.offOnBlockLabelKey).toBe('tableTakeoffLanding');
+    expect(layout.offOnBlockLabelKey).toBe('tableTakeoffLandingTimes');
   });
 
   it('keeps the block heading when any flight on the page has block times', () => {
@@ -517,7 +517,7 @@ describe('selectFlightColumns — relevance in automatic mode', () => {
     const page = [glider({ departureTime: '10:05:00', arrivalTime: '10:17:00' })];
     const layout = selectFlightColumns(page, auto, rel(PERSONA_PROFILES.lena()));
     expect(layout.offOnBlock).toBe(true);
-    expect(layout.offOnBlockLabelKey).toBe('tableTakeoffLanding');
+    expect(layout.offOnBlockLabelKey).toBe('tableTakeoffLandingTimes');
     expect(selectFlightCardColumns(page, auto, rel(PERSONA_PROFILES.lena())).offOnBlock).toBe(true);
   });
 

@@ -475,8 +475,7 @@
   "exportCsv": "Als CSV exportieren",
   "exportingCsv": "Wird exportiert…",
   "exportCsvFailed": "Export fehlgeschlagen. Bitte erneut versuchen.",
-  "tableTakeoffLanding": "Start / Ldg.",
-  "tableLaunch": "Start",
+  "tableTakeoffLandingTimes": "Start / Ldg.",
   "launchCell_one": "{{method}}",
   "launchCell_other": "{{method}} ×{{count}}",
   "circuits": {
