@@ -1,11 +1,13 @@
 import { useState, type ReactNode } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../../stores/authStore';
 import { ArrowLeft, Pencil, Trash2, Plane, PlaneTakeoff, PlaneLanding, ShieldCheck } from 'lucide-react';
 import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
 import FlightForm from '../../components/flights/FlightForm';
 import FlightRouteCard from '../../components/flights/FlightRouteCard';
 import FlightRouteHeading from '../../components/flights/FlightRouteHeading';
+import FlightNeighborNav from '../../components/flights/FlightNeighborNav';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { FormModal } from '../../components/ui/FormModal';
 import { PageWrapper } from '../../components/ui/PageWrapper';
@@ -13,6 +15,7 @@ import { SignatureSection } from '../../components/flights/SignatureSection';
 import { FlightCrewCard } from '../../components/flights/FlightCrewCard';
 import {
   FLIGHT_FUNCTION_BADGE,
+  displayPicName,
   flightFunctionKind,
   flightFunctionLabel,
   hasBlockTimes,
@@ -29,13 +32,16 @@ export default function FlightDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   // The list's query string, passed back on return navigation.
-  const listSearch = (location.state as { listSearch?: string } | null)?.listSearch ?? '';
+  const listState = location.state as { listSearch?: string; listIndex?: number } | null;
+  const listSearch = listState?.listSearch ?? '';
+  const listIndex = listState?.listIndex;
   const flightsListPath = `/flights${listSearch}`;
   const { t } = useTranslation('flights');
   const { data: flight, isLoading, error } = useFlight(flightId || '');
   const deleteFlight = useDeleteFlight();
   const [showEditForm, setShowEditForm] = useState(false);
   const { fmtDateTime, fmtDateLong, fmtDuration } = useFormatPrefs();
+  const selfName = useAuthStore((s) => s.user?.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (isLoading) {
@@ -69,6 +75,7 @@ export default function FlightDetailPage() {
     );
   }
 
+  const picName = displayPicName(flight, selfName);
   const totalLandings = flight.allLandings;
   const totalTakeoffs = flight.takeoffsDay + flight.takeoffsNight;
 
@@ -153,13 +160,21 @@ export default function FlightDetailPage() {
 
   return (
     <PageWrapper maxWidth="list">
-      <button
-        onClick={() => navigate(flightsListPath)}
-        className="mb-3 inline-flex min-h-[44px] items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {t('detail.backToFlights')}
-      </button>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <button
+          onClick={() => navigate(flightsListPath)}
+          className="inline-flex min-h-[44px] items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t('detail.backToFlights')}
+        </button>
+        <FlightNeighborNav
+          flightId={flight.id}
+          listSearch={listSearch}
+          listIndex={listIndex}
+          keyboard={!showEditForm && !showDeleteConfirm}
+        />
+      </div>
 
       {/* Hero — the list card's header at page scale */}
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
@@ -270,141 +285,140 @@ export default function FlightDetailPage() {
         </div>
       )}
 
-      {/* Flight details — multi-column flow; each panel carries
-          break-inside-avoid and its own bottom margin */}
-      <div className="columns-1 gap-4 md:columns-2 xl:columns-3">
+      {/* Flight details — md: route over sign-off | times; xl: route | times | sign-off */}
+      <div className="grid items-start gap-4 md:grid-cols-2 md:grid-rows-[auto_1fr] xl:grid-cols-3 xl:grid-rows-none">
         {/* Aircraft & Route */}
-        <div className="mb-4 break-inside-avoid">
-          <FlightRouteCard flight={flight} />
-        </div>
+        <FlightRouteCard flight={flight} />
 
-        {/* Flight Times */}
-        <div className="card mb-4 break-inside-avoid">
-          <h2 className="section-title mb-3">{blockTimed ? t('detail.blockTimes') : t('detail.flightTimes')}</h2>
-          <DataTileGrid>
-            <DataTile
-              label={blockTimed ? t('detail.totalBlockTime') : t('detail.totalFlightTime')}
-              value={fmtDuration(flight.totalTime)}
-              mono
-              emphasis
-            />
-            <DataTile label={t('detail.pilotFunction')} value={pilotFunction} />
-            {timeTiles.map(({ key, label, minutes }) => (
-              <DataTile key={key} label={label} value={fmtDuration(minutes)} mono />
-            ))}
-            {flight.picName && (
-              <DataTile className="col-span-2" label={t('fields.picName')} value={flight.picName} />
-            )}
-          </DataTileGrid>
-        </div>
-
-        {/* Takeoffs & Landings */}
-        {!flight.isSimulator && (
-        <div className="card mb-4 break-inside-avoid">
-          <h2 className="section-title mb-3">{t('detail.takeoffsAndLandings')}</h2>
-          <DataTileGrid>
-            <DataTile
-              icon={<PlaneTakeoff className="h-3 w-3" />}
-              label={t('detail.totalTakeoffs')}
-              value={String(totalTakeoffs)}
-              hint={t('detail.dayNightSplit', { day: flight.takeoffsDay, night: flight.takeoffsNight })}
-              mono
-            />
-            <DataTile
-              icon={<PlaneLanding className="h-3 w-3" />}
-              label={t('detail.totalLandings')}
-              value={String(totalLandings)}
-              hint={t('detail.dayNightSplit', { day: flight.landingsDay, night: flight.landingsNight })}
-              mono
-            />
-          </DataTileGrid>
-        </div>
-        )}
-
-        {/* Instrument & Approaches */}
-        {hasInstrumentData && (
-          <div className="card mb-4 break-inside-avoid">
-            <h2 className="section-title mb-3">{t('detail.instrumentAndApproaches')}</h2>
-            {instrumentTiles.length > 0 && (
-              <DataTileGrid>
-                {instrumentTiles.map(({ key, label, value, format }) => (
-                  <DataTile key={key} label={label} value={format(value)} mono />
-                ))}
-              </DataTileGrid>
-            )}
-            {flight.isIpc && (
-              <p className="mt-3">
-                <span className="badge-info">{t('fields.isIpc')}</span>
-              </p>
-            )}
-            {flight.approaches && flight.approaches.length > 0 && (
-              <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-700">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
-                  {t('fields.approaches')}
-                </p>
-                <ul className="space-y-1.5">
-                  {flight.approaches.map((a, idx) => (
-                    <li
-                      key={idx}
-                      className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-700/30"
-                    >
-                      <span className="badge-info text-xs">
-                        {t(`approachTypes.${a.type}`, { defaultValue: a.type })}
-                      </span>
-                      <span className="font-mono tabular-nums text-slate-700 dark:text-slate-200">
-                        {a.airport || '—'}
-                        {a.runway ? ` · RWY ${a.runway}` : ''}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Training & Currency */}
-        {hasTrainingData && (
-          <div className="card mb-4 break-inside-avoid">
-            <h2 className="section-title mb-3">{t('detail.trainingAndCurrency')}</h2>
+        <div className="flex flex-col gap-4 md:col-start-2 md:row-span-2 xl:row-span-1">
+          {/* Flight Times */}
+          <div className="card">
+            <h2 className="section-title mb-3">{blockTimed ? t('detail.blockTimes') : t('detail.flightTimes')}</h2>
             <DataTileGrid>
-              {trainingTiles.map(({ key, label, minutes }) => (
+              <DataTile
+                label={blockTimed ? t('detail.totalBlockTime') : t('detail.totalFlightTime')}
+                value={fmtDuration(flight.totalTime)}
+                mono
+                emphasis
+              />
+              <DataTile label={t('detail.pilotFunction')} value={pilotFunction} />
+              {timeTiles.map(({ key, label, minutes }) => (
                 <DataTile key={key} label={label} value={fmtDuration(minutes)} mono />
               ))}
-              {flight.fstdType && <DataTile label={t('fields.fstdType')} value={flight.fstdType} />}
+              {picName && (
+                <DataTile className="col-span-2" label={t('fields.picName')} value={picName} />
+              )}
             </DataTileGrid>
-            {trainingFlags.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {trainingFlags.map(({ key, label }) => (
-                  <span key={key} className="badge-info">
-                    {label}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
-        )}
 
-        {/* Remarks & Comments */}
-        {hasRemarksData && (
-          <div className="card mb-4 break-inside-avoid">
-            <h2 className="section-title mb-3">{t('detail.remarksAndComments')}</h2>
-            <div className="space-y-2.5">
-              <TextBlock label={t('fields.remarks')} value={flight.remarks} />
-              <TextBlock label={t('detail.instructor')} value={flight.instructorName} />
-              <TextBlock label={t('detail.instructorComments')} value={flight.instructorComments} />
-              <TextBlock label={t('fields.endorsements')} value={flight.endorsements} />
+          {/* Takeoffs & Landings */}
+          {!flight.isSimulator && (
+          <div className="card">
+            <h2 className="section-title mb-3">{t('detail.takeoffsAndLandings')}</h2>
+            <DataTileGrid>
+              <DataTile
+                icon={<PlaneTakeoff className="h-3 w-3" />}
+                label={t('detail.totalTakeoffs')}
+                value={String(totalTakeoffs)}
+                hint={t('detail.dayNightSplit', { day: flight.takeoffsDay, night: flight.takeoffsNight })}
+                mono
+              />
+              <DataTile
+                icon={<PlaneLanding className="h-3 w-3" />}
+                label={t('detail.totalLandings')}
+                value={String(totalLandings)}
+                hint={t('detail.dayNightSplit', { day: flight.landingsDay, night: flight.landingsNight })}
+                mono
+              />
+            </DataTileGrid>
+          </div>
+          )}
+
+          {/* Instrument & Approaches */}
+          {hasInstrumentData && (
+            <div className="card">
+              <h2 className="section-title mb-3">{t('detail.instrumentAndApproaches')}</h2>
+              {instrumentTiles.length > 0 && (
+                <DataTileGrid>
+                  {instrumentTiles.map(({ key, label, value, format }) => (
+                    <DataTile key={key} label={label} value={format(value)} mono />
+                  ))}
+                </DataTileGrid>
+              )}
+              {flight.isIpc && (
+                <p className="mt-3">
+                  <span className="badge-info">{t('fields.isIpc')}</span>
+                </p>
+              )}
+              {flight.approaches && flight.approaches.length > 0 && (
+                <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-700">
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                    {t('fields.approaches')}
+                  </p>
+                  <ul className="space-y-1.5">
+                    {flight.approaches.map((a, idx) => (
+                      <li
+                        key={idx}
+                        className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-700/30"
+                      >
+                        <span className="badge-info text-xs">
+                          {t(`approachTypes.${a.type}`, { defaultValue: a.type })}
+                        </span>
+                        <span className="font-mono tabular-nums text-slate-700 dark:text-slate-200">
+                          {a.airport || '—'}
+                          {a.runway ? ` · RWY ${a.runway}` : ''}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Instructor Signature */}
-        <div className="mb-4 break-inside-avoid">
-          <SignatureSection flight={flight} />
+          {/* Training & Currency */}
+          {hasTrainingData && (
+            <div className="card">
+              <h2 className="section-title mb-3">{t('detail.trainingAndCurrency')}</h2>
+              <DataTileGrid>
+                {trainingTiles.map(({ key, label, minutes }) => (
+                  <DataTile key={key} label={label} value={fmtDuration(minutes)} mono />
+                ))}
+                {flight.fstdType && <DataTile label={t('fields.fstdType')} value={flight.fstdType} />}
+              </DataTileGrid>
+              {trainingFlags.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {trainingFlags.map(({ key, label }) => (
+                    <span key={key} className="badge-info">
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Remarks & Comments */}
+          {hasRemarksData && (
+            <div className="card">
+              <h2 className="section-title mb-3">{t('detail.remarksAndComments')}</h2>
+              <div className="space-y-2.5">
+                <TextBlock label={t('fields.remarks')} value={flight.remarks} />
+                <TextBlock label={t('detail.instructor')} value={flight.instructorName} />
+                <TextBlock label={t('detail.instructorComments')} value={flight.instructorComments} />
+                <TextBlock label={t('fields.endorsements')} value={flight.endorsements} />
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Crew Members */}
-        <FlightCrewCard flight={flight} />
+        <div className="flex flex-col gap-4 md:col-start-1 md:row-start-2 xl:col-start-3 xl:row-start-1">
+          {/* Instructor Signature */}
+          <SignatureSection flight={flight} />
+
+          {/* Crew Members */}
+          <FlightCrewCard flight={flight} />
+        </div>
       </div>
 
       {/* Metadata */}

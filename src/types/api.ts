@@ -329,6 +329,8 @@ export interface ClassRatingCurrency {
    * toward this rating's revalidation and `requirements` is suppressed.
    */
   windowOpen?: boolean;
+  /** Last date a rolling-window recency rule stays met with no further flying; set only while current. */
+  recencyExpiresOn?: string | null;
   /** @deprecated English (German for UL) fallback for messageKey. */
   message: string;
   /** Key into currency.json `messages` (e.g. "rating.revalidation_current"). */
@@ -346,8 +348,6 @@ export interface ClassRatingCurrency {
   creditedUltralightKinds?: ULKind[];
   /** Flights on ULTRALIGHT aircraft with no kind that this German UL rating did not count. Absent when zero. */
   unclassifiedFlights?: number;
-  /** Rolling-window rules: the last date a `current` rating stays current without flying again. */
-  validUntil?: string | null;
 }
 
 export interface LaunchMethodCurrency {

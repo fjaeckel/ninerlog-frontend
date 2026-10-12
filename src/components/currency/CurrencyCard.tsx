@@ -270,14 +270,14 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
         </div>
       )}
 
-      {/* Rolling recency: last day current without flying again */}
-      {rating.validUntil && status === 'current' && (
+      {/* Recency lapse date */}
+      {rating.recencyExpiresOn && (
         <p
-          className="text-xs text-slate-500 dark:text-slate-400 mt-3 text-right inline-flex items-center gap-1 justify-end w-full"
-          data-testid="currency-valid-until"
+          className="text-xs text-slate-600 dark:text-slate-300 mt-3 inline-flex items-center gap-1.5"
+          data-testid="currency-recency-expires"
         >
-          <Calendar className="w-3 h-3" aria-hidden="true" />
-          {t('ratingValidUntil', { date: fmtDate(rating.validUntil) })}
+          <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          {t('recencyExpiresLabel', { date: fmtDate(rating.recencyExpiresOn) })}
         </p>
       )}
 

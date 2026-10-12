@@ -170,6 +170,7 @@
       "flights": "Flights",
       "aircraft": "Aircraft",
       "lastLogin": "Last Login",
+      "lastActive": "Last Active",
       "actions": "Actions",
       "disabled": "Disabled",
       "locked": "Locked",
@@ -420,5 +421,8 @@
     "ul_mtom_exceeds_600": "MTOM of {{mtomKg}} kg is above the {{limitKg}} kg German ultralight limit — check the aircraft class. The aircraft was saved.",
     "ul_120kg_class": "MTOM of {{mtomKg}} kg: this ultralight may fall in the single-seat {{limitKg}} kg class, which needs no medical.",
     "unknown": "The save returned a note ({{code}})."
+  },
+  "airportInput": {
+    "suggestions": "Airport suggestions"
   }
 }

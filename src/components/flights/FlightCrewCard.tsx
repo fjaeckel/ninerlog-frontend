@@ -62,7 +62,7 @@ export function FlightCrewCard({ flight }: { flight: Flight }) {
   if (locked && serverCrew.length === 0) return null;
 
   return (
-    <div className="card mb-4 break-inside-avoid">
+    <div className="card">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <h2 className="section-title flex items-center gap-2">
           {t('sections.crew')}

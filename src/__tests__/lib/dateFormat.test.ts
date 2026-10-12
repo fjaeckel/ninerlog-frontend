@@ -2,8 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { formatDate, formatDateTime, formatDateLong, formatClockTime } from '../../lib/dateFormat';
 
 describe('formatDate', () => {
-  // Use a fixed date: 2026-03-15
-  const date = new Date(2026, 2, 15); // March 15, 2026
+  const date = new Date(Date.UTC(2026, 2, 15));
 
   it('formats as DD.MM.YYYY (European default)', () => {
     expect(formatDate(date, 'DD.MM.YYYY')).toBe('15.03.2026');
@@ -24,10 +23,19 @@ describe('formatDate', () => {
   it('accepts string dates', () => {
     expect(formatDate('2026-03-15T00:00:00Z', 'YYYY-MM-DD')).toBe('2026-03-15');
   });
+
+  it('renders a bare YYYY-MM-DD as that calendar day', () => {
+    expect(formatDate('2006-08-15', 'DD.MM.YYYY')).toBe('15.08.2006');
+  });
+
+  it('renders the UTC day of an instant', () => {
+    expect(formatDate('2026-03-15T23:30:00Z', 'YYYY-MM-DD')).toBe('2026-03-15');
+    expect(formatDate('2026-03-16T00:30:00Z', 'YYYY-MM-DD')).toBe('2026-03-16');
+  });
 });
 
 describe('formatDateTime', () => {
-  const date = new Date(2026, 2, 15, 14, 30);
+  const date = new Date(Date.UTC(2026, 2, 15, 14, 30));
 
   it('formats as DD.MM.YYYY HH:mm', () => {
     expect(formatDateTime(date, 'DD.MM.YYYY')).toBe('15.03.2026 14:30');
@@ -44,20 +52,24 @@ describe('formatDateTime', () => {
   it('formats the time in 12-hour clock when requested', () => {
     expect(formatDateTime(date, 'MM/DD/YYYY', '12h')).toBe('03/15/2026 2:30 PM');
   });
+
+  it('formats an ISO instant in UTC', () => {
+    expect(formatDateTime('2026-03-15T23:45:00Z', 'YYYY-MM-DD')).toBe('2026-03-15 23:45');
+  });
 });
 
 describe('formatClockTime', () => {
   it('formats 24-hour by default', () => {
-    expect(formatClockTime(new Date(2026, 2, 15, 9, 5))).toBe('09:05');
+    expect(formatClockTime(new Date(Date.UTC(2026, 2, 15, 9, 5)))).toBe('09:05');
   });
 
   it('formats 12-hour', () => {
-    expect(formatClockTime(new Date(2026, 2, 15, 0, 5), '12h')).toBe('12:05 AM');
+    expect(formatClockTime(new Date(Date.UTC(2026, 2, 15, 0, 5)), '12h')).toBe('12:05 AM');
   });
 });
 
 describe('formatDateLong', () => {
-  const date = new Date(2026, 2, 15); // Sunday, March 15, 2026
+  const date = new Date(Date.UTC(2026, 2, 15));
 
   it('formats long European style', () => {
     const result = formatDateLong(date, 'DD.MM.YYYY');
@@ -74,5 +86,9 @@ describe('formatDateLong', () => {
   it('formats long ISO style', () => {
     const result = formatDateLong(date, 'YYYY-MM-DD');
     expect(result).toContain('2026-03-15');
+  });
+
+  it('renders a bare YYYY-MM-DD as that calendar day', () => {
+    expect(formatDateLong('2006-08-15', 'YYYY-MM-DD')).toBe('Tuesday, 2006-08-15');
   });
 });

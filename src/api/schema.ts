@@ -1563,7 +1563,7 @@ export interface paths {
         };
         /**
          * List flights
-         * @description Get flights for the authenticated user
+         * @description Get flights for the authenticated user. Each flight carries its crewMembers, as on GET /flights/{id}. The response also carries the column totals over all matching flights and per month for the months on the page.
          */
         get: operations["listFlights"];
         put?: never;
@@ -1819,7 +1819,7 @@ export interface paths {
         };
         /**
          * Search airports
-         * @description Search airports by ICAO code prefix
+         * @description Search airports by identifier prefix, then local-code prefix, then name. Identifier-prefix matches come first in identifier order, then local-code prefix matches in code order, then airports with a name word starting with the query (case- and diacritic-insensitive).
          */
         get: operations["searchAirports"];
         put?: never;
@@ -3463,7 +3463,7 @@ export interface components {
          * @example picTime
          * @enum {string}
          */
-        FlightListColumn: "offOnBlock" | "picTime" | "nightTime" | "dualTime" | "ifrTime" | "crossCountryTime" | "sicTime" | "picusTime" | "spicTime" | "reliefTime" | "dualGivenTime" | "examinerTime" | "multiPilotTime" | "soloTime" | "simulatedFlightTime" | "function" | "landings" | "remarks";
+        FlightListColumn: "offOnBlock" | "picTime" | "nightTime" | "dualTime" | "ifrTime" | "crossCountryTime" | "sicTime" | "picusTime" | "spicTime" | "reliefTime" | "dualGivenTime" | "examinerTime" | "multiPilotTime" | "soloTime" | "simulatedFlightTime" | "actualInstrumentTime" | "simulatedInstrumentTime" | "groundTrainingTime" | "function" | "landings" | "takeoffLandingTime" | "takeoffs" | "approaches" | "approachTypes" | "holds" | "distance" | "waypoints" | "picName" | "instructorName" | "crew" | "launchMethod" | "fstdType" | "checks" | "signed" | "endorsements" | "instructorComments" | "remarks";
         TwoFactorSetup: {
             /**
              * @description Base32-encoded TOTP secret for manual entry
@@ -4247,6 +4247,11 @@ export interface components {
              * @example EDDH
              */
             arrivalIcao?: string | null;
+            /**
+             * @description The pilot-in-command to show for this flight, resolved like the logbook exports: picName, else the instructor (instructorName, then an Instructor, Examiner or PIC crew member other than the user), else "SELF" for the user. A stale "Self" picName gives way to a known instructor. Null for an FSTD session. Not stored and not accepted on create or update.
+             * @example SELF
+             */
+            readonly displayPicName?: string | null;
             /**
              * @description Airport name resolved live from the airport database for display. Not stored with the flight. Null when departureIcao does not resolve against the airport database (e.g. a free-text off-airport site).
              * @example Frankfurt am Main Airport
@@ -5574,7 +5579,76 @@ export interface components {
             issuingAuthority?: string;
             notes?: string | null;
         };
+        /** @description Column sums over every flight matching the request's filters, not just the returned page. updatedSince is a filter too, so a delta request sums only the changed flights. Times are in minutes. */
+        FlightTotals: {
+            /** @description Number of flights matching the filters */
+            flights: number;
+            /** @description Minutes */
+            totalTime: number;
+            /** @description Minutes */
+            picTime: number;
+            /** @description Minutes */
+            dualTime: number;
+            /** @description Minutes */
+            nightTime: number;
+            /** @description Minutes */
+            ifrTime: number;
+            /** @description Minutes */
+            crossCountryTime: number;
+            /** @description Minutes */
+            sicTime: number;
+            /** @description Minutes */
+            picusTime: number;
+            /** @description Minutes */
+            spicTime: number;
+            /** @description Minutes */
+            reliefTime: number;
+            /** @description Minutes */
+            dualGivenTime: number;
+            /** @description Minutes */
+            examinerTime: number;
+            /** @description Minutes */
+            multiPilotTime: number;
+            /** @description Minutes */
+            soloTime: number;
+            /** @description Minutes */
+            simulatedFlightTime: number;
+            /** @description Minutes */
+            actualInstrumentTime: number;
+            /** @description Minutes */
+            simulatedInstrumentTime: number;
+            /** @description Minutes */
+            groundTrainingTime: number;
+            /** @description Count */
+            landingsDay: number;
+            /** @description Count */
+            landingsNight: number;
+            /** @description Count */
+            takeoffsDay: number;
+            /** @description Count */
+            takeoffsNight: number;
+            /** @description Sum of approachesCount */
+            approaches: number;
+            /** @description Count */
+            holds: number;
+            /**
+             * Format: double
+             * @description Nautical miles
+             */
+            distance: number;
+        };
+        FlightMonthTotals: {
+            /**
+             * @description Calendar month (YYYY-MM)
+             * @example 2026-08
+             */
+            month: string;
+            totals: components["schemas"]["FlightTotals"];
+        };
         PaginatedFlights: {
+            totals: components["schemas"]["FlightTotals"];
+            /** @description Column sums per calendar month over every flight matching the filters, for each month that has a flight on the returned page. Ordered by month, oldest first. Empty unless the list is sorted by date and updatedSince is not set. */
+            monthTotals: components["schemas"]["FlightMonthTotals"][];
             data: components["schemas"]["Flight"][];
             pagination: {
                 /**
@@ -5706,6 +5780,16 @@ export interface components {
              */
             arrivalIcao?: string | null;
             /**
+             * @description Airport name resolved live from the airport database. Null when departureIcao does not resolve.
+             * @example Frankfurt am Main Airport
+             */
+            readonly departureAirportName?: string | null;
+            /**
+             * @description Airport name resolved live from the airport database. Null when arrivalIcao does not resolve.
+             * @example Hamburg Airport
+             */
+            readonly arrivalAirportName?: string | null;
+            /**
              * Format: date-time
              * @description Off-block instant (chocks off / engine start) in UTC
              */
@@ -5752,7 +5836,7 @@ export interface components {
              */
             aircraftReg?: string | null;
             /**
-             * @description Explicit airport for this event (departure for offblock/takeoff, arrival for landing/onblock). Takes precedence over lat/lon.
+             * @description Explicit airport for this event (departure for offblock/takeoff, arrival for landing/onblock), as a 4-character ICAO code or a known airport identifier such as DE-0249. Takes precedence over lat/lon.
              * @example EDDF
              */
             icao?: string | null;
@@ -5769,7 +5853,7 @@ export interface components {
         };
         Airport: {
             /**
-             * @description ICAO airport code
+             * @description Airport identifier — the 4-character ICAO code, or the OurAirports local identifier (e.g. DE-0249) for a field without one
              * @example EDDF
              */
             icao: string;
@@ -5800,6 +5884,11 @@ export interface components {
              * @example DE
              */
             country?: string;
+            /**
+             * @description National airport code containing a digit (e.g. FAA 5M6, French ULM LF0723), when the field has one distinct from its identifier
+             * @example LF0723
+             */
+            localCode?: string;
         };
         AirportPackStatus: {
             /**
@@ -6171,6 +6260,18 @@ export interface components {
              */
             windowOpen?: boolean;
             /**
+             * Format: date
+             * @description For rolling-window recency rules (EASA LAPL FCL.140.A, SPL SFCL.160,
+             *     GPL FCL.240.G, German ultralight LuftPersV §45, FAA §61.57), the
+             *     last date the rule stays met if the pilot does not fly again — the
+             *     date the first requirement falls short as flights age out of the
+             *     window, or the proficiency check does, whichever is later. Set
+             *     only while `status` is `current`; omitted for expiry-anchored
+             *     revalidation rules, whose limit is `expiryDate`.
+             * @example 2027-05-31
+             */
+            recencyExpiresOn?: string | null;
+            /**
              * @description Stable key identifying which statement is true, for client-side localisation. Catalogued in docs/CURRENCY_MESSAGES.md.
              * @example rating.revalidation_current
              */
@@ -6259,16 +6360,6 @@ export interface components {
              * @example 3
              */
             unclassifiedFlights?: number;
-            /**
-             * Format: date
-             * @description For a `current` result of a rolling-window rule (LAPL FCL.140.A, SPL SFCL.160,
-             *     GPL FCL.240.G, German UL LuftPersV §45, FAA 14 CFR 61.57), the last date it stays
-             *     current if the pilot does not fly again — the latest date on which any accepted
-             *     alternative (the experience rows, or a proficiency check) is still met. Omitted
-             *     otherwise, and for expiry-anchored rules, where `expiryDate` governs.
-             * @example 2027-05-31
-             */
-            validUntil?: string | null;
         };
         LaunchMethodCurrency: {
             /**
@@ -7327,6 +7418,11 @@ export interface components {
              * @description Last successful sign-in. Recorded for every path that issues a session: password login, the second factor, a passkey, OIDC, and the sign-up verification link (following it signs the new account in). Not updated by a token refresh.
              */
             lastLoginAt?: string;
+            /**
+             * Format: date-time
+             * @description Last authenticated API request, or the last sign-in if later. Recorded at a granularity of five minutes, so a session kept alive by refresh tokens still shows when the account was last used.
+             */
+            lastActiveAt?: string;
             /** @description Whether the user has verified their email address and completed sign-up */
             emailVerified: boolean;
             twoFactorEnabled: boolean;
@@ -7900,6 +7996,16 @@ export interface components {
             departureIcao: string;
             /** @example LSZH */
             arrivalIcao: string;
+            /**
+             * @description Airport name resolved live from the airport database. Null when departureIcao does not resolve.
+             * @example Kiel-Holtenau Airport
+             */
+            departureAirportName?: string | null;
+            /**
+             * @description Airport name resolved live from the airport database. Null when arrivalIcao does not resolve.
+             * @example Zürich Airport
+             */
+            arrivalAirportName?: string | null;
             flights: number;
             totalMinutes: number;
             /**
@@ -7998,6 +8104,10 @@ export interface components {
             aircraftType?: string | null;
             departureIcao?: string | null;
             arrivalIcao?: string | null;
+            /** @description Airport name resolved live from the airport database. Null when departureIcao does not resolve. */
+            departureAirportName?: string | null;
+            /** @description Airport name resolved live from the airport database. Null when arrivalIcao does not resolve. */
+            arrivalAirportName?: string | null;
             totalMinutes: number;
             /** Format: double */
             distanceNm: number;
@@ -11974,7 +12084,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description ICAO airport code (4 characters) */
+                /** @description Airport identifier: the 4-character ICAO code, or the OurAirports local identifier (e.g. DE-0249) for a field without one */
                 icaoCode: string;
             };
             cookie?: never;
@@ -11997,7 +12107,7 @@ export interface operations {
     searchAirports: {
         parameters: {
             query: {
-                /** @description Search query (ICAO code prefix) */
+                /** @description Search query (identifier or local-code prefix, or start of a name word) */
                 q: string;
                 limit?: number;
             };

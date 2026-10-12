@@ -13,7 +13,7 @@ const log = createLogger('PasskeySection');
 function formatDate(value: string | undefined, locale: string): string {
   if (!value) return '—';
   try {
-    return new Date(value).toLocaleString(locale);
+    return new Date(value).toLocaleString(locale, { timeZone: 'UTC', timeZoneName: 'short' });
   } catch {
     return value;
   }
