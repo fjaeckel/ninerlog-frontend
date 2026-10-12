@@ -11,6 +11,7 @@ import { useSaveWarningsStore, type SaveWarning } from '../../stores/saveWarning
 import { SaveWarningsToast } from '../../components/saveWarnings/SaveWarnings';
 import { FlightSavedNotice } from '../../components/flights/FlightSavedNotice';
 import { saveWarningMessage } from '../../lib/saveWarnings';
+import { useAuthStore } from '../../stores/authStore';
 
 const POST = vi.fn();
 const PUT = vi.fn();
@@ -90,6 +91,15 @@ describe('save warnings from the mutation hooks', () => {
     expect(codes()).toEqual([]);
     render(<SaveWarningsToast />);
     expect(screen.queryByTestId('save-warnings-toast')).not.toBeInTheDocument();
+  });
+});
+
+describe('save warnings and the session', () => {
+  it('signing out clears warnings of the previous user', () => {
+    useSaveWarningsStore.getState().push([NIGHT]);
+    expect(useSaveWarningsStore.getState().entries).toHaveLength(1);
+    act(() => useAuthStore.getState().clearAuth());
+    expect(useSaveWarningsStore.getState().entries).toEqual([]);
   });
 });
 

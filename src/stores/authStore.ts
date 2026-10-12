@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '../types/api';
+import { useSaveWarningsStore } from './saveWarningsStore';
 
 interface AuthState {
   user: User | null;
@@ -48,6 +49,7 @@ export const useAuthStore = create<AuthState>()(
         }));
       },
       clearAuth: () => {
+        useSaveWarningsStore.getState().clear();
         set({
           user: null,
           accessToken: null,
