@@ -52,6 +52,13 @@ type EntryMode = 'legs' | 'series';
 
 const today = () => new Date().toISOString().split('T')[0];
 
+/** `legs` without trailing rows that have no landing, keeping at least the first row. */
+function withoutTrailingOpenLegs(legs: CircuitLeg[]): CircuitLeg[] {
+  let end = legs.length;
+  while (end > 1 && !legs[end - 1].landing.trim()) end--;
+  return legs.slice(0, end);
+}
+
 /** Several circuits at one site on one day, as one batch or as one series row. */
 export function CircuitsForm({ initial, onBack, onSaved }: CircuitsFormProps) {
   const { t } = useTranslation(['flights', 'common']);
@@ -128,6 +135,8 @@ export function CircuitsForm({ initial, onBack, onSaved }: CircuitsFormProps) {
     else focusInput(`${index + 1}-takeoff`);
   };
 
+  const sentLegs = withoutTrailingOpenLegs(legs);
+
   const problemText = (leg: CircuitLeg): string | null => {
     const p = legProblem(leg);
     return p ? t(`circuits.problem.${p}`) : null;
@@ -196,7 +205,7 @@ export function CircuitsForm({ initial, onBack, onSaved }: CircuitsFormProps) {
     }
 
     const problems: Record<number, string> = {};
-    legs.forEach((leg, i) => {
+    sentLegs.forEach((leg, i) => {
       const p = problemText(leg);
       if (p) problems[i] = p;
     });
@@ -207,13 +216,13 @@ export function CircuitsForm({ initial, onBack, onSaved }: CircuitsFormProps) {
     try {
       const result = await createBatch.mutateAsync({
         template: template(),
-        legs: legs.map((leg) => ({ departureTime: toApiTime(leg.takeoff), arrivalTime: toApiTime(leg.landing) })),
+        legs: sentLegs.map((leg) => ({ departureTime: toApiTime(leg.takeoff), arrivalTime: toApiTime(leg.landing) })),
       });
       onSaved(result.flights.length);
     } catch (err) {
       const message = extractApiError(err, t('form.failedToSave'));
       const legError = parseLegError(message);
-      if (legError && legError.index < legs.length) {
+      if (legError && legError.index < sentLegs.length) {
         setRowErrors({ [legError.index]: legError.message });
         setApiError(t('circuits.legRejected', { n: legError.index + 1 }));
       } else {
@@ -473,7 +482,7 @@ export function CircuitsForm({ initial, onBack, onSaved }: CircuitsFormProps) {
           {submitting
             ? t('common:saving')
             : mode === 'legs'
-              ? t('circuits.submitLegs', { count: legs.length })
+              ? t('circuits.submitLegs', { count: sentLegs.length })
               : t('circuits.submitSeries')}
         </button>
       </div>
