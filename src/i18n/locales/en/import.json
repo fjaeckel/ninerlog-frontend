@@ -92,11 +92,7 @@
     "person3": "Person 3",
     "person4": "Person 4",
     "person5": "Person 5",
-    "person6": "Person 6",
-    "launches": "Launches",
-    "isOutlanding": "Outlanding",
-    "isTowFlight": "Tow Flight",
-    "releaseHeightM": "Release Height (m)"
+    "person6": "Person 6"
   },
   "uploadFailed": "Upload failed",
   "previewFailed": "Preview failed",

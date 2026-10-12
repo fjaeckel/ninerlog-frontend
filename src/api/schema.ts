@@ -905,36 +905,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/currency/readiness": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Answer "may I fly on this date?"
-         * @description Evaluates the caller's currency as of `date`, counting only the flights already on
-         *     record — as if the pilot does not fly again before then — and answers per rating,
-         *     per launch method (SFCL.155), for passengers and for medical certificates. A rolling
-         *     requirement whose `validUntil` is before `date` is unmet on that date; a rating or
-         *     credential whose expiry date is on or before `date` is expired on it.
-         *
-         *     With `aircraftReg`, only the ratings whose own class covers that aircraft are
-         *     answered (an ULTRALIGHT rating with a kind only for aircraft of that kind), with
-         *     the launch methods of those ratings and, when `passengers` is true, passenger
-         *     currency for that class. Without it every rating is answered. Keys are catalogued
-         *     in docs/CURRENCY_MESSAGES.md.
-         */
-        get: operations["getCurrencyReadiness"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/custom-currency": {
         parameters: {
             query?: never;
@@ -1347,7 +1317,7 @@ export interface paths {
         post?: never;
         /**
          * Delete aircraft
-         * @description Delete an aircraft from the user's database. Note - flights using this aircraft will retain the registration/type as text.
+         * @description Delete an aircraft from the user's database. Note - flights using this aircraft will retain the registration/type as text; the aircraft's reminders are deleted with it.
          */
         delete: operations["deleteAircraft"];
         options?: never;
@@ -1357,6 +1327,106 @@ export interface paths {
          * @description Update aircraft information
          */
         patch: operations["updateAircraft"];
+        trace?: never;
+    };
+    "/aircraft/{aircraftId}/reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List reminders for an aircraft
+         * @description Dated aircraft items (annual inspection, insurance, rescue-system repack,
+         *     rescue-rocket expiry, ARC, ELT battery, custom) on one of the caller's
+         *     aircraft, ordered by due date. An aircraft that does not exist or belongs
+         *     to another user answers 404.
+         */
+        get: operations["listAircraftReminders"];
+        put?: never;
+        /**
+         * Add a reminder to an aircraft
+         * @description `label` is required when `kind` is CUSTOM. Suggested intervals (a client
+         *     concern, not enforced): ANNUAL_INSPECTION 12 months (DAeC/DULV
+         *     Jahresnachprüfung); RESCUE_SYSTEM_REPACK and RESCUE_ROCKET_EXPIRY follow
+         *     the manufacturer.
+         */
+        post: operations["createAircraftReminder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/aircraft/{aircraftId}/reminders/{reminderId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an aircraft reminder */
+        delete: operations["deleteAircraftReminder"];
+        options?: never;
+        head?: never;
+        /**
+         * Update an aircraft reminder
+         * @description Partial update. Omitted fields are unchanged; `label`, `intervalMonths`,
+         *     `lastDoneOn` and `notes` are cleared by sending null. The result is
+         *     revalidated (a CUSTOM reminder keeps a label). A reminder that does not
+         *     exist, belongs to another user or is on another aircraft answers 404.
+         */
+        patch: operations["updateAircraftReminder"];
+        trace?: never;
+    };
+    "/aircraft/{aircraftId}/reminders/{reminderId}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark an aircraft reminder done
+         * @description Records `doneOn` (default: today, UTC) as `lastDoneOn`. When the reminder
+         *     has `intervalMonths`, `dueDate` becomes `doneOn` plus that many calendar
+         *     months, clamped to the last day of the month (31 January + 1 month =
+         *     28/29 February). Without an interval `dueDate` is left unchanged for the
+         *     client to edit.
+         */
+        post: operations["completeAircraftReminder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/aircraft-reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List reminders across all aircraft
+         * @description All of the caller's aircraft reminders, ordered by due date, each with its
+         *     aircraft's registration. `dueWithinDays` keeps reminders due within that
+         *     many days of today (UTC), overdue ones included.
+         */
+        get: operations["listAllAircraftReminders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/flights": {
@@ -1887,7 +1957,7 @@ export interface paths {
         };
         /**
          * Export flights as CSV
-         * @description Export flight data as a CSV file — every flight, or every flight matching the `GET /flights` filters given (never paginated). Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), standard (ForeFlight-compatible), and weblogbook (the column layout of vsimakhin/web-logbook's own CSV export, so its "Apply Web Logbook Mapping" import profile maps every column in one click) formats. The standard layout ends with `LaunchMethod`, `Launches`, `Outlanding`, `TowFlight` and `ReleaseHeightM` columns; the easa, faa and weblogbook layouts have no launch-method column and carry it in their remarks cell as `[Launch: winch]`, which `POST /imports/confirm` reads back.
+         * @description Export flight data as a CSV file — every flight, or every flight matching the `GET /flights` filters given (never paginated). Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), standard (ForeFlight-compatible), and weblogbook (the column layout of vsimakhin/web-logbook's own CSV export, so its "Apply Web Logbook Mapping" import profile maps every column in one click) formats. The standard layout ends with a `LaunchMethod` column; the easa, faa and weblogbook layouts have no launch-method column and carry it in their remarks cell as `[Launch: winch]`, which `POST /imports/confirm` reads back.
          */
         get: operations["exportFlightsCSV"];
         put?: never;
@@ -1935,10 +2005,11 @@ export interface paths {
         /**
          * Export full data backup as JSON
          * @description Exports everything the user owns as a JSON backup file: flights (with
-         *     crew), aircraft, licences and class ratings, credentials, contacts,
-         *     custom currency rules, custom reports, notification preferences, the
-         *     carried-forward hours baseline and the pilot profile (mode and discipline
-         *     intents; evidence is derived and not exported).
+         *     crew), aircraft, aircraft reminders, licences and class ratings,
+         *     credentials, contacts, custom currency rules, custom reports,
+         *     notification preferences, the carried-forward hours baseline and the
+         *     pilot profile (mode and discipline intents; evidence is derived and not
+         *     exported).
          *
          *     This is the same payload a cloud backup run writes, and
          *     `POST /imports/json` restores every section of it.
@@ -1965,12 +2036,9 @@ export interface paths {
          * Restore a NinerLog JSON backup
          * @description Restore a previously exported NinerLog JSON backup into the authenticated
          *     user's account. Recreates every section the backup carries: aircraft,
-         *     licences, class ratings, credentials, flights and crew members,
+         *     aircraft reminders, licences, class ratings, credentials, flights and crew members,
          *     contacts, custom currency rules, custom reports, notification
-         *     preferences, the carried-forward hours baseline and the pilot profile. Flights keep their
-         *     glider facts (launches and their override flag, outlanding, tow flight, release height);
-         *     a flight from an older backup without a launch count gets its take-offs, at least one.
-         *     New UUIDs are assigned so the backup can
+         *     preferences, the carried-forward hours baseline and the pilot profile. New UUIDs are assigned so the backup can
          *     be restored into any NinerLog installation (including the one it was
          *     exported from).
          *
@@ -1987,6 +2055,10 @@ export interface paths {
          *     revalidated the same way and appended after existing ones; a report
          *     scoped to a licence is re-pointed at that licence's restored copy, and
          *     loses the licence scope if the backup does not carry the licence.
+         *     Aircraft reminders attach to the restored aircraft, or to the existing
+         *     aircraft with the same registration when that aircraft was skipped; a
+         *     reminder whose aircraft the backup does not carry is skipped, as is one
+         *     identical (kind, label, due date) to a reminder already on the aircraft.
          */
         post: operations["importDataJSON"];
         delete?: never;
@@ -2378,37 +2450,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/flights/batch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Log a batch of flights
-         * @description Creates one flight per leg from a shared template, for a series of circuits such as
-         *     winch launches at one site. Each leg is the template with the leg's fields laid over
-         *     it (`departureTime`, `arrivalTime`, and `landings`, `launches`, `remarks` when sent),
-         *     and is validated exactly like `POST /flights`: the same required fields, time pairs
-         *     and bounds. Legs normally carry take-off and landing times only.
-         *
-         *     All legs are stored in one transaction. When any leg is invalid the response is 400
-         *     with a message naming the zero-based leg index (`Leg 2: …`) and no flight is created.
-         *     A leg without `landings` takes the template's value, else 1.
-         *
-         *     To log a series of launches as a single logbook row instead, create one flight with
-         *     `launches` set; see `POST /flights`.
-         */
-        post: operations["createFlightBatch"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/flights/recalculate": {
         parameters: {
             query?: never;
@@ -2479,6 +2520,10 @@ export interface paths {
          *       regular flight log entry (returned via `flightId`). The created flight is prefilled
          *       with block/flight times, block-time-derived total time, and auto-calculated fields;
          *       the pilot completes the remaining details later in the normal flight edit flow.
+         *     - Without block times: `takeoff` with no open session opens one, and `landing` then
+         *       closes it and creates the flight with take-off and landing times only; its total
+         *       time is take-off to landing. `onblock` on such a session returns 400 — it has no
+         *       off-block to pair with.
          *
          *     Each event type is recorded at most once per session: repeating an event returns the
          *     session unchanged, which makes offline retries safe.
@@ -3560,6 +3605,83 @@ export interface components {
              */
             updatedAt: string;
         };
+        /**
+         * @description - ANNUAL_INSPECTION: annual airworthiness inspection (DAeC/DULV Jahresnachprüfung for gliders and ultralights)
+         *     - INSURANCE: insurance policy renewal
+         *     - RESCUE_SYSTEM_REPACK: ballistic rescue system repack (manufacturer interval)
+         *     - RESCUE_ROCKET_EXPIRY: rescue-system rocket expiry (manufacturer interval)
+         *     - ARC: Airworthiness Review Certificate
+         *     - ELT_BATTERY: ELT battery replacement
+         *     - CUSTOM: any other dated item; requires a label
+         * @enum {string}
+         */
+        AircraftReminderKind: "ANNUAL_INSPECTION" | "INSURANCE" | "RESCUE_SYSTEM_REPACK" | "RESCUE_ROCKET_EXPIRY" | "ARC" | "ELT_BATTERY" | "CUSTOM";
+        AircraftReminder: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            aircraftId: string;
+            /** @example D-MXYZ */
+            aircraftRegistration: string;
+            kind: components["schemas"]["AircraftReminderKind"];
+            /** @example Allianz hull policy */
+            label?: string;
+            /**
+             * Format: date
+             * @example 2026-10-15
+             */
+            dueDate: string;
+            /**
+             * @description Months added to the completion date to get the next due date
+             * @example 12
+             */
+            intervalMonths?: number;
+            /** Format: date */
+            lastDoneOn?: string;
+            notes?: string;
+            /**
+             * @description overdue before today (UTC); due_soon when due within 30 days, today included; ok otherwise
+             * @enum {string}
+             */
+            status: "ok" | "due_soon" | "overdue";
+            /**
+             * @description Calendar days from today (UTC) to dueDate; negative when overdue
+             * @example 19
+             */
+            daysUntilDue: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AircraftReminderCreate: {
+            kind: components["schemas"]["AircraftReminderKind"];
+            /** @description Required when kind is CUSTOM */
+            label?: string;
+            /** Format: date */
+            dueDate: string;
+            intervalMonths?: number;
+            /** Format: date */
+            lastDoneOn?: string;
+            notes?: string;
+        };
+        AircraftReminderUpdate: {
+            kind?: components["schemas"]["AircraftReminderKind"];
+            label?: string | null;
+            /** Format: date */
+            dueDate?: string;
+            intervalMonths?: number | null;
+            /** Format: date */
+            lastDoneOn?: string | null;
+            notes?: string | null;
+        };
+        AircraftReminderComplete: {
+            /**
+             * Format: date
+             * @description Completion date; defaults to today (UTC)
+             */
+            doneOn?: string;
+        };
         AircraftCreate: {
             /**
              * @description Aircraft registration/tail number. Normalised on write into the canonical notation of its state of registry: the nationality mark is matched against the ICAO table and the hyphen inserted, moved or removed to suit (`deabc` and `DE-ABC` both become `D-EABC`; `N-12345` becomes `N12345`). A registration whose nationality mark is not recognised is stored uppercased and trimmed, but otherwise unchanged.
@@ -3865,19 +3987,19 @@ export interface components {
             readonly arrivalAirportName?: string | null;
             /**
              * Format: time
-             * @description Off-block time (chocks off / engine start) in UTC. Marks the beginning of block time per EASA FCL.010 / FAA 14 CFR 1.1.
+             * @description Off-block time (chocks off / engine start) in UTC. Marks the beginning of block time per EASA FCL.010 / FAA 14 CFR 1.1. Null on a flight logged with take-off and landing times only.
              * @example 14:15:00
              */
             offBlockTime?: string | null;
             /**
              * Format: time
-             * @description On-block time (chocks on / engine shutdown) in UTC. Marks the end of block time per EASA FCL.010 / FAA 14 CFR 1.1.
+             * @description On-block time (chocks on / engine shutdown) in UTC. Marks the end of block time per EASA FCL.010 / FAA 14 CFR 1.1. Null on a flight logged with take-off and landing times only.
              * @example 16:55:00
              */
             onBlockTime?: string | null;
             /**
              * Format: time
-             * @description Takeoff time in UTC. Marks the beginning of airborne/flight time.
+             * @description Take-off time in UTC. Marks the beginning of airborne/flight time.
              * @example 14:30:00
              */
             departureTime?: string | null;
@@ -3888,7 +4010,10 @@ export interface components {
              */
             arrivalTime?: string | null;
             /**
-             * @description Total block time in minutes (off-block to on-block)
+             * @description Total time in minutes (EASA AMC1 FCL.050 Col 9). The off-block to on-block span
+             *     when both block times are set, otherwise the take-off to landing span
+             *     (`departureTime` to `arrivalTime`). A span whose end is earlier than its start
+             *     crosses midnight UTC. 0 for an FSTD session and for a passenger flight.
              * @example 150
              */
             totalTime: number;
@@ -4079,35 +4204,6 @@ export interface components {
              */
             launchMethod?: "winch" | "aerotow" | "self-launch" | "car" | "bungee" | "null" | null;
             /**
-             * @description Sailplane launches on this flight (Part-SFCL SFCL.155 and SFCL.160). Derived from
-             *     the take-offs (day + night, at least one) unless launchesOverride is set; 0 for an
-             *     FSTD session or a passenger flight. A series of launches logged as one row
-             *     (AMC1 FCL.050 style) carries the number of launches with launchesOverride true.
-             *     Launch recency counts this value.
-             * @example 1
-             */
-            launches: number;
-            /**
-             * @description True when launches was entered by the pilot rather than derived from the take-offs.
-             * @example false
-             */
-            launchesOverride: boolean;
-            /**
-             * @description Landing away from the planned site (Außenlandung). Cross-country time is not derived from departure and arrival for an outlanding.
-             * @example false
-             */
-            isOutlanding: boolean;
-            /**
-             * @description The pilot flew the tug, towing a sailplane.
-             * @example false
-             */
-            isTowFlight: boolean;
-            /**
-             * @description Tow or winch release height in metres.
-             * @example 400
-             */
-            releaseHeightM?: number | null;
-            /**
              * @description Name of the pilot-in-command for this flight (EASA AMC1 FCL.050 Col 12). Auto-set to "Self" when isPic=true, or to instructorName when isDual=true.
              * @example Self
              */
@@ -4197,8 +4293,17 @@ export interface components {
          * @description Creates either a flight or an FSTD (simulator) session.
          *
          *     For a flight (`isSimulator` absent or false) `aircraftReg`, `departureIcao`,
-         *     `arrivalIcao`, `offBlockTime`, `onBlockTime` and `landings` are all required;
-         *     omitting any of them returns 400.
+         *     `arrivalIcao` and `landings` are required, plus at least one complete time pair:
+         *     block times (`offBlockTime` and `onBlockTime`) or take-off and landing times
+         *     (`departureTime` and `arrivalTime`). Both pairs may be sent. Omitting a required
+         *     field, sending no complete pair, or sending one half of a pair without a complete
+         *     pair beside it returns 400.
+         *
+         *     `totalTime` is the block span when both block times are present, otherwise the
+         *     take-off to landing span. Night time, night take-offs and landings, and
+         *     cross-country time are derived from the same pair (block times first), so a
+         *     glider or ultralight flight logged with take-off and landing times only is
+         *     treated exactly like a block-timed one.
          *
          *     For an FSTD session (`isSimulator: true`) they must be omitted — a training
          *     device is not flown between places and has no block times. The session
@@ -4238,30 +4343,30 @@ export interface components {
             arrivalIcao?: string;
             /**
              * Format: time
-             * @description Off-block time (chocks off / engine start) in UTC. Required for a flight, rejected for an FSTD session.
+             * @description Off-block time (chocks off / engine start) in UTC. Sent together with onBlockTime; a flight needs this pair or departureTime + arrivalTime. Rejected for an FSTD session.
              * @example 14:15:00
              */
             offBlockTime?: string;
             /**
              * Format: time
-             * @description On-block time (chocks on / engine shutdown) in UTC. Required for a flight, rejected for an FSTD session.
+             * @description On-block time (chocks on / engine shutdown) in UTC. Sent together with offBlockTime; a flight needs this pair or departureTime + arrivalTime. Rejected for an FSTD session.
              * @example 16:55:00
              */
             onBlockTime?: string;
             /**
              * Format: time
-             * @description Takeoff time in UTC
+             * @description Take-off time in UTC. Sent together with arrivalTime; a flight needs this pair or offBlockTime + onBlockTime.
              * @example 14:30:00
              */
             departureTime?: string;
             /**
              * Format: time
-             * @description Landing time in UTC
+             * @description Landing time in UTC. Sent together with departureTime; a flight needs this pair or offBlockTime + onBlockTime.
              * @example 16:45:00
              */
             arrivalTime?: string;
             /**
-             * @description Total block time in minutes calculated from offBlockTime and onBlockTime. Always 0 for an FSTD session. This field is computed by the server and should not be provided by the client.
+             * @description Total time in minutes, computed by the server from offBlockTime to onBlockTime when both are sent, otherwise from departureTime to arrivalTime. Always 0 for an FSTD session. Not accepted from the client.
              * @example 150
              */
             readonly totalTime?: number;
@@ -4340,20 +4445,6 @@ export interface components {
             isProficiencyCheck?: boolean;
             /** @enum {string|null} */
             launchMethod?: "winch" | "aerotow" | "self-launch" | "car" | "bungee" | "null" | null;
-            /** @description Number of sailplane launches. Provide to override derivation from the take-offs (launchesOverride is then true), e.g. to log a series of winch launches as one row; omit to derive. */
-            launches?: number;
-            /**
-             * @description Landing away from the planned site (Außenlandung). Cross-country time is then not derived from departure and arrival.
-             * @default false
-             */
-            isOutlanding: boolean;
-            /**
-             * @description The pilot flew the tug, towing a sailplane.
-             * @default false
-             */
-            isTowFlight: boolean;
-            /** @description Tow or winch release height in metres. Outside 0-20000 returns 400. */
-            releaseHeightM?: number | null;
             /** @description Name of the PIC. Auto-set to "Self" when isPic=true, or to instructorName when isDual=true. */
             picName?: string | null;
             /** @description Multi-pilot time in minutes (EASA AMC1 FCL.050 Col 10) */
@@ -4367,42 +4458,6 @@ export interface components {
             /** @description People on board this flight */
             crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
         };
-        /** @description A template flight and the legs that differ from it. */
-        FlightBatchCreate: {
-            template: components["schemas"]["FlightCreate"];
-            legs: components["schemas"]["FlightBatchLeg"][];
-        };
-        /** @description One leg of a batch; the fields sent replace the template's. */
-        FlightBatchLeg: {
-            /**
-             * Format: time
-             * @description Take-off time in UTC.
-             * @example 10:02:00
-             */
-            departureTime?: string;
-            /**
-             * Format: time
-             * @description Landing time in UTC.
-             * @example 10:10:00
-             */
-            arrivalTime?: string;
-            /**
-             * @description Landings on this leg; defaults to the template's value, else 1.
-             * @example 1
-             */
-            landings?: number;
-            /**
-             * @description Launches on this leg; overrides derivation from the take-offs.
-             * @example 1
-             */
-            launches?: number;
-            /** @description Remarks for this leg; replaces the template's remarks. */
-            remarks?: string | null;
-        };
-        FlightBatchResult: {
-            /** @description The created flights, in leg order. */
-            flights: components["schemas"]["Flight"][];
-        };
         FlightUpdate: {
             /** Format: date */
             date?: string;
@@ -4412,24 +4467,25 @@ export interface components {
             arrivalIcao?: string | null;
             /**
              * Format: time
-             * @description Off-block time (chocks off / engine start) in UTC
+             * @description Off-block time (chocks off / engine start) in UTC. Changing either block time recomputes totalTime from the block span, or from take-off to landing when the stored flight no longer has both block times.
              */
             offBlockTime?: string | null;
             /**
              * Format: time
-             * @description On-block time (chocks on / engine shutdown) in UTC
+             * @description On-block time (chocks on / engine shutdown) in UTC. See offBlockTime for the effect on totalTime.
              */
             onBlockTime?: string | null;
             /**
              * Format: time
-             * @description Takeoff time in UTC
+             * @description Take-off time in UTC. On a flight without both block times, changing take-off or landing recomputes totalTime from the take-off to landing span.
              */
             departureTime?: string | null;
             /**
              * Format: time
-             * @description Landing time in UTC
+             * @description Landing time in UTC. See departureTime for the effect on totalTime.
              */
             arrivalTime?: string | null;
+            /** @description Total time in minutes. Applied only when the request does not change a time that totalTime is computed from. */
             totalTime?: number;
             ifrTime?: number;
             /** @description Total number of landings */
@@ -4469,14 +4525,6 @@ export interface components {
             isProficiencyCheck?: boolean;
             /** @enum {string|null} */
             launchMethod?: "winch" | "aerotow" | "self-launch" | "car" | "bungee" | null;
-            /** @description Number of sailplane launches. A number overrides derivation from the take-offs; null returns the field to derivation. */
-            launches?: number | null;
-            /** @description Landing away from the planned site (Außenlandung). */
-            isOutlanding?: boolean;
-            /** @description The pilot flew the tug, towing a sailplane. */
-            isTowFlight?: boolean;
-            /** @description Tow or winch release height in metres; null clears it. Outside 0-20000 returns 400. */
-            releaseHeightM?: number | null;
             /** @description Name of the PIC */
             picName?: string | null;
             /** @description Multi-pilot time in minutes. A number declares the time; null returns the field to derivation from the crew list and aircraft. */
@@ -4857,7 +4905,8 @@ export interface components {
              *       "currency_night",
              *       "currency_instrument",
              *       "currency_flight_review",
-             *       "currency_revalidation"
+             *       "currency_revalidation",
+             *       "aircraft_reminder"
              *     ]
              */
             enabledCategories: components["schemas"]["NotificationCategory"][];
@@ -4894,9 +4943,10 @@ export interface components {
          *     - currency_instrument: Instrument currency
          *     - currency_flight_review: Flight review / proficiency check due
          *     - currency_revalidation: EASA revalidation requirements approaching expiry
+         *     - aircraft_reminder: aircraft reminder due within a warning day, or overdue
          * @enum {string}
          */
-        NotificationCategory: "credential_medical" | "credential_language" | "credential_security" | "credential_other" | "rating_expiry" | "currency_passenger" | "currency_night" | "currency_instrument" | "currency_flight_review" | "currency_revalidation";
+        NotificationCategory: "credential_medical" | "credential_language" | "credential_security" | "credential_other" | "rating_expiry" | "currency_passenger" | "currency_night" | "currency_instrument" | "currency_flight_review" | "currency_revalidation" | "aircraft_reminder";
         NotificationHistoryEntry: {
             /** Format: uuid */
             id: string;
@@ -5268,7 +5318,7 @@ export interface components {
             /** Format: uuid */
             userId: string;
             /**
-             * @description Session lifecycle state. `onblock` events complete the session.
+             * @description Session lifecycle state. `onblock` events complete the session; `landing` completes a session opened at `takeoff`.
              * @enum {string}
              */
             status: "open" | "completed" | "discarded";
@@ -5564,21 +5614,6 @@ export interface components {
              * @example 2026-01-15
              */
             date?: string;
-            /**
-             * @description Outstanding amount a remedy key asks for, in `unit`
-             * @example 2
-             */
-            missing?: number;
-            /**
-             * @description Unit of `missing` (minutes, landings, launches, flights, approaches, holds)
-             * @example launches
-             */
-            unit?: string;
-            /**
-             * @description Launch method a remedy key refers to
-             * @example aerotow
-             */
-            method?: string;
         };
         PassengerCurrency: {
             classType: components["schemas"]["ClassType"];
@@ -5766,10 +5801,8 @@ export interface components {
                 approaches?: number;
                 /** @description Number of holding procedures in the evaluation period */
                 holds?: number;
-                /** @description Launches in class in the evaluation period (each flight's launches; a flight stored without a launch count counts its take-offs, at least one) */
+                /** @description Launches (take-offs) in class in the evaluation period, at least one per flight */
                 launches?: number;
-                /** @description Student pilot-in-command (supervised solo) time in class in minutes in the evaluation period */
-                spicMinutes?: number;
                 /** @description Number of flights with dual time received in class in the evaluation period */
                 trainingFlights?: number;
                 /** @description Longest total time in minutes of a flight with dual time received in class in the evaluation period */
@@ -5819,16 +5852,6 @@ export interface components {
              * @example 3
              */
             unclassifiedFlights?: number;
-            /**
-             * Format: date
-             * @description For a `current` result of a rolling-window rule (LAPL FCL.140.A, SPL SFCL.160,
-             *     GPL FCL.240.G, German UL LuftPersV §45, FAA 14 CFR 61.57), the last date it stays
-             *     current if the pilot does not fly again — the latest date on which any accepted
-             *     alternative (the experience rows, or a proficiency check) is still met. Omitted
-             *     otherwise, and for expiry-anchored rules, where `expiryDate` governs.
-             * @example 2027-05-31
-             */
-            validUntil?: string | null;
         };
         LaunchMethodCurrency: {
             /**
@@ -5850,18 +5873,6 @@ export interface components {
              * @example launch_method.progress
              */
             messageKey?: string;
-            /**
-             * Format: date
-             * @description When met, the last date the method stays met if the pilot does not fly again. Omitted when unmet.
-             * @example 2027-04-12
-             */
-            validUntil?: string | null;
-            /**
-             * @description When unmet, `remedy.launch_method_dual` (SFCL.155(d)); see docs/CURRENCY_MESSAGES.md.
-             * @example remedy.launch_method_dual
-             */
-            remedyKey?: string;
-            remedyParams?: components["schemas"]["MessageParams"];
         };
         CurrencyRequirement: {
             /** @description Author-supplied requirement name. Present only for custom currency rules, where the name is user data; regulatory requirements carry nameKey instead. */
@@ -5891,77 +5902,6 @@ export interface components {
              */
             messageKey: string;
             messageParams?: components["schemas"]["MessageParams"];
-            /**
-             * Format: date
-             * @description For a met requirement of a rolling-window rule, the last date it stays met if the
-             *     pilot does not fly again: the day before enough of the counted flights leave the
-             *     window for the total to drop below `required`. Omitted when unmet, on custom rules
-             *     and on expiry-anchored rules (FCL.740.A, FCL.625.A).
-             * @example 2027-05-31
-             */
-            validUntil?: string | null;
-            /**
-             * @description When unmet, what restores it: `remedy.fly_more`, `remedy.training_flight` or
-             *     `remedy.proficiency_check`. Omitted when met, on custom rules and on the FAA flight
-             *     review row. See docs/CURRENCY_MESSAGES.md.
-             * @example remedy.fly_more
-             */
-            remedyKey?: string;
-            remedyParams?: components["schemas"]["MessageParams"];
-        };
-        ReadinessReport: {
-            /**
-             * Format: date
-             * @description The date answered for
-             */
-            date: string;
-            /** @description Registration of the aircraft the answer is restricted to, as stored */
-            aircraftReg?: string;
-            /** @description Ratings first, then launch methods, passengers and medical certificates */
-            items: components["schemas"]["ReadinessItem"][];
-        };
-        ReadinessItem: {
-            /** @enum {string} */
-            kind: "rating" | "launch_method" | "passengers" | "credential";
-            /**
-             * Format: uuid
-             * @description The rating answered (kind rating) or the rating the launch method belongs to
-             */
-            classRatingId?: string;
-            /** Format: uuid */
-            licenseId?: string;
-            classType?: components["schemas"]["ClassType"];
-            /**
-             * @description Ultralight kind of the rating or passenger entry
-             * @enum {string}
-             */
-            ulKind?: "THREE_AXIS" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE";
-            /**
-             * @description Launch method (kind launch_method)
-             * @example aerotow
-             */
-            launchMethod?: string;
-            /**
-             * Format: uuid
-             * @description The medical certificate answered (kind credential)
-             */
-            credentialId?: string;
-            /** @description Whether the privilege may be exercised on the date */
-            ready: boolean;
-            /**
-             * @description A rating's currency status on the date; `current` or `lapsed` for a launch
-             *     method; the day passenger status for passengers; `valid` or `expired` for a
-             *     credential.
-             * @enum {string}
-             */
-            status: "current" | "expiring" | "expired" | "lapsed" | "unknown" | "valid";
-            /**
-             * @description Message key explaining the answer — a rating, passenger or remedy key, or a
-             *     `readiness.*` key. Catalogued in docs/CURRENCY_MESSAGES.md.
-             * @example remedy.launch_method_dual
-             */
-            reasonKey: string;
-            params?: components["schemas"]["MessageParams"];
         };
         /**
          * @description Aircraft class rating type:
@@ -6079,12 +6019,6 @@ export interface components {
          *     does not fail the row. A `[Launch: <method>]` marker in a remarks
          *     column is read as the launch method and removed from the remarks.
          *
-         *     `launches` is a whole number of launches, stored with the override flag set
-         *     (German `Starts`, English `Launches`). `isOutlanding` (`Außenlandung`,
-         *     `Outlanding`) and `isTowFlight` (`Tow Flight`) read true for `true`, `yes`,
-         *     `ja`, `x`, `1` or a positive number. `releaseHeightM` is whole metres; a
-         *     value outside 0-20000 is reported as a row error.
-         *
          *     Aircraft created by the import get a class from the source's aircraft
          *     table when it has one, otherwise from a German registration
          *     (`D-` + four digits is GLIDER, `D-M…` is ULTRALIGHT with no kind),
@@ -6111,7 +6045,7 @@ export interface components {
          *     Use `ignore` to skip a column during import.
          * @enum {string}
          */
-        ImportField: "date" | "aircraftReg" | "aircraftType" | "departureIcao" | "arrivalIcao" | "offBlockTime" | "onBlockTime" | "departureTime" | "arrivalTime" | "totalTime" | "isPic" | "isDual" | "nightTime" | "crossCountryTime" | "ifrTime" | "landingsDay" | "landingsNight" | "landingsTotal" | "remarks" | "route" | "approachesCount" | "holds" | "isIpc" | "isFlightReview" | "actualInstrumentTime" | "simulatedInstrumentTime" | "instructorName" | "instructorComments" | "dualGivenTime" | "person1" | "person2" | "person3" | "person4" | "person5" | "person6" | "launchMethod" | "launches" | "isOutlanding" | "isTowFlight" | "releaseHeightM" | "ignore";
+        ImportField: "date" | "aircraftReg" | "aircraftType" | "departureIcao" | "arrivalIcao" | "offBlockTime" | "onBlockTime" | "departureTime" | "arrivalTime" | "totalTime" | "isPic" | "isDual" | "nightTime" | "crossCountryTime" | "ifrTime" | "landingsDay" | "landingsNight" | "landingsTotal" | "remarks" | "route" | "approachesCount" | "holds" | "isIpc" | "isFlightReview" | "actualInstrumentTime" | "simulatedInstrumentTime" | "instructorName" | "instructorComments" | "dualGivenTime" | "person1" | "person2" | "person3" | "person4" | "person5" | "person6" | "launchMethod" | "ignore";
         /**
          * @description One logbook export format NinerLog knows how to read, together with the
          *     steps for getting that file out of the source application.
@@ -6470,6 +6404,16 @@ export interface components {
              * @example 2
              */
             customReportsImported: number;
+            /**
+             * @description Aircraft reminders restored
+             * @example 3
+             */
+            aircraftRemindersImported: number;
+            /**
+             * @description Aircraft reminders skipped because their aircraft is not in the backup or an identical reminder already exists on the aircraft
+             * @example 0
+             */
+            aircraftRemindersSkipped: number;
             /** @description Whether the backup carried notification preferences that were applied */
             notificationPreferencesImported: boolean;
             /** @description Whether the backup carried a carried-forward hours baseline that was applied */
@@ -6566,6 +6510,12 @@ export interface components {
             activeSessions: number;
             /** @description Saved custom reports across all users. */
             totalCustomReports: number;
+            /** @description Aircraft reminders across all users. */
+            aircraftReminders: {
+                total: number;
+                /** @description Reminders whose due date is before today (UTC). */
+                overdue: number;
+            };
             /** @description Counts of user-configured cloud backup destinations. */
             cloudBackupDestinations: {
                 /** @description Total number of cloud backup destinations configured across all users. */
@@ -7561,7 +7511,7 @@ export interface components {
              * @example aircraft_class
              * @enum {string}
              */
-            field: "aircraft_class" | "aircraft_type" | "aircraft_registration" | "launch_method" | "aircraft_complex" | "aircraft_high_performance" | "aircraft_tailwheel" | "is_pic" | "is_dual" | "has_night" | "has_ifr" | "is_cross_country" | "is_outlanding" | "is_tow_flight";
+            field: "aircraft_class" | "aircraft_type" | "aircraft_registration" | "launch_method" | "aircraft_complex" | "aircraft_high_performance" | "aircraft_tailwheel" | "is_pic" | "is_dual" | "has_night" | "has_ifr" | "is_cross_country";
             /**
              * @example eq
              * @enum {string}
@@ -7583,11 +7533,11 @@ export interface components {
              *     `dual_time`, `night_time`, `ifr_time`, `cross_country_time`.
              *     Count metrics (`unit` ignored): `flights`, `landings`,
              *     `day_landings`, `night_landings`, `takeoffs`, `day_takeoffs`,
-             *     `night_takeoffs`, `approaches`, `holds`, `launches`.
+             *     `night_takeoffs`, `approaches`, `holds`.
              * @example landings
              * @enum {string}
              */
-            metric: "total_time" | "pic_time" | "picus_time" | "spic_time" | "examiner_time" | "relief_time" | "dual_time" | "night_time" | "ifr_time" | "cross_country_time" | "flights" | "landings" | "day_landings" | "night_landings" | "takeoffs" | "day_takeoffs" | "night_takeoffs" | "approaches" | "holds" | "launches";
+            metric: "total_time" | "pic_time" | "picus_time" | "spic_time" | "examiner_time" | "relief_time" | "dual_time" | "night_time" | "ifr_time" | "cross_country_time" | "flights" | "landings" | "day_landings" | "night_landings" | "takeoffs" | "day_takeoffs" | "night_takeoffs" | "approaches" | "holds";
             /**
              * Format: double
              * @description The threshold the metric must reach
@@ -7991,6 +7941,8 @@ export interface components {
         BackupDestinationId: string;
         /** @description Aircraft UUID */
         AircraftId: string;
+        /** @description Aircraft reminder UUID */
+        ReminderId: string;
         /** @description Flight UUID */
         FlightId: string;
         /** @description Flight signature UUID */
@@ -9645,42 +9597,6 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
-    getCurrencyReadiness: {
-        parameters: {
-            query?: {
-                /**
-                 * @description Date to answer for, from today to 366 days ahead (UTC). Defaults to today.
-                 * @example 2026-10-03
-                 */
-                date?: string;
-                /**
-                 * @description Registration of one of the caller's aircraft; restricts the answer to it.
-                 * @example D-1234
-                 */
-                aircraftReg?: string;
-                /** @description Include passenger currency. */
-                passengers?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Readiness on the date */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReadinessReport"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-        };
-    };
     listCustomCurrencyRules: {
         parameters: {
             query?: never;
@@ -10549,6 +10465,175 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
+    listAircraftReminders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Aircraft UUID */
+                aircraftId: components["parameters"]["AircraftId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reminders ordered by due date */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AircraftReminder"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createAircraftReminder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Aircraft UUID */
+                aircraftId: components["parameters"]["AircraftId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AircraftReminderCreate"];
+            };
+        };
+        responses: {
+            /** @description Reminder created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AircraftReminder"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteAircraftReminder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Aircraft UUID */
+                aircraftId: components["parameters"]["AircraftId"];
+                /** @description Aircraft reminder UUID */
+                reminderId: components["parameters"]["ReminderId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reminder deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateAircraftReminder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Aircraft UUID */
+                aircraftId: components["parameters"]["AircraftId"];
+                /** @description Aircraft reminder UUID */
+                reminderId: components["parameters"]["ReminderId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AircraftReminderUpdate"];
+            };
+        };
+        responses: {
+            /** @description Reminder updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AircraftReminder"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    completeAircraftReminder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Aircraft UUID */
+                aircraftId: components["parameters"]["AircraftId"];
+                /** @description Aircraft reminder UUID */
+                reminderId: components["parameters"]["ReminderId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AircraftReminderComplete"];
+            };
+        };
+        responses: {
+            /** @description Reminder after completion */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AircraftReminder"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listAllAircraftReminders: {
+        parameters: {
+            query?: {
+                /** @example 30 */
+                dueWithinDays?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reminders ordered by due date */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AircraftReminder"][];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
     listFlights: {
         parameters: {
             query?: {
@@ -10606,9 +10691,7 @@ export interface operations {
                  *     distance; isPic; isDual; isIpc (ipc); isFlightReview (flightReview,
                  *     bfr); isProficiencyCheck (proficiencyCheck); signed; instructorName
                  *     (instructor); instructorComments; picName; crew; fstdType (fstd);
-                 *     endorsements; launchMethod (launch); launches; isOutlanding
-                 *     (outlanding); isTowFlight (towflight); releaseHeightM (releaseHeight);
-                 *     createdAt; updatedAt.
+                 *     endorsements; launchMethod (launch); createdAt; updatedAt.
                  *
                  *     Example: `q=(departure:EDDF OR arrival:EDDF) AND nightTime>0 NOT remarks:cancelled`
                  *
@@ -11597,6 +11680,7 @@ export interface operations {
                     credentials?: Record<string, never>[];
                     contacts?: Record<string, never>[];
                     customCurrencyRules?: Record<string, never>[];
+                    aircraftReminders?: Record<string, never>[];
                     notificationPreferences?: Record<string, never>;
                     flightBaseline?: Record<string, never>;
                     pilotProfile?: Record<string, never>;
@@ -12206,32 +12290,6 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
-    createFlightBatch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["FlightBatchCreate"];
-            };
-        };
-        responses: {
-            /** @description Every leg was created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FlightBatchResult"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-        };
-    };
     recalculateFlights: {
         parameters: {
             query?: never;
@@ -12328,7 +12386,7 @@ export interface operations {
                     "application/json": components["schemas"]["FlightSession"];
                 };
             };
-            /** @description New session opened (offblock) */
+            /** @description New session opened (offblock, or takeoff with no open session) */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -12339,7 +12397,7 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
-            /** @description No open session for takeoff/landing/onblock events */
+            /** @description No open session for landing/onblock events */
             404: {
                 headers: {
                     [name: string]: unknown;
