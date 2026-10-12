@@ -312,7 +312,7 @@ export const FLIGHT_COLUMNS: FlightColumnDef[] = [
     kind: 'fixed',
     labelKey: 'tableOffOnBlock',
     titleKey: 'fields.offOnBlockTime',
-    hasValue: (f) => !!(f.offBlockTime || f.onBlockTime),
+    hasValue: (f) => rowClockTimes(f).some(Boolean),
   },
   minutesColumn('picTime', 'tablePic', 'fields.picTime', (f) => f.picTime),
   minutesColumn('nightTime', 'tableNight', 'fields.nightTime', (f) => f.nightTime),

@@ -474,10 +474,11 @@ describe('times column without block times (WP-20)', () => {
     expect(rowClockTimes(flight())).toEqual(['14:15:00', '16:10:00']);
   });
 
-  it('does not count take-off and landing as block data for automatic mode', () => {
+  it('counts take-off and landing as data for the times column', () => {
     const def = FLIGHT_COLUMNS.find((c) => c.key === 'offOnBlock')!;
-    expect(def.hasValue(glider)).toBe(false);
+    expect(def.hasValue(glider)).toBe(true);
     expect(def.hasValue(flight())).toBe(true);
+    expect(def.hasValue(flight({ offBlockTime: null, onBlockTime: null }))).toBe(false);
   });
 });
 
@@ -496,11 +497,19 @@ describe('selectFlightColumns — relevance in automatic mode', () => {
     expect(selectFlightCardColumns(page, auto, rel(PERSONA_PROFILES.mark()))).toEqual(selectFlightCardColumns(page, auto));
   });
 
-  it('L Lena: off/on block is not force-shown when no flight on the page has block times', () => {
+  it('L Lena: the times column is not force-shown when no flight on the page has clock times', () => {
     const page = [glider({ picTime: 8, launchMethod: 'winch', launches: 6 })];
     const layout = selectFlightColumns(page, auto, rel(PERSONA_PROFILES.lena()));
     expect(layout.offOnBlock).toBe(false);
     expect(selectFlightCardColumns(page, auto, rel(PERSONA_PROFILES.lena())).offOnBlock).toBe(false);
+  });
+
+  it('L Lena: take-off and landing times keep the times column, headed take-off / landing', () => {
+    const page = [glider({ departureTime: '10:05:00', arrivalTime: '10:17:00' })];
+    const layout = selectFlightColumns(page, auto, rel(PERSONA_PROFILES.lena()));
+    expect(layout.offOnBlock).toBe(true);
+    expect(layout.offOnBlockLabelKey).toBe('tableTakeoffLanding');
+    expect(selectFlightCardColumns(page, auto, rel(PERSONA_PROFILES.lena())).offOnBlock).toBe(true);
   });
 
   it('L Lena: block times on the page still show the column (data always wins)', () => {
