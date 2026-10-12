@@ -1,6 +1,7 @@
 import type { FlightAnalytics } from '../hooks/useAnalytics';
 import { APP_NAME } from './config';
 import { formatDuration } from './duration';
+import { airportDisplay, isLocalIdent } from './airport';
 import { formatDate, type DateFormatPref } from './dateFormat';
 
 const fmt = (m: number) => formatDuration(m, 'hm');
@@ -145,13 +146,19 @@ export function exportAnalyticsToCSV(a: FlightAnalytics) {
   block(
     'Airports',
     ['ICAO', 'Name', 'Country', 'Departures', 'Arrivals', 'Flights'],
-    a.byAirport.map((r) => [r.icao, r.name ?? '', r.country ?? '', r.departures, r.arrivals, r.flights])
+    a.byAirport.map((r) => [isLocalIdent(r.icao) ? '' : r.icao, r.name ?? '', r.country ?? '', r.departures, r.arrivals, r.flights])
   );
   block('Countries', ['Country', 'Airports', 'Flights'], a.byCountry.map((r) => [r.country, r.airports, r.flights]));
   block(
     'Routes',
     ['From', 'To', 'Flights', 'Block time', 'Distance (NM)'],
-    a.byRoute.map((r) => [r.departureIcao, r.arrivalIcao, r.flights, fmt(r.totalMinutes), nm(r.distanceNm)])
+    a.byRoute.map((r) => [
+      airportDisplay(r.departureIcao, r.departureAirportName),
+      airportDisplay(r.arrivalIcao, r.arrivalAirportName),
+      r.flights,
+      fmt(r.totalMinutes),
+      nm(r.distanceNm),
+    ])
   );
 
   block(
@@ -316,7 +323,7 @@ ${table(
 ${table(
   'Most visited airports',
   ['ICAO', 'Name', 'Departures', 'Arrivals', 'Flights'],
-  a.byAirport.slice(0, 15).map((x) => [x.icao, x.name ?? '', x.departures, x.arrivals, x.flights])
+  a.byAirport.slice(0, 15).map((x) => [isLocalIdent(x.icao) ? '' : x.icao, x.name ?? '', x.departures, x.arrivals, x.flights])
 )}
 
 ${table('Approaches', ['Type', 'Count'], a.approachTypes.map((x) => [x.type, x.count]))}

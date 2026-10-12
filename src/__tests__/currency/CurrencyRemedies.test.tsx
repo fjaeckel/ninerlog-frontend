@@ -23,7 +23,7 @@ const lenaSpl = (overrides: Partial<ClassRatingCurrency> = {}): ClassRatingCurre
   status: 'current',
   message: '',
   messageKey: 'rating.recency_current',
-  validUntil: '2027-06-14',
+  recencyExpiresOn: '2027-06-14',
   requirements: [
     { nameKey: 'requirement.launches', met: true, current: 139, required: 15, unit: 'launches', messageKey: 'requirement.progress', validUntil: '2027-06-14' },
     { nameKey: 'requirement.proficiency_check', met: false, current: 0, required: 1, unit: 'check', messageKey: 'requirement.prof_check_missing', remedyKey: 'remedy.proficiency_check' },
@@ -92,7 +92,7 @@ describe('CurrencyCard validUntil and remedies', () => {
     render(<CurrencyCard rating={lenaSpl()} />);
     expect(screen.getByTestId('requirement-requirement.launches-valid-until')).toHaveTextContent('valid until 14.06.2027');
     expect(screen.getByTestId('launch-method-winch-valid-until')).toHaveTextContent('valid until 07.08.2028');
-    expect(screen.getByTestId('currency-valid-until')).toHaveTextContent('Current until 14.06.2027');
+    expect(screen.getByTestId('currency-recency-expires')).toHaveTextContent('Current until 14.06.2027 without further flying');
   });
 
   it('follows the user date format and German wording', async () => {
@@ -100,7 +100,7 @@ describe('CurrencyCard validUntil and remedies', () => {
     await i18n.changeLanguage('de');
     render(<CurrencyCard rating={lenaSpl()} />);
     expect(screen.getByTestId('requirement-requirement.launches-valid-until')).toHaveTextContent('gültig bis 2027-06-14');
-    expect(screen.getByTestId('currency-valid-until')).toHaveTextContent('Gültig bis 2027-06-14');
+    expect(screen.getByTestId('currency-recency-expires')).toHaveTextContent('Ohne weitere Flüge gültig bis 2027-06-14');
   });
 
   it('L4: an unmet launch method shows its remedy; the unused proficiency check of a current rating does not', () => {
@@ -116,7 +116,7 @@ describe('CurrencyCard validUntil and remedies', () => {
         rating={lenaSpl({
           status: 'lapsed',
           messageKey: 'rating.recency_not_met',
-          validUntil: undefined,
+          recencyExpiresOn: undefined,
           requirements: [
             { nameKey: 'requirement.launches', met: false, current: 0, required: 15, unit: 'launches', messageKey: 'requirement.progress', remedyKey: 'remedy.fly_more', remedyParams: { missing: 15, unit: 'launches' } },
             { nameKey: 'requirement.proficiency_check', met: false, current: 0, required: 1, unit: 'check', messageKey: 'requirement.prof_check_missing', remedyKey: 'remedy.proficiency_check' },
@@ -126,6 +126,6 @@ describe('CurrencyCard validUntil and remedies', () => {
     );
     expect(screen.getByTestId('requirement-requirement.launches-remedy')).toHaveTextContent('Fly 15 more launches');
     expect(screen.getByTestId('requirement-requirement.proficiency_check-remedy')).toHaveTextContent('Take a proficiency check with an examiner');
-    expect(screen.queryByTestId('currency-valid-until')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('currency-recency-expires')).not.toBeInTheDocument();
   });
 });

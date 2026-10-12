@@ -170,6 +170,7 @@
       "flights": "Flights",
       "aircraft": "Aircraft",
       "lastLogin": "Last Login",
+      "lastActive": "Last Active",
       "actions": "Actions",
       "disabled": "Disabled",
       "locked": "Locked",
@@ -394,5 +395,8 @@
     "HELICOPTER": "Ultralight helicopter",
     "POWERED_PARAGLIDER": "Powered paraglider",
     "SAILPLANE": "Ultralight sailplane"
+  },
+  "airportInput": {
+    "suggestions": "Airport suggestions"
   }
 }

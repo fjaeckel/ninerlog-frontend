@@ -32,7 +32,11 @@
     "customDesc": "Immer genau die ausgewählten Spalten zeigen, auch wenn eine davon auf einer Seite leer bleibt.",
     "timesHeading": "Zeiten",
     "otherHeading": "Weitere Spalten",
-    "widthHint": "Die Zeiten erscheinen mit zunehmender Fensterbreite von links nach rechts in der oben gezeigten Reihenfolge — auf schmalen Bildschirmen passen nur die ersten.",
+    "detailsHeading": "Personen & Details",
+    "detailsHint": "Nur sichtbar, wenn du sie auswählst, nie im automatischen Modus. Auf dem Handy erscheinen sie als Zeile unter jedem Flug.",
+    "widthHint": "Mit zunehmender Fensterbreite erscheinen von links nach rechts erst die Zeiten, dann Personen & Details, in der oben gezeigten Reihenfolge — auf schmalen Bildschirmen passen nur die ersten.",
+    "tooWide_one": "Auf einem üblichen Desktop-Bildschirm (1920 px breit) passt diese Spalte nicht und bleibt ausgeblendet: {{columns}}. Wähle weniger Spalten, um sie zu sehen.",
+    "tooWide_other": "Auf einem üblichen Desktop-Bildschirm (1920 px breit) passen diese Spalten nicht und bleiben ausgeblendet: {{columns}}. Wähle weniger Spalten, um sie zu sehen.",
     "saveFailed": "Die Spaltenauswahl konnte nicht gespeichert werden. Bitte erneut versuchen."
   },
   "profileInfo": {

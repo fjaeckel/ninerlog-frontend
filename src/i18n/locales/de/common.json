@@ -170,6 +170,7 @@
       "flights": "Flüge",
       "aircraft": "Luftfahrzeuge",
       "lastLogin": "Letzter Login",
+      "lastActive": "Zuletzt aktiv",
       "actions": "Aktionen",
       "disabled": "Deaktiviert",
       "locked": "Gesperrt",
@@ -394,5 +395,8 @@
     "HELICOPTER": "UL-Hubschrauber",
     "POWERED_PARAGLIDER": "Motorschirm",
     "SAILPLANE": "UL-Segelflugzeug"
+  },
+  "airportInput": {
+    "suggestions": "Flugplatzvorschläge"
   }
 }
