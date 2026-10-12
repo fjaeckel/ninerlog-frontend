@@ -96,6 +96,10 @@ describe('flight form features', () => {
     expect(visible('flight.launches', mark, { record: { launchesOverride: true, launches: 6 } })).toBe(true);
   });
 
+  it('a derived launch count on a powered flight is not data', () => {
+    expect(visible('flight.launches', mark, { aircraft: A320, record: { launchesOverride: false, launches: 1 } })).toBe(false);
+  });
+
   it('invariant 3: fail open while the profile loads', () => {
     for (const id of ['flight.launchMethod', 'flight.ifrSection', 'flight.multiCrew', 'flight.towFlight', 'flight.spic', 'flight.blockTimes']) {
       expect(visible(id, loading, { aircraft: ASK21 })).toBe(true);
