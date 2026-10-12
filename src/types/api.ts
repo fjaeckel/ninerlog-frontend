@@ -308,6 +308,8 @@ export interface ClassRatingCurrency {
    * toward this rating's revalidation and `requirements` is suppressed.
    */
   windowOpen?: boolean;
+  /** Last date a rolling-window recency rule stays met with no further flying; set only while current. */
+  recencyExpiresOn?: string | null;
   /** @deprecated English (German for UL) fallback for messageKey. */
   message: string;
   /** Key into currency.json `messages` (e.g. "rating.revalidation_current"). */

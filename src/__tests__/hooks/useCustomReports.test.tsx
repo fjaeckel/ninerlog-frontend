@@ -54,7 +54,7 @@ const url = (path: string) =>
   new URL(`${API_BASE_URL}${path}`, globalThis.location?.origin ?? 'http://localhost').toString();
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterAll(() => server.close());
 beforeEach(() => useAuthStore.getState().setAuth(USER, 'access-1', 'refresh-1', 900));
 afterEach(() => {

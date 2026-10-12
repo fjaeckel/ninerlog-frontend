@@ -73,6 +73,7 @@
     "OTHER": "Sonstige"
   },
   "expiresLabel": "Gültig bis: {{date}}",
+  "recencyExpiresLabel": "Ohne weitere Flüge gültig bis {{date}}",
   "windowOpensLabel": "Erfahrungszeitraum beginnt am {{date}}",
   "windowClosedHint": "Kürzlich verlängert — Flüge vor diesem Datum zählen nicht für die nächste Verlängerung.",
   "countedClassesLabel": "Zählt Flüge auf: {{classes}}",

@@ -73,6 +73,7 @@
     "OTHER": "Other"
   },
   "expiresLabel": "Expires: {{date}}",
+  "recencyExpiresLabel": "Current until {{date}} without further flying",
   "windowOpensLabel": "Experience window opens {{date}}",
   "windowClosedHint": "Recently revalidated — flights logged before this date don't count toward the next revalidation.",
   "countedClassesLabel": "Counts flights on: {{classes}}",

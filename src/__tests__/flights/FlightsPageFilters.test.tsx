@@ -122,6 +122,21 @@ describe('FlightsPage filter persistence', () => {
     expect(lastQuery()).toMatchObject({ q: 'night', page: 2 });
   });
 
+  it('tells the opened flight where it sits in the list, for previous/next', async () => {
+    useFlightsSpy.mockReturnValue({
+      data: { data: [flight], pagination: { page: 2, pageSize: 20, total: 25, totalPages: 2 } },
+      isLoading: false,
+      error: null,
+    } as never);
+    const user = userEvent.setup();
+    renderAt('/flights?q=night&page=2');
+
+    await user.click(screen.getAllByText('EDDF')[0]);
+
+    // First row of page 2 is the 21st flight of the list.
+    expect(screen.getByText('21 of 25')).toBeInTheDocument();
+  });
+
   it('exports every flight of the current search as CSV, without the page', async () => {
     const user = userEvent.setup();
     const exportSpy = vi.spyOn(useExportHook, 'exportFlightSearchCSV').mockResolvedValue(undefined);

@@ -196,6 +196,17 @@ export function CurrencyCard({ rating }: CurrencyCardProps) {
         </div>
       )}
 
+      {/* Recency lapse date */}
+      {rating.recencyExpiresOn && (
+        <p
+          className="text-xs text-slate-600 dark:text-slate-300 mt-3 inline-flex items-center gap-1.5"
+          data-testid="currency-recency-expires"
+        >
+          <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          {t('recencyExpiresLabel', { date: fmtDate(rating.recencyExpiresOn) })}
+        </p>
+      )}
+
       {/* Expiry date */}
       {rating.expiryDate && (
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-3 text-right inline-flex items-center gap-1 justify-end w-full">

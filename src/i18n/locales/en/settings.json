@@ -32,7 +32,11 @@
     "customDesc": "Always show exactly what you pick, even on a page where a column happens to be empty.",
     "timesHeading": "Times",
     "otherHeading": "Other columns",
-    "widthHint": "Times appear from left to right in the order listed above as the window gets wider — on a narrow screen only the first ones fit.",
+    "detailsHeading": "People & details",
+    "detailsHint": "Shown only when you pick them, never in automatic mode. On a phone they appear as a line under each flight.",
+    "widthHint": "Times, then people & details, appear from left to right in the order listed above as the window gets wider — on a narrow screen only the first ones fit.",
+    "tooWide_one": "On a typical desktop screen (1920 px wide) this column won't fit and stays hidden: {{columns}}. Pick fewer columns to see it.",
+    "tooWide_other": "On a typical desktop screen (1920 px wide) these columns won't fit and stay hidden: {{columns}}. Pick fewer columns to see them.",
     "saveFailed": "Could not save your column selection. Please try again."
   },
   "profileInfo": {

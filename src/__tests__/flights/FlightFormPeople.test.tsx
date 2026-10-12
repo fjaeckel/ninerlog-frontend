@@ -29,6 +29,11 @@ vi.mock('../../hooks/useContacts', () => ({
   useCreateContact: () => ({ mutate: vi.fn() }),
 }));
 
+vi.mock('../../hooks/useMaps', () => ({
+  useAirportSearch: () => ({ data: undefined }),
+  useAirport: () => ({ data: undefined }),
+}));
+
 describe('FlightForm Crew Section', () => {
   const mockOnClose = vi.fn();
 

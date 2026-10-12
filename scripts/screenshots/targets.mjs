@@ -6,6 +6,8 @@
  *   empty      serve empty collections, to capture the empty state
  *   fail       serve 500s for the page's own list, to capture the error state
  *   anonymous  do not seed a session — for the public/auth routes
+ *   user       fields merged over the fixture user, in the session and /users/me
+ *   viewport   a desktop viewport other than the default 1440×1100
  *
  * Add a target whenever you add a screen.
  */
@@ -13,11 +15,60 @@ export const TARGETS = [
   { name: 'dashboard', path: '/dashboard' },
   { name: 'flights', path: '/flights' },
   {
+    name: 'flights-custom-columns',
+    path: '/flights',
+    user: {
+      flightListColumnMode: 'custom',
+      flightListColumns: ['function', 'landings', 'picName', 'crew'],
+    },
+  },
+  { name: 'flights-narrow', path: '/flights', viewport: { width: 1024, height: 900 } },
+  {
+    name: 'flights-row-hover',
+    path: '/flights',
+    act: async (page) => {
+      await page.locator('tbody tr[class*="cursor-pointer"]').nth(1).hover();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flights-custom-columns-ifr',
+    path: '/flights',
+    user: {
+      flightListColumnMode: 'custom',
+      flightListColumns: ['ifrTime', 'landings', 'approaches', 'approachTypes', 'holds', 'checks'],
+    },
+  },
+  {
     name: 'flights-modal',
     path: '/flights',
     act: async (page) => {
       await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
       await page.waitForTimeout(600);
+    },
+  },
+  {
+    name: 'flights-modal-airport-search',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#departureIcao').fill('kon');
+      await page.waitForTimeout(800);
+      await page.keyboard.press('ArrowDown');
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'flights-modal-airport-picked',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#departureIcao').fill('kon');
+      await page.waitForTimeout(800);
+      await page.getByRole('listbox', { name: /airport suggestions|flugplatzvorschläge/i }).getByRole('option').first().click();
+      await page.waitForTimeout(200);
     },
   },
   {
@@ -68,6 +119,17 @@ export const TARGETS = [
     },
   },
   { name: 'flight-detail', path: '/flights/f1' },
+  {
+    name: 'flight-detail-from-list',
+    path: '/flights',
+    act: async (page) => {
+      const row = page.locator('tbody tr[class*="cursor-pointer"]').nth(1);
+      if (await row.isVisible()) await row.click();
+      else await page.locator('article[role="button"]').nth(1).click();
+      await page.waitForTimeout(600);
+    },
+  },
+  { name: 'flight-detail-local-ident', path: '/flights/f8' },
   {
     name: 'flights-modal-edit',
     path: '/flights/f1',
@@ -191,6 +253,22 @@ export const TARGETS = [
   { name: 'import', path: '/import' },
   { name: 'help', path: '/help' },
   { name: 'profile', path: '/profile' },
+  {
+    name: 'profile-columns-too-wide',
+    path: '/profile',
+    user: {
+      flightListColumnMode: 'custom',
+      flightListColumns: [
+        'picTime', 'nightTime', 'dualTime', 'ifrTime', 'crossCountryTime', 'sicTime', 'picusTime',
+        'soloTime', 'picName', 'instructorName', 'crew', 'remarks',
+      ],
+    },
+  },
+  {
+    name: 'profile-custom-columns',
+    path: '/profile',
+    user: { flightListColumnMode: 'custom', flightListColumns: ['picTime', 'nightTime', 'landings', 'picName', 'crew'] },
+  },
   {
     name: 'profile-sessions',
     path: '/profile',

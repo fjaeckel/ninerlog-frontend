@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
 import { useUpdateProfile } from '../../hooks/useProfile';
@@ -6,11 +7,14 @@ import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
 import {
   DEFAULT_CUSTOM_COLUMNS,
   FLIGHT_COLUMNS,
+  TYPICAL_DESKTOP_TABLE_WIDTH,
+  columnsHiddenAt,
   type FlightColumnKey,
 } from '../flights/flightTableColumns';
 
 const TIME_COLUMNS = FLIGHT_COLUMNS.filter((c) => c.kind === 'time');
 const OTHER_COLUMNS = FLIGHT_COLUMNS.filter((c) => c.kind === 'fixed');
+const DETAIL_COLUMNS = FLIGHT_COLUMNS.filter((c) => c.kind === 'detail');
 
 /**
  * Lets a pilot decide which optional columns the flights list shows.
@@ -22,6 +26,9 @@ export function FlightColumnsSection() {
   const updateUser = useAuthStore((s) => s.updateUser);
   const updateProfile = useUpdateProfile();
   const [error, setError] = useState('');
+  const hiddenOnDesktop = columnsHiddenAt(prefs.columns, TYPICAL_DESKTOP_TABLE_WIDTH).map((key) =>
+    t(`flights:${FLIGHT_COLUMNS.find((c) => c.key === key)!.titleKey}`)
+  );
 
   const save = async (mode: 'auto' | 'custom', columns: FlightColumnKey[]) => {
     setError('');
@@ -126,9 +133,35 @@ export function FlightColumnsSection() {
             {OTHER_COLUMNS.map(renderCheckbox)}
           </div>
 
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mt-4 mb-2">
+            {t('settings:flightColumns.detailsHeading')}
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+            {t('settings:flightColumns.detailsHint')}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            {DETAIL_COLUMNS.map(renderCheckbox)}
+          </div>
+
           <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
             {t('settings:flightColumns.widthHint')}
           </p>
+
+          {hiddenOnDesktop.length > 0 && (
+            <p
+              role="status"
+              className="mt-3 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-800/60 dark:bg-amber-900/20 dark:text-amber-300"
+              data-testid="flight-columns-too-wide"
+            >
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span>
+                {t('settings:flightColumns.tooWide', {
+                  count: hiddenOnDesktop.length,
+                  columns: hiddenOnDesktop.join(', '),
+                })}
+              </span>
+            </p>
+          )}
         </div>
       )}
 

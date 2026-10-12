@@ -124,4 +124,5 @@ The harness uses Playwright's bundled Chromium. If the sandbox ships its own at 
 ```bash
 SHOT_CHROMIUM=/opt/pw-browsers/chromium npm run shots -- after
 SHOT_BASE_URL=http://localhost:4173 npm run shots -- after   # against a preview build
+SHOT_TZ=America/Sao_Paulo npm run shots -- after          # browser timezone (default Europe/Berlin)
 ```

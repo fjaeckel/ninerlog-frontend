@@ -185,7 +185,7 @@ function DashboardTab() {
 
 function UsersTab() {
   const { t } = useTranslation('common');
-  const { fmtDate } = useFormatPrefs();
+  const { fmtDate, fmtDateTime } = useFormatPrefs();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -247,11 +247,12 @@ function UsersTab() {
               <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.twoFA')}</th>
               <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.flights')}</th>
               <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.aircraft')}</th>
+              <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.lastActive')}</th>
               <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.lastLogin')}</th>
               <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">{t('admin.users.actions')}</th>
             </tr></thead>
             <tbody>
-              {isLoading && <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('common:loading')}</td></tr>}
+              {isLoading && <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('common:loading')}</td></tr>}
               {data?.data?.map((u) => (
                 <tr key={u.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td className="px-4 py-3"><div className="font-medium text-slate-700 dark:text-slate-200">{u.name}</div><div className="text-xs text-slate-500 dark:text-slate-400">{u.email}</div></td>
@@ -274,6 +275,7 @@ function UsersTab() {
                   <td className="px-4 py-3">{u.twoFactorEnabled ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.enabled')}</span> : <span className="text-slate-500 dark:text-slate-400 text-xs">{t('admin.users.off')}</span>}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{u.flightCount}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{u.aircraftCount}</td>
+                  <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">{u.lastActiveAt ? fmtDateTime(u.lastActiveAt) : '—'}</td>
                   <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">{u.lastLoginAt ? fmtDate(u.lastLoginAt) : '—'}</td>
                   <td className="px-4 py-3"><div className="flex gap-1 flex-wrap">
                     {u.disabled
@@ -285,7 +287,7 @@ function UsersTab() {
                   </div></td>
                 </tr>
               ))}
-              {!isLoading && data?.data?.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('admin.users.noUsers')}</td></tr>}
+              {!isLoading && data?.data?.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">{t('admin.users.noUsers')}</td></tr>}
             </tbody>
           </table>
         </div>
@@ -323,7 +325,7 @@ function UsersTab() {
                     {t('admin.users.twoFactorShort')}
                   </span>
                 )}
-                {u.lastLoginAt && <span>{fmtDate(u.lastLoginAt)}</span>}
+                {u.lastActiveAt && <span title={t('admin.users.lastActive')}>{fmtDateTime(u.lastActiveAt)}</span>}
               </div>
               <div className="flex gap-1">
                 {u.disabled
