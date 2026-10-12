@@ -46,6 +46,7 @@ const PROFILES = {
   petra: profileWith({ SAILPLANE: 'active', AEROPLANE: 'active', INSTRUCTOR: 'active' }),
   sabine: profileWith({ ULTRALIGHT: 'active' }),
   mark: profileWith({ AEROPLANE: 'active', IFR: 'active', MULTI_CREW: 'active', SIMULATOR: 'active' }),
+  everything: profileWith({ AEROPLANE: 'active' }, { mode: 'everything' }),
 };
 
 const create = vi.fn();
@@ -237,6 +238,29 @@ describe('FlightForm on the relevance registry (phase 3a, WP-20, WP-25)', () => 
     expect(screen.getByLabelText('Outlanding')).toBeInTheDocument();
     expect(screen.getByLabelText('Tow flight (I flew the tug)')).toBeInTheDocument();
     expect(moreButton()).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['everything', 'D-1234'],
+    ['loading', 'D-1234'],
+    ['everything', 'D-MTRK'],
+    ['loading', 'D-KFAL'],
+  ] as const)('take-off and landing lead for the aircraft in %s mode (%s)', async (who, reg) => {
+    const user = userEvent.setup();
+    asPilot(who);
+    renderForm();
+    await selectAircraft(user, reg);
+    await waitFor(() => expect(before(clock('departureTime'), clock('offBlockTime'))).toBe(true));
+    await waitFor(() => expect(clock('departureTime').value).not.toBe(''));
+    expect(clock('offBlockTime').value).toBe('');
+  });
+
+  it('A1: block times lead for an aeroplane in everything mode', async () => {
+    const user = userEvent.setup();
+    asPilot('everything');
+    renderForm();
+    await selectAircraft(user, 'D-EDRA');
+    expect(before(clock('offBlockTime'), clock('departureTime'))).toBe(true);
   });
 
   it('folded field values are still submitted', async () => {
