@@ -58,7 +58,7 @@ export function SaveWarningsToast() {
       role="status"
       aria-label={t('saveWarnings.region')}
       data-testid="save-warnings-toast"
-      className="fixed inset-x-4 z-[1000] bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom)+1rem)] lg:bottom-4 sm:left-auto sm:right-4 sm:w-96 rounded-lg border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-800 animate-fade-in"
+      className="rounded-lg border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-800 animate-fade-in"
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{t('saveWarnings.title')}</p>
