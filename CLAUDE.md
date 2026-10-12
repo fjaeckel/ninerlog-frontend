@@ -21,6 +21,8 @@ npm run shots -- <label>    # screenshot every screen against fixtures (no API n
 
 Push gate: `npx vitest run && npm run type-check && npm run lint`, plus e2e when behavior changed.
 
+**Every feature is checked against the personas** in `../ninerlog-api/docs/PERSONAS.md` (binding on both repos) — who it serves, who must not see it, and the relevance invariants: fold never hide, data always wins, fail open, explain yourself. Load skill `personas`; review with agent `persona-reviewer`. The adaptive-disciplines and gliding/UL plans live in `../ninerlog-api/docs/plans/`.
+
 **Any change that alters rendered UI also requires before/after screenshots** — capture `before`, make the change, capture `after`, and look at both. Load skill `screenshots`; it is not optional.
 
 ## Invariants
@@ -40,6 +42,7 @@ Push gate: `npx vitest run && npm run type-check && npm run lint`, plus e2e when
 | Task | Load |
 |---|---|
 | **Anything that renders — always** | skill `screenshots` |
+| **Any feature, field, card, report or nav entry — always** | skill `personas` |
 | Marketing images/demos for ninerlog.com & the deployment README | skill `marketing-images` |
 | API client, hooks, caching, auth/token flow | skill `api-layer` |
 | Styling, components, tokens, dark mode | skill `design-system` |
