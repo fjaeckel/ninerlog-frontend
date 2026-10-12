@@ -277,7 +277,8 @@ const LAUNCH_METHOD_KEYS: Record<string, string> = {
   bungee: 'bungee',
 };
 
-function launchMethodText(flight: Flight, t: FlightsT): string {
+/** Launch method, with the launch count when above one; empty without a method. */
+export function launchMethodText(flight: Flight, t: FlightsT): string {
   const method = flight.launchMethod;
   if (!method || method === 'null') return '';
   const key = LAUNCH_METHOD_KEYS[method];

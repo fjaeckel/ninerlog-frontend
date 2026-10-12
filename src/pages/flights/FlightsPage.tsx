@@ -23,11 +23,10 @@ import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, hasLaunchMethod, landingsText, FLIGHT_FUNCTION_BADGE, rowClockTimes } from '../../components/flights/flightTableColumns';
+import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, landingsText, launchMethodText, FLIGHT_FUNCTION_BADGE, rowClockTimes } from '../../components/flights/flightTableColumns';
 import { useFlightColumnRelevance } from '../../hooks/useFlightColumnRelevance';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
-import { launchMethodKey } from '../../lib/currencyMessages';
 import type { components, operations } from '../../api/schema';
 import {
   FLIGHT_LIST_PAGE_SIZE,
@@ -830,12 +829,7 @@ export default function FlightsPage() {
                     </td>
                     {columns.launch && (
                       <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300" data-testid="launch-cell">
-                        {hasLaunchMethod(flight)
-                          ? t('flights:launchCell', {
-                              method: t(`flights:${launchMethodKey(flight.launchMethod ?? '')}`),
-                              count: flight.launches ?? 1,
-                            })
-                          : '—'}
+                        {launchMethodText(flight, (k, o) => t(`flights:${k}`, o ?? {})) || '—'}
                       </td>
                     )}
                     {columns.offOnBlock && (
