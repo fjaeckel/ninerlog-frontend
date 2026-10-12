@@ -1408,7 +1408,7 @@ export interface paths {
         post?: never;
         /**
          * Delete aircraft
-         * @description Delete an aircraft from the user's database. Note - flights using this aircraft will retain the registration/type as text; the aircraft's reminders are deleted with it.
+         * @description Delete an aircraft from the user's database. Note - flights using this aircraft will retain the registration/type as text
          */
         delete: operations["deleteAircraft"];
         options?: never;
@@ -1418,106 +1418,6 @@ export interface paths {
          * @description Update aircraft information
          */
         patch: operations["updateAircraft"];
-        trace?: never;
-    };
-    "/aircraft/{aircraftId}/reminders": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List reminders for an aircraft
-         * @description Dated aircraft items (annual inspection, insurance, rescue-system repack,
-         *     rescue-rocket expiry, ARC, ELT battery, custom) on one of the caller's
-         *     aircraft, ordered by due date. An aircraft that does not exist or belongs
-         *     to another user answers 404.
-         */
-        get: operations["listAircraftReminders"];
-        put?: never;
-        /**
-         * Add a reminder to an aircraft
-         * @description `label` is required when `kind` is CUSTOM. Suggested intervals (a client
-         *     concern, not enforced): ANNUAL_INSPECTION 12 months (DAeC/DULV
-         *     Jahresnachprüfung); RESCUE_SYSTEM_REPACK and RESCUE_ROCKET_EXPIRY follow
-         *     the manufacturer.
-         */
-        post: operations["createAircraftReminder"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/aircraft/{aircraftId}/reminders/{reminderId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete an aircraft reminder */
-        delete: operations["deleteAircraftReminder"];
-        options?: never;
-        head?: never;
-        /**
-         * Update an aircraft reminder
-         * @description Partial update. Omitted fields are unchanged; `label`, `intervalMonths`,
-         *     `lastDoneOn` and `notes` are cleared by sending null. The result is
-         *     revalidated (a CUSTOM reminder keeps a label). A reminder that does not
-         *     exist, belongs to another user or is on another aircraft answers 404.
-         */
-        patch: operations["updateAircraftReminder"];
-        trace?: never;
-    };
-    "/aircraft/{aircraftId}/reminders/{reminderId}/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Mark an aircraft reminder done
-         * @description Records `doneOn` (default: today, UTC) as `lastDoneOn`. When the reminder
-         *     has `intervalMonths`, `dueDate` becomes `doneOn` plus that many calendar
-         *     months, clamped to the last day of the month (31 January + 1 month =
-         *     28/29 February). Without an interval `dueDate` is left unchanged for the
-         *     client to edit.
-         */
-        post: operations["completeAircraftReminder"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/aircraft-reminders": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List reminders across all aircraft
-         * @description All of the caller's aircraft reminders, ordered by due date, each with its
-         *     aircraft's registration. `dueWithinDays` keeps reminders due within that
-         *     many days of today (UTC), overdue ones included.
-         */
-        get: operations["listAllAircraftReminders"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/flights": {
@@ -2096,7 +1996,7 @@ export interface paths {
         /**
          * Export full data backup as JSON
          * @description Exports everything the user owns as a JSON backup file: flights (with
-         *     crew), aircraft, aircraft reminders, licences with their class ratings
+         *     crew), aircraft, licences with their class ratings
          *     and privileges, credentials, contacts, custom currency rules, custom reports,
          *     notification preferences, the carried-forward hours baseline and the
          *     pilot profile (mode and discipline intents; evidence is derived and not
@@ -2127,7 +2027,7 @@ export interface paths {
          * Restore a NinerLog JSON backup
          * @description Restore a previously exported NinerLog JSON backup into the authenticated
          *     user's account. Recreates every section the backup carries: aircraft,
-         *     aircraft reminders, licences, class ratings, licence privileges, credentials, flights and crew members,
+         *     licences, class ratings, licence privileges, credentials, flights and crew members,
          *     contacts, custom currency rules, custom reports, notification
          *     preferences, the carried-forward hours baseline and the pilot profile. Flights keep their
          *     glider facts (launches and their override flag, outlanding, tow flight, release height);
@@ -2149,10 +2049,6 @@ export interface paths {
          *     revalidated the same way and appended after existing ones; a report
          *     scoped to a licence is re-pointed at that licence's restored copy, and
          *     loses the licence scope if the backup does not carry the licence.
-         *     Aircraft reminders attach to the restored aircraft, or to the existing
-         *     aircraft with the same registration when that aircraft was skipped; a
-         *     reminder whose aircraft the backup does not carry is skipped, as is one
-         *     identical (kind, label, due date) to a reminder already on the aircraft.
          *     Licence privileges travel inside their licence entry (`licenses[].privileges`)
          *     and are revalidated and attached to the restored licence.
          */
@@ -3846,83 +3742,6 @@ export interface components {
             expiresOn?: string | null;
             notes?: string | null;
         };
-        /**
-         * @description - ANNUAL_INSPECTION: annual airworthiness inspection (DAeC/DULV Jahresnachprüfung for gliders and ultralights)
-         *     - INSURANCE: insurance policy renewal
-         *     - RESCUE_SYSTEM_REPACK: ballistic rescue system repack (manufacturer interval)
-         *     - RESCUE_ROCKET_EXPIRY: rescue-system rocket expiry (manufacturer interval)
-         *     - ARC: Airworthiness Review Certificate
-         *     - ELT_BATTERY: ELT battery replacement
-         *     - CUSTOM: any other dated item; requires a label
-         * @enum {string}
-         */
-        AircraftReminderKind: "ANNUAL_INSPECTION" | "INSURANCE" | "RESCUE_SYSTEM_REPACK" | "RESCUE_ROCKET_EXPIRY" | "ARC" | "ELT_BATTERY" | "CUSTOM";
-        AircraftReminder: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            aircraftId: string;
-            /** @example D-MXYZ */
-            aircraftRegistration: string;
-            kind: components["schemas"]["AircraftReminderKind"];
-            /** @example Allianz hull policy */
-            label?: string;
-            /**
-             * Format: date
-             * @example 2026-10-15
-             */
-            dueDate: string;
-            /**
-             * @description Months added to the completion date to get the next due date
-             * @example 12
-             */
-            intervalMonths?: number;
-            /** Format: date */
-            lastDoneOn?: string;
-            notes?: string;
-            /**
-             * @description overdue before today (UTC); due_soon when due within 30 days, today included; ok otherwise
-             * @enum {string}
-             */
-            status: "ok" | "due_soon" | "overdue";
-            /**
-             * @description Calendar days from today (UTC) to dueDate; negative when overdue
-             * @example 19
-             */
-            daysUntilDue: number;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        AircraftReminderCreate: {
-            kind: components["schemas"]["AircraftReminderKind"];
-            /** @description Required when kind is CUSTOM */
-            label?: string;
-            /** Format: date */
-            dueDate: string;
-            intervalMonths?: number;
-            /** Format: date */
-            lastDoneOn?: string;
-            notes?: string;
-        };
-        AircraftReminderUpdate: {
-            kind?: components["schemas"]["AircraftReminderKind"];
-            label?: string | null;
-            /** Format: date */
-            dueDate?: string;
-            intervalMonths?: number | null;
-            /** Format: date */
-            lastDoneOn?: string | null;
-            notes?: string | null;
-        };
-        AircraftReminderComplete: {
-            /**
-             * Format: date
-             * @description Completion date; defaults to today (UTC)
-             */
-            doneOn?: string;
-        };
         AircraftCreate: {
             /**
              * @description Aircraft registration/tail number. Normalised on write into the canonical notation of its state of registry: the nationality mark is matched against the ICAO table and the hyphen inserted, moved or removed to suit (`deabc` and `DE-ABC` both become `D-EABC`; `N-12345` becomes `N12345`). A registration whose nationality mark is not recognised is stored uppercased and trimmed, but otherwise unchanged.
@@ -5258,8 +5077,7 @@ export interface components {
              *       "currency_night",
              *       "currency_instrument",
              *       "currency_flight_review",
-             *       "currency_revalidation",
-             *       "aircraft_reminder"
+             *       "currency_revalidation"
              *     ]
              */
             enabledCategories: components["schemas"]["NotificationCategory"][];
@@ -5296,10 +5114,9 @@ export interface components {
          *     - currency_instrument: Instrument currency
          *     - currency_flight_review: Flight review / proficiency check due
          *     - currency_revalidation: EASA revalidation requirements approaching expiry
-         *     - aircraft_reminder: aircraft reminder due within a warning day, or overdue
          * @enum {string}
          */
-        NotificationCategory: "credential_medical" | "credential_language" | "credential_security" | "credential_other" | "rating_expiry" | "currency_passenger" | "currency_night" | "currency_instrument" | "currency_flight_review" | "currency_revalidation" | "aircraft_reminder";
+        NotificationCategory: "credential_medical" | "credential_language" | "credential_security" | "credential_other" | "rating_expiry" | "currency_passenger" | "currency_night" | "currency_instrument" | "currency_flight_review" | "currency_revalidation";
         NotificationHistoryEntry: {
             /** Format: uuid */
             id: string;
@@ -6919,16 +6736,6 @@ export interface components {
              */
             customReportsImported: number;
             /**
-             * @description Aircraft reminders restored
-             * @example 3
-             */
-            aircraftRemindersImported: number;
-            /**
-             * @description Aircraft reminders skipped because their aircraft is not in the backup or an identical reminder already exists on the aircraft
-             * @example 0
-             */
-            aircraftRemindersSkipped: number;
-            /**
              * @description Licence privileges restored onto their restored licences
              * @example 2
              */
@@ -7029,12 +6836,6 @@ export interface components {
             activeSessions: number;
             /** @description Saved custom reports across all users. */
             totalCustomReports: number;
-            /** @description Aircraft reminders across all users. */
-            aircraftReminders: {
-                total: number;
-                /** @description Reminders whose due date is before today (UTC). */
-                overdue: number;
-            };
             /** @description Licence privileges across all users. */
             licencePrivileges: {
                 total: number;
@@ -8529,8 +8330,6 @@ export interface components {
         AircraftId: string;
         /** @description Licence privilege UUID */
         PrivilegeId: string;
-        /** @description Aircraft reminder UUID */
-        ReminderId: string;
         /** @description Flight UUID */
         FlightId: string;
         /** @description Flight signature UUID */
@@ -11201,175 +11000,6 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
-    listAircraftReminders: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Aircraft UUID */
-                aircraftId: components["parameters"]["AircraftId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Reminders ordered by due date */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AircraftReminder"][];
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-        };
-    };
-    createAircraftReminder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Aircraft UUID */
-                aircraftId: components["parameters"]["AircraftId"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AircraftReminderCreate"];
-            };
-        };
-        responses: {
-            /** @description Reminder created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AircraftReminder"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-        };
-    };
-    deleteAircraftReminder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Aircraft UUID */
-                aircraftId: components["parameters"]["AircraftId"];
-                /** @description Aircraft reminder UUID */
-                reminderId: components["parameters"]["ReminderId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Reminder deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-        };
-    };
-    updateAircraftReminder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Aircraft UUID */
-                aircraftId: components["parameters"]["AircraftId"];
-                /** @description Aircraft reminder UUID */
-                reminderId: components["parameters"]["ReminderId"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AircraftReminderUpdate"];
-            };
-        };
-        responses: {
-            /** @description Reminder updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AircraftReminder"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-        };
-    };
-    completeAircraftReminder: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Aircraft UUID */
-                aircraftId: components["parameters"]["AircraftId"];
-                /** @description Aircraft reminder UUID */
-                reminderId: components["parameters"]["ReminderId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["AircraftReminderComplete"];
-            };
-        };
-        responses: {
-            /** @description Reminder after completion */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AircraftReminder"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["NotFound"];
-        };
-    };
-    listAllAircraftReminders: {
-        parameters: {
-            query?: {
-                /** @example 30 */
-                dueWithinDays?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Reminders ordered by due date */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AircraftReminder"][];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
-        };
-    };
     listFlights: {
         parameters: {
             query?: {
@@ -12418,7 +12048,6 @@ export interface operations {
                     credentials?: Record<string, never>[];
                     contacts?: Record<string, never>[];
                     customCurrencyRules?: Record<string, never>[];
-                    aircraftReminders?: Record<string, never>[];
                     notificationPreferences?: Record<string, never>;
                     flightBaseline?: Record<string, never>;
                     pilotProfile?: Record<string, never>;

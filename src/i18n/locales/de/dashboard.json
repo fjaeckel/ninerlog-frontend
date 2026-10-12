@@ -58,10 +58,6 @@
   "startJourney": "Beginne dein digitales Flugbuch mit dem Eintrag deines ersten Fluges.",
   "monthlyActivity": "Monatliche Aktivität",
   "monthlyActivityLabel": "Flugstunden pro Monat in den letzten 12 Monaten",
-  "aircraftDue": {
-    "title": "Bald fällig am Luftfahrzeug",
-    "viewAircraft": "Luftfahrzeuge"
-  },
   "soaring": {
     "title": "Segelflugsaison",
     "previousYear": "Vorheriges Jahr",

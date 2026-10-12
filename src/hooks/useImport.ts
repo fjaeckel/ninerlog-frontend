@@ -172,7 +172,6 @@ export const useRestoreJSON = () => {
       queryClient.invalidateQueries({ queryKey: ['licenses'] });
       queryClient.invalidateQueries({ queryKey: ['credentials'] });
       queryClient.invalidateQueries({ queryKey: ['class-ratings'] });
-      queryClient.invalidateQueries({ queryKey: ['aircraft-reminders'] });
     },
   });
 };
