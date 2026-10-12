@@ -526,5 +526,6 @@
     "flightsLogged_other": "{{count}} flights logged",
     "logAnother": "Log another like this",
     "dismiss": "Dismiss"
-  }
+  },
+  "tableTakeoffLandingTimes": "Take-off / Ldg"
 }

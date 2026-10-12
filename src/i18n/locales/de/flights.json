@@ -526,5 +526,6 @@
     "flightsLogged_other": "{{count}} Flüge eingetragen",
     "logAnother": "Weiteren wie diesen eintragen",
     "dismiss": "Schließen"
-  }
+  },
+  "tableTakeoffLandingTimes": "Start / Ldg."
 }
