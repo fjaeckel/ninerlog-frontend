@@ -247,6 +247,8 @@
   "tableFunction": "Funktion",
   "tableOff": "Off",
   "tableOn": "On",
+  "tableTakeoffShort": "Start",
+  "tableLandingShort": "Landung",
   "tableLdg": "Ldg",
   "tableLdgSplit": "Ldg T/N",
   "tableRemarks": "Bemerkungen",
