@@ -1,17 +1,16 @@
 import { useTranslation } from 'react-i18next';
-import { isPast, differenceInDays } from 'date-fns';
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 
-/** Expiry date coloured by how close it is; "No expiry" when absent. */
+/** Expiry date coloured by how close it is, valid through its own calendar day; "No expiry" when absent. */
 export function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
   const { t } = useTranslation('licenses');
   const { fmtDate } = useFormatPrefs();
   if (!expiryDate) {
     return <span className="text-xs text-slate-500 dark:text-slate-400">{t('card.noExpiry')}</span>;
   }
-  const expiry = new Date(expiryDate);
-  const expired = isPast(expiry);
-  const daysLeft = differenceInDays(expiry, new Date());
+  const daysLeft = differenceInCalendarDays(parseISO(expiryDate), new Date());
+  const expired = daysLeft < 0;
   const formatted = fmtDate(expiryDate);
 
   if (expired) {
