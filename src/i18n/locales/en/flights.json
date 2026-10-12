@@ -514,7 +514,8 @@
     "problem": {
       "missing": "Enter take-off and landing.",
       "invalid": "Enter times as HH:MM.",
-      "zero": "Landing must be after take-off."
+      "zero": "Landing must be after take-off.",
+      "rejected": "Check this circuit's times and the details above."
     },
     "legRejected": "Circuit {{n}} was not accepted. Nothing was saved.",
     "submitLegs_one": "Log {{count}} flight",

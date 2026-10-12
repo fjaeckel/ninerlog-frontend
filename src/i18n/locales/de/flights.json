@@ -514,7 +514,8 @@
     "problem": {
       "missing": "Start und Landung eintragen.",
       "invalid": "Zeiten als HH:MM eintragen.",
-      "zero": "Die Landung muss nach dem Start liegen."
+      "zero": "Die Landung muss nach dem Start liegen.",
+      "rejected": "Zeiten dieser Platzrunde und die Angaben oben prüfen."
     },
     "legRejected": "Platzrunde {{n}} wurde nicht angenommen. Es wurde nichts gespeichert.",
     "submitLegs_one": "{{count}} Flug eintragen",
