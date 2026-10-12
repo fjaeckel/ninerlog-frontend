@@ -172,10 +172,11 @@ async function shoot(browser, target, theme, fx, outDir) {
         : target.user && path === '/users/me'
           ? { ...fx.user, ...target.user }
           : fx.bodyFor(path, url.searchParams);
+    const patched = target.patch?.[path] ? target.patch[path](body) : body;
     return route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(body ?? null),
+      body: JSON.stringify(patched ?? null),
     });
   });
 

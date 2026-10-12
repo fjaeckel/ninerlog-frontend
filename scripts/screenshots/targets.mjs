@@ -14,6 +14,7 @@
  *              `state` lives for one shot
  *   personaOnly  only captured when named, or in a persona run
  *   skip(fx)   true when the target does not apply to the fixture set
+ *   patch      { path: (body) => body } overrides for single API responses
  *
  * `act(page, fx)` receives the fixture set; persona sets carry
  * `shotAircraft`, the registrations their form shots select.
@@ -267,6 +268,18 @@ export const TARGETS = [
         await page.locator(`#circuit-${i}-landing`).press('Tab');
       }
       await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flights-saved-toasts',
+    path: '/flights',
+    personaOnly: true,
+    patch: { '/users/me/pilot-profile': (body) => ({ ...body, pendingAcknowledgement: ['SAILPLANE'] }) },
+    skip: (fx) => !fx.shotAircraft?.[0],
+    act: async (page, fx) => {
+      await openFormWithAircraft(page, fx.shotAircraft[0]);
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForTimeout(800);
     },
   },
   { name: 'flight-detail', path: '/flights/f1' },

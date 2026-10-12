@@ -18,6 +18,7 @@ import { ThemeSwitcher } from '../ui/ThemeSwitcher';
 import { OnboardingTour } from '../onboarding/OnboardingTour';
 import { ToolkitToast } from '../relevance/ToolkitToast';
 import { SaveWarningsToast } from '../saveWarnings/SaveWarnings';
+import { ToastStack, ToastStackProvider } from './ToastStack';
 import { APP_NAME } from '../../lib/config';
 
 export default function Layout() {
@@ -57,214 +58,218 @@ export default function Layout() {
     : user?.email?.[0]?.toUpperCase() || '?';
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      {/* Skip to content link for keyboard/screen reader users */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
-      >
-        {t('common:skipToContent')}
-      </a>
+    <ToastStackProvider>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        {/* Skip to content link for keyboard/screen reader users */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
+        >
+          {t('common:skipToContent')}
+        </a>
 
-      {/* ── App Header ── */}
-      <header
-        className="fixed top-0 inset-x-0 h-[calc(3.5rem+env(safe-area-inset-top))] lg:h-[calc(4rem+env(safe-area-inset-top))] surface-glass border-b z-[1010] flex items-center justify-between px-4 lg:px-6 pt-safe-top tap-none"
-        role="banner"
-      >
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <Link to="/dashboard" className="flex items-center gap-2.5 min-h-11 group" aria-label={APP_NAME}>
-            <LogoMark size={32} decorative className="drop-shadow-sm transition-transform group-hover:scale-[1.04] group-active:scale-95" />
-            <span className="text-lg font-bold tracking-tight text-gradient-brand">{APP_NAME}</span>
-          </Link>
-          {/* Quick Log — compact entry next to the logo */}
-          <NavLink
-            to="/quicklog"
-            title={t('nav:quickLog')}
-            aria-label={t('nav:quickLog')}
-            className={({ isActive }) =>
-              `lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-full transition-colors tap-none ${
-                isActive
-                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/25 dark:text-blue-400'
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
-              }`
-            }
-          >
-            <Timer className="w-5 h-5" aria-hidden="true" />
-          </NavLink>
-        </div>
+        {/* ── App Header ── */}
+        <header
+          className="fixed top-0 inset-x-0 h-[calc(3.5rem+env(safe-area-inset-top))] lg:h-[calc(4rem+env(safe-area-inset-top))] surface-glass border-b z-[1010] flex items-center justify-between px-4 lg:px-6 pt-safe-top tap-none"
+          role="banner"
+        >
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <Link to="/dashboard" className="flex items-center gap-2.5 min-h-11 group" aria-label={APP_NAME}>
+              <LogoMark size={32} decorative className="drop-shadow-sm transition-transform group-hover:scale-[1.04] group-active:scale-95" />
+              <span className="text-lg font-bold tracking-tight text-gradient-brand">{APP_NAME}</span>
+            </Link>
+            {/* Quick Log — compact entry next to the logo */}
+            <NavLink
+              to="/quicklog"
+              title={t('nav:quickLog')}
+              aria-label={t('nav:quickLog')}
+              className={({ isActive }) =>
+                `lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-full transition-colors tap-none ${
+                  isActive
+                    ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/25 dark:text-blue-400'
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
+                }`
+              }
+            >
+              <Timer className="w-5 h-5" aria-hidden="true" />
+            </NavLink>
+          </div>
 
-        <div className="flex items-center gap-1 sm:gap-2">
-          {user?.isAdmin && <UpdateIndicator />}
-          <ThemeSwitcher className="hidden sm:flex" />
-          {/* Report a bug — mobile/tablet only; the desktop sidebar has its own entry */}
-          <a
-            href="https://ninerlog.com/report-a-bug"
-            target="_blank"
-            rel="noopener noreferrer"
-            title={t('nav:reportBugTooltip')}
-            aria-label={t('nav:reportBug')}
-            className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors tap-none"
-          >
-            <Bug className="w-5 h-5" aria-hidden="true" />
-          </a>
-          {/* User avatar */}
-          <button
-            onClick={() => navigate('/profile')}
-            className="flex items-center gap-2 px-1.5 sm:px-2 h-11 rounded-full text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors tap-none"
-            aria-label={t('common:profileAlt')}
-          >
-            <span className="hidden sm:inline max-w-[160px] truncate">{user?.name || user?.email}</span>
-            <span className="w-9 h-9 rounded-full gradient-brand text-white flex items-center justify-center text-xs font-semibold ring-2 ring-white/60 dark:ring-slate-800 shadow-sm">
-              {initials}
-            </span>
-          </button>
-          <button
-            onClick={handleLogout}
-            className="hidden lg:inline-flex btn-ghost btn-sm min-h-[44px] text-slate-500 hover:text-red-600 dark:text-slate-400"
-          >
-            <LogOut className="w-4 h-4" aria-hidden="true" />
-            {t('common:logout')}
-          </button>
-        </div>
-      </header>
+          <div className="flex items-center gap-1 sm:gap-2">
+            {user?.isAdmin && <UpdateIndicator />}
+            <ThemeSwitcher className="hidden sm:flex" />
+            {/* Report a bug — mobile/tablet only; the desktop sidebar has its own entry */}
+            <a
+              href="https://ninerlog.com/report-a-bug"
+              target="_blank"
+              rel="noopener noreferrer"
+              title={t('nav:reportBugTooltip')}
+              aria-label={t('nav:reportBug')}
+              className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors tap-none"
+            >
+              <Bug className="w-5 h-5" aria-hidden="true" />
+            </a>
+            {/* User avatar */}
+            <button
+              onClick={() => navigate('/profile')}
+              className="flex items-center gap-2 px-1.5 sm:px-2 h-11 rounded-full text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors tap-none"
+              aria-label={t('common:profileAlt')}
+            >
+              <span className="hidden sm:inline max-w-[160px] truncate">{user?.name || user?.email}</span>
+              <span className="w-9 h-9 rounded-full gradient-brand text-white flex items-center justify-center text-xs font-semibold ring-2 ring-white/60 dark:ring-slate-800 shadow-sm">
+                {initials}
+              </span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="hidden lg:inline-flex btn-ghost btn-sm min-h-[44px] text-slate-500 hover:text-red-600 dark:text-slate-400"
+            >
+              <LogOut className="w-4 h-4" aria-hidden="true" />
+              {t('common:logout')}
+            </button>
+          </div>
+        </header>
 
-      {/* ── Desktop Sidebar ── */}
-      <aside
-        className="fixed left-0 top-16 bottom-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden lg:flex lg:flex-col z-30"
-        aria-label={t('nav:landmarks.desktop')}
-      >
-        <div className="p-4">
+        {/* ── Desktop Sidebar ── */}
+        <aside
+          className="fixed left-0 top-16 bottom-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden lg:flex lg:flex-col z-30"
+          aria-label={t('nav:landmarks.desktop')}
+        >
+          <div className="p-4">
+            <Link
+              to="/flights"
+              state={{ openForm: true }}
+              data-tour="add-flight"
+              className="btn-primary w-full justify-center hover-lift"
+            >
+              <Plus className="w-4 h-4" aria-hidden="true" />
+              {t('nav:addFlight')}
+            </Link>
+          </div>
+          <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5" aria-label={t('nav:landmarks.main')}>
+            <SidebarItem to="/dashboard" tourId="dashboard" label={t('nav:dashboard')} icon={<LayoutDashboard className="w-5 h-5" />} />
+            <SidebarItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
+            <SidebarItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} />
+            <SidebarItem to="/aircraft" tourId="aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} />
+            <SidebarItem to="/people" label={t('nav:people')} icon={<Users className="w-5 h-5" />} />
+            <SidebarItem to="/currency" tourId="currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} />
+
+            <SidebarGroup label={t('nav:licenses')} />
+            <SidebarItem to="/licenses" tourId="licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} />
+            <SidebarItem to="/credentials" tourId="credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} />
+
+            <SidebarGroup label={t('nav:reports')} />
+            <SidebarItem to="/reports" label={t('nav:reports')} icon={<BarChart3 className="w-5 h-5" />} />
+            <SidebarItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} />
+            <SidebarItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} />
+            <SidebarItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} />
+          </nav>
+          <div className="border-t border-slate-200 dark:border-slate-800 p-3 space-y-0.5">
+            {user?.isAdmin && (
+              <SidebarItem to="/admin" label={t('nav:admin')} icon={<ShieldCheck className="w-5 h-5" />} />
+            )}
+            <SidebarItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} />
+            <SidebarExternalItem
+              href="https://ninerlog.com/report-a-bug"
+              label={t('nav:reportBug')}
+              title={t('nav:reportBugTooltip')}
+              icon={<Bug className="w-5 h-5" />}
+            />
+            <SidebarItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} />
+          </div>
+        </aside>
+
+        {/* ── Main Content ── */}
+        <ScrollToTop />
+
+        <main id="main-content" className="pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-[calc(4rem+env(safe-area-inset-top))] pb-24 lg:pb-4 lg:ml-64 px-4 lg:px-8 overflow-x-hidden max-w-full">
+          <AnnouncementBanner />
+          <Outlet />
+        </main>
+
+        {/* ── Mobile Bottom Nav ── */}
+        <nav
+          className="fixed bottom-0 inset-x-0 surface-glass border-t z-[1010] lg:hidden tap-none"
+          aria-label={t('nav:landmarks.mobile')}
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <div className="h-14 flex items-center justify-around">
+          <BottomNavItem to="/dashboard" tourId="dashboard" label={t('nav:home')} icon={<LayoutDashboard className="w-5 h-5" />} />
+          <BottomNavItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
           <Link
             to="/flights"
             state={{ openForm: true }}
             data-tour="add-flight"
-            className="btn-primary w-full justify-center hover-lift"
+            className="flex flex-col items-center justify-center -mt-6 active:scale-95 transition-transform tap-none"
+            aria-label={t('nav:addFlight')}
           >
-            <Plus className="w-4 h-4" aria-hidden="true" />
-            {t('nav:addFlight')}
+            <span className="w-14 h-14 gradient-brand text-white rounded-full flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-900">
+              <Plus className="w-6 h-6" />
+            </span>
           </Link>
-        </div>
-        <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5" aria-label={t('nav:landmarks.main')}>
-          <SidebarItem to="/dashboard" tourId="dashboard" label={t('nav:dashboard')} icon={<LayoutDashboard className="w-5 h-5" />} />
-          <SidebarItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
-          <SidebarItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} />
-          <SidebarItem to="/aircraft" tourId="aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} />
-          <SidebarItem to="/people" label={t('nav:people')} icon={<Users className="w-5 h-5" />} />
-          <SidebarItem to="/currency" tourId="currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} />
-
-          <SidebarGroup label={t('nav:licenses')} />
-          <SidebarItem to="/licenses" tourId="licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} />
-          <SidebarItem to="/credentials" tourId="credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} />
-
-          <SidebarGroup label={t('nav:reports')} />
-          <SidebarItem to="/reports" label={t('nav:reports')} icon={<BarChart3 className="w-5 h-5" />} />
-          <SidebarItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} />
-          <SidebarItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} />
-          <SidebarItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} />
-        </nav>
-        <div className="border-t border-slate-200 dark:border-slate-800 p-3 space-y-0.5">
-          {user?.isAdmin && (
-            <SidebarItem to="/admin" label={t('nav:admin')} icon={<ShieldCheck className="w-5 h-5" />} />
-          )}
-          <SidebarItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} />
-          <SidebarExternalItem
-            href="https://ninerlog.com/report-a-bug"
-            label={t('nav:reportBug')}
-            title={t('nav:reportBugTooltip')}
-            icon={<Bug className="w-5 h-5" />}
-          />
-          <SidebarItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} />
-        </div>
-      </aside>
-
-      {/* ── Main Content ── */}
-      <ScrollToTop />
-
-      <main id="main-content" className="pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-[calc(4rem+env(safe-area-inset-top))] pb-24 lg:pb-4 lg:ml-64 px-4 lg:px-8 overflow-x-hidden max-w-full">
-        <AnnouncementBanner />
-        <Outlet />
-      </main>
-
-      {/* ── Mobile Bottom Nav ── */}
-      <nav
-        className="fixed bottom-0 inset-x-0 surface-glass border-t z-[1010] lg:hidden tap-none"
-        aria-label={t('nav:landmarks.mobile')}
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      >
-        <div className="h-14 flex items-center justify-around">
-        <BottomNavItem to="/dashboard" tourId="dashboard" label={t('nav:home')} icon={<LayoutDashboard className="w-5 h-5" />} />
-        <BottomNavItem to="/flights" tourId="flights" label={t('nav:flights')} icon={<Plane className="w-5 h-5" />} />
-        <Link
-          to="/flights"
-          state={{ openForm: true }}
-          data-tour="add-flight"
-          className="flex flex-col items-center justify-center -mt-6 active:scale-95 transition-transform tap-none"
-          aria-label={t('nav:addFlight')}
-        >
-          <span className="w-14 h-14 gradient-brand text-white rounded-full flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-900">
-            <Plus className="w-6 h-6" />
-          </span>
-        </Link>
-        <BottomNavItem to="/reports" label={t('nav:reports')} icon={<BarChart3 className="w-5 h-5" />} />
-        <button
-          onClick={() => setShowMoreMenu(true)}
-          data-tour="more"
-          className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors tap-none"
-          aria-label={t('nav:moreMenu')}
-        >
-          <Menu className="w-5 h-5 mb-0.5" />
-          <span>{t('nav:more')}</span>
-        </button>
-        </div>
-      </nav>
-
-      {/* ── Mobile "More" Menu Sheet ── */}
-      {showMoreMenu && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-[1020] lg:hidden"
-            onClick={() => setShowMoreMenu(false)}
-            aria-hidden="true"
-          />
-          <div className="fixed bottom-0 inset-x-0 z-[1020] lg:hidden bg-white dark:bg-slate-800 rounded-t-xl shadow-2xl pb-safe animate-sheet-up">
-            <div className="flex justify-center pt-3 pb-2">
-              <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-            </div>
-            {/* Rarely-used items up top, frequently-used at the bottom; opens scrolled to the bottom */}
-            <nav
-              ref={scrollToBottomOnMount}
-              className="px-4 pb-4 space-y-1 max-h-[70vh] overflow-y-auto"
-              aria-label={t('nav:landmarks.more')}
-            >
-              <MoreMenuGroup label={t('nav:sectionAccount')} />
-              <MoreMenuItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              {user?.isAdmin && (
-                <MoreMenuItem to="/admin" label={t('nav:admin')} icon={<ShieldCheck className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              )}
-              <MoreMenuItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-
-              <MoreMenuGroup label={t('nav:sectionData')} />
-              <MoreMenuItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-
-              <MoreMenuGroup label={t('nav:sectionLogbook')} />
-              <MoreMenuItem to="/credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/people" label={t('nav:people')} icon={<Users className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-              <MoreMenuItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
-            </nav>
+          <BottomNavItem to="/reports" label={t('nav:reports')} icon={<BarChart3 className="w-5 h-5" />} />
+          <button
+            onClick={() => setShowMoreMenu(true)}
+            data-tour="more"
+            className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors tap-none"
+            aria-label={t('nav:moreMenu')}
+          >
+            <Menu className="w-5 h-5 mb-0.5" />
+            <span>{t('nav:more')}</span>
+          </button>
           </div>
-        </>
-      )}
+        </nav>
 
-      {/* First-login guided tour overlay */}
-      <OnboardingTour />
-      <ToolkitToast />
-      <SaveWarningsToast />
-    </div>
+        {/* ── Mobile "More" Menu Sheet ── */}
+        {showMoreMenu && (
+          <>
+            <div
+              className="fixed inset-0 bg-black/40 z-[1020] lg:hidden"
+              onClick={() => setShowMoreMenu(false)}
+              aria-hidden="true"
+            />
+            <div className="fixed bottom-0 inset-x-0 z-[1020] lg:hidden bg-white dark:bg-slate-800 rounded-t-xl shadow-2xl pb-safe animate-sheet-up">
+              <div className="flex justify-center pt-3 pb-2">
+                <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+              </div>
+              {/* Rarely-used items up top, frequently-used at the bottom; opens scrolled to the bottom */}
+              <nav
+                ref={scrollToBottomOnMount}
+                className="px-4 pb-4 space-y-1 max-h-[70vh] overflow-y-auto"
+                aria-label={t('nav:landmarks.more')}
+              >
+                <MoreMenuGroup label={t('nav:sectionAccount')} />
+                <MoreMenuItem to="/help" label={t('nav:help')} icon={<HelpCircle className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+                {user?.isAdmin && (
+                  <MoreMenuItem to="/admin" label={t('nav:admin')} icon={<ShieldCheck className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+                )}
+                <MoreMenuItem to="/profile" label={t('nav:profileSettings')} icon={<User className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+
+                <MoreMenuGroup label={t('nav:sectionData')} />
+                <MoreMenuItem to="/import" label={t('nav:import')} icon={<Upload className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+                <MoreMenuItem to="/export" label={t('nav:export')} icon={<Download className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+                <MoreMenuItem to="/map" label={t('nav:map')} icon={<Map className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+
+                <MoreMenuGroup label={t('nav:sectionLogbook')} />
+                <MoreMenuItem to="/credentials" label={t('nav:credentials')} icon={<FileText className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+                <MoreMenuItem to="/currency" label={t('nav:currency')} icon={<Shield className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+                <MoreMenuItem to="/licenses" label={t('nav:licenses')} icon={<Award className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+                <MoreMenuItem to="/people" label={t('nav:people')} icon={<Users className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+                <MoreMenuItem to="/aircraft" label={t('nav:aircraft')} icon={<PlaneTakeoff className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+                <MoreMenuItem to="/quicklog" label={t('nav:quickLog')} icon={<Timer className="w-5 h-5" />} onClick={() => setShowMoreMenu(false)} />
+              </nav>
+            </div>
+          </>
+        )}
+
+        {/* First-login guided tour overlay */}
+        <OnboardingTour />
+        <ToastStack>
+          <ToolkitToast />
+          <SaveWarningsToast />
+        </ToastStack>
+      </div>
+    </ToastStackProvider>
   );
 }
 
