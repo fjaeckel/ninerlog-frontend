@@ -356,38 +356,55 @@ export default function DashboardPage() {
       {modelStats.length > 0 && (
         <div className="card mb-6" data-testid="model-stats-section">
           <h2 className="section-title mb-4">{t('dashboard:timeByModel')}</h2>
-          <div className="space-y-2">
-            {modelStats.map((ms) => {
-              const maxMinutes = Math.max(...modelStats.map((m) => m.totalMinutes), 1);
-              const pct = (ms.totalMinutes / maxMinutes) * 100;
-              return (
-                <div key={ms.aircraftType} data-testid={`model-stat-${ms.aircraftType}`}>
-                  <div className="flex justify-between items-center text-sm mb-1 gap-2">
-                    <span className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 min-w-0">
-                      {recencyPrefs.perModel && modelRecency.visible && (
-                        <span
-                          className={`w-2 h-2 rounded-full shrink-0 ${RECENCY_DOT_CLASSES[recencyLevel(ms.landingsLast90Days)]}`}
-                          title={t('dashboard:modelRecencyTitle', { count: ms.landingsLast90Days })}
-                        />
-                      )}
-                      <span className="truncate">{ms.aircraftType}</span>
-                    </span>
-                    {/* Landings lead; flight count and last flight are desktop-only. */}
-                    <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums whitespace-nowrap">
-                      {fmtDuration(ms.totalMinutes)} · {ms.landingsDay + ms.landingsNight} {t('common:ldg')}
-                      <span className="hidden sm:inline">
-                        {' '}· {ms.totalFlights} {t('common:flights')}
-                        {ms.lastFlightDate && ` · ${fmtDate(ms.lastFlightDate)}`}
+          <FoldDrawer>
+            <div className="space-y-2">
+              {modelStats.map((ms) => {
+                const maxMinutes = Math.max(...modelStats.map((m) => m.totalMinutes), 1);
+                const pct = (ms.totalMinutes / maxMinutes) * 100;
+                return (
+                  <div key={ms.aircraftType} data-testid={`model-stat-${ms.aircraftType}`}>
+                    <div className="flex justify-between items-center text-sm mb-1 gap-2">
+                      <span className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 min-w-0">
+                        {recencyPrefs.perModel && modelRecency.visible && (
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${RECENCY_DOT_CLASSES[recencyLevel(ms.landingsLast90Days)]}`}
+                            title={t('dashboard:modelRecencyTitle', { count: ms.landingsLast90Days })}
+                          />
+                        )}
+                        <span className="truncate">{ms.aircraftType}</span>
                       </span>
-                    </span>
+                      {/* Landings lead; flight count and last flight are desktop-only. */}
+                      <span className="text-slate-500 dark:text-slate-400 font-mono tabular-nums whitespace-nowrap">
+                        {fmtDuration(ms.totalMinutes)} · {ms.landingsDay + ms.landingsNight} {t('common:ldg')}
+                        <span className="hidden sm:inline">
+                          {' '}· {ms.totalFlights} {t('common:flights')}
+                          {ms.lastFlightDate && ` · ${fmtDate(ms.lastFlightDate)}`}
+                        </span>
+                      </span>
+                    </div>
+                    <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                      <div className="h-full bg-indigo-500 dark:bg-indigo-400 rounded-full" style={{ width: `${pct}%` }} />
+                    </div>
                   </div>
-                  <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-500 dark:bg-indigo-400 rounded-full" style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+            {recencyPrefs.perModel && !modelRecency.visible && (
+              <Folded reason={modelRecency.reason}>
+                <ul className="space-y-1.5" data-testid="model-recency-folded">
+                  {modelStats.map((ms) => (
+                    <li key={ms.aircraftType} className="flex items-center gap-2 text-sm min-w-0">
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${RECENCY_DOT_CLASSES[recencyLevel(ms.landingsLast90Days)]}`} />
+                      <span className="font-medium text-slate-700 dark:text-slate-300 truncate">{ms.aircraftType}</span>
+                      <span className="text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        {t('dashboard:modelRecencyTitle', { count: ms.landingsLast90Days })}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Folded>
+            )}
+          </FoldDrawer>
         </div>
       )}
 
