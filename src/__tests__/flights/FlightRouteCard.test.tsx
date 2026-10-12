@@ -47,6 +47,10 @@ const baseFlight: Flight = {
   simulatedFlightTime: 0,
   groundTrainingTime: 0,
   createdAt: '2020-09-06T00:00:00Z',
+  launches: 1,
+  launchesOverride: false,
+  isOutlanding: false,
+  isTowFlight: false,
   updatedAt: '2020-09-06T00:00:00Z',
 };
 

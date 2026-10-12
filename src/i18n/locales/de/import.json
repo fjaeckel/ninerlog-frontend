@@ -92,7 +92,11 @@
     "person3": "Person 3",
     "person4": "Person 4",
     "person5": "Person 5",
-    "person6": "Person 6"
+    "person6": "Person 6",
+    "launches": "Starts",
+    "isOutlanding": "Außenlandung",
+    "isTowFlight": "Schleppflug",
+    "releaseHeightM": "Ausklinkhöhe (m)"
   },
   "uploadFailed": "Upload fehlgeschlagen",
   "previewFailed": "Vorschau fehlgeschlagen",
