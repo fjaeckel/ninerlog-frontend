@@ -166,7 +166,7 @@ const detailTierSpan = (column: FlightDetailColumn) => (column.numeric ? 1 : 2);
 const AUTO_MAX_TIME_COLUMNS = 4;
 
 /** Translates a key in the `flights` namespace. */
-type FlightsT = (key: string, options?: { defaultValue?: string }) => string;
+type FlightsT = (key: string, options?: { defaultValue?: string; method?: string; count?: number }) => string;
 
 /** Formats a time of day in the user's clock format. */
 type TimeFormat = (value?: string | null) => string;
@@ -281,7 +281,9 @@ function launchMethodText(flight: Flight, t: FlightsT): string {
   const method = flight.launchMethod;
   if (!method || method === 'null') return '';
   const key = LAUNCH_METHOD_KEYS[method];
-  return key ? t(`launchMethods.${key}`) : method;
+  const name = key ? t(`launchMethods.${key}`) : method;
+  const count = flight.launches ?? 1;
+  return count > 1 ? t('launchCell', { method: name, count }) : name;
 }
 
 const minutesColumn = (
