@@ -120,6 +120,22 @@ describe('CircuitsForm', () => {
     expect(onSaved).not.toHaveBeenCalled();
   });
 
+  it('L1: Enter on the last landing adds a row that is not sent while it has no landing', async () => {
+    const user = userEvent.setup();
+    batchMutate.mockResolvedValue({ flights: [{}, {}] });
+    render(<CircuitsForm initial={lena} onBack={vi.fn()} onSaved={vi.fn()} />);
+    await user.click(takeoff(0));
+    await user.keyboard('1000{Enter}1008{Enter}');
+    await user.keyboard('1021{Enter}');
+    expect(screen.getAllByTestId(/^circuit-row-/)).toHaveLength(3);
+    expect(takeoff(2).value).toBe('10:26');
+
+    await user.click(screen.getByRole('button', { name: 'Log 2 flights' }));
+
+    expect(screen.queryByTestId('circuit-error-2')).not.toBeInTheDocument();
+    expect(batchMutate.mock.calls[0][0].legs).toHaveLength(2);
+  });
+
   it('flags an incomplete row without sending', async () => {
     const user = userEvent.setup();
     render(<CircuitsForm initial={lena} onBack={vi.fn()} onSaved={vi.fn()} />);
