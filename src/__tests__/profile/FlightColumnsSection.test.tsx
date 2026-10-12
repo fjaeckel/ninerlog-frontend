@@ -70,6 +70,33 @@ describe('FlightColumnsSection', () => {
     expect(body.flightListColumns).toContain('picTime');
   });
 
+  it('warns about picked columns a typical desktop screen cannot fit', () => {
+    signIn({
+      flightListColumnMode: 'custom',
+      flightListColumns: [
+        'picTime', 'nightTime', 'dualTime', 'ifrTime', 'crossCountryTime', 'sicTime', 'picusTime',
+        'soloTime', 'picName', 'instructorName', 'crew', 'remarks',
+      ],
+    });
+    mockSave();
+
+    renderWithClient(<FlightColumnsSection />);
+
+    const warning = screen.getByTestId('flight-columns-too-wide');
+    expect(warning).toHaveTextContent(/Crew/);
+    expect(warning).toHaveTextContent(/Remarks/);
+    expect(warning).not.toHaveTextContent(/PIC Time/);
+  });
+
+  it('does not warn when everything picked fits', () => {
+    signIn({ flightListColumnMode: 'custom', flightListColumns: ['picTime', 'landings', 'instructorName'] });
+    mockSave();
+
+    renderWithClient(<FlightColumnsSection />);
+
+    expect(screen.queryByTestId('flight-columns-too-wide')).not.toBeInTheDocument();
+  });
+
   it('shows the saved selection as checked', () => {
     signIn({ flightListColumnMode: 'custom', flightListColumns: ['nightTime'] });
     mockSave();

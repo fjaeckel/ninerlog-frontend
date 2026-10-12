@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import type { components } from '../api/schema';
 
@@ -41,5 +41,22 @@ export const useAirportSearch = (query: string) => {
       return data as Airport[];
     },
     enabled: query.length >= 2,
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useAirport = (code: string, enabled = true) => {
+  return useQuery({
+    queryKey: ['airports', 'byCode', code],
+    queryFn: async (): Promise<Airport> => {
+      const { data, error } = await apiClient.GET('/airports/{icaoCode}', {
+        params: { path: { icaoCode: code } },
+      });
+      if (error) throw error;
+      return data as Airport;
+    },
+    enabled: enabled && code.length > 0,
+    staleTime: Infinity,
+    retry: false,
   });
 };

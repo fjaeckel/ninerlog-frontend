@@ -21,7 +21,7 @@ export function useFormatPrefs() {
     fmtDate: (date: Date | string) => rawFormatDate(date, dateFormatPref),
     /** Format a date+time using user's date and clock format prefs */
     fmtDateTime: (date: Date | string) => rawFormatDateTime(date, dateFormatPref, clockFormat),
-    /** Format the local time of an instant using user's clock format pref */
+    /** Format the UTC time of an instant using user's clock format pref */
     fmtClock: (date: Date | string) => formatClockTime(date, clockFormat),
     /** Format a stored `HH:MM[:SS]` time of day using user's clock format pref */
     fmtTimeOfDay: (value: string | null | undefined) => formatTimeOfDay(value, clockFormat),
