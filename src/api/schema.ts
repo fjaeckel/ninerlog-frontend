@@ -1458,7 +1458,10 @@ export interface paths {
         get: operations["getFlight"];
         /**
          * Update flight
-         * @description Update an existing flight log entry
+         * @description Update an existing flight log entry. A body that sets or clears `offBlockTime`,
+         *     `onBlockTime`, `departureTime` or `arrivalTime` must leave a flight (not an FSTD
+         *     session) with a complete time pair, as on `POST /flights`; otherwise 400 with the
+         *     same message.
          */
         put: operations["updateFlight"];
         post?: never;
@@ -2503,7 +2506,8 @@ export interface paths {
          *     winch launches at one site. Each leg is the template with the leg's fields laid over
          *     it (`departureTime`, `arrivalTime`, and `landings`, `launches`, `remarks` when sent),
          *     and is validated exactly like `POST /flights`: the same required fields, time pairs
-         *     and bounds. Legs normally carry take-off and landing times only.
+         *     and bounds. A leg that carries a take-off or landing time does not take the
+         *     template's `offBlockTime` and `onBlockTime`; its times are its own.
          *
          *     All legs are stored in one transaction. When any leg is invalid the response is 400
          *     with a message naming the zero-based leg index (`Leg 2: …`) and no flight is created.
