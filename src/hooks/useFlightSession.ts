@@ -6,6 +6,7 @@ import {
   loadQuickLogQueue,
   saveQuickLogQueue,
   enqueueQuickLogEvent,
+  type QueuedQuickLogEvent,
 } from '../lib/quickLogQueue';
 import { invalidateFlightDependentQueries } from './invalidation';
 
@@ -46,7 +47,7 @@ export const useCurrentFlightSession = () => {
 export const useRecordFlightSessionEvent = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (event: FlightSessionEvent): Promise<RecordEventResult> => {
+    mutationFn: async ({ launchMethod, ...event }: QueuedQuickLogEvent): Promise<RecordEventResult> => {
       // Tap instant, stamped client-side.
       const stamped: FlightSessionEvent = {
         occurredAt: new Date().toISOString(),
@@ -60,7 +61,7 @@ export const useRecordFlightSessionEvent = () => {
         });
       } catch {
         // Network failure: queue for later replay.
-        enqueueQuickLogEvent(stamped);
+        enqueueQuickLogEvent(launchMethod ? { ...stamped, launchMethod } : stamped);
         return { session: null, queued: true };
       }
       if (result.error) {
@@ -96,20 +97,32 @@ export const useDiscardFlightSession = () => {
 };
 
 /**
- * Replays offline-queued taps in order. Server-rejected (4xx) events are
- * dropped. Stops at the first network failure and keeps the remainder queued.
+ * Replays offline-queued taps in order and sets a queued launch method on the
+ * flight a replayed tap completes. Server-rejected (4xx) events are dropped.
+ * Stops at the first network failure and keeps the remainder queued.
  */
 export async function flushQuickLogQueue(): Promise<number> {
   const queue = loadQuickLogQueue();
   if (queue.length === 0) return 0;
 
   let sent = 0;
-  for (const event of queue) {
+  for (const { launchMethod, ...event } of queue) {
+    let session: FlightSession | undefined;
     try {
-      await apiClient.POST('/flight-sessions/current/events', { body: event });
+      ({ data: session } = await apiClient.POST('/flight-sessions/current/events', { body: event }));
       sent++;
     } catch {
       break; // still offline
+    }
+    if (launchMethod && session?.status === 'completed' && session.flightId) {
+      try {
+        await apiClient.PUT('/flights/{flightId}', {
+          params: { path: { flightId: session.flightId } },
+          body: { launchMethod },
+        });
+      } catch {
+        // flight keeps no launch method
+      }
     }
   }
   saveQuickLogQueue(queue.slice(sent));

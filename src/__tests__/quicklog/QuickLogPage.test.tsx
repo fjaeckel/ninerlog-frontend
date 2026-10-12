@@ -123,7 +123,7 @@ describe('QuickLogPage', () => {
     await user.click(screen.getByRole('radio', { name: 'Winch' }));
     await user.click(screen.getByRole('button', { name: 'LANDING' }));
 
-    expect(recordEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'landing' }));
+    expect(recordEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'landing', launchMethod: 'winch' }));
     await waitFor(() => expect(updateFlight).toHaveBeenCalledWith({ id: 'f9', data: { launchMethod: 'winch' } }));
     expect(await screen.findByText('Flight logged!')).toBeInTheDocument();
     expect(screen.getByText(/Take-off, landing and total time were filled in/)).toBeInTheDocument();

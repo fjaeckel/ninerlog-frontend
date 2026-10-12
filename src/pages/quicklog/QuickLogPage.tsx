@@ -15,10 +15,9 @@ import {
   useDiscardFlightSession,
   useQuickLogQueueSync,
   FlightSessionEventError,
-  type FlightSessionEvent,
   type FlightSessionEventType,
 } from '../../hooks/useFlightSession';
-import { loadQuickLogQueue } from '../../lib/quickLogQueue';
+import { loadQuickLogQueue, type QueuedQuickLogEvent } from '../../lib/quickLogQueue';
 import { isAirborneSession, leadsWithAirborne, nextEventFor } from '../../lib/quickLogFlow';
 import { isLaunchMethod, isSailplane, type LaunchMethod } from '../../lib/launchMethod';
 import { useUpdateFlight } from '../../hooks/useFlights';
@@ -163,7 +162,8 @@ export default function QuickLogPage() {
   const handleTap = async (type: FlightSessionEventType) => {
     setErrorMessage(null);
     const position = await getPosition();
-    const event: FlightSessionEvent = { type };
+    const event: QueuedQuickLogEvent = { type };
+    if (showLaunchChips && launchMethod) event.launchMethod = launchMethod;
     if (position) {
       event.lat = position.lat;
       event.lon = position.lon;
