@@ -220,6 +220,15 @@ describe('detail columns', () => {
     expect(text(layout, 'approaches', f)).toBe('2');
   });
 
+  it('L5: the launch column in custom mode carries the launch count', () => {
+    const interpolate = (key: string, o?: { method?: string; count?: number }) =>
+      key === 'launchCell' ? `${o?.method} ×${o?.count}` : key;
+    const layout = selectFlightColumns([flight()], custom(['launchMethod']));
+    const [launch] = layout.details;
+    expect(launch.text(flight({ launchMethod: 'winch', launches: 6 }), interpolate)).toBe('launchMethods.winch ×6');
+    expect(launch.text(flight({ launchMethod: 'winch', launches: 1 }), interpolate)).toBe('launchMethods.winch');
+  });
+
   it('render an empty string when the flight has nothing for them', () => {
     const f = flight();
     const layout = selectFlightColumns([f], custom(['picName', 'crew', 'launchMethod', 'distance', 'approaches']));
