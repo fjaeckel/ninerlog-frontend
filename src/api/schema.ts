@@ -923,8 +923,10 @@ export interface paths {
          *     With `aircraftReg`, only the ratings whose own class covers that aircraft are
          *     answered (an ULTRALIGHT rating with a kind only for aircraft of that kind), with
          *     the launch methods of those ratings and, when `passengers` is true, passenger
-         *     currency for that class. Without it every rating is answered. Keys are catalogued
-         *     in docs/CURRENCY_MESSAGES.md.
+         *     currency for that class. When no rating covers the aircraft, one `rating` item
+         *     answers `ready: false`, status `unknown`, `readiness.no_rating`, with the
+         *     aircraft's class and kind and no `classRatingId`. Without `aircraftReg` every
+         *     rating is answered. Keys are catalogued in docs/CURRENCY_MESSAGES.md.
          */
         get: operations["getCurrencyReadiness"];
         put?: never;
@@ -9992,7 +9994,8 @@ export interface operations {
         parameters: {
             query?: {
                 /**
-                 * @description Date to answer for, from today to 366 days ahead (UTC). Defaults to today.
+                 * @description Calendar date to answer for, from the day before today's UTC date to 366 days
+                 *     after it. Defaults to today (UTC).
                  * @example 2026-10-03
                  */
                 date?: string;
