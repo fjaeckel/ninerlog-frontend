@@ -574,6 +574,7 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
     for (const [k, v] of Object.entries(values)) {
       if (v !== undefined && v !== null && v !== '' && v !== false && v !== 0) record[k] = v;
     }
+    if (values.launches !== undefined) record.launchesOverride = true;
     return record;
   }, [existingFlight, getValues, approaches, aircraftKey, submitCount, isEditing, prefillTime]);
   const watchedLaunchMethod = watch('launchMethod');

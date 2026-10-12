@@ -55,7 +55,7 @@ export const FLIGHT_FEATURES = [
     kind: 'field',
     serves: ['SAILPLANE'],
     aircraftMatch: (ac) => isSailplane(ac),
-    hasData: (ctx) => rec(ctx).launchesOverride === true || present(ctx, 'launches'),
+    hasData: (ctx) => rec(ctx).launchesOverride === true,
   },
   {
     id: 'flight.releaseHeight',
