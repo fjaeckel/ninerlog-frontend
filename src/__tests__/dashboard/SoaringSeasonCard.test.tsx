@@ -14,6 +14,7 @@ const state = vi.hoisted(() => ({
   loading: false,
   years: [] as number[],
   byClass: [] as unknown[],
+  classStatsLoading: false,
 }));
 
 vi.mock('../../hooks/usePilotProfile', async (importOriginal) => {
@@ -32,7 +33,10 @@ vi.mock('../../hooks/useSoaringSeason', () => ({
 }));
 
 vi.mock('../../hooks/useStatsByClass', () => ({
-  useStatsByClass: () => ({ data: { byClass: state.byClass, byAuthority: [] } }),
+  useStatsByClass: () =>
+    state.classStatsLoading
+      ? { data: undefined, isLoading: true }
+      : { data: { byClass: state.byClass, byAuthority: [] }, isLoading: false },
 }));
 
 const THIS_YEAR = new Date().getUTCFullYear();
@@ -60,6 +64,7 @@ beforeEach(() => {
   state.loading = false;
   state.years = [];
   state.byClass = [];
+  state.classStatsLoading = false;
 });
 
 describe('Soaring season card', () => {
@@ -111,6 +116,13 @@ describe('Soaring season card', () => {
   it('fail open: a skeleton while the pilot profile loads', () => {
     state.profile = undefined;
     state.profileLoading = true;
+    renderCard();
+    expect(screen.getByTestId('soaring-season-skeleton')).toBeInTheDocument();
+  });
+
+  it('a skeleton while the class stats load', () => {
+    state.profile = PERSONA_PROFILES.mark();
+    state.classStatsLoading = true;
     renderCard();
     expect(screen.getByTestId('soaring-season-skeleton')).toBeInTheDocument();
   });
