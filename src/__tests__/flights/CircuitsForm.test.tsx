@@ -150,6 +150,19 @@ describe('CircuitsForm', () => {
     expect(batchMutate.mock.calls[0][0].legs).toHaveLength(2);
   });
 
+  it('flags a trailing row whose take-off the pilot typed but whose landing is missing', async () => {
+    const user = userEvent.setup();
+    render(<CircuitsForm initial={lena} onBack={vi.fn()} onSaved={vi.fn()} />);
+    await user.click(takeoff(0));
+    await user.keyboard('1000{Enter}1008{Enter}');
+    await user.clear(takeoff(1));
+    await user.keyboard('1410');
+    await user.tab();
+    await user.click(screen.getByRole('button', { name: 'Log 2 flights' }));
+    expect(screen.getByTestId('circuit-error-1')).toHaveTextContent('Enter take-off and landing.');
+    expect(batchMutate).not.toHaveBeenCalled();
+  });
+
   it('flags an incomplete row without sending', async () => {
     const user = userEvent.setup();
     render(<CircuitsForm initial={lena} onBack={vi.fn()} onSaved={vi.fn()} />);
