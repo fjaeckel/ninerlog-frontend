@@ -57,4 +57,27 @@ describe('quick-log offline queue and launch method', () => {
     await flushQuickLogQueue();
     expect(PUT).not.toHaveBeenCalled();
   });
+
+  it('concurrent flushes replay each tap once', async () => {
+    enqueueQuickLogEvent({ type: 'takeoff', occurredAt: '2026-08-08T10:00:00Z' });
+    POST.mockResolvedValue({ data: { id: 's1', status: 'open' } });
+    const [a, b] = await Promise.all([flushQuickLogQueue(), flushQuickLogQueue()]);
+    expect(a).toBe(1);
+    expect(b).toBe(1);
+    expect(POST).toHaveBeenCalledTimes(1);
+  });
+
+  it('a tap queued during a flush stays queued', async () => {
+    enqueueQuickLogEvent({ type: 'takeoff', occurredAt: '2026-08-08T10:00:00Z' });
+    enqueueQuickLogEvent({ type: 'landing', occurredAt: '2026-08-08T10:08:00Z', launchMethod: 'winch' });
+    POST.mockResolvedValueOnce({ data: { id: 's1', status: 'open' } });
+    POST.mockResolvedValueOnce({ data: { id: 's1', status: 'completed', flightId: 'f9' } });
+    PUT.mockImplementation(async () => {
+      enqueueQuickLogEvent({ type: 'offblock', occurredAt: '2026-08-08T10:20:00Z' });
+      return { data: { id: 'f9' } };
+    });
+
+    expect(await flushQuickLogQueue()).toBe(2);
+    expect(loadQuickLogQueue()).toEqual([{ type: 'offblock', occurredAt: '2026-08-08T10:20:00Z' }]);
+  });
 });
