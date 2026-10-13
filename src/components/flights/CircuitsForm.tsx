@@ -53,10 +53,18 @@ type EntryMode = 'legs' | 'series';
 
 const today = () => new Date().toISOString().split('T')[0];
 
-/** `legs` without trailing rows that have no landing, keeping at least the first row. */
-function withoutTrailingOpenLegs(legs: CircuitLeg[]): CircuitLeg[] {
+/** A circuit row; `prefilled` while its take-off is still the one "Add circuit" proposed. */
+type FormLeg = CircuitLeg & { prefilled?: boolean };
+
+/** True for a row with no landing and no take-off the pilot typed. */
+function isUntouchedOpenLeg(leg: FormLeg): boolean {
+  return !leg.landing.trim() && (!leg.takeoff.trim() || leg.prefilled === true);
+}
+
+/** `legs` without trailing untouched open rows, keeping at least the first row. */
+function withoutTrailingOpenLegs(legs: FormLeg[]): FormLeg[] {
   let end = legs.length;
-  while (end > 1 && !legs[end - 1].landing.trim()) end--;
+  while (end > 1 && isUntouchedOpenLeg(legs[end - 1])) end--;
   return legs.slice(0, end);
 }
 
@@ -85,7 +93,7 @@ export function CircuitsForm({ initial, onBack, onSaved }: CircuitsFormProps) {
   );
   const [crew, setCrew] = useState<FlightCrewMemberInput[]>(initial?.crew ?? []);
   const [remarks, setRemarks] = useState(initial?.remarks ?? '');
-  const [legs, setLegs] = useState<CircuitLeg[]>([emptyLeg()]);
+  const [legs, setLegs] = useState<FormLeg[]>([emptyLeg()]);
   const [series, setSeries] = useState<CircuitLeg>(emptyLeg());
   const [launches, setLaunches] = useState('');
 
@@ -107,7 +115,11 @@ export function CircuitsForm({ initial, onBack, onSaved }: CircuitsFormProps) {
   const effectiveType = matched ? matched.type.toUpperCase() : aircraftType;
 
   const setLeg = (index: number, patch: Partial<CircuitLeg>) => {
-    setLegs((prev) => prev.map((leg, i) => (i === index ? { ...leg, ...patch } : leg)));
+    setLegs((prev) =>
+      prev.map((leg, i) =>
+        i !== index ? leg : { ...leg, ...patch, prefilled: patch.takeoff === undefined ? leg.prefilled : false },
+      ),
+    );
     setRowErrors((prev) => {
       if (!(index in prev)) return prev;
       const next = { ...prev };
@@ -119,7 +131,7 @@ export function CircuitsForm({ initial, onBack, onSaved }: CircuitsFormProps) {
   const addLeg = () => {
     if (legs.length >= MAX_CIRCUITS) return;
     const index = legs.length;
-    setLegs((prev) => (prev.length >= MAX_CIRCUITS ? prev : [...prev, nextLeg(prev)]));
+    setLegs((prev) => (prev.length >= MAX_CIRCUITS ? prev : [...prev, { ...nextLeg(prev), prefilled: true }]));
     pendingFocus.current = `${index}-landing`;
   };
 
