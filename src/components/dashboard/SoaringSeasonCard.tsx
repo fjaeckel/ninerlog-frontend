@@ -32,15 +32,15 @@ export function SoaringSeasonCard() {
   const disciplines = useDisciplines();
   const current = useSoaringSeason(thisYear);
   const shown = useSoaringSeason(year);
-  const { data: classStats } = useStatsByClass();
-  const everFlights = soaringFlightsEver(classStats);
+  const classStats = useStatsByClass();
+  const everFlights = soaringFlightsEver(classStats.data);
   const record = useMemo(
     () => ({ flights: Math.max(current.data?.flights ?? 0, everFlights) }),
     [current.data?.flights, everFlights],
   );
   const relevance = useRelevance('dashboard.soaringSeason', { record });
 
-  if (disciplines.isLoading || current.isLoading) {
+  if (disciplines.isLoading || current.isLoading || classStats.isLoading) {
     return (
       <section className="card mb-6" aria-busy="true" aria-label={t('soaring.title')} data-testid="soaring-season-skeleton">
         <Skeleton className="h-5 w-40 mb-4" />
