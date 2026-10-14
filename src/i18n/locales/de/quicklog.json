@@ -34,5 +34,12 @@
   "queuedTaps_one": "{{count}} Ereignis offline gespeichert — wird synchronisiert, sobald du wieder online bist",
   "queuedTaps_other": "{{count}} Ereignisse offline gespeichert — werden synchronisiert, sobald du wieder online bist",
   "gpsHint": "Mit Standortfreigabe werden Start- und Zielflugplatz automatisch eingetragen.",
-  "genericError": "Ereignis konnte nicht erfasst werden. Bitte erneut versuchen."
+  "genericError": "Ereignis konnte nicht erfasst werden. Bitte erneut versuchen.",
+  "subtitleAirborne": "Start und Landung antippen — der Flug wird bei der Landung eingetragen",
+  "moreBlockTimes": "Mehr: Blockzeiten",
+  "startOffBlock": "Mit OFF-BLOCK beginnen",
+  "startOffBlockHint": "Für einen Flug mit Off-Block- und On-Block-Zeit.",
+  "flightTime": "Flugzeit",
+  "flightLoggedHintAirborne": "Start, Landung und Gesamtzeit wurden automatisch eingetragen. Prüfe den Eintrag, um Besatzung und Bemerkungen zu ergänzen.",
+  "launchMethodNotSaved": "Der Flug wurde eingetragen, die Startart aber nicht gespeichert. Trage sie beim Prüfen des Flugs nach."
 }

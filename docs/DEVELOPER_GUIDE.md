@@ -524,10 +524,46 @@ a desktop sidebar (`lg:` and up), and a mobile bottom nav. It also auto-starts
 the first-run onboarding tour for brand-new users (no flights logged yet) and
 exposes the theme switcher, profile avatar, and logout.
 
+The tour ([OnboardingTour.tsx](../src/components/onboarding/OnboardingTour.tsx),
+steps in [tourSteps.tsx](../src/components/onboarding/tourSteps.tsx)) opens with
+"What do you fly, and what are you training for?": one tile per discipline, each
+tap cycling *I fly this* (intent `on`) → *I'm training for this* (`goal`) → not
+selected (`auto`). Tiles start from the pilot profile (stored intent, else the
+derived status). Next PATCHes `/users/me/pilot-profile` with only the tiles the
+pilot changed, plus `acknowledge` for pending toolkits left ticked; Skip writes
+nothing. Completion stays device-local in `onboardingStore`, but the step is left
+out whenever the profile already holds an explicit intent or an acknowledgement.
+Steps with `variants` (log a flight, currency) pick their body from `tourVariant()`:
+`airline` for `MULTI_CREW`, `glider`/`ultralight`/`powered` when exactly one
+aircraft family is active or training, otherwise the neutral `body`.
+
 Responsive strategy is **mobile-first**: base styles target phones; `sm:`,
 `lg:` breakpoints progressively enhance for larger screens. CSS variables
 (`--header-height`, `--bottom-nav-height`) and safe-area utilities
 (`pt-safe-top`, `pb-safe`) keep the layout correct around notches.
+
+No nav item is discipline-specific (every entry serves every pilot), so the
+shell has no relevance entries and nothing folds out of the nav.
+
+### Adaptive surfaces (relevance registry)
+
+Every element that adapts to the pilot's disciplines is one entry in
+[registry.ts](../src/lib/relevance/registry.ts) (`serves`, optional
+`aircraftMatch`, `hasData`, `columnBoost`) and is decided by
+`useRelevance(id, ctx)` / `<Relevant>` — or `useRelevanceResolver()` for lists.
+Folded elements go into a `<FoldDrawer>` on the same screen, never away.
+Loading, error, unknown disciplines and a profile with no active or training
+discipline all fail open (`resolve.ts`).
+
+| Surface | Entries | Behaviour |
+|---|---|---|
+| Dashboard time breakdown | `dashboard.ifrTile`, `dashboard.nightTile`, `dashboard.blockTimeLabel` | IFR/Night tiles fold into "More" unless logged; heading drops "Block" without a powered discipline |
+| Dashboard / Currency ratings | `classDiscipline()` + profile status | Ratings of a `dormant` discipline sort last; on the dashboard they collapse to a neutral "Dormant — not flown in 24 months" row that discloses the full card |
+| Currency page | `currency.aircraftRecency` | The 90-day model/registration table folds into "More sections" for pilots without a powered discipline, unless per-registration recency is switched on |
+| Reports | `reports.instrument` | Folds into "More sections" unless IFR time, approaches or actual instrument time exist |
+| Flights table (auto mode) | `column.*` | Relevant columns first (`columnBoost` for instructor columns), Off/On Block not force-shown without a powered discipline, Launch column when any flight has a launch method. Custom mode is untouched |
+| Aircraft form | `aircraft.complexFlags`, `aircraft.multiPilot` | Complex/HP/tailwheel follow the selected class (powered aeroplane), else `AEROPLANE`; multi-pilot serves `MULTI_CREW` |
+| Class pickers | `classPicker.*` via `<ClassOptions>` | Relevant classes first, the rest in a "More classes" `<optgroup>`; the selected value stays in the first group |
 
 ---
 

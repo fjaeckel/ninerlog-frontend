@@ -2,6 +2,7 @@ import { useQuery, useInfiniteQuery, useMutation, useQueryClient, keepPreviousDa
 import { apiClient } from '../api/client';
 import type { components, operations } from '../api/schema';
 import { invalidateFlightDependentQueries } from './invalidation';
+import { reportSaveWarnings } from '../stores/saveWarningsStore';
 
 type Flight = components['schemas']['Flight'];
 type FlightCreate = components['schemas']['FlightCreate'];
@@ -83,7 +84,8 @@ export const useCreateFlight = () => {
       if (error) throw error;
       return data as Flight;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      reportSaveWarnings(data?.warnings);
       invalidateFlightDependentQueries(queryClient);
     },
   });
@@ -103,6 +105,7 @@ export const useUpdateFlight = () => {
       return data as Flight;
     },
     onSuccess: (data) => {
+      reportSaveWarnings(data?.warnings);
       invalidateFlightDependentQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: ['flights', data.id] });
     },

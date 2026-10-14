@@ -6,7 +6,9 @@ import {
   loadQuickLogQueue,
   saveQuickLogQueue,
   enqueueQuickLogEvent,
+  type QueuedQuickLogEvent,
 } from '../lib/quickLogQueue';
+import { invalidateFlightDependentQueries } from './invalidation';
 
 type FlightSession = components['schemas']['FlightSession'];
 type FlightSessionEvent = components['schemas']['FlightSessionEvent'];
@@ -45,7 +47,7 @@ export const useCurrentFlightSession = () => {
 export const useRecordFlightSessionEvent = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (event: FlightSessionEvent): Promise<RecordEventResult> => {
+    mutationFn: async ({ launchMethod, ...event }: QueuedQuickLogEvent): Promise<RecordEventResult> => {
       // Tap instant, stamped client-side.
       const stamped: FlightSessionEvent = {
         occurredAt: new Date().toISOString(),
@@ -59,7 +61,7 @@ export const useRecordFlightSessionEvent = () => {
         });
       } catch {
         // Network failure: queue for later replay.
-        enqueueQuickLogEvent(stamped);
+        enqueueQuickLogEvent(launchMethod ? { ...stamped, launchMethod } : stamped);
         return { session: null, queued: true };
       }
       if (result.error) {
@@ -73,7 +75,7 @@ export const useRecordFlightSessionEvent = () => {
       queryClient.invalidateQueries({ queryKey: ['flightSession'] });
       // Completion creates a flight.
       if (data.session?.status === 'completed') {
-        queryClient.invalidateQueries({ queryKey: ['flights'] });
+        invalidateFlightDependentQueries(queryClient);
       }
     },
   });
@@ -94,24 +96,60 @@ export const useDiscardFlightSession = () => {
   });
 };
 
-/**
- * Replays offline-queued taps in order. Server-rejected (4xx) events are
- * dropped. Stops at the first network failure and keeps the remainder queued.
- */
-export async function flushQuickLogQueue(): Promise<number> {
-  const queue = loadQuickLogQueue();
-  if (queue.length === 0) return 0;
+let inFlightFlush: Promise<number> | null = null;
 
+/** True when two queued taps are the same tap. */
+function sameTap(a: QueuedQuickLogEvent, b: QueuedQuickLogEvent): boolean {
+  return a.type === b.type && a.occurredAt === b.occurredAt;
+}
+
+/** Removes a sent tap from the head of the stored queue. */
+function dropSentTap(sent: QueuedQuickLogEvent): void {
+  const current = loadQuickLogQueue();
+  if (current.length > 0 && sameTap(current[0], sent)) {
+    saveQuickLogQueue(current.slice(1));
+  }
+}
+
+/**
+ * Replays offline-queued taps in order and sets a queued launch method on the
+ * flight a replayed tap completes. Server-rejected (4xx) events are dropped.
+ * Stops at the first network failure and keeps the remainder queued.
+ * Concurrent calls share one flush.
+ */
+export function flushQuickLogQueue(): Promise<number> {
+  if (!inFlightFlush) {
+    inFlightFlush = replayQuickLogQueue().finally(() => {
+      inFlightFlush = null;
+    });
+  }
+  return inFlightFlush;
+}
+
+async function replayQuickLogQueue(): Promise<number> {
+  const queue = loadQuickLogQueue();
   let sent = 0;
-  for (const event of queue) {
+  for (const queued of queue) {
+    const { launchMethod, ...event } = queued;
+    let session: FlightSession | undefined;
     try {
-      await apiClient.POST('/flight-sessions/current/events', { body: event });
-      sent++;
+      ({ data: session } = await apiClient.POST('/flight-sessions/current/events', { body: event }));
     } catch {
       break; // still offline
     }
+    sent++;
+    dropSentTap(queued);
+    if (launchMethod && session?.status === 'completed' && session.flightId) {
+      try {
+        await apiClient.PUT('/flights/{flightId}', {
+          params: { path: { flightId: session.flightId } },
+          body: { launchMethod },
+        });
+      } catch {
+        // flight keeps no launch method
+      }
+    }
   }
-  saveQuickLogQueue(queue.slice(sent));
   return sent;
 }
 
@@ -128,7 +166,7 @@ export function useQuickLogQueueSync() {
       const sent = await flushQuickLogQueue();
       if (sent > 0 && !cancelled) {
         queryClient.invalidateQueries({ queryKey: ['flightSession'] });
-        queryClient.invalidateQueries({ queryKey: ['flights'] });
+        invalidateFlightDependentQueries(queryClient);
       }
     };
     const onVisible = () => {

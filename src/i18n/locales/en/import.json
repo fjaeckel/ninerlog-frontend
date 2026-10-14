@@ -77,6 +77,7 @@
     "landingsDay": "Day Landings",
     "landingsNight": "Night Landings",
     "landingsTotal": "Total Landings",
+    "launchMethod": "Launch Method",
     "holds": "Holds",
     "approachesCount": "Approaches",
     "isIpc": "IPC",
@@ -91,7 +92,11 @@
     "person3": "Person 3",
     "person4": "Person 4",
     "person5": "Person 5",
-    "person6": "Person 6"
+    "person6": "Person 6",
+    "launches": "Launches",
+    "isOutlanding": "Outlanding",
+    "isTowFlight": "Tow Flight",
+    "releaseHeightM": "Release Height (m)"
   },
   "uploadFailed": "Upload failed",
   "previewFailed": "Preview failed",

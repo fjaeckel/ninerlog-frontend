@@ -5,7 +5,7 @@ import { useLicenses } from '../../hooks/useLicenses';
 import {
   isDurationMetric,
   localizedGroupLabel,
-  METRICS,
+  tableMetrics,
   type CustomReportDefinition,
   type CustomReportMetric,
   type CustomReportResult,
@@ -27,8 +27,20 @@ export function useCustomReportFormat() {
   );
 
   const rowLabel = useCallback(
-    (result: Pick<CustomReportResult, 'groupBy'>, row: Pick<CustomReportRow, 'key' | 'label'>, short = false) =>
-      localizedGroupLabel(result.groupBy, row.key, row.label, locale, short) ?? t('custom.unknownGroup'),
+    (result: Pick<CustomReportResult, 'groupBy'>, row: Pick<CustomReportRow, 'key' | 'label'>, short = false) => {
+      if (row.key !== '') {
+        const fallback = row.label || row.key;
+        switch (result.groupBy) {
+          case 'launchMethod':
+            return t(`flights:launchMethods.${row.key === 'self-launch' ? 'selfLaunch' : row.key}`, { defaultValue: fallback });
+          case 'aircraftClass':
+            return t(`dashboard:classLabels.${row.key}`, { defaultValue: fallback });
+          case 'ulKind':
+            return t(`common:ulKinds.${row.key}`, { defaultValue: fallback });
+        }
+      }
+      return localizedGroupLabel(result.groupBy, row.key, row.label, locale, short) ?? t('custom.unknownGroup');
+    },
     [locale, t]
   );
 
@@ -97,7 +109,7 @@ export function useCustomReportColumns(
         render: (r) =>
           'isTotal' in r ? <strong className="font-semibold">{t('custom.totals')}</strong> : rowLabel(result, r),
       },
-      ...METRICS.map<TableColumn<CustomReportRow | TotalsRow>>((metric) => ({
+      ...tableMetrics(result).map<TableColumn<CustomReportRow | TotalsRow>>((metric) => ({
         key: metric,
         header: t(`custom.metricShort.${metric}`),
         render: (r) => {

@@ -7,6 +7,8 @@ import { useFlights, useInfiniteFlights, useDeleteFlight } from '../../hooks/use
 import HelpLink from '../../components/ui/HelpLink';
 import { useLicenses } from '../../hooks/useLicenses';
 import FlightForm from '../../components/flights/FlightForm';
+import { FlightSavedNotice, type SavedFlights } from '../../components/flights/FlightSavedNotice';
+import { prefillFromFlight, type FlightPrefill } from '../../components/flights/logAnother';
 import FlightCard from '../../components/flights/FlightCard';
 import FlightSearchBar from '../../components/flights/FlightSearchBar';
 import { CustomReportDialog } from '../../components/reports/CustomReportDialog';
@@ -21,7 +23,8 @@ import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useFlightColumnPrefs } from '../../hooks/useFlightColumnPrefs';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, landingsText, FLIGHT_FUNCTION_BADGE } from '../../components/flights/flightTableColumns';
+import { selectFlightColumns, selectFlightCardColumns, flightFunctionKind, flightFunctionLabel, landingsText, launchMethodText, FLIGHT_FUNCTION_BADGE, rowClockTimes } from '../../components/flights/flightTableColumns';
+import { useFlightColumnRelevance } from '../../hooks/useFlightColumnRelevance';
 import { isSearchWorthSending, SEARCH_DEBOUNCE_MS } from '../../lib/flightSearchQuery';
 import { abbreviateSiteName, splitAirportLabel, type AirportParts } from '../../lib/airport';
 import type { components, operations } from '../../api/schema';
@@ -163,6 +166,8 @@ export default function FlightsPage() {
     return !!state?.openForm;
   });
   const [editingFlight, setEditingFlight] = useState<string | null>(null);
+  const [saved, setSaved] = useState<SavedFlights | null>(null);
+  const [prefill, setPrefill] = useState<FlightPrefill | null>(null);
   // Filters restored from the URL start expanded.
   const [showFilters, setShowFilters] = useState(
     () => !!(startDate || endDate || aircraftReg || departureIcao || arrivalIcao || functionFilter)
@@ -269,11 +274,15 @@ export default function FlightsPage() {
     [isWide, data, infinite.data]
   );
   // Optional table columns for this page.
-  const columns = useMemo(() => selectFlightColumns(flights, columnPrefs), [flights, columnPrefs]);
+  const columnRelevance = useFlightColumnRelevance();
+  const columns = useMemo(
+    () => selectFlightColumns(flights, columnPrefs, columnRelevance),
+    [flights, columnPrefs, columnRelevance]
+  );
   // One set of time columns for every card on the page.
   const cardColumns = useMemo(
-    () => selectFlightCardColumns(flights, columnPrefs),
-    [flights, columnPrefs]
+    () => selectFlightCardColumns(flights, columnPrefs, columnRelevance),
+    [flights, columnPrefs, columnRelevance]
   );
   // A flight's 0-based position in the whole list, for previous/next on its page.
   const listOffset = isWide ? (page - 1) * FLIGHT_LIST_PAGE_SIZE : 0;
@@ -334,6 +343,7 @@ export default function FlightsPage() {
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingFlight(null);
+    setPrefill(null);
   };
 
   const toggleSort = (field: SortField) => {
@@ -387,6 +397,7 @@ export default function FlightsPage() {
     columns.time.length +
     columns.details.length +
     (columns.offOnBlock ? 1 : 0) +
+    (columns.launch ? 1 : 0) +
     (columns.function ? 1 : 0) +
     (columns.landings ? 1 : 0) +
     (columns.remarksRevealClass ? 1 : 0);
@@ -580,8 +591,20 @@ export default function FlightsPage() {
         title={editingFlight ? t('flights:editFlight') : t('flights:logNewFlight')}
         size="xl"
       >
-        <FlightForm flightId={editingFlight} onClose={handleCloseForm} />
+        <FlightForm flightId={editingFlight} onClose={handleCloseForm} prefill={prefill} onSaved={setSaved} />
       </FormModal>
+      {saved && !showForm && (
+        <FlightSavedNotice
+          saved={saved}
+          onDismiss={setSaved}
+          onLogAnother={(flight) => {
+            setSaved(null);
+            setEditingFlight(null);
+            setPrefill(prefillFromFlight(flight));
+            setShowForm(true);
+          }}
+        />
+      )}
 
       {/* Flight List */}
       {flights.length === 0 ? (
@@ -706,8 +729,11 @@ export default function FlightsPage() {
                   <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableDate')}</th>
                   <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableRoute')}</th>
                   <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableAircraft')}</th>
+                  {columns.launch && (
+                    <th title={t('flights:fields.launchMethod')} className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableLaunch')}</th>
+                  )}
                   {columns.offOnBlock && (
-                    <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t('flights:tableOffOnBlock')}</th>
+                    <th className="px-3 py-2.5 text-left font-medium text-slate-500 dark:text-slate-400">{t(`flights:${columns.offOnBlockLabelKey}`)}</th>
                   )}
                   <th className="px-3 py-2.5 text-right font-medium text-slate-500 dark:text-slate-400">{t('flights:tableTotal')}</th>
                   {columns.time.map((col) => (
@@ -801,9 +827,14 @@ export default function FlightsPage() {
                       <span className="font-medium">{flight.aircraftReg}</span>
                       <span className="text-slate-400 dark:text-slate-500 ml-1">({flight.aircraftType})</span>
                     </td>
+                    {columns.launch && (
+                      <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300" data-testid="launch-cell">
+                        {launchMethodText(flight, (k, o) => t(`flights:${k}`, o ?? {})) || '—'}
+                      </td>
+                    )}
                     {columns.offOnBlock && (
                       <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-300 font-mono tabular-nums text-xs">
-                        {fmtTimeOfDay(flight.offBlockTime) || '—'} / {fmtTimeOfDay(flight.onBlockTime) || '—'}
+                        {fmtTimeOfDay(rowClockTimes(flight)[0]) || '—'} / {fmtTimeOfDay(rowClockTimes(flight)[1]) || '—'}
                       </td>
                     )}
                     <td className="px-3 py-2 whitespace-nowrap text-right font-semibold font-mono tabular-nums text-slate-800 dark:text-slate-100">

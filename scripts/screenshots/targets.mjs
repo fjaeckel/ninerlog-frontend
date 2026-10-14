@@ -8,6 +8,12 @@
  *   anonymous  do not seed a session — for the public/auth routes
  *   user       fields merged over the fixture user, in the session and /users/me
  *   viewport   a desktop viewport other than the default 1440×1100
+ *   personaOnly  only captured when named, or in a persona run
+ *   skip(fx)   true when the target does not apply to the fixture set
+ *   patch      { path: (body) => body } overrides for single API responses
+ *
+ * `act(page, fx)` receives the fixture set; persona sets carry
+ * `shotAircraft`, the registrations their form shots select.
  *
  * Add a target whenever you add a screen.
  */
@@ -118,6 +124,87 @@ export const TARGETS = [
       await page.waitForTimeout(300);
     },
   },
+  {
+    name: 'flights-modal-glider',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#aircraftReg').fill('D-5812');
+      await page.locator('#date').click();
+      await page.locator('#launchMethod').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flights-modal-quick-add-glider',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#aircraftReg').fill('D-1234');
+      await page.getByRole('button', { name: /new aircraft\?|neues luftfahrzeug\?/i }).click();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flights-modal-quick-add-ul',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#aircraftReg').fill('D-MNEW');
+      await page.getByRole('button', { name: /new aircraft\?|neues luftfahrzeug\?/i }).click();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flights-modal-primary',
+    path: '/flights',
+    personaOnly: true,
+    skip: (fx) => !fx.shotAircraft?.[0],
+    act: (page, fx) => openFormWithAircraft(page, fx.shotAircraft[0]),
+  },
+  {
+    name: 'flights-modal-secondary',
+    path: '/flights',
+    personaOnly: true,
+    skip: (fx) => !fx.shotAircraft?.[1],
+    act: (page, fx) => openFormWithAircraft(page, fx.shotAircraft[1]),
+  },
+  {
+    name: 'flights-circuits',
+    path: '/flights',
+    personaOnly: true,
+    skip: (fx) => !fx.shotAircraft?.[0],
+    act: async (page, fx) => {
+      await openFormWithAircraft(page, fx.shotAircraft[0]);
+      const entry = page.getByRole('button', { name: /^(circuits|platzrunden)$/i });
+      if ((await entry.count()) === 0) return;
+      await entry.click();
+      await page.waitForTimeout(400);
+      const landings = ['10:10', '10:23', '10:36', '10:49', '11:02', '11:15'];
+      await page.locator('#circuit-0-takeoff').fill('10:02');
+      for (const [i, time] of landings.entries()) {
+        if (i > 0) await page.getByRole('button', { name: /add circuit|platzrunde hinzufügen/i }).click();
+        await page.locator(`#circuit-${i}-landing`).fill(time);
+        await page.locator(`#circuit-${i}-landing`).press('Tab');
+      }
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flights-saved-toasts',
+    path: '/flights',
+    personaOnly: true,
+    patch: { '/users/me/pilot-profile': (body) => ({ ...body, pendingAcknowledgement: ['SAILPLANE'] }) },
+    skip: (fx) => !fx.shotAircraft?.[0],
+    act: async (page, fx) => {
+      await openFormWithAircraft(page, fx.shotAircraft[0]);
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForTimeout(800);
+    },
+  },
   { name: 'flight-detail', path: '/flights/f1' },
   {
     name: 'flight-detail-from-list',
@@ -188,7 +275,19 @@ export const TARGETS = [
       await page.waitForTimeout(300);
     },
   },
+  {
+    name: 'aircraft-modal-ul-ppg',
+    path: '/aircraft',
+    act: async (page) => {
+      await page.getByRole('button', { name: /add aircraft|luftfahrzeug hinzufügen/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#aircraftClass').selectOption('ULTRALIGHT');
+      await page.locator('#ulKind').selectOption('POWERED_PARAGLIDER');
+      await page.waitForTimeout(300);
+    },
+  },
   { name: 'licenses', path: '/licenses' },
+  { name: 'licenses-rating-edit', path: '/licenses?editRating=cr9' },
   {
     name: 'licenses-modal-ul',
     path: '/licenses',
@@ -215,6 +314,16 @@ export const TARGETS = [
   { name: 'currency-builder', path: '/currency/builder' },
   { name: 'people', path: '/people' },
   { name: 'quicklog', path: '/quicklog' },
+  {
+    name: 'quicklog-primary',
+    path: '/quicklog',
+    personaOnly: true,
+    skip: (fx) => !fx.shotAircraft?.[0],
+    act: async (page, fx) => {
+      await page.locator('#quicklog-aircraft').selectOption(fx.shotAircraft[0]);
+      await page.waitForTimeout(400);
+    },
+  },
   { name: 'reports', path: '/reports' },
   {
     name: 'reports-custom',
@@ -247,6 +356,18 @@ export const TARGETS = [
     path: '/export',
     act: async (page) => {
       await page.getByLabel(/^csv format$|^csv-format$/i).selectOption('weblogbook');
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'export-logbook-licence',
+    path: '/export',
+    act: async (page) => {
+      const logbook = page.getByLabel(/^(logbook|flugbuch)$/i);
+      if (await logbook.count()) {
+        const value = await logbook.locator('option').nth(1).getAttribute('value');
+        if (value) await logbook.selectOption(value);
+      }
       await page.waitForTimeout(200);
     },
   },
@@ -303,6 +424,26 @@ export const TARGETS = [
     },
   },
 
+  // Welcome tour, opened from Help.
+  { name: 'onboarding', path: '/help', act: openTour },
+  {
+    name: 'onboarding-unchosen',
+    path: '/help',
+    personaOnly: true,
+    act: async (page, fx) => {
+      const profile = fx.bodyFor('/users/me/pilot-profile', new URLSearchParams());
+      const unchosen = profile && {
+        ...profile,
+        disciplines: profile.disciplines.map((s) => ({ ...s, intent: 'auto', acknowledgedAt: null })),
+      };
+      await page.route('**/api/v1/users/me/pilot-profile', (route) => route.fulfill({ json: unchosen }));
+      await page.reload({ waitUntil: 'networkidle' });
+      await openTour(page);
+    },
+  },
+  { name: 'onboarding-flight', path: '/help', act: (page) => openTourAt(page, /log a flight|flug erfassen/i) },
+  { name: 'onboarding-currency', path: '/help', act: (page) => openTourAt(page, /stay current|gültigkeit behalten|flugpraxis/i) },
+
   // Empty states.
   { name: 'empty-flights', path: '/flights', empty: true },
   { name: 'empty-aircraft', path: '/aircraft', empty: true },
@@ -319,6 +460,38 @@ export const TARGETS = [
   { name: 'auth-register', path: '/register', anonymous: true },
   { name: 'auth-reset', path: '/reset-password', anonymous: true },
   { name: 'auth-new-password', path: '/new-password?token=demo-token', anonymous: true },
+];
+
+/** The flight form with `registration` picked from the fleet. */
+async function openFormWithAircraft(page, registration) {
+  await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+  await page.waitForTimeout(600);
+  await page.locator('#aircraftReg').fill(registration);
+  await page.locator('#date').click();
+  await page.waitForTimeout(400);
+}
+
+/** The welcome tour, opened from the Help page. */
+async function openTour(page) {
+  await page.getByRole('button', { name: /replay welcome tour|take the tour|tour erneut|tour starten/i }).first().click();
+  await page.waitForTimeout(600);
+}
+
+/** The welcome tour, advanced to the first step whose heading matches `heading`. */
+async function openTourAt(page, heading) {
+  await openTour(page);
+  const dialog = page.getByRole('dialog');
+  for (let i = 0; i < 12; i++) {
+    if (await dialog.getByRole('heading', { name: heading }).count()) break;
+    await dialog.getByRole('button', { name: /^(next|weiter)/i }).click();
+    await page.waitForTimeout(400);
+  }
+}
+
+/** The screens a persona run captures when no target is named. */
+export const PERSONA_TARGETS = [
+  'dashboard', 'flights', 'flights-modal', 'flights-modal-primary', 'flights-modal-secondary',
+  'flight-detail', 'aircraft', 'licenses', 'currency', 'reports', 'profile',
 ];
 
 /** Paths whose list request is failed for a `fail` target. */

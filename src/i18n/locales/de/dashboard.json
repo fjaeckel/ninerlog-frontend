@@ -5,7 +5,7 @@
     "evening": "Guten Abend"
   },
   "logFlight": "Flug eintragen",
-  "flightCurrency": "Recency",
+  "flightCurrency": "Flugpraxis",
   "credentialAlert": {
     "expired": "vor {{days}} Tagen abgelaufen",
     "expiresSoon": "läuft in {{days}} Tagen ab"
@@ -20,6 +20,7 @@
     "picusDetail": "+ {{time}} PICUS"
   },
   "blockTimeBreakdown": "Blockzeit-Aufteilung",
+  "timeBreakdown": "Zeitaufteilung",
   "baselineApplied": "Inklusive {{hours}} h aus deinem Übertrag (Stand {{date}}).",
   "breakdownLabels": {
     "pic": "PIC",
@@ -47,7 +48,7 @@
     "TMG": "TMG",
     "IR": "IR",
     "GLIDER": "Segelflugzeug",
-    "ULTRALIGHT": "Ultraleicht",
+    "ULTRALIGHT": "UL",
     "GYROPLANE": "Tragschrauber",
     "OTHER": "Sonstige"
   },
@@ -56,5 +57,21 @@
   "logFirstFlight": "Ersten Flug eintragen",
   "startJourney": "Beginne dein digitales Flugbuch mit dem Eintrag deines ersten Fluges.",
   "monthlyActivity": "Monatliche Aktivität",
-  "monthlyActivityLabel": "Flugstunden pro Monat in den letzten 12 Monaten"
+  "monthlyActivityLabel": "Flugstunden pro Monat in den letzten 12 Monaten",
+  "soaring": {
+    "title": "Segelflugsaison",
+    "previousYear": "Vorheriges Jahr",
+    "nextYear": "Nächstes Jahr",
+    "empty": "Keine Segelflüge in {{year}}.",
+    "flights": "Flüge",
+    "launches": "Starts",
+    "hours": "Stunden",
+    "average": "Ø Flugdauer",
+    "outlandings": "Außenlandungen",
+    "byMethod": "Starts je Startart",
+    "unspecified": "Startart nicht erfasst",
+    "longest": "Längster Flug",
+    "sites": "Häufigste Startplätze"
+  },
+  "ulKindNotSet": "UL-Art nicht festgelegt"
 }

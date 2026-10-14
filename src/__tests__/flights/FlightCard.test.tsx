@@ -53,6 +53,10 @@ const mockFlight: Flight = {
   simulatedFlightTime: 0,
   groundTrainingTime: 0,
   createdAt: '2026-01-15T00:00:00Z',
+  launches: 1,
+  launchesOverride: false,
+  isOutlanding: false,
+  isTowFlight: false,
   updatedAt: '2026-01-15T00:00:00Z',
 };
 
@@ -174,6 +178,17 @@ describe('FlightCard', () => {
     expect(screen.queryByRole('button', { name: /edit flight/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /delete flight/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole('button')).toHaveLength(1);
+  });
+
+  it('labels take-off and landing times as such when the flight has no block times', () => {
+    const glider = { ...mockFlight, offBlockTime: null, onBlockTime: null, departureTime: '11:20:00', arrivalTime: '12:05:00' };
+    render(<FlightCard flight={glider} columns={selectFlightCardColumns([glider])} onClick={vi.fn()} />);
+
+    expect(screen.getByText('T/O')).toBeInTheDocument();
+    expect(screen.getByText('Land')).toBeInTheDocument();
+    expect(screen.queryByText('Off')).not.toBeInTheDocument();
+    expect(screen.getByText('11:20')).toBeInTheDocument();
+    expect(screen.getByText('12:05')).toBeInTheDocument();
   });
 
   it('drops the columns the flights-list setting switches off', () => {

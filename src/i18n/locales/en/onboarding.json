@@ -11,6 +11,10 @@
     "close": "Close tour",
     "moreHint": "On mobile you'll find this under the “More” menu.",
     "steps": {
+      "disciplines": {
+        "title": "What do you fly, and what are you training for?",
+        "body": "Hi {{name}}! NinerLog puts what you fly up front and folds the rest into “More”. Nothing is ever hidden, and you can change this any time under Profile → What I fly. Skip it and you see everything."
+      },
       "welcome": {
         "title": "Welcome to NinerLog, {{name}}! 👋",
         "body": "Let's take a quick tour so you know exactly where everything lives. It only takes a minute — and you can skip it any time."
@@ -33,7 +37,13 @@
       },
       "addFlight": {
         "title": "Log a flight",
-        "body": "This is the quickest way to add a flight. Pick your aircraft, enter your off-block and on-block times, airports and landings — that's it."
+        "body": "This is the quickest way to add a flight. Pick your aircraft, enter your times, airports and landings — that's it.",
+        "variants": {
+          "glider": "This is the quickest way to add a flight. Pick your glider, enter your take-off and landing times, launch method and airfield — or log a whole day of winch circuits in one go.",
+          "ultralight": "This is the quickest way to add a flight. Pick your UL, enter your take-off and landing times, airfields and landings — that's it.",
+          "airline": "This is the quickest way to add a sector. Pick your aircraft, enter your off-block and on-block times, airports and landings — multi-pilot and IFR time are right there.",
+          "powered": "This is the quickest way to add a flight. Pick your aircraft, enter your off-block and on-block times, airports and landings — that's it."
+        }
       },
       "flights": {
         "title": "Find your flights",
@@ -41,12 +51,28 @@
       },
       "currency": {
         "title": "Stay current",
-        "body": "Track your recency at a glance — like 3 takeoffs and landings in 90 days — so you always know when you're legal to fly."
+        "body": "See per licence and rating whether you may fly — recency, passenger rules and revalidation — so you always know when you're legal to fly.",
+        "variants": {
+          "glider": "See at a glance whether you may fly: launches, hours and training flights, per launch method and for passengers — and what is still missing.",
+          "ultralight": "Keep your UL recency under § 45 LuftPersV in view — hours, take-offs and landings and the training flight, per UL kind — so you always know when you're legal to fly.",
+          "airline": "Track your recency at a glance — like 3 takeoffs and landings in 90 days, IFR and simulator checks — so you always know when you're legal to fly.",
+          "powered": "Track your recency at a glance — like 3 takeoffs and landings in 90 days — so you always know when you're legal to fly."
+        }
       },
       "finish": {
         "title": "You're ready to fly! ✈️",
         "body": "That's the tour. The best first step is adding an aircraft and logging your first flight. You can replay this tour any time from the Help page."
       }
+    },
+    "disciplines": {
+      "legend": "Tap once for “I fly this”, twice for “I'm training for this”, a third time to clear.",
+      "on": "I fly this",
+      "goal": "I'm training for this",
+      "none": "Not selected",
+      "auto": "Automatic, from your logbook",
+      "fromLogbook": "From your logbook",
+      "tileLabel": "{{name}}: {{state}}",
+      "saveFailed": "Could not save your toolkits. Try again, or skip — you can set them later under Profile → What I fly."
     }
   }
 }
