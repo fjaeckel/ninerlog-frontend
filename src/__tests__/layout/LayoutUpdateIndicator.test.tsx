@@ -22,6 +22,7 @@ const updateStatus = {
 };
 
 const respond = (path: string) => {
+  if (path === '/users/me') return { data: useAuthStore.getState().user, error: undefined };
   if (path.includes('/admin/update')) return { data: updateStatus, error: undefined };
   if (path.includes('/announcements')) return { data: { announcements: [], hints: [] }, error: undefined };
   return {
@@ -95,5 +96,36 @@ describe('Layout — update light', () => {
     await screen.findByRole('banner');
     await vi.waitFor(() => expect(queryClient.isFetching()).toBe(0));
     expect(screen.queryByRole('button', { name: /an update is available/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('Layout — admin status sync', () => {
+  afterEach(async () => {
+    const { apiClient } = await import('../../api/client');
+    vi.mocked(apiClient.GET).mockImplementation((async (path: string) => respond(path)) as never);
+  });
+
+  it('drops admin navigation when /users/me reports the rights were revoked', async () => {
+    signIn(true);
+    const { apiClient } = await import('../../api/client');
+    vi.mocked(apiClient.GET).mockImplementation((async (path: string) =>
+      path === '/users/me'
+        ? { data: { ...useAuthStore.getState().user, isAdmin: false }, error: undefined }
+        : respond(path)) as never);
+    renderLayout();
+    await vi.waitFor(() => expect(useAuthStore.getState().user?.isAdmin).toBe(false));
+    expect(screen.queryByRole('link', { name: /admin/i })).not.toBeInTheDocument();
+  });
+
+  it('shows admin navigation once /users/me reports a grant', async () => {
+    signIn(false);
+    const { apiClient } = await import('../../api/client');
+    vi.mocked(apiClient.GET).mockImplementation((async (path: string) =>
+      path === '/users/me'
+        ? { data: { ...useAuthStore.getState().user, isAdmin: true }, error: undefined }
+        : respond(path)) as never);
+    renderLayout();
+    await vi.waitFor(() => expect(useAuthStore.getState().user?.isAdmin).toBe(true));
+    expect((await screen.findAllByRole('link', { name: /admin/i })).length).toBeGreaterThan(0);
   });
 });
