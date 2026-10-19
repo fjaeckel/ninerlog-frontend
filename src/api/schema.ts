@@ -6898,8 +6898,8 @@ export interface components {
             smtpConfigured: boolean;
             /** @description Whether ADMIN_EMAIL (the bootstrap admin address) is set */
             adminEmailConfigured: boolean;
-            /** @description Number of accounts carrying the admin flag */
-            adminCount: number;
+            /** @description Number of active admins: verified, enabled accounts that carry the admin flag or hold the ADMIN_EMAIL address. Omitted when it could not be counted. */
+            adminCount?: number;
             /** @description Whether cloud backups are enabled (BACKUP_CREDENTIALS_KEY is set) */
             cloudBackupsConfigured: boolean;
             /** @description Whether licence/credential reference files are enabled (DOCUMENT_FILES_ENABLED is not "false") */
@@ -7046,10 +7046,12 @@ export interface components {
             twoFactorEnabled: boolean;
             /** @description Whether the account is disabled by admin */
             disabled: boolean;
-            /** @description Whether the account carries the admin flag or holds the ADMIN_EMAIL address */
+            /** @description Whether the account is an admin: its email is verified and it carries the admin flag or holds the ADMIN_EMAIL address */
             isAdmin: boolean;
             /** @description Whether the account is the verified holder of the ADMIN_EMAIL address. It cannot be revoked, disabled, deleted or have its 2FA reset by another admin. */
             isBootstrapAdmin: boolean;
+            /** @description Whether the account carries the stored admin flag. It can differ from isAdmin: a flagged account whose email is unverified is not an admin until it verifies, and the ADMIN_EMAIL holder is an admin before its flag is written. */
+            adminFlag: boolean;
             /** @description Whether the account is locked due to brute-force protection */
             locked?: boolean;
             /**
@@ -12677,7 +12679,7 @@ export interface operations {
                 pageSize?: number;
                 /** @description Search by email or name */
                 search?: string;
-                /** @description When true, only admin accounts; when false, only non-admin accounts */
+                /** @description When true, only accounts whose isAdmin is true; when false, only accounts whose isAdmin is false */
                 isAdmin?: boolean;
             };
             header?: never;

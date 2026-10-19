@@ -11,17 +11,18 @@ type Result = { data?: unknown; error?: unknown; response: { status: number } };
 let postResult: Result = { data: { message: 'ok' }, response: { status: 200 } };
 
 const users = [
-  { id: 'admin-1', email: 'admin@ninerlog.app', name: 'Admin User', isAdmin: true, isBootstrapAdmin: false, emailVerified: true, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 1, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'u2', email: 'pilot@example.com', name: 'Pilot', isAdmin: false, isBootstrapAdmin: false, emailVerified: true, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 5, aircraftCount: 1, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'u3', email: 'new@example.com', name: 'Unverified', isAdmin: false, isBootstrapAdmin: false, emailVerified: false, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 0, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'boot', email: 'ops@example.com', name: 'Ops', isAdmin: true, isBootstrapAdmin: true, emailVerified: true, twoFactorEnabled: true, disabled: false, locked: false, flightCount: 0, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'admin-1', email: 'admin@ninerlog.app', name: 'Admin User', isAdmin: true, isBootstrapAdmin: false, adminFlag: true, emailVerified: true, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 1, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'u2', email: 'pilot@example.com', name: 'Pilot', isAdmin: false, isBootstrapAdmin: false, adminFlag: false, emailVerified: true, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 5, aircraftCount: 1, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'u3', email: 'new@example.com', name: 'Unverified', isAdmin: false, isBootstrapAdmin: false, adminFlag: false, emailVerified: false, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 0, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'boot', email: 'ops@example.com', name: 'Ops', isAdmin: true, isBootstrapAdmin: true, adminFlag: true, emailVerified: true, twoFactorEnabled: true, disabled: false, locked: false, flightCount: 0, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'stale', email: 'stale@example.com', name: 'Stale', isAdmin: false, isBootstrapAdmin: false, adminFlag: true, emailVerified: false, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 0, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
 ];
 
 vi.mock('../../api/client', () => ({
   apiClient: {
     GET: vi.fn(async (path: string) => ({
       data: path === '/admin/users'
-        ? { data: users, pagination: { total: 4, page: 1, pageSize: 20, totalPages: 1 } }
+        ? { data: users, pagination: { total: 5, page: 1, pageSize: 20, totalPages: 1 } }
         : { data: [] },
       error: undefined,
       response: { status: 200 },
@@ -121,5 +122,21 @@ describe('AdminPage — admin roles', () => {
     expect(screen.getByText(/This also removes their admin rights/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Disable' }));
     expect(await screen.findByText(/it is the last active admin/)).toBeInTheDocument();
+  });
+
+  it('shows a stored flag on an unverified account and lets it be revoked', async () => {
+    const user = await openUsersTab();
+    const row = desktopRow('stale@example.com');
+    expect(within(row).getByText('Admin · unverified')).toBeInTheDocument();
+    await user.click(within(row).getByRole('button', { name: 'Revoke admin rights' }));
+    await user.click(screen.getByRole('button', { name: 'Remove admin' }));
+    expect(apiClient.POST).toHaveBeenCalledWith('/admin/users/{userId}/revoke-admin', { params: { path: { userId: 'stale' } } });
+  });
+
+  it('reports other actions with translated messages', async () => {
+    const user = await openUsersTab();
+    await user.click(within(desktopRow('pilot@example.com')).getByTitle('Disable account'));
+    await user.click(screen.getByRole('button', { name: 'Disable' }));
+    expect(await screen.findByText('Disable: done for pilot@example.com.')).toBeInTheDocument();
   });
 });

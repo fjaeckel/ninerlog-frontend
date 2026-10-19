@@ -200,6 +200,10 @@
       "bootstrapAdminTitle": "Break-glass admin set by the ADMIN_EMAIL server setting. It can't be revoked, disabled, deleted or have its 2FA reset from here.",
       "removesAdminRights": "This also removes their admin rights.",
       "protectedAdminConflict": "{{email}} holds the ADMIN_EMAIL address and can't be changed from here.",
+      "actionDone": "{{action}}: done for {{email}}.",
+      "actionFailed": "{{action}} failed for {{email}}.",
+      "pendingAdminBadge": "Admin · unverified",
+      "pendingAdminTitle": "Carries the admin flag but the email address is not verified, so it has no admin rights until it is. You can still revoke the flag.",
       "adminRoleFailed": "Changing admin rights for {{email}} failed."
     },
     "audit": {

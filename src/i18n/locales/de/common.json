@@ -200,6 +200,10 @@
       "bootstrapAdminTitle": "Notfall-Admin aus der Servereinstellung ADMIN_EMAIL. Die Rechte können hier nicht entzogen werden; das Konto kann nicht deaktiviert oder gelöscht und seine 2FA nicht zurückgesetzt werden.",
       "removesAdminRights": "Dabei werden auch die Adminrechte entzogen.",
       "protectedAdminConflict": "{{email}} hat die ADMIN_EMAIL-Adresse und kann hier nicht geändert werden.",
+      "actionDone": "{{action}}: für {{email}} erledigt.",
+      "actionFailed": "{{action}} für {{email}} fehlgeschlagen.",
+      "pendingAdminBadge": "Admin · unbestätigt",
+      "pendingAdminTitle": "Hat die Admin-Markierung, aber die E-Mail-Adresse ist nicht bestätigt; bis dahin bestehen keine Adminrechte. Die Markierung kann trotzdem entzogen werden.",
       "adminRoleFailed": "Adminrechte für {{email}} konnten nicht geändert werden."
     },
     "audit": {

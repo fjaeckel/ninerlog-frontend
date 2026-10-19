@@ -458,9 +458,9 @@ export const adminUpdate = {
 
 export const adminUsers = {
   data: [
-    { id: 'u1', email: 'pilot@example.com', name: 'Alex Fischer', isAdmin: true, isBootstrapAdmin: true, emailVerified: true, twoFactorEnabled: true, locked: false, disabled: false, flightCount: 66, aircraftCount: 3, createdAt: iso('2024-01-01'), lastLoginAt: iso('2026-08-15'), lastActiveAt: iso('2026-08-16T08:42:00Z') },
-    { id: 'u2', email: 'anna.mueller@example.com', name: 'Anna Müller', isAdmin: true, isBootstrapAdmin: false, emailVerified: true, twoFactorEnabled: false, locked: false, disabled: false, flightCount: 214, aircraftCount: 5, createdAt: iso('2024-04-11'), lastLoginAt: iso('2026-08-14'), lastActiveAt: iso('2026-08-15T19:05:00Z') },
-    { id: 'u3', email: 'tom.becker@example.com', name: 'Tom Becker', isAdmin: false, isBootstrapAdmin: false, emailVerified: false, twoFactorEnabled: false, locked: true, disabled: false, flightCount: 3, aircraftCount: 1, createdAt: iso('2026-07-30'), lastLoginAt: null, lastActiveAt: null },
+    { id: 'u1', email: 'pilot@example.com', name: 'Alex Fischer', isAdmin: true, isBootstrapAdmin: true, adminFlag: true, emailVerified: true, twoFactorEnabled: true, locked: false, disabled: false, flightCount: 66, aircraftCount: 3, createdAt: iso('2024-01-01'), lastLoginAt: iso('2026-08-15'), lastActiveAt: iso('2026-08-16T08:42:00Z') },
+    { id: 'u2', email: 'anna.mueller@example.com', name: 'Anna Müller', isAdmin: true, isBootstrapAdmin: false, adminFlag: true, emailVerified: true, twoFactorEnabled: false, locked: false, disabled: false, flightCount: 214, aircraftCount: 5, createdAt: iso('2024-04-11'), lastLoginAt: iso('2026-08-14'), lastActiveAt: iso('2026-08-15T19:05:00Z') },
+    { id: 'u3', email: 'tom.becker@example.com', name: 'Tom Becker', isAdmin: false, isBootstrapAdmin: false, adminFlag: true, emailVerified: false, twoFactorEnabled: false, locked: true, disabled: false, flightCount: 3, aircraftCount: 1, createdAt: iso('2026-07-30'), lastLoginAt: null, lastActiveAt: null },
   ],
   pagination: { page: 1, pageSize: 20, total: 3, totalPages: 1 },
 };
