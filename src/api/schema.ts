@@ -1868,14 +1868,18 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Export full data backup as JSON
-         * @description Exports everything the user owns as a JSON backup file: flights (with
+         * Export full data backup as JSON (deprecated)
+         * @deprecated
+         * @description **Deprecated.** Use `GET /users/me/data`; this route is served by the
+         *     same code and returns the same payload and headers.
+         *
+         *     Exports everything the user owns as a JSON backup file: flights (with
          *     crew), aircraft, licences and class ratings, credentials, contacts,
          *     custom currency rules, custom reports, notification preferences and the
          *     carried-forward hours baseline.
          *
          *     This is the same payload a cloud backup run writes, and
-         *     `POST /imports/json` restores every section of it.
+         *     `POST /users/me/data` restores every section of it.
          */
         get: operations["exportDataJSON"];
         put?: never;
@@ -1896,28 +1900,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Restore a NinerLog JSON backup
-         * @description Restore a previously exported NinerLog JSON backup into the authenticated
-         *     user's account. Recreates every section the backup carries: aircraft,
-         *     licences, class ratings, credentials, flights and crew members,
-         *     contacts, custom currency rules, custom reports, notification
-         *     preferences and the carried-forward hours baseline. New UUIDs are assigned so the backup can
-         *     be restored into any NinerLog installation (including the one it was
-         *     exported from).
+         * Restore a NinerLog JSON backup (deprecated)
+         * @deprecated
+         * @description **Deprecated.** Use `POST /users/me/data`; this route is served by the
+         *     same code and has the same semantics, including the `mode` parameter,
+         *     the `409` refusals, the size limits and the time budget.
          *
-         *     This is an additive operation — it does not modify or delete existing
-         *     data, with two exceptions that are single-row settings rather than
-         *     collections: notification preferences and the flight baseline replace
-         *     whatever the account currently has.
-         *
-         *     Aircraft whose registration already exists for the user are skipped (and
-         *     the existing aircraft is referenced by imported flights); contacts whose
-         *     name the account already holds are skipped the same way. Custom currency
-         *     rules are revalidated on restore and count against the per-account
-         *     limit; a rule's sharing state is never carried over. Custom reports are
-         *     revalidated the same way and appended after existing ones; a report
-         *     scoped to a licence is re-pointed at that licence's restored copy, and
-         *     loses the licence scope if the backup does not carry the licence.
+         *     **Behaviour change:** a restore no longer adds a second copy of the
+         *     backup into an account that already holds data. With the default
+         *     `mode=restore` it answers `409 account_not_empty` and writes nothing;
+         *     `mode=replace` wipes the account's collections and restores in one
+         *     transaction. See `POST /users/me/data` for the full contract.
          */
         post: operations["importDataJSON"];
         delete?: never;
@@ -2275,8 +2268,12 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * Delete all flights
-         * @description Permanently delete all flight log entries for the authenticated user.
+         * Delete all flights (deprecated)
+         * @deprecated
+         * @description **Deprecated.** Use `DELETE /users/me/data?scope=flights`; this route is
+         *     served by the same code and keeps its `{deleted}` response.
+         *
+         *     Permanently delete all flight log entries for the authenticated user.
          *     This also removes associated crew members and import history.
          *     This action cannot be undone.
          */
@@ -2293,15 +2290,84 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        post?: never;
         /**
-         * Delete all user data
-         * @description Permanently delete all data for the authenticated user while keeping the account.
-         *     This removes flights, aircraft, licenses, class ratings, contacts, credentials,
-         *     import history, and notification logs. The user account itself is preserved.
-         *     This action cannot be undone.
+         * Export all user data as a JSON backup
+         * @description Exports everything the user owns as a JSON backup file: flights (with
+         *     crew), aircraft, licences and class ratings, credentials, contacts,
+         *     custom currency rules, custom reports, notification preferences and the
+         *     carried-forward hours baseline. The response is a file download.
+         *
+         *     This is the same payload a cloud backup run writes, and
+         *     `POST /users/me/data` restores every section of it. Binary document
+         *     files and instructor signatures are not part of the payload.
+         *
+         *     The request may run for up to 5 minutes.
+         */
+        get: operations["exportUserData"];
+        put?: never;
+        /**
+         * Restore a NinerLog JSON backup
+         * @description Restores a backup produced by `GET /users/me/data` into the
+         *     authenticated user's account. Every section the backup carries is
+         *     recreated: aircraft, licences, class ratings, credentials, flights and
+         *     crew members, contacts, custom currency rules, custom reports,
+         *     notification preferences and the carried-forward hours baseline. New
+         *     UUIDs are assigned, so a backup restores into any NinerLog
+         *     installation, including the one it came from.
+         *
+         *     **The restore is all-or-nothing.** It runs in a single database
+         *     transaction: on any failure nothing is written, and the response is a
+         *     generic error.
+         *
+         *     **Modes**
+         *
+         *     - `restore` (default) requires an empty account. An account is
+         *       non-empty when it holds at least one flight, aircraft, licence,
+         *       credential, contact, custom currency rule or custom report;
+         *       notification preferences and the flight baseline do not count. A
+         *       non-empty account answers `409 account_not_empty` and nothing is
+         *       written, so restoring the same backup twice never produces two
+         *       copies.
+         *     - `replace` first wipes those collections, together with flight crew
+         *       and import history, and then restores, all in the same transaction.
+         *       It is refused with `409 replace_would_drop_attachments` while the
+         *       account holds licence or credential document files or signed
+         *       flights, because those are not part of the backup and would be lost.
+         *
+         *     Notification preferences and the flight baseline are single-row
+         *     settings; a backup that carries them overwrites the current values.
+         *
+         *     **Always importable.** A payload produced by any released export
+         *     restores. The per-account limits that apply when creating a custom
+         *     currency rule are not applied. A custom currency rule or custom report
+         *     whose definition no longer passes validation is still restored: such a
+         *     rule is restored with `enabled` and `notify` set to false, and each
+         *     one is listed in `warnings` of the result. A rule's sharing state is
+         *     never carried over, and a report scoped to a licence is re-pointed at
+         *     that licence's restored copy (or loses the scope when the backup does
+         *     not carry the licence).
+         *
+         *     **Versions.** A backup without a `version`, or with any version this
+         *     server has emitted, is accepted. A newer major version answers
+         *     `422 backup_version_unsupported`. Unknown fields are ignored.
+         *
+         *     **Limits.** The body may be up to 200 MiB (`413` beyond that) and hold
+         *     up to 100,000 flights. The request may run for up to 5 minutes.
+         */
+        post: operations["restoreUserData"];
+        /**
+         * Delete user data
+         * @description Permanently deletes data of the authenticated user while keeping the
+         *     account. This action cannot be undone.
+         *
+         *     - `scope=all` (default) removes flights, aircraft, licenses, class
+         *       ratings, contacts, credentials, import history, and notification
+         *       logs.
+         *     - `scope=flights` removes flights together with their crew members and
+         *       the import history, and reports the number of flights deleted in
+         *       `deletedFlights`.
+         *
+         *     Each scope runs in a single transaction.
          */
         delete: operations["deleteAllUserData"];
         options?: never;
@@ -5521,7 +5587,7 @@ export interface components {
              *       "THREE_AXIS"
              *     ]
              */
-            creditedUltralightKinds?: ("THREE_AXIS" | "THREE_AXIS_MOTORGLIDER" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE")[];
+            creditedUltralightKinds?: ("THREE_AXIS" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE")[];
         };
         LaunchMethodCurrency: {
             /**
@@ -6011,7 +6077,7 @@ export interface components {
              */
             createdAt: string;
         };
-        /** @description Summary returned by `POST /imports/json` after restoring a backup. */
+        /** @description Summary returned by `POST /users/me/data` (and the deprecated `POST /imports/json`) after restoring a backup. */
         ImportJSONResult: {
             /**
              * @description Number of aircraft created from the backup
@@ -6062,6 +6128,512 @@ export interface components {
             notificationPreferencesImported: boolean;
             /** @description Whether the backup carried a carried-forward hours baseline that was applied */
             flightBaselineImported: boolean;
+            /**
+             * @description The mode the restore ran in
+             * @enum {string}
+             */
+            mode: "restore" | "replace";
+            /** @description Rows that were restored although they no longer pass validation (custom currency rules are restored with `enabled` and `notify` false), or that carry values worth a second look. Empty when the backup restored cleanly. */
+            warnings: components["schemas"]["RestoreWarning"][];
+        };
+        /** @description A NinerLog JSON backup, as written by `GET /users/me/data` and by every cloud backup run, and as read by `POST /users/me/data`. A restore also accepts older backups that lack `version` or the later sections. */
+        BackupPayload: {
+            /**
+             * Format: date-time
+             * @example 2026-03-07T10:15:00Z
+             */
+            exportedAt: string;
+            /**
+             * @description Payload version, `<major>.<minor>`. A restore refuses a major version newer than the server's.
+             * @example 1.0
+             */
+            version: string;
+            /**
+             * @description Always `NinerLog JSON Backup`
+             * @enum {string}
+             */
+            format: "NinerLog JSON Backup";
+            flights: components["schemas"]["BackupFlight"][];
+            aircraft: components["schemas"]["Aircraft"][];
+            licenses: components["schemas"]["BackupLicenseWithRatings"][];
+            credentials: components["schemas"]["BackupCredential"][];
+            contacts: components["schemas"]["Contact"][];
+            customCurrencyRules: components["schemas"]["BackupCustomCurrencyRule"][];
+            /** @description Saved custom reports in display order */
+            customReports: components["schemas"]["BackupCustomReport"][];
+            notificationPreferences?: components["schemas"]["NotificationPreferences"];
+            flightBaseline?: components["schemas"]["BackupFlightBaseline"];
+        };
+        /** @description A licence together with its class ratings */
+        BackupLicenseWithRatings: {
+            license: components["schemas"]["BackupLicense"];
+            classRatings: components["schemas"]["BackupClassRating"][];
+        };
+        BackupLicense: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            /** @example EASA */
+            regulatoryAuthority: string;
+            /** @example PPL */
+            licenseType: string;
+            /** @example PPL-123456 */
+            licenseNumber: string;
+            /**
+             * Format: date-time
+             * @example 2020-01-15T00:00:00Z
+             */
+            issueDate: string;
+            /** @example EASA */
+            issuingAuthority: string;
+            requiresSeparateLogbook: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        BackupClassRating: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            licenseId: string;
+            classType: components["schemas"]["ClassType"];
+            /**
+             * @description Set only when classType is ULTRALIGHT
+             * @enum {string}
+             */
+            ulKind?: "THREE_AXIS" | "WEIGHT_SHIFT" | "GYROPLANE" | "HELICOPTER" | "POWERED_PARAGLIDER" | "SAILPLANE";
+            /**
+             * Format: date-time
+             * @example 2024-03-15T00:00:00Z
+             */
+            issueDate: string;
+            /**
+             * Format: date-time
+             * @example 2026-03-15T00:00:00Z
+             */
+            expiryDate?: string;
+            notes?: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        BackupCredential: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            credentialType: components["schemas"]["CredentialType"];
+            /** @example MED-2026-001 */
+            credentialNumber?: string;
+            /**
+             * Format: date-time
+             * @example 2026-01-15T00:00:00Z
+             */
+            issueDate: string;
+            /**
+             * Format: date-time
+             * @example 2027-01-15T00:00:00Z
+             */
+            expiryDate?: string;
+            /** @example EASA AME */
+            issuingAuthority: string;
+            notes?: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        /** @description The portable half of a user-authored currency rule. Sharing state is never part of a backup. */
+        BackupCustomCurrencyRule: {
+            name: string;
+            description?: string;
+            emoji?: string;
+            definition: components["schemas"]["CustomCurrencyRuleBody"];
+            enabled: boolean;
+            notify: boolean;
+        };
+        /** @description The portable half of a saved custom report. A licence-scoped report names the licence by its id in this backup. */
+        BackupCustomReport: {
+            name: string;
+            definition: components["schemas"]["CustomReportDefinition"];
+        };
+        /** @description The carried-forward hours snapshot */
+        BackupFlightBaseline: {
+            /**
+             * Format: date-time
+             * @example 2024-01-01T00:00:00Z
+             */
+            baselineDate: string;
+            totalFlights: number;
+            totalMinutes: number;
+            picMinutes: number;
+            sicMinutes: number;
+            dualMinutes: number;
+            dualGivenMinutes: number;
+            multiPilotMinutes: number;
+            nightMinutes: number;
+            ifrMinutes: number;
+            soloMinutes: number;
+            crossCountryMinutes: number;
+            picusMinutes: number;
+            spicMinutes: number;
+            examinerMinutes: number;
+            reliefMinutes: number;
+            landingsDay: number;
+            landingsNight: number;
+            notes?: string;
+        };
+        /** @description A flight as written to a backup: the stored columns of the flight, its crew and its approaches. Identifiers and timestamps are reassigned on restore. */
+        BackupFlight: {
+            /**
+             * Format: uuid
+             * @example 770e8400-e29b-41d4-a716-446655440002
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            userId: string;
+            /**
+             * Format: date-time
+             * @example 2026-01-30T00:00:00Z
+             */
+            date: string;
+            /**
+             * @description Aircraft registration
+             * @example D-EFGH
+             */
+            aircraftReg: string;
+            /**
+             * @description Aircraft type
+             * @example C172
+             */
+            aircraftType: string;
+            /**
+             * @description Departure location — an ICAO code (resolved to coordinates for maps/distance) or a free-text place name for off-airport sites
+             * @example EDDF
+             */
+            departureIcao?: string | null;
+            /**
+             * @description Arrival location — an ICAO code (resolved to coordinates for maps/distance) or a free-text place name for off-airport sites
+             * @example EDDH
+             */
+            arrivalIcao?: string | null;
+            /**
+             * Format: time
+             * @description Off-block time (chocks off / engine start) in UTC. Marks the beginning of block time per EASA FCL.010 / FAA 14 CFR 1.1.
+             * @example 14:15:00
+             */
+            offBlockTime?: string | null;
+            /**
+             * Format: time
+             * @description On-block time (chocks on / engine shutdown) in UTC. Marks the end of block time per EASA FCL.010 / FAA 14 CFR 1.1.
+             * @example 16:55:00
+             */
+            onBlockTime?: string | null;
+            /**
+             * Format: time
+             * @description Takeoff time in UTC. Marks the beginning of airborne/flight time.
+             * @example 14:30:00
+             */
+            departureTime?: string | null;
+            /**
+             * Format: time
+             * @description Landing time in UTC. Marks the end of airborne/flight time.
+             * @example 16:45:00
+             */
+            arrivalTime?: string | null;
+            /**
+             * @description Total block time in minutes (off-block to on-block)
+             * @example 150
+             */
+            totalTime: number;
+            /**
+             * @description Whether this flight was logged as pilot-in-command. Mutually exclusive with isDual.
+             * @example true
+             */
+            isPic: boolean;
+            /**
+             * @description Whether this flight was logged as dual instruction received. Mutually exclusive with isPic.
+             * @example false
+             */
+            isDual: boolean;
+            /**
+             * @description Pilot-in-command block time in minutes (computed from isPic and totalTime)
+             * @example 150
+             */
+            picTime: number;
+            /**
+             * @description Dual instruction block time in minutes (computed from isDual and totalTime)
+             * @example 0
+             */
+            dualTime: number;
+            /**
+             * @description Night block time in minutes. Auto-calculated from the block times and civil twilight at the departure location unless nightTimeOverride is true.
+             * @example 30
+             */
+            nightTime: number;
+            /**
+             * @description True when nightTime was entered by the pilot. Recalculation keeps the entered value. Send nightTime: null on update to return to auto-calculation.
+             * @example false
+             */
+            nightTimeOverride?: boolean;
+            /**
+             * @description Instrument block time in minutes
+             * @example 60
+             */
+            ifrTime: number;
+            /**
+             * @description Number of day landings. Auto-calculated from sunset/sunrise at arrival airport.
+             * @example 3
+             */
+            landingsDay: number;
+            /**
+             * @description Number of night landings. Auto-calculated from sunset/sunrise at arrival airport.
+             * @example 1
+             */
+            landingsNight: number;
+            /**
+             * @description Total landings (day + night). Auto-calculated by the server.
+             * @example 4
+             */
+            allLandings: number;
+            /**
+             * @description Number of day takeoffs. Auto-calculated from sunset/sunrise at departure airport unless overridden.
+             * @example 3
+             */
+            takeoffsDay: number;
+            /**
+             * @description Number of night takeoffs. Auto-calculated from sunset/sunrise at departure airport unless overridden.
+             * @example 1
+             */
+            takeoffsNight: number;
+            /**
+             * @description Route waypoints as comma-separated ICAO codes for VFR/IFR flight plans
+             * @example EDDF,EDDS,EDDM
+             */
+            route?: string | null;
+            /**
+             * @description Solo time in minutes. Auto-calculated when no crew and not dual instruction.
+             * @example 90
+             */
+            soloTime: number;
+            /**
+             * @description Cross-country time in minutes. Auto-calculated as the full block time when departure ≠ arrival unless crossCountryTimeOverride is true.
+             * @example 150
+             */
+            crossCountryTime: number;
+            /**
+             * @description True when crossCountryTime was entered by the pilot. Recalculation keeps the entered value. Send crossCountryTime: null on update to return to auto-calculation.
+             * @example false
+             */
+            crossCountryTimeOverride?: boolean;
+            /**
+             * @description True when takeoffsDay was entered by the pilot rather than auto-calculated.
+             * @example false
+             */
+            takeoffsDayOverride?: boolean;
+            /**
+             * @description True when takeoffsNight was entered by the pilot rather than auto-calculated.
+             * @example false
+             */
+            takeoffsNightOverride?: boolean;
+            /**
+             * @description True when landingsDay was entered by the pilot rather than auto-calculated.
+             * @example false
+             */
+            landingsDayOverride?: boolean;
+            /**
+             * @description True when landingsNight was entered by the pilot rather than auto-calculated.
+             * @example false
+             */
+            landingsNightOverride?: boolean;
+            /**
+             * @description True when sicTime was declared by the pilot rather than derived from the crew list.
+             * @example false
+             */
+            sicTimeOverride?: boolean;
+            /**
+             * @description True when multiPilotTime was declared by the pilot rather than derived from the crew list.
+             * @example false
+             */
+            multiPilotTimeOverride?: boolean;
+            /**
+             * Format: float
+             * @description Distance in nautical miles. Auto-calculated from airport coordinates.
+             * @example 185.3
+             */
+            distance: number;
+            /**
+             * @description Free text notes
+             * @example Training flight - touch and go practice
+             */
+            remarks?: string | null;
+            /** @description Name of the instructor for this flight */
+            instructorName?: string | null;
+            /** @description Instructor comments about the flight */
+            instructorComments?: string | null;
+            /**
+             * @description Second-in-command time in minutes. Auto-calculated when SIC crew role assigned.
+             * @example 0
+             */
+            sicTime: number;
+            /**
+             * @description Dual instruction given time in minutes. Auto-calculated when user acts as instructor.
+             * @example 0
+             */
+            dualGivenTime: number;
+            /**
+             * @description Simulated flight time in minutes (FTD/FSTD)
+             * @example 0
+             */
+            simulatedFlightTime: number;
+            /**
+             * @description Ground training time in minutes
+             * @example 0
+             */
+            groundTrainingTime: number;
+            /**
+             * @description Actual instrument flight time in minutes (under IMC or simulated IMC with view-limiting device)
+             * @example 30
+             */
+            actualInstrumentTime: number;
+            /**
+             * @description Simulated instrument time in minutes (FSTD/FTD/ATD)
+             * @example 18
+             */
+            simulatedInstrumentTime: number;
+            /**
+             * @description Number of holding procedures performed
+             * @example 1
+             */
+            holds: number;
+            /**
+             * @description Number of instrument approaches performed
+             * @example 2
+             */
+            approachesCount: number;
+            /**
+             * @description Whether this flight included an Instrument Proficiency Check (IPC)
+             * @example false
+             */
+            isIpc: boolean;
+            /**
+             * @description Whether this flight was a Flight Review (FAA 61.56) or equivalent
+             * @example false
+             */
+            isFlightReview: boolean;
+            /**
+             * @description Whether this flight was a Proficiency Check (EASA FCL.740.A MEP/SET, FCL.625.A IR, or FAA §61.58)
+             * @example false
+             */
+            isProficiencyCheck: boolean;
+            /**
+             * @description Launch method for glider/SPL flights (winch, aerotow, self-launch, car or bungee)
+             * @example winch
+             * @enum {string|null}
+             */
+            launchMethod?: "winch" | "aerotow" | "self-launch" | "car" | "bungee" | "null" | null;
+            /**
+             * @description Name of the pilot-in-command for this flight (EASA AMC1 FCL.050 Col 12). Auto-set to "Self" when isPic=true, or to instructorName when isDual=true.
+             * @example Self
+             */
+            picName?: string | null;
+            /**
+             * @description Multi-pilot time in minutes (EASA AMC1 FCL.050 Col 10). Time operated on multi-pilot aircraft.
+             * @example 0
+             */
+            multiPilotTime: number;
+            /**
+             * @description PIC under supervision (PICUS) time in minutes (EASA FCL.030, Part-FCL). Declared by the pilot, never auto-calculated; carved out of the derived function time. Counts toward PIC experience requirements (e.g. unfreezing an ATPL) but is kept distinct from PIC and SIC time.
+             * @example 0
+             */
+            picusTime: number;
+            /**
+             * @description Student pilot-in-command (SPIC) time in minutes (EASA integrated course). Declared by the pilot, never auto-calculated; carved out of the derived function time.
+             * @example 0
+             */
+            spicTime: number;
+            /**
+             * @description Time conducting a check as examiner, in minutes. Overlays the pilot function time like dualGivenTime; bounded by totalTime only.
+             * @example 0
+             */
+            examinerTime: number;
+            /**
+             * @description Cruise relief co-pilot time in minutes (augmented crew). Declared by the pilot, never auto-calculated; carved out of the derived function time.
+             * @example 0
+             */
+            reliefTime: number;
+            /**
+             * @description True when this entry is an FSTD (simulator) session rather than a flight.
+             *     A session carries its duration in simulatedFlightTime and zero in every
+             *     flight-time column — totalTime, picTime, dualTime, sicTime, dualGivenTime,
+             *     multiPilotTime, soloTime, crossCountryTime, nightTime and ifrTime — and
+             *     contributes to no flight total, statistic or currency calculation
+             *     (EASA AMC1 FCL.050: session time is recorded separately and is never
+             *     summed with flight time).
+             * @example false
+             */
+            isSimulator: boolean;
+            /**
+             * @description True when the user was carried on this flight rather than crewing it.
+             *     Derived on save: another person is pilot-in-command and the operation
+             *     carries no co-pilot seat the user may occupy — the aircraft is not
+             *     certificated for a minimum crew of two, the user is not a required
+             *     safety pilot, and no co-pilot seat was declared. The row keeps its
+             *     route and block times as the record of the trip and carries zero in
+             *     every flight-time column, contributing to no total, statistic or
+             *     currency calculation.
+             * @example false
+             */
+            isPassenger: boolean;
+            /**
+             * @description FSTD type designation (e.g., "FNPT II", "FFS A320", "FTD Level 5", "BATD", "AATD"). Required by EASA AMC1 FCL.050 Col 22 and FAA §61.51(b)(1)(iv).
+             * @example FNPT II
+             */
+            fstdType?: string | null;
+            /** @description Structured instrument approach details (FAA §61.51(g)(3)) — type, airport, and runway for each approach */
+            approaches?: components["schemas"]["ApproachEntry"][];
+            /**
+             * @description Instructor endorsements, skill test references, examiner notes. EASA AMC1 FCL.050 Col 24 / FAA §61.51(h). Separate from pilot remarks.
+             * @example Skill test passed
+             */
+            endorsements?: string | null;
+            /** @description People on board this flight with their roles */
+            crewMembers?: components["schemas"]["FlightCrewMember"][];
+            /**
+             * Format: date-time
+             * @example 2026-01-30T16:00:00Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-01-30T16:00:00Z
+             */
+            updatedAt: string;
+            /**
+             * Format: uuid
+             * @description Present on a signed flight. Signatures are bound to the installation that minted them, so a restore ignores this field.
+             */
+            signatureId?: string;
+        };
+        RestoreWarning: {
+            /**
+             * @description Backup section the row belongs to
+             * @example customCurrencyRules
+             */
+            section: string;
+            /**
+             * @description Zero-based position of the row within its section
+             * @example 2
+             */
+            index: number;
+            /** @example restored paused - the definition no longer passes validation */
+            message: string;
         };
         PaginatedImports: {
             data: components["schemas"]["ImportResult"][];
@@ -7414,6 +7986,13 @@ export interface components {
              *       - `two_factor_required` / `invalid_two_factor_code` — the second factor
              *       - `invalid_provider_credentials` — a cloud-backup provider refused the
              *         destination's stored credentials
+             *
+             *     Backup restores (`POST /users/me/data`) add three codes on non-401 statuses:
+             *
+             *     - `account_not_empty` (409) — `mode=restore` found data in the account
+             *     - `replace_would_drop_attachments` (409) — `mode=replace` found document
+             *       files or signed flights
+             *     - `backup_version_unsupported` (422) — the backup is from a newer major version
              * @example email_not_verified
              */
             code?: string;
@@ -7593,6 +8172,58 @@ export interface components {
                 "application/json": components["schemas"]["Error"];
             };
         };
+        /**
+         * @description The restore was refused and nothing was written. `code` tells which:
+         *
+         *     - `account_not_empty` - `mode=restore` on an account that already
+         *       holds flights, aircraft, licences, credentials, contacts, custom
+         *       currency rules or custom reports. Retry with `mode=replace` to
+         *       overwrite them.
+         *     - `replace_would_drop_attachments` - `mode=replace` while the account
+         *       holds licence or credential document files or signed flights, which
+         *       a backup does not carry.
+         */
+        RestoreRefused: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description The backup body exceeds the maximum size of 200 MiB */
+        BackupTooLarge: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "Request body too large"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /**
+         * @description The backup was written by a newer major version of NinerLog than this
+         *     server understands (`code: backup_version_unsupported`). Nothing was
+         *     written.
+         */
+        BackupVersionUnsupported: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "This backup was written by a newer version of NinerLog",
+                 *       "code": "backup_version_unsupported"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
         /** @description The server runs in OIDC mode, where the identity provider owns all accounts and credentials. Every local-credential endpoint — passwords, registration, email verification, TOTP and passkeys — is switched off. Clients should call GET /auth/providers and render the OIDC sign-in path instead. */
         LocalAuthDisabled: {
             headers: {
@@ -7627,6 +8258,8 @@ export interface components {
         DocumentFileId: string;
         /** @description Import UUID */
         ImportId: string;
+        /** @description How to treat data already in the account. `restore` (default) requires an empty account and answers `409 account_not_empty` otherwise; `replace` wipes the account's collections and restores in the same transaction, and is refused with `409 replace_would_drop_attachments` while the account holds document files or signed flights. */
+        RestoreMode: "restore" | "replace";
         /**
          * @description Delta sync: return only records whose `updatedAt` is **strictly after** this instant. The value is an RFC 3339 date-time and is compared with full timestamp precision, so a client can pass back the highest `updatedAt` it has seen and receive exactly what changed since. Combines with the endpoint's other filters (ANDed) and pages as usual; on paginated endpoints `pagination.total` counts the delta.
          *     A bare `YYYY-MM-DD` is also accepted and read as midnight UTC on that date. An empty value is treated as if the parameter were omitted. Anything else returns 400.
@@ -11134,10 +11767,12 @@ export interface operations {
             /** @description JSON backup file download */
             200: {
                 headers: {
+                    /** @description Attachment disposition naming the download `ninerlog_backup_<date>.json` */
+                    "Content-Disposition"?: string;
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["BackupPayload"];
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -11145,28 +11780,17 @@ export interface operations {
     };
     importDataJSON: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description How to treat data already in the account. `restore` (default) requires an empty account and answers `409 account_not_empty` otherwise; `replace` wipes the account's collections and restores in the same transaction, and is refused with `409 replace_would_drop_attachments` while the account holds document files or signed flights. */
+                mode?: components["parameters"]["RestoreMode"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": {
-                    /** @example NinerLog JSON Backup */
-                    format: string;
-                    version?: string;
-                    /** Format: date-time */
-                    exportedAt?: string;
-                    flights?: Record<string, never>[];
-                    aircraft?: Record<string, never>[];
-                    licenses?: Record<string, never>[];
-                    credentials?: Record<string, never>[];
-                    contacts?: Record<string, never>[];
-                    customCurrencyRules?: Record<string, never>[];
-                    notificationPreferences?: Record<string, never>;
-                    flightBaseline?: Record<string, never>;
-                };
+                "application/json": components["schemas"]["BackupPayload"];
             };
         };
         responses: {
@@ -11181,6 +11805,9 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+            409: components["responses"]["RestoreRefused"];
+            413: components["responses"]["BackupTooLarge"];
+            422: components["responses"]["BackupVersionUnsupported"];
         };
     };
     exportFlightsPDF: {
@@ -11745,9 +12372,67 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
-    deleteAllUserData: {
+    exportUserData: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description JSON backup file download */
+            200: {
+                headers: {
+                    /** @description Attachment disposition naming the download `ninerlog_backup_<date>.json` */
+                    "Content-Disposition"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupPayload"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    restoreUserData: {
+        parameters: {
+            query?: {
+                /** @description How to treat data already in the account. `restore` (default) requires an empty account and answers `409 account_not_empty` otherwise; `replace` wipes the account's collections and restores in the same transaction, and is refused with `409 replace_would_drop_attachments` while the account holds document files or signed flights. */
+                mode?: components["parameters"]["RestoreMode"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupPayload"];
+            };
+        };
+        responses: {
+            /** @description Restore summary with per-entity counts and warnings */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJSONResult"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            409: components["responses"]["RestoreRefused"];
+            413: components["responses"]["BackupTooLarge"];
+            422: components["responses"]["BackupVersionUnsupported"];
+        };
+    };
+    deleteAllUserData: {
+        parameters: {
+            query?: {
+                /** @description What to delete. `all` is the default. */
+                scope?: "all" | "flights";
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -11763,9 +12448,15 @@ export interface operations {
                     "application/json": {
                         /** @example All user data deleted successfully */
                         message: string;
+                        /**
+                         * @description Number of flights deleted; set when `scope=flights`
+                         * @example 42
+                         */
+                        deletedFlights?: number;
                     };
                 };
             };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
         };
     };

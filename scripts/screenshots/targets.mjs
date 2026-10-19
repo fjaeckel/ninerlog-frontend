@@ -8,9 +8,58 @@
  *   anonymous  do not seed a session — for the public/auth routes
  *   user       fields merged over the fixture user, in the session and /users/me
  *   viewport   a desktop viewport other than the default 1440×1100
+ *   respond(method, path, searchParams)  a { status, body } answer overriding
+ *              the fixtures, or undefined to fall through to them
  *
  * Add a target whenever you add a screen.
  */
+async function openRestoreTab(page) {
+  await page.getByRole('tab', { name: /^(restore json backup|json-sicherung wiederherstellen)$/i }).click();
+  await page.waitForTimeout(300);
+}
+
+async function uploadBackup(page) {
+  await page.locator('input[type="file"]').setInputFiles({
+    name: 'ninerlog_backup.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify({ format: 'NinerLog JSON Backup', version: '1.0', flights: [] })),
+  });
+  await page.waitForTimeout(800);
+}
+
+const RESTORE_NOT_EMPTY = {
+  status: 409,
+  body: { error: 'The account already holds data; restore into an empty account or use mode=replace', code: 'account_not_empty' },
+};
+const RESTORE_ATTACHMENTS = {
+  status: 409,
+  body: {
+    error: 'Replacing would delete document files or signed flights that a backup does not carry',
+    code: 'replace_would_drop_attachments',
+  },
+};
+const RESTORE_SUCCESS = {
+  status: 200,
+  body: {
+    aircraftImported: 3, aircraftSkipped: 0, licensesImported: 2, classRatingsImported: 4,
+    credentialsImported: 2, flightsImported: 214, crewMembersImported: 31, contactsImported: 12,
+    contactsSkipped: 0, contactsCreated: 3, customCurrencyRulesImported: 2, customReportsImported: 2,
+    notificationPreferencesImported: true, flightBaselineImported: true, mode: 'restore',
+    warnings: [
+      { section: 'customCurrencyRules', index: 1, message: 'restored paused - the definition no longer passes validation' },
+      { section: 'customReports', index: 0, message: 'licence scope dropped - the backup does not carry that licence' },
+    ],
+  },
+};
+
+/** Answers the JSON restore endpoint per `mode`. */
+function restoreResponder(byMode) {
+  return (method, path, params) => {
+    if (method !== 'POST' || path !== '/users/me/data') return undefined;
+    return byMode[params.get('mode') ?? 'restore'];
+  };
+}
+
 export const TARGETS = [
   { name: 'dashboard', path: '/dashboard' },
   { name: 'flights', path: '/flights' },
@@ -251,6 +300,38 @@ export const TARGETS = [
     },
   },
   { name: 'import', path: '/import' },
+  { name: 'import-restore', path: '/import', act: openRestoreTab },
+  {
+    name: 'import-restore-not-empty',
+    path: '/import',
+    respond: restoreResponder({ restore: RESTORE_NOT_EMPTY }),
+    act: async (page) => {
+      await openRestoreTab(page);
+      await uploadBackup(page);
+    },
+  },
+  {
+    name: 'import-restore-attachments',
+    path: '/import',
+    respond: restoreResponder({ restore: RESTORE_NOT_EMPTY, replace: RESTORE_ATTACHMENTS }),
+    act: async (page) => {
+      await openRestoreTab(page);
+      await uploadBackup(page);
+      await page.getByRole('button', { name: /^(replace everything|alles ersetzen)$/i }).click({ timeout: 2000 });
+      await page.waitForTimeout(600);
+    },
+  },
+  {
+    name: 'import-restore-success',
+    path: '/import',
+    respond: restoreResponder({ restore: RESTORE_SUCCESS }),
+    act: async (page) => {
+      await openRestoreTab(page);
+      await uploadBackup(page);
+      await page.locator('main details > summary').first().click({ timeout: 2000 });
+      await page.waitForTimeout(300);
+    },
+  },
   { name: 'help', path: '/help' },
   { name: 'profile', path: '/profile' },
   {

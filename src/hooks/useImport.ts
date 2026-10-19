@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { apiClient } from '../api/client';
-import type { components } from '../api/schema';
+import type { components, operations } from '../api/schema';
 import { invalidateFlightDependentQueries } from './invalidation';
 
 type ImportUploadResponse = components['schemas']['ImportUploadResponse'];
@@ -13,6 +13,7 @@ type PaginatedImports = components['schemas']['PaginatedImports'];
 type ImportTemplate = components['schemas']['ImportTemplate'];
 type ImportField = components['schemas']['ImportField'];
 type ImportTemplateList = components['schemas']['ImportTemplateList'];
+type RestoreWarning = components['schemas']['RestoreWarning'];
 
 export type {
   ImportUploadResponse,
@@ -20,6 +21,7 @@ export type {
   ImportResult,
   ImportColumnMapping,
   ImportJSONResult,
+  RestoreWarning,
   PaginatedImports,
   ImportTemplate,
   ImportField,
@@ -135,43 +137,82 @@ export const useConfirmImport = () => {
   });
 };
 
+export type RestoreMode = NonNullable<NonNullable<operations['restoreUserData']['parameters']['query']>['mode']>;
+type BackupPayload = components['schemas']['BackupPayload'];
+
+/** Category of a restore failure. */
+export type RestoreErrorKind =
+  | 'account_not_empty'
+  | 'replace_would_drop_attachments'
+  | 'backup_version_unsupported'
+  | 'too_large'
+  | 'invalid_json'
+  | 'not_a_backup'
+  | 'generic';
+
+/** Error thrown by `useRestoreJSON`; `message` is the API's error text, if any. */
+export class RestoreError extends Error {
+  readonly kind: RestoreErrorKind;
+  readonly status?: number;
+
+  constructor(kind: RestoreErrorKind, message: string, status?: number) {
+    super(message);
+    this.name = 'RestoreError';
+    this.kind = kind;
+    this.status = status;
+  }
+}
+
+const RESTORE_CODES: readonly RestoreErrorKind[] = [
+  'account_not_empty',
+  'replace_would_drop_attachments',
+  'backup_version_unsupported',
+];
+
+function restoreErrorFrom(status: number, body: unknown): RestoreError {
+  const err = body && typeof body === 'object' ? (body as { error?: unknown; code?: unknown }) : {};
+  const message = typeof err.error === 'string' ? err.error : '';
+  const code = typeof err.code === 'string' ? err.code : undefined;
+  if (code && (RESTORE_CODES as readonly string[]).includes(code)) {
+    return new RestoreError(code as RestoreErrorKind, message, status);
+  }
+  if (status === 413) return new RestoreError('too_large', message, status);
+  if (status === 422) return new RestoreError('backup_version_unsupported', message, status);
+  return new RestoreError('generic', message, status);
+}
+
 /**
- * Restore a NinerLog JSON backup (as produced by `GET /exports/json`).
- * Additive: never deletes or modifies existing data; skips aircraft whose
- * registration already exists for the user.
+ * Restore a NinerLog JSON backup (as produced by `GET /users/me/data`) via
+ * `POST /users/me/data`.
+ *
+ * `mode: 'restore'` (default) needs an empty account; `mode: 'replace'` wipes
+ * the account's logbook data and restores the backup in its place. The restore
+ * is all-or-nothing. Rejects with a {@link RestoreError}.
  */
 export const useRestoreJSON = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (file: File): Promise<ImportJSONResult> => {
-      // Reject broken JSON before the network round-trip.
+    mutationFn: async ({ file, mode = 'restore' }: { file: File; mode?: RestoreMode }): Promise<ImportJSONResult> => {
       const text = await file.text();
       let parsed: unknown;
       try {
         parsed = JSON.parse(text);
       } catch {
-        throw new Error('Selected file is not valid JSON');
+        throw new RestoreError('invalid_json', '');
       }
-      if (!parsed || typeof parsed !== 'object') {
-        throw new Error('Selected file is not a NinerLog JSON backup');
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new RestoreError('not_a_backup', '');
       }
-      const res = await fetch(`${API_BASE_URL}/imports/json`, {
-        method: 'POST',
-        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-        body: text,
+      const { data, error, response } = await apiClient.POST('/users/me/data', {
+        params: { query: { mode } },
+        body: parsed as BackupPayload,
+        bodySerializer: () => text,
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Restore failed' }));
-        throw new Error(err.error || 'Restore failed');
-      }
-      return res.json();
+      if (error !== undefined || !response.ok) throw restoreErrorFrom(response.status, error);
+      return data as ImportJSONResult;
     },
     onSuccess: () => {
-      invalidateFlightDependentQueries(queryClient);
-      queryClient.invalidateQueries({ queryKey: ['aircraft'] });
-      queryClient.invalidateQueries({ queryKey: ['licenses'] });
-      queryClient.invalidateQueries({ queryKey: ['credentials'] });
-      queryClient.invalidateQueries({ queryKey: ['class-ratings'] });
+      queryClient.invalidateQueries();
     },
   });
 };

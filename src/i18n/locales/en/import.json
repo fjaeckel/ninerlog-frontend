@@ -28,12 +28,13 @@
   "modeCsv": "CSV Flights",
   "modeJson": "Restore JSON Backup",
   "restoreJsonTitle": "Restore JSON Backup",
-  "restoreJsonDescription": "Upload a NinerLog JSON backup (from Export → Full Data Backup) to restore your flights, aircraft, licenses, class ratings, credentials and crew members.",
-  "restoreJsonNote": "The restore is additive — existing data is never modified or deleted. Aircraft whose registration already exists in your account are skipped.",
+  "restoreJsonDescription": "Upload a NinerLog JSON backup (from Export → Full Data Backup) to restore your flights, aircraft, licenses, class ratings, credentials, people, custom currency rules and custom reports.",
+  "restoreJsonNote": "A backup restores into an empty account. If this account already holds data, you can replace it with the backup. Document files and instructor signatures are not part of a backup.",
   "selectJsonFile": "Choose JSON backup",
   "restoringJson": "Restoring…",
   "restoreJsonSuccess": "Backup restored",
   "restoreJsonSummary": "Your data was successfully imported into this account.",
+  "restoreJsonSummaryReplaced": "Your previous logbook data was replaced with the backup.",
   "restoreSummaryAircraftImported": "Aircraft imported",
   "restoreSummaryAircraftSkipped": "Aircraft skipped",
   "restoreSummaryLicenses": "Licenses",
@@ -152,5 +153,45 @@
     "skipped": "Skipped",
     "errors": "Errors",
     "duplicates": "Duplicates"
+  },
+  "restoreErrors": {
+    "invalidJson": "The selected file is not valid JSON.",
+    "notABackup": "The selected file is not a NinerLog JSON backup.",
+    "tooLarge": "This backup is larger than the 200 MB the server accepts.",
+    "versionUnsupported": "This backup was made by a newer version of NinerLog than this server runs. Update this installation, then restore the backup again."
+  },
+  "restoreReplace": {
+    "title": "This account already holds logbook data",
+    "body": "A backup restores into an empty account only, so nothing has been changed yet.",
+    "deletes": "Replace everything deletes the current logbook data of this account — flights, aircraft, licenses, ratings, credentials, people, custom currency rules and custom reports — and restores the backup in its place.",
+    "atomic": "It is all-or-nothing: if anything goes wrong, your current data stays exactly as it is.",
+    "file": "Backup: {{name}}",
+    "confirm": "Replace your current logbook data with this backup? This cannot be undone.",
+    "replaceButton": "Replace everything"
+  },
+  "restoreBlocked": {
+    "title": "Replacing is not possible for this account",
+    "body": "This account holds document files (license or credential scans) or signed flights. A backup does not carry those, so replacing would lose them.",
+    "options": "Restore the backup into an empty account instead, or remove the document files and signed flights from this account first.",
+    "nothingChanged": "Nothing has been changed.",
+    "back": "Choose another backup"
+  },
+  "restoreWarnings": {
+    "summary_one": "{{count}} entry needs a second look",
+    "summary_other": "{{count}} entries need a second look",
+    "intro": "These entries were restored, but may need your attention:",
+    "row": "{{section}} · entry {{position}}"
+  },
+  "restoreSections": {
+    "flights": "Flights",
+    "aircraft": "Aircraft",
+    "licenses": "Licenses",
+    "classRatings": "Class ratings",
+    "credentials": "Credentials",
+    "contacts": "People",
+    "customCurrencyRules": "Custom currency rules",
+    "customReports": "Custom reports",
+    "notificationPreferences": "Notification settings",
+    "flightBaseline": "Carried-forward hours"
   }
 }
