@@ -40,7 +40,7 @@ export const exportFlightSearchCSV = (query: FlightSearchCSVQuery) => {
 };
 
 export const exportDataJSON = () =>
-  downloadFile(`${API_BASE}/exports/json`, `ninerlog_backup_${new Date().toISOString().slice(0, 10)}.json`);
+  downloadFile(`${API_BASE}/users/me/data`, `ninerlog_backup_${new Date().toISOString().slice(0, 10)}.json`);
 
 export const exportFlightsPDF = (
   logbookLicenseId?: string,

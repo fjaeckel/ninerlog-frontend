@@ -119,7 +119,16 @@ async function shoot(browser, target, theme) {
   );
 
   await context.route('**/api/v1/**', async (route) => {
-    const path = new URL(route.request().url()).pathname.replace(/^.*\/api\/v1/, '');
+    const url = new URL(route.request().url());
+    const path = url.pathname.replace(/^.*\/api\/v1/, '');
+    const custom = target.respond?.(route.request().method(), path, url.searchParams);
+    if (custom) {
+      return route.fulfill({
+        status: custom.status,
+        contentType: 'application/json',
+        body: JSON.stringify(custom.body ?? null),
+      });
+    }
     if (target.fail && FAILING_PATHS.includes(path)) {
       return route.fulfill({
         status: 500,

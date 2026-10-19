@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useUploadImport, usePreviewImport, useConfirmImport, useRestoreJSON, useImportHistory } from '../../hooks/useImport';
-import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportJSONResult, ImportField } from '../../hooks/useImport';
+import { useUploadImport, usePreviewImport, useConfirmImport, useImportHistory } from '../../hooks/useImport';
+import type { ImportUploadResponse, ImportPreviewResponse, ImportResult, ImportColumnMapping, ImportField } from '../../hooks/useImport';
 import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  DatabaseBackup,
   FolderOpen,
   XCircle,
 } from 'lucide-react';
@@ -17,9 +16,10 @@ import { FileDropzone } from '../../components/ui/FileDropzone';
 import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import SupportedLogbooks from './SupportedLogbooks';
+import RestoreBackup from './RestoreBackup';
+import { SummaryCard } from './SummaryCard';
 
 const CSV_ACCEPT = '.csv,.txt';
-const JSON_ACCEPT = 'application/json,.json';
 
 const IMPORT_FIELDS = [
   { value: 'ignore', labelKey: 'fields.ignore' },
@@ -84,13 +84,11 @@ export default function ImportPage() {
   const [mappings, setMappings] = useState<ImportColumnMapping[]>([]);
   const [previewData, setPreviewData] = useState<ImportPreviewResponse | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
-  const [jsonResult, setJsonResult] = useState<ImportJSONResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const upload = useUploadImport();
   const preview = usePreviewImport();
   const confirm = useConfirmImport();
-  const restore = useRestoreJSON();
 
   const handleFileSelect = async (file: File) => {
     setError(null);
@@ -160,7 +158,6 @@ export default function ImportPage() {
     setMappings([]);
     setPreviewData(null);
     setResult(null);
-    setJsonResult(null);
     setError(null);
   };
 
@@ -168,18 +165,6 @@ export default function ImportPage() {
     if (next === mode) return;
     handleReset();
     setMode(next);
-  };
-
-  const handleJSONFileSelect = async (file: File) => {
-    setError(null);
-    setJsonResult(null);
-    try {
-      const data = await restore.mutateAsync(file);
-      setJsonResult(data);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t('restoreFailed');
-      setError(message);
-    }
   };
 
   const handleFileRejected = (file: File, accept: string) => {
@@ -253,98 +238,13 @@ export default function ImportPage() {
       </div>
       )}
 
-      {error && (
+      {mode === 'csv' && error && (
         <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm mb-4">
           {error}
         </div>
       )}
 
-      {/* JSON Restore flow — single-step upload, immediate result. */}
-      {mode === 'json' && !jsonResult && (
-        <FileDropzone
-          accept={JSON_ACCEPT}
-          disabled={restore.isPending}
-          onFileSelected={handleJSONFileSelect}
-          onFileRejected={(file) => handleFileRejected(file, JSON_ACCEPT)}
-          buttonLabel={
-            restore.isPending
-              ? t('restoringJson')
-              : t('selectJsonFile')
-          }
-          hint={t('dropHintJson')}
-          className="card text-center py-12"
-        >
-          <DatabaseBackup className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" strokeWidth={1.5} aria-hidden="true" />
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
-            {t('restoreJsonTitle')}
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-2 max-w-md mx-auto">
-            {t('restoreJsonDescription')}
-          </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mb-6 max-w-md mx-auto">
-            {t('restoreJsonNote')}
-          </p>
-        </FileDropzone>
-      )}
-
-      {mode === 'json' && jsonResult && (
-        <div className="card text-center py-12">
-          <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-green-500 dark:text-green-400" strokeWidth={1.5} aria-hidden="true" />
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">
-            {t('restoreJsonSuccess')}
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-            {t('restoreJsonSummary')}
-          </p>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto mb-6">
-            <SummaryCard
-              label={t('restoreSummaryAircraftImported')}
-              value={jsonResult.aircraftImported}
-              color="green"
-            />
-            <SummaryCard
-              label={t('restoreSummaryAircraftSkipped')}
-              value={jsonResult.aircraftSkipped}
-              color="amber"
-            />
-            <SummaryCard
-              label={t('restoreSummaryLicenses')}
-              value={jsonResult.licensesImported}
-              color="green"
-            />
-            <SummaryCard
-              label={t('restoreSummaryClassRatings')}
-              value={jsonResult.classRatingsImported}
-              color="green"
-            />
-            <SummaryCard
-              label={t('restoreSummaryCredentials')}
-              value={jsonResult.credentialsImported}
-              color="green"
-            />
-            <SummaryCard
-              label={t('restoreSummaryFlights')}
-              value={jsonResult.flightsImported}
-              color="green"
-            />
-            <SummaryCard
-              label={t('restoreSummaryCrew')}
-              value={jsonResult.crewMembersImported}
-              color="green"
-            />
-            <SummaryCard
-              label={t('restoreSummaryCustomReports')}
-              value={jsonResult.customReportsImported}
-              color="green"
-            />
-          </div>
-
-          <button onClick={handleReset} className="btn-primary">
-            {t('restoreAnother')}
-          </button>
-        </div>
-      )}
+      {mode === 'json' && <RestoreBackup />}
 
       {/* Step 1: Upload */}
       {mode === 'csv' && step === 'upload' && (
@@ -662,19 +562,6 @@ function ImportHistory() {
           </button>
         </div>
       )}
-    </div>
-  );
-}
-
-function SummaryCard({ label, value, color }: { label: string; value: number; color?: string }) {
-  const colorClass = color === 'green' ? 'text-green-600 dark:text-green-400' :
-    color === 'amber' ? 'text-amber-600 dark:text-amber-400' :
-    color === 'red' ? 'text-red-600 dark:text-red-400' :
-    'text-slate-800 dark:text-slate-100';
-  return (
-    <div className="card text-center py-3">
-      <div className={`text-2xl font-bold font-mono tabular-nums ${colorClass}`}>{value}</div>
-      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</div>
     </div>
   );
 }

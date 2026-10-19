@@ -24,6 +24,8 @@ export interface User {
   timeDisplayFormat?: 'hm' | 'decimal';
   dateFormat?: 'DD.MM.YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD';
   clockFormat?: '24h' | '12h';
+  /** Logbook field names, pilot functions and crew roles in English under a non-English UI (default 'localized') */
+  logbookTerms?: 'localized' | 'english';
   decimalSeparator?: 'comma' | 'dot';
   preferredLocale?: 'en' | 'de';
   /** Show informational 90-day recency per aircraft model/type (default true) */

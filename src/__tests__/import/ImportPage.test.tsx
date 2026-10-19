@@ -462,6 +462,9 @@ describe('ImportPage', () => {
         credentialsImported: 0,
         flightsImported: 3,
         crewMembersImported: 0,
+        customReportsImported: 0,
+        mode: 'restore',
+        warnings: [],
       });
       vi.spyOn(useImportHook, 'useRestoreJSON').mockReturnValue({ mutateAsync: mockRestore, isPending: false } as any);
 
@@ -471,7 +474,7 @@ describe('ImportPage', () => {
       const file = new File(['{}'], 'backup.json', { type: 'application/json' });
       fireEvent.drop(dropzone(), { dataTransfer: dataTransfer([file]) });
 
-      await waitFor(() => expect(mockRestore).toHaveBeenCalledWith(file));
+      await waitFor(() => expect(mockRestore).toHaveBeenCalledWith({ file, mode: 'restore' }));
       await waitFor(() => expect(screen.getByText('Backup restored')).toBeInTheDocument());
     });
   });

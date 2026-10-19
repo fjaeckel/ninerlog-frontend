@@ -7,6 +7,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useLogout } from '../../hooks/useAuth';
 import { useFlights } from '../../hooks/useFlights';
+import { useCurrentUser } from '../../hooks/useProfile';
 import { useAuthStore } from '../../stores/authStore';
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import AnnouncementBanner from '../ui/AnnouncementBanner';
@@ -19,6 +20,7 @@ import { APP_NAME } from '../../lib/config';
 
 export default function Layout() {
   const { user } = useAuthStore();
+  useCurrentUser();
   const logout = useLogout();
   const navigate = useNavigate();
   const [showMoreMenu, setShowMoreMenu] = useState(false);

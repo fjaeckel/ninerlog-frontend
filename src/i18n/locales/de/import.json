@@ -28,12 +28,13 @@
   "modeCsv": "CSV-Flüge",
   "modeJson": "JSON-Sicherung wiederherstellen",
   "restoreJsonTitle": "JSON-Sicherung wiederherstellen",
-  "restoreJsonDescription": "Lade eine NinerLog-JSON-Sicherung hoch (aus Export → Vollständige Datensicherung), um deine Flüge, Luftfahrzeuge, Lizenzen, Klassenberechtigungen, Nachweise und Crew-Mitglieder wiederherzustellen.",
-  "restoreJsonNote": "Die Wiederherstellung ist additiv — vorhandene Daten werden nie geändert oder gelöscht. Luftfahrzeuge, deren Kennzeichen bereits in deinem Konto vorhanden ist, werden übersprungen.",
+  "restoreJsonDescription": "Lade eine NinerLog-JSON-Sicherung hoch (aus Export → Vollständige Datensicherung), um deine Flüge, Luftfahrzeuge, Lizenzen, Klassenberechtigungen, Nachweise, Personen, eigenen Recency-Regeln und eigenen Berichte wiederherzustellen.",
+  "restoreJsonNote": "Eine Sicherung wird in ein leeres Konto wiederhergestellt. Enthält dieses Konto bereits Daten, kannst du sie durch die Sicherung ersetzen. Dokumentdateien und Lehrer-Unterschriften sind nicht Teil einer Sicherung.",
   "selectJsonFile": "JSON-Sicherung auswählen",
   "restoringJson": "Wiederherstellen…",
   "restoreJsonSuccess": "Sicherung wiederhergestellt",
   "restoreJsonSummary": "Deine Daten wurden erfolgreich in dieses Konto importiert.",
+  "restoreJsonSummaryReplaced": "Deine bisherigen Flugbuchdaten wurden durch die Sicherung ersetzt.",
   "restoreSummaryAircraftImported": "Luftfahrzeuge importiert",
   "restoreSummaryAircraftSkipped": "Luftfahrzeuge übersprungen",
   "restoreSummaryLicenses": "Lizenzen",
@@ -152,5 +153,45 @@
     "skipped": "Übersprungen",
     "errors": "Fehler",
     "duplicates": "Duplikate"
+  },
+  "restoreErrors": {
+    "invalidJson": "Die gewählte Datei ist kein gültiges JSON.",
+    "notABackup": "Die gewählte Datei ist keine NinerLog-JSON-Sicherung.",
+    "tooLarge": "Diese Sicherung ist größer als die 200 MB, die der Server annimmt.",
+    "versionUnsupported": "Diese Sicherung stammt aus einer neueren NinerLog-Version, als auf diesem Server läuft. Aktualisiere diese Installation und stelle die Sicherung dann erneut wieder her."
+  },
+  "restoreReplace": {
+    "title": "Dieses Konto enthält bereits Flugbuchdaten",
+    "body": "Eine Sicherung wird nur in ein leeres Konto wiederhergestellt – bisher wurde nichts geändert.",
+    "deletes": "„Alles ersetzen“ löscht die aktuellen Flugbuchdaten dieses Kontos – Flüge, Luftfahrzeuge, Lizenzen, Berechtigungen, Nachweise, Personen, eigene Recency-Regeln und eigene Berichte – und stellt an ihrer Stelle die Sicherung wieder her.",
+    "atomic": "Das passiert ganz oder gar nicht: Geht etwas schief, bleiben deine aktuellen Daten unverändert.",
+    "file": "Sicherung: {{name}}",
+    "confirm": "Aktuelle Flugbuchdaten durch diese Sicherung ersetzen? Das lässt sich nicht rückgängig machen.",
+    "replaceButton": "Alles ersetzen"
+  },
+  "restoreBlocked": {
+    "title": "Ersetzen ist für dieses Konto nicht möglich",
+    "body": "Dieses Konto enthält Dokumentdateien (Scans von Lizenzen oder Nachweisen) oder unterschriebene Flüge. Eine Sicherung enthält diese nicht – beim Ersetzen gingen sie verloren.",
+    "options": "Stelle die Sicherung stattdessen in ein leeres Konto wieder her, oder entferne zuerst die Dokumentdateien und unterschriebenen Flüge aus diesem Konto.",
+    "nothingChanged": "Es wurde nichts geändert.",
+    "back": "Andere Sicherung wählen"
+  },
+  "restoreWarnings": {
+    "summary_one": "{{count}} Eintrag solltest du prüfen",
+    "summary_other": "{{count}} Einträge solltest du prüfen",
+    "intro": "Diese Einträge wurden wiederhergestellt, brauchen aber eventuell deine Aufmerksamkeit:",
+    "row": "{{section}} · Eintrag {{position}}"
+  },
+  "restoreSections": {
+    "flights": "Flüge",
+    "aircraft": "Luftfahrzeuge",
+    "licenses": "Lizenzen",
+    "classRatings": "Klassenberechtigungen",
+    "credentials": "Nachweise",
+    "contacts": "Personen",
+    "customCurrencyRules": "Eigene Recency-Regeln",
+    "customReports": "Eigene Berichte",
+    "notificationPreferences": "Benachrichtigungseinstellungen",
+    "flightBaseline": "Übertrag"
   }
 }

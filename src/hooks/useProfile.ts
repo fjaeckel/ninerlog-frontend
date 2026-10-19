@@ -7,7 +7,7 @@ import { invalidateFlightDependentQueries } from './invalidation';
 
 type User = components['schemas']['User'];
 
-/** Fresh profile from GET /users/me. On success the auth store is updated. */
+/** Fresh profile from GET /users/me. On success the auth store is updated, including isAdmin. */
 export const useCurrentUser = () => {
   const { updateUser } = useAuthStore();
   const query = useQuery({
@@ -22,7 +22,7 @@ export const useCurrentUser = () => {
   const { data } = query;
   useEffect(() => {
     if (data) {
-      updateUser({ name: data.name, email: data.email, timeDisplayFormat: data.timeDisplayFormat as never });
+      updateUser({ name: data.name, email: data.email, timeDisplayFormat: data.timeDisplayFormat as never, isAdmin: data.isAdmin ?? false });
     }
   }, [data, updateUser]);
 
@@ -48,7 +48,7 @@ export const useUpdateProfile = () => {
       return result as User;
     },
     onSuccess: (data) => {
-      updateUser({ name: data.name, email: data.email, timeDisplayFormat: data.timeDisplayFormat as any });
+      updateUser({ name: data.name, email: data.email, timeDisplayFormat: data.timeDisplayFormat as any, isAdmin: data.isAdmin ?? false });
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
@@ -90,9 +90,11 @@ export const useDeleteAllFlights = () => {
 
   return useMutation({
     mutationFn: async (): Promise<{ deleted: number }> => {
-      const { data, error } = await apiClient.DELETE('/flights/delete-all');
+      const { data, error } = await apiClient.DELETE('/users/me/data', {
+        params: { query: { scope: 'flights' } },
+      });
       if (error) throw error;
-      return data as { deleted: number };
+      return { deleted: data?.deletedFlights ?? 0 };
     },
     onSuccess: () => {
       invalidateFlightDependentQueries(queryClient);
@@ -107,7 +109,9 @@ export const useDeleteAllUserData = () => {
 
   return useMutation({
     mutationFn: async (): Promise<{ message: string }> => {
-      const { data, error } = await apiClient.DELETE('/users/me/data');
+      const { data, error } = await apiClient.DELETE('/users/me/data', {
+        params: { query: { scope: 'all' } },
+      });
       if (error) throw error;
       return data as { message: string };
     },
