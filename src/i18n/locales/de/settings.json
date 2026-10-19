@@ -137,8 +137,7 @@
     "incorrectPassword": "Falsches Passwort.",
     "disabling": "Deaktivieren...",
     "enable": "2FA aktivieren",
-    "settingUp": "Wird eingerichtet..."
-,
+    "settingUp": "Wird eingerichtet...",
     "setupDescription": "Sichere dein Konto zusätzlich mit einem zeitbasierten Einmalpasswort (TOTP) aus einer Authenticator-App.",
     "setupFailed": "2FA-Einrichtung konnte nicht gestartet werden."
   },
@@ -175,14 +174,15 @@
     "deleteAccountButton": "Konto endgültig löschen",
     "deleteAccountFailed": "Konto konnte nicht gelöscht werden. Prüfe dein Passwort.",
     "deleteAccountPromptEmail": "Gib zur Bestätigung der Kontolöschung deine E-Mail-Adresse ein:",
-    "confirmDeletionEmail": "E-Mail-Adresse zur Löschbestätigung"
-,
+    "confirmDeletionEmail": "E-Mail-Adresse zur Löschbestätigung",
     "confirmDeletionPassword": "Passwort zur Löschbestätigung",
     "passwordPlaceholder": "Dein Passwort"
   },
   "language": {
     "title": "Sprache",
-    "description": "Wähle deine bevorzugte Sprache für die Benutzeroberfläche."
+    "description": "Wähle deine bevorzugte Sprache für die Benutzeroberfläche.",
+    "logbookTerms": "Logbuch-Begriffe auf Englisch",
+    "logbookTermsDesc": "Feldnamen, Flugzeit-Spalten, Pilotenfunktionen und Besatzungsrollen auf Englisch anzeigen (PIC, Dual, Instructor, …), während der Rest der App in deiner Sprache bleibt."
   },
   "dateFormat": {
     "title": "Datumsformat",

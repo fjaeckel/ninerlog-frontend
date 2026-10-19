@@ -1303,7 +1303,7 @@ export interface paths {
         };
         /**
          * List flights
-         * @description Get flights for the authenticated user. Each flight carries its crewMembers, as on GET /flights/{id}. The response also carries the column totals over all matching flights and per month for the months on the page.
+         * @description Get flights for the authenticated user. Each flight carries its crewMembers, as on GET /flights/{id}. The response also carries the column totals over all matching flights and per month for the months on the page. An unfiltered list also carries `logbookTotals` and `baseline` when the user has an initial-hours snapshot.
          */
         get: operations["listFlights"];
         put?: never;
@@ -3053,6 +3053,13 @@ export interface components {
              * @enum {string}
              */
             clockFormat: "24h" | "12h";
+            /**
+             * @description Language of logbook terms — flight-time column headings, pilot functions and crew roles (PIC, Dual, Instructor, …). "localized" follows preferredLocale; "english" keeps these terms in English while the rest of the interface stays in preferredLocale. Display only: exports, imports and stored values are unaffected.
+             * @default localized
+             * @example localized
+             * @enum {string}
+             */
+            logbookTerms: "localized" | "english";
             /**
              * @description User's preferred decimal separator for number display. "comma" for European style (1,5), "dot" for US/UK style (1.5).
              * @default comma
@@ -4865,6 +4872,24 @@ export interface components {
             totals: components["schemas"]["FlightTotals"];
             /** @description Column sums per calendar month over every flight matching the filters, for each month that has a flight on the returned page. Ordered by month, oldest first. Empty unless the list is sorted by date and updatedSince is not set. */
             monthTotals: components["schemas"]["FlightMonthTotals"][];
+            /**
+             * @description `totals` with the user's initial-hours snapshot added: the whole
+             *     logbook, prior experience included, matching `GET /users/me/statistics`.
+             *     Present only when `baseline` is. Columns the snapshot does not
+             *     record (simulator and instrument time, ground training, take-offs,
+             *     approaches, holds, distance) are the logged flights' sums.
+             *     `totals` stays the logged flights only, since pagination counts
+             *     from it.
+             */
+            logbookTotals?: components["schemas"]["FlightTotals"];
+            /**
+             * @description The initial-hours snapshot included in `logbookTotals`. Present when
+             *     the user has a snapshot and the request filters by nothing but a
+             *     date range that reaches back to its date: no `q`, `search`,
+             *     aircraft, airport, PIC/dual, logbook-licence or `updatedSince`
+             *     filter. Month totals never include it.
+             */
+            baseline?: components["schemas"]["StatisticsBaselineContribution"];
             data: components["schemas"]["Flight"][];
             pagination: {
                 /**
@@ -7368,7 +7393,27 @@ export interface components {
             /**
              * @description Optional machine-readable error code, used by clients to distinguish
              *     between conditions that share an HTTP status (e.g. `email_not_verified`
-             *     vs `account_disabled` for 403 on /auth/login).
+             *     vs `account_disabled` for 403 on /auth/login). Clients branch on the
+             *     code, never on the English `error` sentence, which may change.
+             *
+             *     Every `401` carries a code, in one of two kinds:
+             *
+             *     - `session_invalid` — the bearer token or its session was refused
+             *       (missing, malformed, expired or revoked token, or a disabled or
+             *       deleted account). Refresh once and replay; a second refusal ends
+             *       the session.
+             *     - Any other code — a credential presented in the request itself was
+             *       refused. The session is untouched: do not refresh and do not sign
+             *       the user out.
+             *       - `invalid_credentials` — password or passkey (login, change
+             *         password, change email, delete account, disable 2FA, passkey login)
+             *       - `invalid_refresh_token` — the refresh token cannot renew the
+             *         session; the one case of this kind that does mean signing in again
+             *       - `invalid_sign_in_code` — the OIDC hand-off code
+             *       - `invalid_two_factor_token` — the 2FA challenge token; restart the login
+             *       - `two_factor_required` / `invalid_two_factor_code` — the second factor
+             *       - `invalid_provider_credentials` — a cloud-backup provider refused the
+             *         destination's stored credentials
              * @example email_not_verified
              */
             code?: string;
@@ -7409,6 +7454,7 @@ export interface components {
         /**
          * @description Unauthorized - missing or invalid token, or a token whose session has
          *     been revoked or whose account is disabled or deleted
+         *     (`code: session_invalid`)
          */
         Unauthorized: {
             headers: {
@@ -7417,7 +7463,47 @@ export interface components {
             content: {
                 /**
                  * @example {
-                 *       "error": "Unauthorized"
+                 *       "error": "Unauthorized",
+                 *       "code": "session_invalid"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /**
+         * @description Either the session was refused (`code: session_invalid`, as for any
+         *     authenticated request) or the password in the request body was wrong
+         *     (`code: invalid_credentials`). The latter leaves the session intact.
+         */
+        CredentialRejected: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "Password is incorrect",
+                 *       "code": "invalid_credentials"
+                 *     }
+                 */
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /**
+         * @description Either the session was refused (`code: session_invalid`, as for any
+         *     authenticated request) or the cloud-backup provider refused the
+         *     destination's credentials (`code: invalid_provider_credentials`). The
+         *     latter leaves the NinerLog session intact.
+         */
+        ProviderCredentialsRejected: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "error": "Invalid provider credentials",
+                 *       "code": "invalid_provider_credentials"
                  *     }
                  */
                 "application/json": components["schemas"]["Error"];
@@ -7685,7 +7771,10 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
-            /** @description The code is unknown, expired, or has already been redeemed */
+            /**
+             * @description The code is unknown, expired, or has already been redeemed
+             *     (`code: invalid_sign_in_code`).
+             */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -7874,7 +7963,7 @@ export interface operations {
                     "application/json": components["schemas"]["AuthResponse"] | components["schemas"]["TwoFactorLoginRequired"];
                 };
             };
-            /** @description Invalid credentials */
+            /** @description Wrong email or password (`code: invalid_credentials`). */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -7963,7 +8052,18 @@ export interface operations {
                     };
                 };
             };
-            401: components["responses"]["Unauthorized"];
+            /**
+             * @description The refresh token is unknown, expired, revoked or replayed
+             *     (`code: invalid_refresh_token`). The session cannot be renewed; sign in again.
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     listSessions: {
@@ -8069,7 +8169,7 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
+            401: components["responses"]["CredentialRejected"];
             503: components["responses"]["LocalAuthDisabled"];
         };
     };
@@ -8324,7 +8424,10 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Passkey verification failed or unknown credential */
+            /**
+             * @description Passkey verification failed or the credential is unknown
+             *     (`code: invalid_credentials`).
+             */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -8477,7 +8580,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            401: components["responses"]["Unauthorized"];
+            401: components["responses"]["CredentialRejected"];
             503: components["responses"]["LocalAuthDisabled"];
         };
     };
@@ -8508,7 +8611,19 @@ export interface operations {
                     "application/json": components["schemas"]["AuthResponse"];
                 };
             };
-            401: components["responses"]["Unauthorized"];
+            /**
+             * @description The 2FA challenge token is invalid or expired (`code: invalid_two_factor_token`;
+             *     restart the login) or the TOTP or recovery code was wrong
+             *     (`code: invalid_two_factor_code`).
+             */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             503: components["responses"]["LocalAuthDisabled"];
         };
     };
@@ -8565,7 +8680,7 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
+            401: components["responses"]["CredentialRejected"];
         };
     };
     updateCurrentUser: {
@@ -8598,6 +8713,11 @@ export interface operations {
                      * @enum {string}
                      */
                     clockFormat?: "24h" | "12h";
+                    /**
+                     * @description Language of logbook terms (flight-time columns, pilot functions, crew roles)
+                     * @enum {string}
+                     */
+                    logbookTerms?: "localized" | "english";
                     /**
                      * @description Preferred decimal separator for number display
                      * @enum {string}
@@ -8633,7 +8753,7 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
+            401: components["responses"]["CredentialRejected"];
         };
     };
     getNotificationPreferences: {
@@ -12386,7 +12506,7 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
+            401: components["responses"]["ProviderCredentialsRejected"];
             /** @description Cloud backups are not configured on this server */
             503: {
                 headers: {
@@ -12472,7 +12592,7 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
+            401: components["responses"]["ProviderCredentialsRejected"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
         };
@@ -12498,7 +12618,7 @@ export interface operations {
                     "application/json": components["schemas"]["BackupTestResult"];
                 };
             };
-            401: components["responses"]["Unauthorized"];
+            401: components["responses"]["ProviderCredentialsRejected"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
         };
@@ -12524,7 +12644,7 @@ export interface operations {
                     "application/json": components["schemas"]["BackupRun"];
                 };
             };
-            401: components["responses"]["Unauthorized"];
+            401: components["responses"]["ProviderCredentialsRejected"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             /** @description Another run is already in progress for this destination */

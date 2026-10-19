@@ -124,6 +124,22 @@ import { formatTimeOfDay, parseTimeOfDay, type ClockFormat } from '../lib/timeOf
 import { formatDuration, type TimeDisplayFormat, type DecimalSeparator } from '../lib/duration';
 ```
 
+## Logbook terms in English
+
+A pilot with a German interface can keep logbook terms in English (user preference
+`logbookTerms: 'english'`, toggled in the language card on the profile page). The
+`logbookTerms` i18next post-processor (`src/i18n/logbookTerms.ts`) re-translates every key
+listed in `LOGBOOK_TERM_KEYS` with `lng: 'en'`; everything else stays in the interface
+language. Components need nothing special — `t()` returns the right string, and mounted
+components re-render when the preference changes.
+
+The list covers logbook field names (`flights:fields.*`), flight-list column headings
+(`flights:table*`), crew roles, pilot functions, launch methods, approach types, and the
+time breakdowns on the dashboard, reports, quick log and initial-hours snapshot. When you
+add a key that names a logbook column, function or role, put it under one of those
+prefixes or add it to `LOGBOOK_TERM_KEYS`. `src/__tests__/lib/logbookTerms.test.tsx`
+fails on a listed key that no longer exists.
+
 ## CI Check
 
 The `i18n-check.yml` workflow verifies that EN and DE have identical key sets. It runs on any push/PR that modifies `src/i18n/locales/**`.

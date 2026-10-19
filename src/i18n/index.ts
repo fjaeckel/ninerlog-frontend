@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import { LOGBOOK_TERMS_CHANGED, bindLogbookTermsToAuth, logbookTermsPostProcessor } from './logbookTerms';
 
 // English namespaces
 import enCommon from './locales/en/common.json';
@@ -55,6 +56,7 @@ export const languageNames: Record<SupportedLanguage, string> = {
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
+  .use(logbookTermsPostProcessor)
   .init({
     resources: {
       en: {
@@ -111,11 +113,18 @@ i18n
     interpolation: {
       escapeValue: false, // React already escapes
     },
+    postProcess: ['logbookTerms'],
+    postProcessPassResolved: true,
+    react: {
+      bindI18n: `languageChanged ${LOGBOOK_TERMS_CHANGED}`,
+    },
     detection: {
       order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'ninerlog-language',
       caches: ['localStorage'],
     },
   });
+
+bindLogbookTermsToAuth(i18n);
 
 export default i18n;
