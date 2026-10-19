@@ -4,7 +4,7 @@ import { createTestUser, injectAuth, apiCall, type AuthContext } from './helpers
 // Full end-to-end JSON backup/restore through the UI:
 //
 //   1. User A (seeded via API) populates an account.
-//   2. User A's account is exported to JSON via the API.
+//   2. User A's account is exported to JSON via the API (GET /users/me/data).
 //   3. User B is created fresh, logged in, and visits /import.
 //   4. The "Restore JSON Backup" tab: upload the file, see the summary card.
 //   5. User B's /flights and /aircraft reflect the restored data.
@@ -79,7 +79,7 @@ test.describe('Import page — JSON restore', () => {
     }, source.accessToken);
 
     // ----- 2. Download source backup via API -----
-    const exportRes = await request.get('/api/v1/exports/json', {
+    const exportRes = await request.get('/api/v1/users/me/data', {
       headers: { Authorization: `Bearer ${source.accessToken}` },
     });
     expect(exportRes.ok()).toBeTruthy();
@@ -124,6 +124,75 @@ test.describe('Import page — JSON restore', () => {
 
     const restoredCreds = await apiCall(page, 'GET', '/credentials', undefined, dest.accessToken);
     expect(restoredCreds.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('H2: restoring into a non-empty account asks first, then replaces everything', async ({ page, request }) => {
+    const source: AuthContext = await createTestUser(request);
+    await apiCall(page, 'POST', '/aircraft', {
+      registration: 'D-EBAK',
+      type: 'C172',
+      make: 'Cessna',
+      model: '172S',
+      aircraftClass: 'SEP_LAND',
+    }, source.accessToken);
+    await apiCall(page, 'POST', '/flights', {
+      date: '2024-09-02',
+      aircraftReg: 'D-EBAK',
+      aircraftType: 'C172',
+      departureIcao: 'EDNY',
+      arrivalIcao: 'EDNY',
+      offBlockTime: '10:00',
+      onBlockTime: '11:00',
+      landings: 3,
+      remarks: 'Backup source flight',
+    }, source.accessToken);
+
+    const exportRes = await request.get('/api/v1/users/me/data', {
+      headers: { Authorization: `Bearer ${source.accessToken}` },
+    });
+    expect(exportRes.ok()).toBeTruthy();
+    const backupText = await exportRes.text();
+
+    // Destination already holds an aircraft of its own.
+    const dest: AuthContext = await createTestUser(request);
+    await apiCall(page, 'POST', '/aircraft', {
+      registration: 'D-EOLD',
+      type: 'PA28',
+      make: 'Piper',
+      model: 'PA-28-181',
+      aircraftClass: 'SEP_LAND',
+    }, dest.accessToken);
+    await injectAuth(page, dest);
+
+    await page.goto('/import');
+    await page.getByRole('tab', { name: 'Restore JSON Backup' }).click();
+
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: /choose json backup/i }).click();
+    const chooser = await fileChooserPromise;
+    await chooser.setFiles({
+      name: 'ninerlog_backup.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(backupText),
+    });
+
+    // 409 account_not_empty: nothing written yet, confirmation shown.
+    await expect(page.getByRole('heading', { name: 'This account already holds logbook data' })).toBeVisible({ timeout: 15000 });
+    const untouched = await apiCall(page, 'GET', '/aircraft', undefined, dest.accessToken);
+    expect((untouched.data || []).map((a: { registration: string }) => a.registration)).toEqual(['D-EOLD']);
+
+    await page.getByRole('button', { name: 'Replace everything' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Backup restored' })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Your previous logbook data was replaced with the backup.')).toBeVisible();
+
+    const replaced = await apiCall(page, 'GET', '/aircraft', undefined, dest.accessToken);
+    const regs = (replaced.data || []).map((a: { registration: string }) => a.registration);
+    expect(regs).toContain('D-EBAK');
+    expect(regs).not.toContain('D-EOLD');
+
+    const flights = await apiCall(page, 'GET', '/flights?pageSize=50', undefined, dest.accessToken);
+    expect((flights.data || []).length).toBe(1);
   });
 
   test('user sees a clear error when uploading non-NinerLog JSON', async ({ page, request }) => {

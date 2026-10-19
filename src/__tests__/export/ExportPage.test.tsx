@@ -102,7 +102,7 @@ describe('ExportPage', () => {
     await user.click(screen.getByText('Download JSON backup'));
 
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/exports/json'),
+      expect.stringMatching(/\/users\/me\/data$/),
       expect.any(Object)
     );
   });

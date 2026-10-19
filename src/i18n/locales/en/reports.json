@@ -255,7 +255,7 @@
     "csvDescription": "Export all flights as a CSV file. Choose a column format for your authority.",
     "downloadCsv": "Download CSV",
     "jsonBackup": "Full Data Backup",
-    "jsonDescription": "Export everything — flights, aircraft, licenses, class ratings, and credentials as a JSON backup file.",
+    "jsonDescription": "Export everything — flights, aircraft, licenses, class ratings, credentials, people, custom currency rules, custom reports and settings — as a JSON backup file. Restore it on the Import page, on this or any other NinerLog installation.",
     "downloadJson": "Download JSON backup",
     "pdfTitle": "PDF Logbook",
     "pdfDescription": "Generate a formatted logbook PDF. Print it, sign it, and use it as a paper logbook.",

@@ -90,9 +90,11 @@ export const useDeleteAllFlights = () => {
 
   return useMutation({
     mutationFn: async (): Promise<{ deleted: number }> => {
-      const { data, error } = await apiClient.DELETE('/flights/delete-all');
+      const { data, error } = await apiClient.DELETE('/users/me/data', {
+        params: { query: { scope: 'flights' } },
+      });
       if (error) throw error;
-      return data as { deleted: number };
+      return { deleted: data?.deletedFlights ?? 0 };
     },
     onSuccess: () => {
       invalidateFlightDependentQueries(queryClient);
@@ -107,7 +109,9 @@ export const useDeleteAllUserData = () => {
 
   return useMutation({
     mutationFn: async (): Promise<{ message: string }> => {
-      const { data, error } = await apiClient.DELETE('/users/me/data');
+      const { data, error } = await apiClient.DELETE('/users/me/data', {
+        params: { query: { scope: 'all' } },
+      });
       if (error) throw error;
       return data as { message: string };
     },
