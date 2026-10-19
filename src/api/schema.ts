@@ -591,7 +591,10 @@ export interface paths {
         head?: never;
         /**
          * Update current user profile
-         * @description Update the authenticated user's profile information
+         * @description Update the authenticated user's profile information. Returns 409 when
+         *     the new email address belongs to another account, or when the caller is
+         *     the last active admin (changing the address unverifies it, which would
+         *     leave the instance without an admin).
          */
         patch: operations["updateCurrentUser"];
         trace?: never;
@@ -2609,7 +2612,7 @@ export interface paths {
         /**
          * Reset 2FA for a user
          * @description Disable 2FA for a user who lost their authenticator. Logged to audit trail.
-         *     Returns 409 when the target holds the ADMIN_EMAIL address.
+         *     Returns 409 when the target holds the ADMIN_EMAIL address and is not the caller.
          */
         post: operations["resetUser2fa"];
         delete?: never;
@@ -7046,9 +7049,9 @@ export interface components {
             twoFactorEnabled: boolean;
             /** @description Whether the account is disabled by admin */
             disabled: boolean;
-            /** @description Whether the account is an admin: its email is verified and it carries the admin flag or holds the ADMIN_EMAIL address */
+            /** @description Whether the account is an admin: its email is verified, it is enabled, and it carries the admin flag or holds the ADMIN_EMAIL address */
             isAdmin: boolean;
-            /** @description Whether the account is the verified holder of the ADMIN_EMAIL address. It cannot be revoked, disabled, deleted or have its 2FA reset by another admin. */
+            /** @description Whether the account is the verified holder of the ADMIN_EMAIL address. It cannot be revoked, disabled or deleted, and only the account itself may reset its 2FA. */
             isBootstrapAdmin: boolean;
             /** @description Whether the account carries the stored admin flag. It can differ from isAdmin: a flagged account whose email is unverified is not an admin until it verifies, and the ADMIN_EMAIL holder is an admin before its flag is written. */
             adminFlag: boolean;
@@ -9448,6 +9451,7 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["CredentialRejected"];
+            409: components["responses"]["Conflict"];
         };
     };
     getNotificationPreferences: {
