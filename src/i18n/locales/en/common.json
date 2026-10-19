@@ -195,7 +195,11 @@
       "grantAdminDone": "{{email}} is now an admin.",
       "revokeAdminDone": "{{email}} is no longer an admin.",
       "grantAdminConflict": "{{email}} can't be made an admin: only verified, enabled accounts can.",
-      "revokeAdminConflict": "Admin rights can't be removed from {{email}}: it is the last active admin, or it holds the ADMIN_EMAIL address.",
+      "revokeAdminConflict": "This can't be done to {{email}}: it is the last active admin, or it holds the ADMIN_EMAIL address.",
+      "bootstrapAdminBadge": "Admin · ADMIN_EMAIL",
+      "bootstrapAdminTitle": "Break-glass admin set by the ADMIN_EMAIL server setting. It can't be revoked, disabled, deleted or have its 2FA reset from here.",
+      "removesAdminRights": "This also removes their admin rights.",
+      "protectedAdminConflict": "{{email}} holds the ADMIN_EMAIL address and can't be changed from here.",
       "adminRoleFailed": "Changing admin rights for {{email}} failed."
     },
     "audit": {

@@ -11,16 +11,17 @@ type Result = { data?: unknown; error?: unknown; response: { status: number } };
 let postResult: Result = { data: { message: 'ok' }, response: { status: 200 } };
 
 const users = [
-  { id: 'admin-1', email: 'admin@ninerlog.app', name: 'Admin User', isAdmin: true, emailVerified: true, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 1, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'u2', email: 'pilot@example.com', name: 'Pilot', isAdmin: false, emailVerified: true, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 5, aircraftCount: 1, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'u3', email: 'new@example.com', name: 'Unverified', isAdmin: false, emailVerified: false, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 0, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'admin-1', email: 'admin@ninerlog.app', name: 'Admin User', isAdmin: true, isBootstrapAdmin: false, emailVerified: true, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 1, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'u2', email: 'pilot@example.com', name: 'Pilot', isAdmin: false, isBootstrapAdmin: false, emailVerified: true, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 5, aircraftCount: 1, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'u3', email: 'new@example.com', name: 'Unverified', isAdmin: false, isBootstrapAdmin: false, emailVerified: false, twoFactorEnabled: false, disabled: false, locked: false, flightCount: 0, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'boot', email: 'ops@example.com', name: 'Ops', isAdmin: true, isBootstrapAdmin: true, emailVerified: true, twoFactorEnabled: true, disabled: false, locked: false, flightCount: 0, aircraftCount: 0, createdAt: '2026-01-01T00:00:00Z' },
 ];
 
 vi.mock('../../api/client', () => ({
   apiClient: {
     GET: vi.fn(async (path: string) => ({
       data: path === '/admin/users'
-        ? { data: users, pagination: { total: 3, page: 1, pageSize: 20, totalPages: 1 } }
+        ? { data: users, pagination: { total: 4, page: 1, pageSize: 20, totalPages: 1 } }
         : { data: [] },
       error: undefined,
       response: { status: 200 },
@@ -102,5 +103,23 @@ describe('AdminPage — admin roles', () => {
     expect(apiClient.GET).toHaveBeenLastCalledWith('/admin/users', {
       params: { query: { page: 1, pageSize: 20, search: undefined, isAdmin: true } },
     });
+  });
+
+  it('offers no destructive actions on the ADMIN_EMAIL account', async () => {
+    await openUsersTab();
+    const row = desktopRow('ops@example.com');
+    expect(within(row).getByText('Admin · ADMIN_EMAIL')).toBeInTheDocument();
+    for (const name of ['Revoke admin rights', 'Disable account', 'Reset 2FA', 'Delete account and all content']) {
+      expect(within(row).queryByTitle(name)).not.toBeInTheDocument();
+    }
+  });
+
+  it('warns that disabling an admin removes their rights and explains a refusal', async () => {
+    postResult = { error: { error: 'Cannot remove the last admin' }, response: { status: 409 } };
+    const user = await openUsersTab();
+    await user.click(within(desktopRow('admin@ninerlog.app')).getByTitle('Disable account'));
+    expect(screen.getByText(/This also removes their admin rights/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Disable' }));
+    expect(await screen.findByText(/it is the last active admin/)).toBeInTheDocument();
   });
 });

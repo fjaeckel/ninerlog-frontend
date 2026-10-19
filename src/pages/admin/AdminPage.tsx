@@ -9,7 +9,7 @@ import {
   useAdminUsers, useDisableUser, useEnableUser, useUnlockUser, useResetUser2fa, useDeleteUser,
   useAdminStats, useAdminAuditLog, useCleanupTokens, useSmtpTest, useAdminConfig,
   useEmailDeliveries, useEmailSuppressions, useLiftEmailSuppression, useCleanupUnverifiedAccounts,
-  useTriggerNotifications, useGrantAdmin, useRevokeAdmin, AdminRoleError,
+  useTriggerNotifications, useGrantAdmin, useRevokeAdmin, AdminActionError,
 } from '../../hooks/useAdmin';
 import { UpdateBanner, UpdateStatusCard } from './UpdateStatus';
 import { useCreateAnnouncement, useDeleteAnnouncement, useAnnouncements } from '../../hooks/useAnnouncements';
@@ -183,18 +183,22 @@ function DashboardTab() {
   );
 }
 
-function AdminBadge() {
+function AdminBadge({ bootstrap }: { bootstrap?: boolean }) {
   const { t } = useTranslation('common');
   return (
-    <span className="badge bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-xs inline-flex items-center gap-1">
+    <span
+      className="badge bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-xs inline-flex items-center gap-1"
+      title={bootstrap ? t('admin.users.bootstrapAdminTitle') : undefined}
+    >
       <ShieldCheck className="w-3 h-3" aria-hidden="true" />
-      {t('admin.users.adminBadge')}
+      {bootstrap ? t('admin.users.bootstrapAdminBadge') : t('admin.users.adminBadge')}
     </span>
   );
 }
 
 function AdminRoleButton({ user, onAction }: { user: AdminUser; onAction: (type: 'grant-admin' | 'revoke-admin') => void }) {
   const { t } = useTranslation('common');
+  if (user.isBootstrapAdmin) return null;
   if (user.isAdmin) {
     return <button onClick={() => onAction('revoke-admin')} className="btn-ghost btn-sm text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700" title={t('admin.users.revokeAdminTitle')} aria-label={t('admin.users.revokeAdminTitle')}><ShieldMinus className="w-3.5 h-3.5" /></button>;
   }
@@ -249,8 +253,11 @@ function UsersTab() {
       if (type === 'revoke-admin' && target.id === me?.id) updateUser({ isAdmin: false });
     } catch (err) {
       setActionFailed(true);
-      if (err instanceof AdminRoleError && err.status === 409) {
-        setActionMessage(t(type === 'grant-admin' ? 'admin.users.grantAdminConflict' : 'admin.users.revokeAdminConflict', { email: target.email }));
+      if (err instanceof AdminActionError && err.status === 409) {
+        const key = type === 'grant-admin' ? 'admin.users.grantAdminConflict'
+          : type === 'reset-2fa' ? 'admin.users.protectedAdminConflict'
+          : 'admin.users.revokeAdminConflict';
+        setActionMessage(t(key, { email: target.email }));
       } else if (type === 'grant-admin' || type === 'revoke-admin') {
         setActionMessage(t('admin.users.adminRoleFailed', { email: target.email }));
       } else {
@@ -301,7 +308,7 @@ function UsersTab() {
                 <tr key={u.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td className="px-4 py-3"><div className="font-medium text-slate-700 dark:text-slate-200">{u.name}</div><div className="text-xs text-slate-500 dark:text-slate-400">{u.email}</div></td>
                   <td className="px-4 py-3"><div className="flex flex-col items-start gap-1">
-                    {u.isAdmin && <AdminBadge />}
+                    {u.isAdmin && <AdminBadge bootstrap={u.isBootstrapAdmin} />}
                     {u.disabled ? <span className="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs">{t('admin.users.disabled')}</span> : u.locked ? <span className="badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs">{t('admin.users.locked')}</span> : <span className="badge badge-current text-xs">{t('admin.users.active')}</span>}
                     {u.emailVerified
                       ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.verified')}</span>
@@ -325,11 +332,11 @@ function UsersTab() {
                   <td className="px-4 py-3"><div className="flex gap-1 flex-wrap">
                     {u.disabled
                       ? <button onClick={() => setConfirmAction({ type: 'enable', user: u })} className="btn-ghost btn-sm text-xs text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" title={t('admin.users.enableTitle')}><CheckCircle className="w-3.5 h-3.5" /></button>
-                      : <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.disableTitle')}><Ban className="w-3.5 h-3.5" /></button>}
+                      : !u.isBootstrapAdmin && <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.disableTitle')}><Ban className="w-3.5 h-3.5" /></button>}
                     {u.locked && <button onClick={() => setConfirmAction({ type: 'unlock', user: u })} className="btn-ghost btn-sm text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title={t('admin.users.unlockTitle')}><Unlock className="w-3.5 h-3.5" /></button>}
-                    {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20" title={t('admin.users.reset2faTitle')}><KeyRound className="w-3.5 h-3.5" /></button>}
+                    {u.twoFactorEnabled && !u.isBootstrapAdmin && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20" title={t('admin.users.reset2faTitle')}><KeyRound className="w-3.5 h-3.5" /></button>}
                     <AdminRoleButton user={u} onAction={(type) => setConfirmAction({ type, user: u })} />
-                    <button onClick={() => setConfirmAction({ type: 'delete', user: u })} className="btn-ghost btn-sm text-xs text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.deleteTitle')}><Trash2 className="w-3.5 h-3.5" /></button>
+                    {!u.isBootstrapAdmin && <button onClick={() => setConfirmAction({ type: 'delete', user: u })} className="btn-ghost btn-sm text-xs text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.deleteTitle')}><Trash2 className="w-3.5 h-3.5" /></button>}
                   </div></td>
                 </tr>
               ))}
@@ -348,7 +355,7 @@ function UsersTab() {
                   <div className="text-xs text-slate-500 dark:text-slate-400">{u.email}</div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  {u.isAdmin && <AdminBadge />}
+                  {u.isAdmin && <AdminBadge bootstrap={u.isBootstrapAdmin} />}
                   {u.disabled ? <span className="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs">{t('admin.users.disabled')}</span> : u.locked ? <span className="badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs">{t('admin.users.locked')}</span> : <span className="badge badge-current text-xs">{t('admin.users.active')}</span>}
                   {u.emailVerified
                     ? <span className="text-green-600 dark:text-green-400 text-xs font-medium">{t('admin.users.verified')}</span>
@@ -377,11 +384,11 @@ function UsersTab() {
               <div className="flex gap-1">
                 {u.disabled
                   ? <button onClick={() => setConfirmAction({ type: 'enable', user: u })} className="btn-ghost btn-sm text-xs text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" title={t('admin.users.enableTitle')}><CheckCircle className="w-3.5 h-3.5" /></button>
-                  : <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.disableTitle')}><Ban className="w-3.5 h-3.5" /></button>}
+                  : !u.isBootstrapAdmin && <button onClick={() => setConfirmAction({ type: 'disable', user: u })} className="btn-ghost btn-sm text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.disableTitle')}><Ban className="w-3.5 h-3.5" /></button>}
                 {u.locked && <button onClick={() => setConfirmAction({ type: 'unlock', user: u })} className="btn-ghost btn-sm text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20" title={t('admin.users.unlockTitle')}><Unlock className="w-3.5 h-3.5" /></button>}
-                {u.twoFactorEnabled && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20" title={t('admin.users.reset2faTitle')}><KeyRound className="w-3.5 h-3.5" /></button>}
+                {u.twoFactorEnabled && !u.isBootstrapAdmin && <button onClick={() => setConfirmAction({ type: 'reset-2fa', user: u })} className="btn-ghost btn-sm text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20" title={t('admin.users.reset2faTitle')}><KeyRound className="w-3.5 h-3.5" /></button>}
                 <AdminRoleButton user={u} onAction={(type) => setConfirmAction({ type, user: u })} />
-                <button onClick={() => setConfirmAction({ type: 'delete', user: u })} className="btn-ghost btn-sm text-xs text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.deleteTitle')}><Trash2 className="w-3.5 h-3.5" /></button>
+                {!u.isBootstrapAdmin && <button onClick={() => setConfirmAction({ type: 'delete', user: u })} className="btn-ghost btn-sm text-xs text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" title={t('admin.users.deleteTitle')}><Trash2 className="w-3.5 h-3.5" /></button>}
               </div>
             </div>
           ))}
@@ -406,6 +413,9 @@ function UsersTab() {
             {confirmAction.type === 'unlock' && t('admin.users.unlockConfirm', { email: confirmAction.user.email })}
             {confirmAction.type === 'reset-2fa' && t('admin.users.reset2faConfirm', { email: confirmAction.user.email })}
             {confirmAction.type === 'delete' && t('admin.users.deleteConfirm', { email: confirmAction.user.email })}
+            {(confirmAction.type === 'disable' || confirmAction.type === 'delete') && confirmAction.user.isAdmin && (
+              <> {t('admin.users.removesAdminRights')}</>
+            )}
             {confirmAction.type === 'grant-admin' && t('admin.users.grantAdminConfirm', { email: confirmAction.user.email })}
             {confirmAction.type === 'revoke-admin' && (confirmAction.user.id === me?.id
               ? t('admin.users.revokeAdminSelfConfirm')

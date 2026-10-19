@@ -2522,7 +2522,10 @@ export interface paths {
          *     licenses, contacts, credentials, backups, notifications, etc.) via cascading
          *     deletes. This action is irreversible. The deletion is recorded in the admin
          *     audit log (with the target user reference set to NULL after the cascade).
-         *     An admin cannot delete their own account.
+         *     An admin cannot delete their own account. Returns 409 when the target
+         *     holds the ADMIN_EMAIL address, or is an admin whose removal would leave
+         *     no other verified, enabled admin. Deleting an admin first revokes their
+         *     admin rights (audited as revoke_admin).
          */
         delete: operations["deleteUser"];
         options?: never;
@@ -2542,6 +2545,10 @@ export interface paths {
         /**
          * Disable a user account
          * @description Disable a user account and revoke all tokens. Logged to audit trail.
+         *     Returns 409 when the target holds the ADMIN_EMAIL address, or is an
+         *     admin whose removal would leave no other verified, enabled admin.
+         *     Disabling an admin revokes their admin rights (audited as revoke_admin);
+         *     re-enabling does not restore them.
          */
         post: operations["disableUser"];
         delete?: never;
@@ -2602,6 +2609,7 @@ export interface paths {
         /**
          * Reset 2FA for a user
          * @description Disable 2FA for a user who lost their authenticator. Logged to audit trail.
+         *     Returns 409 when the target holds the ADMIN_EMAIL address.
          */
         post: operations["resetUser2fa"];
         delete?: never;
@@ -7040,6 +7048,8 @@ export interface components {
             disabled: boolean;
             /** @description Whether the account carries the admin flag or holds the ADMIN_EMAIL address */
             isAdmin: boolean;
+            /** @description Whether the account is the verified holder of the ADMIN_EMAIL address. It cannot be revoked, disabled, deleted or have its 2FA reset by another admin. */
+            isBootstrapAdmin: boolean;
             /** @description Whether the account is locked due to brute-force protection */
             locked?: boolean;
             /**
@@ -12715,6 +12725,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
         };
     };
     disableUser: {
@@ -12742,6 +12753,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
         };
     };
     enableUser: {
@@ -12823,6 +12835,7 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
         };
     };
     grantUserAdmin: {
