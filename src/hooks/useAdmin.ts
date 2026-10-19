@@ -25,12 +25,12 @@ export type {
   UpdateComponent,
 };
 
-export const useAdminUsers = (page = 1, pageSize = 20, search?: string) => {
+export const useAdminUsers = (page = 1, pageSize = 20, search?: string, isAdmin?: boolean) => {
   return useQuery({
-    queryKey: ['admin', 'users', page, pageSize, search],
+    queryKey: ['admin', 'users', page, pageSize, search, isAdmin],
     queryFn: async (): Promise<PaginatedAdminUsers> => {
       const { data, error } = await apiClient.GET('/admin/users', {
-        params: { query: { page, pageSize, search } },
+        params: { query: { page, pageSize, search, isAdmin } },
       });
       if (error) throw error;
       return data as PaginatedAdminUsers;
@@ -98,6 +98,47 @@ export const useResetUser2fa = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    },
+  });
+};
+
+/** Thrown by useGrantAdmin / useRevokeAdmin; carries the HTTP status. */
+export class AdminRoleError extends Error {
+  constructor(public readonly status: number) {
+    super(`admin role change failed: ${status}`);
+  }
+}
+
+export const useGrantAdmin = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error, response } = await apiClient.POST('/admin/users/{userId}/grant-admin', {
+        params: { path: { userId } },
+      });
+      if (error) throw new AdminRoleError(response.status);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'config'] });
+    },
+  });
+};
+
+export const useRevokeAdmin = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error, response } = await apiClient.POST('/admin/users/{userId}/revoke-admin', {
+        params: { path: { userId } },
+      });
+      if (error) throw new AdminRoleError(response.status);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'config'] });
     },
   });
 };

@@ -397,6 +397,7 @@ export const adminStats = {
 };
 
 export const adminConfig = {
+  adminCount: 1,
   appVersion: 'v1.3.4',
   goVersion: 'go1.26.7',
   serverUptime: '12d 4h 18m',

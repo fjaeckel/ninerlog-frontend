@@ -2610,6 +2610,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/users/{userId}/grant-admin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Grant admin rights to a user
+         * @description Set the admin flag on an account. Any number of accounts may be admins.
+         *     The target must have a verified email address and must not be disabled
+         *     (409 otherwise). Idempotent. Logged to audit trail.
+         */
+        post: operations["grantUserAdmin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/{userId}/revoke-admin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke admin rights from a user
+         * @description Clear the admin flag on an account. Idempotent. Returns 409 when the
+         *     target is the last verified, enabled admin, or when the target holds the
+         *     ADMIN_EMAIL address (that account stays admin while ADMIN_EMAIL is set).
+         *     An admin may revoke their own rights. Logged to audit trail.
+         */
+        post: operations["revokeUserAdmin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/stats": {
         parameters: {
             query?: never;
@@ -3094,7 +3139,7 @@ export interface components {
              */
             emailVerified?: boolean;
             /**
-             * @description Whether this user is the platform admin (computed from ADMIN_EMAIL env var, not stored in DB)
+             * @description Whether this user is an admin: the account carries the admin flag (granted via POST /admin/users/{userId}/grant-admin) or holds the ADMIN_EMAIL address. Requires a verified email address.
              * @example false
              */
             isAdmin?: boolean;
@@ -6843,8 +6888,10 @@ export interface components {
             rateLimitAdmin: string;
             /** @description Whether SMTP is configured */
             smtpConfigured: boolean;
-            /** @description Whether ADMIN_EMAIL is set */
+            /** @description Whether ADMIN_EMAIL (the bootstrap admin address) is set */
             adminEmailConfigured: boolean;
+            /** @description Number of accounts carrying the admin flag */
+            adminCount: number;
             /** @description Whether cloud backups are enabled (BACKUP_CREDENTIALS_KEY is set) */
             cloudBackupsConfigured: boolean;
             /** @description Whether licence/credential reference files are enabled (DOCUMENT_FILES_ENABLED is not "false") */
@@ -6991,6 +7038,8 @@ export interface components {
             twoFactorEnabled: boolean;
             /** @description Whether the account is disabled by admin */
             disabled: boolean;
+            /** @description Whether the account carries the admin flag or holds the ADMIN_EMAIL address */
+            isAdmin: boolean;
             /** @description Whether the account is locked due to brute-force protection */
             locked?: boolean;
             /**
@@ -12618,6 +12667,8 @@ export interface operations {
                 pageSize?: number;
                 /** @description Search by email or name */
                 search?: string;
+                /** @description When true, only admin accounts; when false, only non-admin accounts */
+                isAdmin?: boolean;
             };
             header?: never;
             path?: never;
@@ -12772,6 +12823,62 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    grantUserAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Admin rights granted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message?: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+        };
+    };
+    revokeUserAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Admin rights revoked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message?: string;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
         };
     };
     getAdminStats: {
