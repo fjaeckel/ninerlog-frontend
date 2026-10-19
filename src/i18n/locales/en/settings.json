@@ -137,8 +137,7 @@
     "incorrectPassword": "Incorrect password.",
     "disabling": "Disabling...",
     "enable": "Enable 2FA",
-    "settingUp": "Setting up..."
-,
+    "settingUp": "Setting up...",
     "setupDescription": "Add an extra layer of security with a time-based one-time password (TOTP) from an authenticator app.",
     "setupFailed": "Failed to start 2FA setup."
   },
@@ -175,14 +174,15 @@
     "deleteAccountButton": "Permanently Delete Account",
     "deleteAccountFailed": "Failed to delete account. Check your password.",
     "deleteAccountPromptEmail": "Type your account email address to confirm deletion:",
-    "confirmDeletionEmail": "Confirm deletion email address"
-,
+    "confirmDeletionEmail": "Confirm deletion email address",
     "confirmDeletionPassword": "Confirm deletion password",
     "passwordPlaceholder": "Your password"
   },
   "language": {
     "title": "Language",
-    "description": "Choose your preferred language for the interface."
+    "description": "Choose your preferred language for the interface.",
+    "logbookTerms": "Logbook terms in English",
+    "logbookTermsDesc": "Show logbook field names, flight-time columns, pilot functions and crew roles in English (PIC, Dual, Instructor, …) while the rest of the app stays in your language."
   },
   "dateFormat": {
     "title": "Date Format",

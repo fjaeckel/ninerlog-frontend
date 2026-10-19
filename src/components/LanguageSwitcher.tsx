@@ -6,7 +6,7 @@ import { useAuthStore } from '../stores/authStore';
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation('settings');
   const updateProfile = useUpdateProfile();
-  const { updateUser, isAuthenticated } = useAuthStore();
+  const { user, updateUser, isAuthenticated } = useAuthStore();
 
   const currentLang = supportedLanguages.find(
     (l) => i18n.language === l || i18n.language.startsWith(l),
@@ -21,6 +21,16 @@ export function LanguageSwitcher() {
       } catch {
         // Language change in UI still applies even if API call fails
       }
+    }
+  };
+
+  const handleLogbookTermsChange = async (english: boolean) => {
+    const value = english ? 'english' : 'localized';
+    try {
+      await updateProfile.mutateAsync({ logbookTerms: value });
+      updateUser({ logbookTerms: value });
+    } catch {
+      // Preference is left unchanged when the API call fails
     }
   };
 
@@ -41,6 +51,21 @@ export function LanguageSwitcher() {
           </option>
         ))}
       </select>
+      {isAuthenticated && currentLang !== 'en' && (
+        <label className="flex items-start gap-3 cursor-pointer mt-4">
+          <input
+            type="checkbox"
+            checked={user?.logbookTerms === 'english'}
+            onChange={(e) => handleLogbookTermsChange(e.target.checked)}
+            className="checkbox mt-0.5"
+            data-testid="logbook-terms-english-toggle"
+          />
+          <span className="text-sm">
+            <span className="font-medium text-slate-700 dark:text-slate-300">{t('language.logbookTerms')}</span>
+            <span className="block text-slate-500 dark:text-slate-400">{t('language.logbookTermsDesc')}</span>
+          </span>
+        </label>
+      )}
     </div>
   );
 }
