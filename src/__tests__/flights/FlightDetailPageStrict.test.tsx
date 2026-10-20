@@ -79,7 +79,7 @@ describe('FlightDetailPage in strict mode', () => {
     await userEvent.click(screen.getByRole('button', { name: /delete/i }));
     await waitFor(() => expect(screen.getByRole('button', { name: /close/i })).toHaveFocus());
     await userEvent.type(screen.getByRole('textbox', { name: /reason/i }), 'Duplicate');
-    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /delete flight/i }));
+    await userEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: /delete flight/i }));
     await waitFor(() => expect(deleteMutate).toHaveBeenCalledWith({ id: 'f1', reason: 'Duplicate' }));
     expect(await screen.findByText('flights list')).toBeInTheDocument();
   });

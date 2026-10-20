@@ -63,7 +63,7 @@ describe('DeleteFlightDialog', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /delete flight/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent(message);
-    expect(screen.getByRole(m === 'strict' ? 'dialog' : 'alertdialog')).toBeInTheDocument();
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
     expect(onCancel).not.toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole('button', { name: /delete flight/i }));

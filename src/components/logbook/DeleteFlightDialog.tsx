@@ -54,7 +54,7 @@ export function DeleteFlightDialog({ open, onCancel, onConfirm, isLoading = fals
   }
 
   return (
-    <Dialog open={open} onClose={cancel} title={t('flights:deleteTitle')}>
+    <Dialog open={open} onClose={cancel} title={t('flights:deleteTitle')} role="alertdialog">
       <DeleteReasonForm
         onCancel={cancel}
         onConfirm={confirm}
