@@ -7737,6 +7737,8 @@ export interface components {
             dualTime?: number;
             /** @description Prefill, if the owner supplied one when creating the request. */
             instructorName?: string | null;
+            /** @description Hash of the signed fields of the flight as shown. Send it back as `fieldsHash` when completing the signature. */
+            fieldsHash: string;
             /** Format: date-time */
             expiresAt: string;
         };
@@ -7748,6 +7750,8 @@ export interface components {
              * @description PNG-encoded signature image, base64. Max 500KB decoded.
              */
             signatureImage: string;
+            /** @description The `fieldsHash` the signer was shown. When present and the flight's signed fields have changed since, the request is refused with 409 `flight_changed` and nothing is recorded. */
+            fieldsHash?: string;
         };
         FlightAnalytics: {
             range: components["schemas"]["AnalyticsRange"];
@@ -11398,7 +11402,7 @@ export interface operations {
     deleteFlight: {
         parameters: {
             query?: {
-                /** @description Why the flight is deleted; stored on the void record in strict mode */
+                /** @description Why the flight is deleted; stored on the void record in strict mode. Defaults to the void reason of the flight's latest voided signature. */
                 reason?: string;
             };
             header?: never;
@@ -11939,6 +11943,15 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             /** @description This signing link is invalid or has already been used */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The flight was edited after the signer was shown it (`code` is `flight_changed`); reload the signing page */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

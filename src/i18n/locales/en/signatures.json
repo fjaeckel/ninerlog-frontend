@@ -88,6 +88,8 @@
     "credentialNumberHint": "If provided, this is written next to your signature.",
     "submit": "Sign this entry",
     "submitting": "Submitting...",
-    "signatureRequired": "Please draw a signature before submitting."
+    "signatureRequired": "Please draw a signature before submitting.",
+    "flightChanged": "The flight was changed after this page was opened. Reload to see the current entry before signing.",
+    "reload": "Reload"
   }
 }

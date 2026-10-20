@@ -7,6 +7,7 @@ import type { components } from '../api/schema';
 type FlightSignature = components['schemas']['FlightSignature'];
 type SignatureRequestCreated = components['schemas']['SignatureRequestCreated'];
 type PublicSignatureInfo = components['schemas']['PublicSignatureInfo'];
+type CompleteSignatureRequest = components['schemas']['CompleteSignatureRequest'];
 
 function invalidateFlightAndSignatures(queryClient: ReturnType<typeof useQueryClient>, flightId: string) {
   queryClient.invalidateQueries({ queryKey: ['flights', flightId] });
@@ -146,7 +147,7 @@ export const usePublicSignatureInfo = (token: string | null) => {
 
 export const useCompletePublicSignature = (token: string | null) => {
   return useMutation({
-    mutationFn: async (body: { signerName: string; credentialNumber?: string | null; signatureImage: string }): Promise<{ message: string }> => {
+    mutationFn: async (body: CompleteSignatureRequest): Promise<{ message: string }> => {
       const { data, error } = await apiClient.POST('/sign/{token}', {
         params: { path: { token: token! } },
         body,

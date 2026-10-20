@@ -15,7 +15,25 @@
  *
  * Add a target whenever you add a screen.
  */
-import { licenses, logbookMode, logbookModeOff, logbookModeOffRequired } from './fixtures.mjs';
+import { flightRevisions, licenses, logbookMode, logbookModeOff, logbookModeOffRequired } from './fixtures.mjs';
+
+const signInfo = {
+  status: 'pending', flightDate: '2026-08-12', aircraftReg: 'D-EABC', aircraftType: 'C172',
+  route: 'EDDF - EDDH', totalTime: 95, dualTime: 95, instructorName: null, expiresAt: '2026-08-19T00:00:00Z',
+  fieldsHash: 'f00d',
+};
+
+async function signAndSubmit(page) {
+  await page.locator('#signerName').fill('Jean Batten');
+  const box = await page.locator('canvas').boundingBox();
+  await page.mouse.move(box.x + 30, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 120, box.y + 30, { steps: 8 });
+  await page.mouse.move(box.x + 220, box.y + box.height - 30, { steps: 8 });
+  await page.mouse.up();
+  await page.locator('form button[type="submit"]').click();
+  await page.waitForTimeout(600);
+}
 
 const editFlight = async (page) => {
   await page.getByRole('button', { name: /edit flight|flug .*bearbeiten/i }).first().click();
@@ -212,6 +230,28 @@ export const TARGETS = [
     path: '/flights/f1',
     act: async (page) => {
       await page.getByRole('button', { name: /show \d+ system changes?|\d+ systemänderungen? anzeigen/i }).click();
+      await page.getByRole('heading', { name: /^(history|verlauf)$/i }).scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flight-detail-history-system-only',
+    path: '/flights/f1',
+    routes: {
+      '/flights/f1/revisions': flightRevisions.f1.filter((r) => r.source !== 'user_edit'),
+    },
+    act: async (page) => {
+      await page.getByRole('heading', { name: /^(history|verlauf)$/i }).scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flight-detail-history-mode-error',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      path === '/logbook/mode' ? { status: 500, body: { error: 'Internal server error' } } : undefined,
+    act: async (page) => {
+      await page.waitForTimeout(600);
       await page.getByRole('heading', { name: /^(history|verlauf)$/i }).scrollIntoViewIfNeeded();
       await page.waitForTimeout(300);
     },
@@ -632,6 +672,26 @@ export const TARGETS = [
   { name: 'error-licenses', path: '/licenses', fail: true },
 
   // Public routes.
+  {
+    name: 'sign-page',
+    path: '/sign?token=demo-token',
+    anonymous: true,
+    respond: (method, path) => (path === '/sign/demo-token' && method === 'GET' ? { body: signInfo } : undefined),
+  },
+  {
+    name: 'sign-page-flight-changed',
+    path: '/sign?token=demo-token',
+    anonymous: true,
+    respond: (method, path) => {
+      if (path !== '/sign/demo-token') return undefined;
+      if (method === 'GET') return { body: signInfo };
+      return {
+        status: 409,
+        body: { error: 'Flight was changed after the signing page was opened', code: 'flight_changed' },
+      };
+    },
+    act: signAndSubmit,
+  },
   { name: 'auth-login', path: '/login', anonymous: true },
   { name: 'auth-register', path: '/register', anonymous: true },
   { name: 'auth-reset', path: '/reset-password', anonymous: true },

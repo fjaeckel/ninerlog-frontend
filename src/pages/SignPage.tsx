@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, CheckCircle2, Loader, TimerOff, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Loader, RefreshCw, TimerOff, type LucideIcon } from 'lucide-react';
 import { LogoMark } from '../components/ui/Logo';
 import { usePublicSignatureInfo, useCompletePublicSignature } from '../hooks/useSignatures';
 import { SignatureCanvas, type SignatureCanvasHandle } from '../components/SignatureCanvas';
 import { formatDuration } from '../lib/duration';
-import { extractApiError, extractApiStatus } from '../lib/errors';
+import { extractApiCode, extractApiError, extractApiStatus } from '../lib/errors';
 
 export default function SignPage() {
   const { t } = useTranslation('signatures');
@@ -21,6 +21,7 @@ export default function SignPage() {
   const [credentialNumber, setCredentialNumber] = useState('');
   const [hasDrawing, setHasDrawing] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [flightChanged, setFlightChanged] = useState(false);
   const [success, setSuccess] = useState(false);
 
   if (!token) {
@@ -48,6 +49,7 @@ export default function SignPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    setFlightChanged(false);
 
     const stamp = credentialNumber.trim() ? `${t('stampPrefix')} ${credentialNumber.trim()}` : undefined;
     const signatureImage = signatureRef.current?.toBase64Png(stamp);
@@ -61,11 +63,22 @@ export default function SignPage() {
         signerName,
         credentialNumber: credentialNumber || null,
         signatureImage,
+        fieldsHash: flight.fieldsHash,
       });
       setSuccess(true);
     } catch (err) {
+      if (extractApiCode(err) === 'flight_changed') {
+        setFlightChanged(true);
+        return;
+      }
       setFormError(extractApiError(err));
     }
+  };
+
+  const handleReload = () => {
+    setFlightChanged(false);
+    signatureRef.current?.clear();
+    void info.refetch();
   };
 
   return (
@@ -114,6 +127,27 @@ export default function SignPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 border-t border-slate-200 dark:border-slate-700 pt-5">
+            {flightChanged && (
+              <div
+                role="alert"
+                className="space-y-3 bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300 px-4 py-3 rounded-lg text-sm"
+              >
+                <p className="flex gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
+                  {t('publicPage.flightChanged')}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleReload}
+                  disabled={info.isFetching}
+                  className="btn-secondary btn-sm"
+                >
+                  <RefreshCw className={`h-4 w-4 ${info.isFetching ? 'animate-spin' : ''}`} aria-hidden="true" />
+                  {t('publicPage.reload')}
+                </button>
+              </div>
+            )}
+
             {formError && (
               <div className="bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
                 {formError}
