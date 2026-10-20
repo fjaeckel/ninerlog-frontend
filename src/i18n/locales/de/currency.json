@@ -341,7 +341,6 @@
   "remedyUnrecognised": "Die fehlende Flugerfahrung nachholen, um dies wiederherzustellen.",
   "remedyLabel": "Zum Wiederherstellen",
   "validUntil": "gültig bis {{date}}",
-  "ratingValidUntil": "Gültig bis {{date}}",
   "readinessCredentialValidNoExpiry": "Gültig — ohne Ablaufdatum",
   "readiness": {
     "titleToday": "Was du heute fliegen darfst",

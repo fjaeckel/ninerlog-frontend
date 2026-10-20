@@ -402,9 +402,6 @@
     "POWERED_PARAGLIDER": "Powered paraglider",
     "SAILPLANE": "Ultralight sailplane"
   },
-  "airportInput": {
-    "suggestions": "Airport suggestions"
-  },
   "privilegeKinds": {
     "SAILPLANE_TOWING": "Sailplane towing",
     "BANNER_TOWING": "Banner towing",
@@ -430,5 +427,8 @@
     "ul_mtom_exceeds_600": "MTOM of {{mtomKg}} kg is above the {{limitKg}} kg German ultralight limit — check the aircraft class. The aircraft was saved.",
     "ul_120kg_class": "MTOM of {{mtomKg}} kg: this ultralight may fall in the single-seat {{limitKg}} kg class, which needs no medical.",
     "unknown": "The save returned a note ({{code}})."
+  },
+  "airportInput": {
+    "suggestions": "Airport suggestions"
   }
 }

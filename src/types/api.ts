@@ -355,8 +355,6 @@ export interface ClassRatingCurrency {
   creditedUltralightKinds?: ULKind[];
   /** Flights on ULTRALIGHT aircraft with no kind that this German UL rating did not count. Absent when zero. */
   unclassifiedFlights?: number;
-  /** Rolling-window rules: the last date a `current` rating stays current without flying again. */
-  validUntil?: string | null;
 }
 
 export interface LaunchMethodCurrency {

@@ -75,9 +75,9 @@
     "expired": "Abgelaufen",
     "expiresInDays": "Noch {{days}} Tage",
     "ulKind": "UL-Art",
-    "issuingCountry": "Ausstellender Staat",
     "ulKindNotSet": "UL-Art nicht festgelegt",
-    "ulKindPlaceholder": "UL-Art wählen"
+    "ulKindPlaceholder": "UL-Art wählen",
+    "issuingCountry": "Ausstellender Staat"
   },
   "classTypeLabels": {
     "SEP_LAND": "SEP (Land)",
@@ -92,12 +92,6 @@
     "ULTRALIGHT": "UL",
     "GYROPLANE": "Tragschrauber",
     "OTHER": "Sonstige"
-  },
-  "countryPrompt": {
-    "title": "Ausstellenden Staat ergänzen",
-    "body": "NinerLog wendet die Flugbuchregeln eines Staats nur an, wenn es weiß, welcher Staat deine Lizenz ausgestellt hat. Ein Staat, der ein Flugbuch mit vollständigem Änderungsverlauf verlangt (z. B. Schweiz, Deutschland), schaltet den strengen Flugbuchmodus ein.",
-    "add": "Staat für {{licence}} ergänzen",
-    "dismiss": "Ausblenden"
   },
   "privileges": {
     "title": "Berechtigungen",
@@ -132,5 +126,11 @@
       "expiryBeforeIssue": "Das Ablaufdatum darf nicht vor dem Ausstellungsdatum liegen.",
       "notesTooLong": "Notizen dürfen höchstens 1000 Zeichen lang sein."
     }
+  },
+  "countryPrompt": {
+    "title": "Ausstellenden Staat ergänzen",
+    "body": "NinerLog wendet die Flugbuchregeln eines Staats nur an, wenn es weiß, welcher Staat deine Lizenz ausgestellt hat. Ein Staat, der ein Flugbuch mit vollständigem Änderungsverlauf verlangt (z. B. Schweiz, Deutschland), schaltet den strengen Flugbuchmodus ein.",
+    "add": "Staat für {{licence}} ergänzen",
+    "dismiss": "Ausblenden"
   }
 }

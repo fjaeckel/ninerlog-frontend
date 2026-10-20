@@ -399,6 +399,17 @@ export interface FlightTimeColumn {
   revealClass: string;
 }
 
+/** Whether a flight carries block times, as opposed to take-off and landing only. */
+export const hasBlockTimes = (f: Flight): boolean => !!(f.offBlockTime || f.onBlockTime);
+
+/** The times a row shows: block times, else take-off and landing. */
+export const rowClockTimes = (f: Flight): [string | null | undefined, string | null | undefined] =>
+  hasBlockTimes(f) ? [f.offBlockTime, f.onBlockTime] : [f.departureTime, f.arrivalTime];
+
+/** Heading of the times column: block times when any flight on the page has them. */
+export const offOnBlockLabelKey = (flights: Flight[]): string =>
+  flights.length === 0 || flights.some(hasBlockTimes) ? 'tableOffOnBlock' : 'tableTakeoffLandingTimes';
+
 export interface FlightDetailColumn {
   key: FlightColumnKey;
   labelKey: string;
@@ -412,16 +423,6 @@ export interface FlightTableDetailColumn extends FlightDetailColumn {
   /** Tailwind classes that reveal this column once the table is wide enough */
   revealClass: string;
 }
-/** Whether a flight carries block times, as opposed to take-off and landing only. */
-export const hasBlockTimes = (f: Flight): boolean => !!(f.offBlockTime || f.onBlockTime);
-
-/** The times a row shows: block times, else take-off and landing. */
-export const rowClockTimes = (f: Flight): [string | null | undefined, string | null | undefined] =>
-  hasBlockTimes(f) ? [f.offBlockTime, f.onBlockTime] : [f.departureTime, f.arrivalTime];
-
-/** Heading of the times column: block times when any flight on the page has them. */
-export const offOnBlockLabelKey = (flights: Flight[]): string =>
-  flights.length === 0 || flights.some(hasBlockTimes) ? 'tableOffOnBlock' : 'tableTakeoffLandingTimes';
 
 export interface FlightColumnLayout {
   offOnBlock: boolean;

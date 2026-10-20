@@ -478,6 +478,7 @@
   "exportCsv": "Als CSV exportieren",
   "exportingCsv": "Wird exportiert…",
   "exportCsvFailed": "Export fehlgeschlagen. Bitte erneut versuchen.",
+  "tableTakeoffLandingTimes": "Start / Ldg.",
   "launchCell_one": "{{method}}",
   "launchCell_other": "{{method}} ×{{count}}",
   "circuits": {
@@ -529,6 +530,5 @@
     "flightsLogged_other": "{{count}} Flüge eingetragen",
     "logAnother": "Weiteren wie diesen eintragen",
     "dismiss": "Schließen"
-  },
-  "tableTakeoffLandingTimes": "Start / Ldg."
+  }
 }

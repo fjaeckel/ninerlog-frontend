@@ -75,9 +75,9 @@
     "expired": "Expired",
     "expiresInDays": "Expires in {{days}}d",
     "ulKind": "Ultralight kind",
-    "issuingCountry": "Issuing Country",
     "ulKindNotSet": "Kind not set",
-    "ulKindPlaceholder": "Select ultralight kind"
+    "ulKindPlaceholder": "Select ultralight kind",
+    "issuingCountry": "Issuing Country"
   },
   "classTypeLabels": {
     "SEP_LAND": "SEP (Land)",
@@ -92,12 +92,6 @@
     "ULTRALIGHT": "Ultralight",
     "GYROPLANE": "Gyroplane",
     "OTHER": "Other"
-  },
-  "countryPrompt": {
-    "title": "Add the issuing country",
-    "body": "NinerLog applies a country's logbook rules only when it knows which country issued your licence. Setting a country that requires a logbook keeping every change (e.g. Switzerland, Germany) switches strict logbook mode on.",
-    "add": "Add country to {{licence}}",
-    "dismiss": "Dismiss"
   },
   "privileges": {
     "title": "Privileges",
@@ -132,5 +126,11 @@
       "expiryBeforeIssue": "The expiry date cannot be before the issue date.",
       "notesTooLong": "Notes may be at most 1000 characters."
     }
+  },
+  "countryPrompt": {
+    "title": "Add the issuing country",
+    "body": "NinerLog applies a country's logbook rules only when it knows which country issued your licence. Setting a country that requires a logbook keeping every change (e.g. Switzerland, Germany) switches strict logbook mode on.",
+    "add": "Add country to {{licence}}",
+    "dismiss": "Dismiss"
   }
 }

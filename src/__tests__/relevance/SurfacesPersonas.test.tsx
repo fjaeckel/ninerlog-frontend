@@ -13,7 +13,6 @@ import * as credentialsHook from '../../hooks/useCredentials';
 import * as classStatsHook from '../../hooks/useStatsByClass';
 import * as trendsHook from '../../hooks/useTrends';
 import * as aircraftHook from '../../hooks/useAircraft';
-import * as remindersHook from '../../hooks/useAircraftReminders';
 import * as customCurrencyHook from '../../hooks/useCustomCurrency';
 import * as licensesHook from '../../hooks/useLicenses';
 import { useAuthStore } from '../../stores/authStore';
@@ -74,7 +73,6 @@ function mockCommon(statistics: ReturnType<typeof stats>, ratings: ReturnType<ty
   vi.spyOn(classStatsHook, 'useStatsByClass').mockReturnValue({ data: undefined } as never);
   vi.spyOn(trendsHook, 'useTrends').mockReturnValue({ data: undefined } as never);
   vi.spyOn(aircraftHook, 'useAircraftStats').mockReturnValue({ data: byType(aircraftTypes) } as never);
-  vi.spyOn(remindersHook, 'useAllAircraftReminders').mockReturnValue({ data: [], isLoading: false } as never);
   vi.spyOn(customCurrencyHook, 'useCustomCurrencies').mockReturnValue({ data: [] } as never);
   vi.spyOn(licensesHook, 'useLicenses').mockReturnValue({
     data: [

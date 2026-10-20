@@ -402,9 +402,6 @@
     "POWERED_PARAGLIDER": "Motorschirm",
     "SAILPLANE": "UL-Segelflugzeug"
   },
-  "airportInput": {
-    "suggestions": "Flugplatzvorschläge"
-  },
   "privilegeKinds": {
     "SAILPLANE_TOWING": "Segelflugzeugschlepp",
     "BANNER_TOWING": "Bannerschlepp",
@@ -430,5 +427,8 @@
     "ul_mtom_exceeds_600": "Die MTOM von {{mtomKg}} kg liegt über der deutschen UL-Grenze von {{limitKg}} kg — prüfe die Luftfahrzeugklasse. Das Luftfahrzeug wurde gespeichert.",
     "ul_120kg_class": "MTOM {{mtomKg}} kg: Dieses UL fällt möglicherweise in die Klasse der einsitzigen Luftsportgeräte bis {{limitKg}} kg, für die kein Medical nötig ist.",
     "unknown": "Beim Speichern gab es einen Hinweis ({{code}})."
+  },
+  "airportInput": {
+    "suggestions": "Flugplatzvorschläge"
   }
 }

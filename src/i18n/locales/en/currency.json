@@ -341,7 +341,6 @@
   "remedyUnrecognised": "Fly the missing experience to restore this.",
   "remedyLabel": "To restore",
   "validUntil": "valid until {{date}}",
-  "ratingValidUntil": "Current until {{date}}",
   "readinessCredentialValidNoExpiry": "Valid — no expiry date",
   "readiness": {
     "titleToday": "What you can fly today",

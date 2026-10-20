@@ -19,18 +19,6 @@ import type { Aircraft } from '../../hooks/useAircraft';
 import type { FlightCrewMemberInput } from '../../types/api';
 import { CrewEditor } from './CrewEditor';
 import { crewDerivedNames, toCrewInputs } from './crewRoles';
-import { useCorrectableFlightUpdate } from '../logbook/useCorrectableFlightUpdate';
-import { logbookErrorMessage } from '../../lib/logbookErrors';
-import { revisionFieldLabelKey } from '../../lib/flightRevisions';
-import type { components } from '../../api/schema';
-
-type FlightUpdate = components['schemas']['FlightUpdate'];
-
-/** Override fields with an inline input in this form. */
-const OVERRIDE_FORM_FIELDS = ['nightTime', 'crossCountryTime', 'takeoffsDay', 'takeoffsNight', 'multiPilotTime'] as const;
-
-/** Override fields the API can report without an inline input in this form. */
-const OVERRIDE_BANNER_FIELDS = ['landingsDay', 'landingsNight', 'sicTime'] as const;
 import { AIRCRAFT_CLASSES, classFromRegistration } from '../../lib/aircraftClass';
 import { isSailplane, LAUNCH_METHODS } from '../../lib/launchMethod';
 import { launchMethodKey } from '../../lib/currencyMessages';
@@ -48,6 +36,18 @@ import { CircuitsEntry } from './CircuitsEntry';
 import { CircuitsForm, type CircuitsInitial } from './CircuitsForm';
 import type { FlightPrefill } from './logAnother';
 import type { SavedFlights } from './FlightSavedNotice';
+import { useCorrectableFlightUpdate } from '../logbook/useCorrectableFlightUpdate';
+import { logbookErrorMessage } from '../../lib/logbookErrors';
+import { revisionFieldLabelKey } from '../../lib/flightRevisions';
+import type { components } from '../../api/schema';
+
+type FlightUpdate = components['schemas']['FlightUpdate'];
+
+/** Override fields with an inline input in this form. */
+const OVERRIDE_FORM_FIELDS = ['nightTime', 'crossCountryTime', 'takeoffsDay', 'takeoffsNight', 'multiPilotTime'] as const;
+
+/** Override fields the API can report without an inline input in this form. */
+const OVERRIDE_BANNER_FIELDS = ['landingsDay', 'landingsNight', 'sicTime'] as const;
 
 /** Returns the current UTC time as "HH:MM". Used to pre-fill Off-Block on new flights. */
 const getCurrentUtcTime = (): string => {
@@ -813,6 +813,7 @@ export default function FlightForm({ flightId, onClose, prefill, onSaved }: Flig
 
   const overrideError = (field: (typeof OVERRIDE_FORM_FIELDS)[number]) =>
     errors[field]?.message ? <p className="form-error">{errors[field]?.message}</p> : null;
+
   if (circuitsInitial) {
     return (
       <CircuitsForm

@@ -448,7 +448,7 @@ for (const r of currency.ratings) {
 // Rolling-window projection on the SPL rating (DOMAIN.md "Recency projection").
 {
   const spl = currency.ratings.find((r) => r.classRatingId === 'cr3');
-  spl.validUntil = day(210);
+  spl.recencyExpiresOn = day(210);
   const until = { 'requirement.flight_time': day(400), 'requirement.launches': day(210), 'requirement.training_flights': day(300) };
   for (const q of spl.requirements) if (until[q.nameKey]) q.validUntil = until[q.nameKey];
   spl.launchMethodCurrency.find((m) => m.method === 'winch').validUntil = day(380);

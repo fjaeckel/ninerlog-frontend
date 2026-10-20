@@ -302,7 +302,7 @@ export const recencyStatus = (requirements) => {
   if (!ok) return { status: 'lapsed', messageKey: 'rating.recency_not_met' };
   const rowsUntil = rowsOk && rows.every((r) => r.validUntil) ? rows.map((r) => r.validUntil).sort()[0] : null;
   const until = [rowsUntil, check?.met ? check.validUntil : null].filter(Boolean).sort().pop();
-  return { status: 'current', messageKey: 'rating.recency_current', ...(until ? { validUntil: until } : {}) };
+  return { status: 'current', messageKey: 'rating.recency_current', ...(until ? { recencyExpiresOn: until } : {}) };
 };
 
 /**
