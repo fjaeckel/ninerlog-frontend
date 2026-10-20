@@ -400,6 +400,7 @@ export const adminStats = {
 /** Strict logbook mode, switched on by the German PPL. */
 export const logbookMode = {
   strict: true,
+  voidedCount: 2,
   since: shift(-30),
   draftWindow: 'flight_day',
   overridesDownwardOnly: false,
@@ -418,6 +419,7 @@ export const logbookMode = {
 /** Standard mode, after strict mode was switched on and off by hand. */
 export const logbookModeOff = {
   strict: false,
+  voidedCount: 2,
   since: null,
   draftWindow: null,
   overridesDownwardOnly: false,
@@ -429,6 +431,16 @@ export const logbookModeOff = {
   ],
   events: [
     { strict: true, trigger: 'manual', licenseId: null, createdAt: shift(-30) },
+    { strict: false, trigger: 'manual', licenseId: null, createdAt: shift(-2) },
+  ],
+};
+
+/** Standard mode, switched off by hand while the German PPL still requires strict mode. */
+export const logbookModeOffRequired = {
+  ...logbookModeOff,
+  requiredBy: logbookMode.requiredBy,
+  events: [
+    { strict: true, trigger: 'licence', licenseId: 'l1', createdAt: shift(-30) },
     { strict: false, trigger: 'manual', licenseId: null, createdAt: shift(-2) },
   ],
 };
@@ -451,10 +463,23 @@ export const flightRevisions = {
       changes: [{ field: 'crossCountryTime', oldValue: 0, newValue: 90 }],
     },
     {
+      id: 'rv2b', flightId: 'f1', revisionNo: 2, kind: 'update', source: 'contact_rename',
+      reason: null, isCorrection: false, changedAt: iso(day(-2) + 'T14:10:00Z'),
+      changes: [
+        {
+          field: 'crewMembers',
+          oldValue: [{ name: 'Amelia Earhart', role: 'Student' }, { name: 'Bessie Coleman', role: 'Passenger' }],
+          newValue: [{ name: 'Amelia M. Earhart', role: 'Student' }, { name: 'Bessie Coleman', role: 'Passenger' }],
+        },
+      ],
+    },
+    {
       id: 'rv1', flightId: 'f1', revisionNo: 1, kind: 'update', source: 'user_edit',
       reason: null, isCorrection: false, changedAt: iso(day(-2) + 'T12:05:00Z'),
       changes: [
         { field: 'remarks', oldValue: null, newValue: 'Pattern work before the cross-country' },
+        { field: 'nightTimeOverride', oldValue: false, newValue: true },
+        { field: 'approaches', oldValue: [], newValue: [{ type: 'Visual', airport: 'EDDH', runway: '23' }] },
         {
           field: 'crewMembers',
           oldValue: [{ name: 'Amelia Earhart', role: 'Student' }],

@@ -193,6 +193,13 @@ describe('LicenseForm', () => {
     });
   });
 
+  it('explains in the country help that a requiring country switches strict mode on', () => {
+    renderWithProviders(<LicenseForm onClose={mockOnClose} />);
+    expect(screen.getByLabelText(/issuing country/i)).toHaveAccessibleDescription(
+      /\(e\.g\. switzerland, germany, australia\) switches strict logbook mode on/i
+    );
+  });
+
   it('lists countries sorted by their localised name', () => {
     renderWithProviders(<LicenseForm onClose={mockOnClose} />);
     const names = Array.from((screen.getByLabelText(/issuing country/i) as HTMLSelectElement).options)

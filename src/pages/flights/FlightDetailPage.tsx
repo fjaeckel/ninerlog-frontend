@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
-import { ArrowLeft, Pencil, Trash2, Plane, PlaneTakeoff, PlaneLanding, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Lock, Pencil, Trash2, Plane, PlaneTakeoff, PlaneLanding, ShieldCheck } from 'lucide-react';
 import { useFlight, useDeleteFlight } from '../../hooks/useFlights';
 import FlightForm from '../../components/flights/FlightForm';
 import FlightRouteCard from '../../components/flights/FlightRouteCard';
@@ -237,24 +237,32 @@ export default function FlightDetailPage() {
       </div>
 
       {/* Actions — full-width and thumb-reachable on a phone */}
-      <div className="mt-3 mb-5 flex gap-2 sm:justify-end">
-        <button
-          onClick={() => setShowEditForm(true)}
-          className="btn-secondary min-h-[44px] flex-1 sm:flex-none"
-          aria-label={t('editFlightAriaLabel', { departure: flight.departureIcao, arrival: flight.arrivalIcao })}
-        >
-          <Pencil className="w-4 h-4" />
-          {t('detail.edit')}
-        </button>
-        {!flight.signatureId && (
+      <div className="mt-3 mb-5">
+        <div className="flex gap-2 sm:justify-end">
+          <button
+            onClick={() => setShowEditForm(true)}
+            className="btn-secondary min-h-[44px] flex-1 sm:flex-none"
+            aria-label={t('editFlightAriaLabel', { departure: flight.departureIcao, arrival: flight.arrivalIcao })}
+          >
+            <Pencil className="w-4 h-4" />
+            {t('detail.edit')}
+          </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
+            disabled={!!flight.signatureId}
+            aria-describedby={flight.signatureId ? 'signed-delete-hint' : undefined}
             className="btn-secondary min-h-[44px] flex-1 sm:flex-none hover:bg-red-50 hover:text-red-700 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:text-red-400"
             aria-label={t('deleteFlightAriaLabel', { departure: flight.departureIcao, arrival: flight.arrivalIcao })}
           >
             <Trash2 className="w-4 h-4" />
             {t('detail.delete')}
           </button>
+        </div>
+        {flight.signatureId && (
+          <p id="signed-delete-hint" className="form-helper flex items-center gap-1.5 sm:justify-end">
+            <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            {t('logbook:delete.signedHint')}
+          </p>
         )}
       </div>
 

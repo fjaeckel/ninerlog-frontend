@@ -55,7 +55,7 @@
     "failedToSave": "Lizenz konnte nicht gespeichert werden.",
     "ulAuthorityHint": "Die UL-Recency (LuftPersV §45) wird nur für LBA, DULV oder DAeC geprüft. Bei einer anderen Behörde werden UL-Berechtigungen nur über das Ablaufdatum verfolgt.",
     "issuingCountryNone": "Nicht angegeben",
-    "issuingCountryHelp": "Der Staat, der die Lizenz ausgestellt hat. NinerLog wendet dessen Flugbuchregeln nur an, wenn er angegeben ist."
+    "issuingCountryHelp": "Der Staat, der die Lizenz ausgestellt hat. Ein Staat, dessen Regeln ein Flugbuch mit vollständigem Änderungsverlauf verlangen (z. B. Schweiz, Deutschland, Australien), schaltet den strengen Flugbuchmodus ein."
   },
   "card": {
     "regulatoryAuthority": "Aufsichtsbehörde",
@@ -93,7 +93,7 @@
   },
   "countryPrompt": {
     "title": "Ausstellenden Staat ergänzen",
-    "body": "Manche Staaten verlangen ein Flugbuch, das jede Änderung festhält; NinerLog kann diese Regeln nur anwenden, wenn es weiß, welcher Staat deine Lizenz ausgestellt hat.",
+    "body": "NinerLog wendet die Flugbuchregeln eines Staats nur an, wenn es weiß, welcher Staat deine Lizenz ausgestellt hat. Ein Staat, der ein Flugbuch mit vollständigem Änderungsverlauf verlangt (z. B. Schweiz, Deutschland), schaltet den strengen Flugbuchmodus ein.",
     "add": "Staat für {{licence}} ergänzen",
     "dismiss": "Ausblenden"
   }

@@ -61,15 +61,17 @@ describe('FlightForm strict-mode errors', () => {
     await waitFor(() => expect(screen.getByLabelText(/^night time/i)).toHaveValue(30));
     submit();
 
-    expect(await screen.findByRole('dialog', { name: /reason for the correction/i })).toBeInTheDocument();
+    const dialog = await screen.findByRole('dialog', { name: /reason for the correction/i });
+    expect(dialog).toHaveAccessibleDescription(/free-edit window, which counts from the flight, has closed/i);
     expect(onClose).not.toHaveBeenCalled();
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: /close/i })).toHaveFocus());
 
-    await user.click(screen.getByRole('button', { name: /save correction/i }));
+    await user.click(within(dialog).getByRole('button', { name: /save correction/i }));
     expect(screen.getByText(/enter a reason for the correction/i)).toBeInTheDocument();
     expect(update.mutateAsync).toHaveBeenCalledTimes(1);
 
-    await user.type(screen.getByRole('textbox', { name: /^reason/i }), '  Wrong on-block time  ');
-    await user.click(screen.getByRole('button', { name: /save correction/i }));
+    await user.type(within(dialog).getByRole('textbox', { name: /^reason/i }), '  Wrong on-block time  ');
+    await user.click(within(dialog).getByRole('button', { name: /save correction/i }));
 
     await waitFor(() => expect(update.mutateAsync).toHaveBeenCalledTimes(2));
     expect(update.mutateAsync.mock.calls[1][0]).toEqual(

@@ -46,7 +46,8 @@ describe('FlightHistoryList', () => {
     expect(within(first).getByText('Edited')).toBeInTheDocument();
     expect(within(first).getByText('Reason: Tech log')).toBeInTheDocument();
     expect(within(first).getByText('Total Time')).toBeInTheDocument();
-    expect(within(first).getByText('someNewField')).toBeInTheDocument();
+    expect(within(first).getByText('Other detail')).toBeInTheDocument();
+    expect(within(first).queryByText('someNewField')).not.toBeInTheDocument();
     expect(within(first).getByText('1h 30m').tagName).toBe('DEL');
     expect(within(first).getByText('1h 35m').tagName).toBe('INS');
 
@@ -68,6 +69,63 @@ describe('FlightHistoryList', () => {
     expect(screen.getByText('Recalculated')).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
     expect(screen.getByRole('button', { name: /hide system changes/i })).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('shows enum values, booleans and override flags with localised labels, never raw API names', () => {
+    render(
+      <FlightHistoryList
+        revisions={[
+          {
+            ...revisions[0], id: 'e', reason: null, isCorrection: false,
+            changes: [
+              { field: 'launchMethod', oldValue: 'winch', newValue: 'self-launch' },
+              { field: 'nightTimeOverride', oldValue: false, newValue: true },
+              { field: 'isPassenger', oldValue: true, newValue: false },
+              { field: 'approaches', oldValue: [], newValue: [{ type: 'RNAV/GPS', airport: 'EDDF', runway: '25C' }] },
+              { field: 'crewMembers', oldValue: [], newValue: [{ name: 'Bessie', role: 'SafetyPilot' }] },
+            ],
+          },
+        ]}
+      />
+    );
+    expect(screen.getByText('Launch Method')).toBeInTheDocument();
+    expect(screen.getByText('Winch').tagName).toBe('DEL');
+    expect(screen.getByText('Self-Launch').tagName).toBe('INS');
+    expect(screen.getByText('Night time set by hand')).toBeInTheDocument();
+    expect(screen.getByText('Carried as passenger')).toBeInTheDocument();
+    expect(screen.getAllByText('Yes')).toHaveLength(2);
+    expect(screen.getByText('RNAV/GPS at EDDF, runway 25C').tagName).toBe('INS');
+    expect(screen.getByText('Bessie (Safety Pilot)').tagName).toBe('INS');
+    const text = document.body.textContent ?? '';
+    for (const raw of ['launchMethod', 'self-launch', 'nightTimeOverride', 'isPassenger', 'SafetyPilot', 'true', 'false']) {
+      expect(text).not.toContain(raw);
+    }
+  });
+
+  it('collapses a contact rename with the other system changes', async () => {
+    const user = userEvent.setup();
+    render(
+      <FlightHistoryList
+        revisions={[
+          revisions[0],
+          {
+            ...revisions[1], id: 'cr', source: 'contact_rename',
+            changes: [
+              {
+                field: 'crewMembers',
+                oldValue: [{ name: 'Amelia Earhart', role: 'Student' }],
+                newValue: [{ name: 'Amelia M. Earhart', role: 'Student' }],
+              },
+            ],
+          },
+          revisions[1],
+        ]}
+      />
+    );
+    expect(screen.queryByText('Contact renamed')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /show 2 system changes/i }));
+    expect(screen.getByText('Contact renamed')).toBeInTheDocument();
+    expect(screen.getByText('Amelia M. Earhart (Student)').tagName).toBe('INS');
   });
 
   it('labels a delete', () => {

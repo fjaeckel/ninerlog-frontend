@@ -104,7 +104,8 @@
     "ASR": "ASR",
     "Visual": "Visual",
     "Circling": "Circling",
-    "Other": "Sonstige"
+    "Other": "Sonstige",
+    "Unknown": "Unbekannt"
   },
   "addApproach": "Anflug hinzufügen",
   "removeApproach": "Anflug entfernen",

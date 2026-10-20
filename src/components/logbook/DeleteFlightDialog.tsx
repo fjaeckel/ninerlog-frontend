@@ -16,7 +16,7 @@ interface DeleteFlightDialogProps {
 
 /**
  * Delete confirmation. Takes an optional void reason unless the logbook is
- * known to be in standard mode.
+ * known to be in standard mode; neutral wording while the mode is unknown.
  */
 export function DeleteFlightDialog({ open, onCancel, onConfirm, isLoading = false }: DeleteFlightDialogProps) {
   const { t } = useTranslation(['flights', 'logbook', 'common']);
@@ -55,7 +55,13 @@ export function DeleteFlightDialog({ open, onCancel, onConfirm, isLoading = fals
 
   return (
     <Dialog open={open} onClose={cancel} title={t('flights:deleteTitle')}>
-      <DeleteReasonForm onCancel={cancel} onConfirm={confirm} isLoading={isLoading} error={error} />
+      <DeleteReasonForm
+        onCancel={cancel}
+        onConfirm={confirm}
+        isLoading={isLoading}
+        error={error}
+        known={strictness === 'strict'}
+      />
     </Dialog>
   );
 }
@@ -65,7 +71,8 @@ function DeleteReasonForm({
   onConfirm,
   isLoading,
   error,
-}: Omit<DeleteFlightDialogProps, 'open'> & { error: string | null }) {
+  known,
+}: Omit<DeleteFlightDialogProps, 'open'> & { error: string | null; known: boolean }) {
   const { t } = useTranslation(['flights', 'logbook', 'common']);
   const [reason, setReason] = useState('');
 
@@ -75,7 +82,7 @@ function DeleteReasonForm({
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
           <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" aria-hidden="true" />
         </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{t('logbook:delete.strictDescription')}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t(known ? 'logbook:delete.strictDescription' : 'logbook:delete.unknownDescription')}</p>
       </div>
       {error && (
         <p
@@ -99,7 +106,7 @@ function DeleteReasonForm({
         aria-describedby="delete-reason-help"
       />
       <p id="delete-reason-help" className="form-helper">
-        {t('logbook:delete.reasonHelp')}
+        {t(known ? 'logbook:delete.reasonHelp' : 'logbook:delete.unknownReasonHelp')}
       </p>
       <div className="mt-5 flex justify-end gap-3">
         <button type="button" className="btn-secondary" onClick={onCancel} disabled={isLoading}>

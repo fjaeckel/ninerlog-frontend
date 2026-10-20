@@ -17,6 +17,7 @@ export const FLIGHT_DEPENDENT_QUERY_KEYS: readonly (readonly unknown[])[] = [
   ['custom-reports', 'preview'],
   ['flightRevisions'],
   ['voidedFlights'],
+  ['logbookMode'],
 ];
 
 /**

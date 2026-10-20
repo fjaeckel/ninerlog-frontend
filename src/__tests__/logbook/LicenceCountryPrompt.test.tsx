@@ -33,6 +33,11 @@ describe('LicenceCountryPrompt', () => {
     expect(screen.queryByRole('button', { name: /easa ppl-b/i })).not.toBeInTheDocument();
   });
 
+  it('says that a country requiring it switches strict logbook mode on', () => {
+    render(<LicenceCountryPrompt licences={[licence('b', null)]} onAddCountry={vi.fn()} />);
+    expect(screen.getByText(/\(e\.g\. switzerland, germany\) switches strict logbook mode on/i)).toBeInTheDocument();
+  });
+
   it('renders nothing when every licence has a country', () => {
     const { container } = render(<LicenceCountryPrompt licences={[licence('a', 'CH')]} onAddCountry={vi.fn()} />);
     expect(container).toBeEmptyDOMElement();

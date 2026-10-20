@@ -18,8 +18,8 @@ function renderPage() {
   );
 }
 
-const voided = (n: number) =>
-  ({ data: Array.from({ length: n }, (_, i) => ({ flightId: `v${i}` })), isLoading: false }) as never;
+const mode = (strict: boolean, voidedCount: number) =>
+  ({ data: { strict, voidedCount, requiredBy: [], suggestedBy: [], events: [] }, isLoading: false }) as never;
 
 describe('FlightsPage voided entries link', () => {
   beforeEach(() => {
@@ -34,23 +34,34 @@ describe('FlightsPage voided entries link', () => {
   });
 
   it('shows the link in strict mode', () => {
-    vi.spyOn(useLogbookHook, 'useIsStrictLogbook').mockReturnValue(true);
-    vi.spyOn(useLogbookHook, 'useVoidedFlights').mockReturnValue(voided(0));
+    vi.spyOn(useLogbookHook, 'useLogbookMode').mockReturnValue(mode(true, 0));
     renderPage();
     expect(screen.getByRole('link', { name: /voided entries/i })).toHaveAttribute('href', '/flights/voided');
   });
 
   it('keeps the link after strict mode is switched off while void records exist', () => {
-    vi.spyOn(useLogbookHook, 'useIsStrictLogbook').mockReturnValue(false);
-    vi.spyOn(useLogbookHook, 'useVoidedFlights').mockReturnValue(voided(2));
+    vi.spyOn(useLogbookHook, 'useLogbookMode').mockReturnValue(mode(false, 2));
     renderPage();
     expect(screen.getByRole('link', { name: /voided entries/i })).toBeInTheDocument();
   });
 
   it('hides the link in standard mode without void records', () => {
-    vi.spyOn(useLogbookHook, 'useIsStrictLogbook').mockReturnValue(false);
-    vi.spyOn(useLogbookHook, 'useVoidedFlights').mockReturnValue(voided(0));
+    vi.spyOn(useLogbookHook, 'useLogbookMode').mockReturnValue(mode(false, 0));
     renderPage();
     expect(screen.queryByRole('link', { name: /voided entries/i })).not.toBeInTheDocument();
+  });
+
+  it('hides the link while the mode is loading', () => {
+    vi.spyOn(useLogbookHook, 'useLogbookMode').mockReturnValue({ data: undefined, isLoading: true } as never);
+    renderPage();
+    expect(screen.queryByRole('link', { name: /voided entries/i })).not.toBeInTheDocument();
+  });
+
+  it('never fetches the voided list to decide on the link', () => {
+    const voidedSpy = vi.spyOn(useLogbookHook, 'useVoidedFlights');
+    vi.spyOn(useLogbookHook, 'useLogbookMode').mockReturnValue(mode(false, 3));
+    renderPage();
+    expect(screen.getByRole('link', { name: /voided entries/i })).toBeInTheDocument();
+    expect(voidedSpy).not.toHaveBeenCalled();
   });
 });

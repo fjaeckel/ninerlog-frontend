@@ -72,6 +72,7 @@ function RevisionItem({ revision }: { revision: FlightRevision }) {
   const formatters: RevisionValueFormatters = {
     duration: fmtDuration,
     date: fmtDate,
+    label: (key, options) => t(key, { ns: 'flights', ...options }),
     yes: t('logbook:history.yes'),
     no: t('logbook:history.no'),
     unset: t('logbook:history.unset'),
@@ -111,8 +112,7 @@ function RevisionItem({ revision }: { revision: FlightRevision }) {
       {revision.changes.length > 0 && (
         <dl className="mt-2 space-y-1.5 text-sm">
           {revision.changes.map((change) => {
-            const labelKey = revisionFieldLabelKey(change.field);
-            const label = labelKey ? t(labelKey, { ns: 'flights' }) : change.field;
+            const label = t(revisionFieldLabelKey(change.field), { ns: 'flights' });
             return (
               <div key={change.field}>
                 <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</dt>

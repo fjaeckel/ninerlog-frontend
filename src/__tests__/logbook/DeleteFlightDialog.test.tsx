@@ -35,10 +35,15 @@ describe('DeleteFlightDialog', () => {
     expect(onConfirm).toHaveBeenCalledWith(undefined);
   });
 
-  it('offers the reason field while the logbook mode is unknown', async () => {
+  it('offers the reason field with neutral wording while the logbook mode is unknown', async () => {
     mode.value = 'unknown';
     const onConfirm = vi.fn();
     render(<DeleteFlightDialog open onCancel={vi.fn()} onConfirm={onConfirm} />);
+    expect(
+      screen.getByText('Delete this flight? If strict logbook mode is on, it is kept as a void record.')
+    ).toBeInTheDocument();
+    expect(screen.getByText(/if strict logbook mode is on, the reason is kept/i)).toBeInTheDocument();
+    expect(screen.queryByText(/leaves your logbook/i)).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole('button', { name: /close/i })).toHaveFocus());
     await userEvent.type(screen.getByRole('textbox', { name: /reason/i }), 'Duplicate');
     await userEvent.click(screen.getByRole('button', { name: /delete flight/i }));

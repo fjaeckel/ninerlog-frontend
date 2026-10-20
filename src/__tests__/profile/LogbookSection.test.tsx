@@ -23,8 +23,8 @@ const de = {
 };
 
 const baseMode: LogbookMode = {
-  strict: false, since: null, draftWindow: null, overridesDownwardOnly: false, latestCertifiedThrough: null,
-  requiredBy: [], suggestedBy: [], events: [],
+  strict: false, voidedCount: 0, since: null, draftWindow: null, overridesDownwardOnly: false,
+  latestCertifiedThrough: null, requiredBy: [], suggestedBy: [], events: [],
 };
 
 describe('LogbookSection', () => {
@@ -61,6 +61,28 @@ describe('LogbookSection', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /turn off/i }));
     await waitFor(() => expect(updateMode).toHaveBeenCalledWith(false));
+  });
+
+  it('says that strict mode covers every flight, and that the free-edit window counts from the flight', () => {
+    state.mode = { ...baseMode, strict: true, since: '2026-07-17T10:00:00Z', draftWindow: 'hours_48' };
+    render(<LogbookSection />);
+    expect(screen.getByText(/apply to every flight in your logbook, whichever licence/i)).toBeInTheDocument();
+    expect(screen.getByText(/48 hours from the flight's on-block time/i)).toBeInTheDocument();
+    expect(screen.queryByText(/switches strict mode back on/i)).not.toBeInTheDocument();
+  });
+
+  it('says that saving a requiring licence again switches strict mode back on while it is off', () => {
+    state.mode = { ...baseMode, requiredBy: [de] };
+    render(<LogbookSection />);
+    expect(screen.getByText(/required by easa ppl\(a\) \(germany\)/i)).toHaveTextContent(
+      /saving one of these licences again switches strict mode back on/i
+    );
+  });
+
+  it('does not mention switching back on when no licence requires strict mode', () => {
+    state.mode = baseMode;
+    render(<LogbookSection />);
+    expect(screen.queryByText(/switches strict mode back on/i)).not.toBeInTheDocument();
   });
 
   it('switches off without a warning when no licence requires strict mode', async () => {

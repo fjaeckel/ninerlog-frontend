@@ -104,7 +104,8 @@
     "ASR": "ASR",
     "Visual": "Visual",
     "Circling": "Circling",
-    "Other": "Other"
+    "Other": "Other",
+    "Unknown": "Unknown"
   },
   "addApproach": "Add Approach",
   "removeApproach": "Remove approach",

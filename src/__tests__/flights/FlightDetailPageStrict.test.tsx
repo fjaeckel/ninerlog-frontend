@@ -47,11 +47,23 @@ const renderPage = () =>
 describe('FlightDetailPage in strict mode', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('hides Delete on a signed flight', () => {
+  it('disables Delete on a signed flight and says why', async () => {
     flightState.data = { ...baseFlight, signatureId: 'sig1' };
     renderPage();
-    expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /edit/i })).toBeEnabled();
+    const del = screen.getByRole('button', { name: /delete/i });
+    expect(del).toBeDisabled();
+    expect(del).toHaveAccessibleDescription("Signed flights can't be deleted. Void the signature first.");
+    expect(screen.getByText("Signed flights can't be deleted. Void the signature first.")).toBeVisible();
+    await userEvent.click(del);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('shows no signed-flight hint on an unsigned flight', () => {
+    flightState.data = baseFlight;
+    renderPage();
+    expect(screen.getByRole('button', { name: /delete/i })).toBeEnabled();
+    expect(screen.queryByText(/signed flights can't be deleted/i)).not.toBeInTheDocument();
   });
 
   it('shows the History card', () => {

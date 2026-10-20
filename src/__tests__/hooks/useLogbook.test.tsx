@@ -37,7 +37,7 @@ const wrap = (qc: QueryClient) =>
   };
 
 const mode = {
-  strict: true, since: '2026-08-01T10:00:00Z', draftWindow: 'flight_day', overridesDownwardOnly: false,
+  strict: true, voidedCount: 0, since: '2026-08-01T10:00:00Z', draftWindow: 'flight_day', overridesDownwardOnly: false,
   latestCertifiedThrough: null, requiredBy: [], suggestedBy: [], events: [],
 };
 
@@ -116,9 +116,9 @@ describe('useLogbook hooks', () => {
     expect(spy).toHaveBeenCalledWith({ queryKey: ['logbookMode'] });
   });
 
-  it('treats revisions and voided flights as flight-dependent', () => {
+  it('treats revisions, voided flights and the voided count as flight-dependent', () => {
     expect(FLIGHT_DEPENDENT_QUERY_KEYS).toEqual(
-      expect.arrayContaining([['flightRevisions'], ['voidedFlights']])
+      expect.arrayContaining([['flightRevisions'], ['voidedFlights'], ['logbookMode']])
     );
   });
 });

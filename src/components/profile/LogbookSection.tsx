@@ -107,6 +107,7 @@ export function LogbookSection() {
               <span className="text-sm">
                 <span className="font-medium text-slate-700 dark:text-slate-300">{t('settings.strict')}</span>
                 <span className="block text-slate-500 dark:text-slate-400">{t('settings.strictHelp')}</span>
+                <span className="mt-1 block text-slate-500 dark:text-slate-400">{t('settings.scope')}</span>
               </span>
             </label>
             {modeError && <p className="form-error">{modeError}</p>}
@@ -116,7 +117,10 @@ export function LogbookSection() {
               {mode.requiredBy.length > 0 && (
                 <p className="flex items-start gap-1.5">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-                  <span>{t('settings.requiredBy', { licences: licenceList(mode.requiredBy) })}</span>
+                  <span>
+                    {t('settings.requiredBy', { licences: licenceList(mode.requiredBy) })}
+                    {!strict && <> {t('settings.reenableOnSave')}</>}
+                  </span>
                 </p>
               )}
               {mode.suggestedBy.length > 0 && (

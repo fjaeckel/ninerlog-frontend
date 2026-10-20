@@ -55,7 +55,7 @@
     "failedToSave": "Failed to save license. Please try again.",
     "ulAuthorityHint": "Ultralight recency (LuftPersV §45) is only tracked for LBA, DULV or DAeC. With another authority, ultralight ratings are tracked by expiry date only.",
     "issuingCountryNone": "Not set",
-    "issuingCountryHelp": "The state that issued the licence. NinerLog applies that country’s logbook rules only when it is set."
+    "issuingCountryHelp": "The state that issued the licence. Setting a country whose rules require a logbook that keeps every change (e.g. Switzerland, Germany, Australia) switches strict logbook mode on."
   },
   "card": {
     "regulatoryAuthority": "Regulatory Authority",
@@ -93,7 +93,7 @@
   },
   "countryPrompt": {
     "title": "Add the issuing country",
-    "body": "Some countries require a logbook that keeps every change; NinerLog can apply those rules only when it knows which country issued your licence.",
+    "body": "NinerLog applies a country's logbook rules only when it knows which country issued your licence. Setting a country that requires a logbook keeping every change (e.g. Switzerland, Germany) switches strict logbook mode on.",
     "add": "Add country to {{licence}}",
     "dismiss": "Dismiss"
   }

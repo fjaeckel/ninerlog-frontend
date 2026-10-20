@@ -15,7 +15,7 @@
  *
  * Add a target whenever you add a screen.
  */
-import { licenses, logbookMode, logbookModeOff } from './fixtures.mjs';
+import { licenses, logbookMode, logbookModeOff, logbookModeOffRequired } from './fixtures.mjs';
 
 const editFlight = async (page) => {
   await page.getByRole('button', { name: /edit flight|flug .*bearbeiten/i }).first().click();
@@ -211,7 +211,7 @@ export const TARGETS = [
     name: 'flight-detail-history-system',
     path: '/flights/f1',
     act: async (page) => {
-      await page.getByRole('button', { name: /show 1 system change|1 systemänderung anzeigen/i }).click();
+      await page.getByRole('button', { name: /show \d+ system changes?|\d+ systemänderungen? anzeigen/i }).click();
       await page.getByRole('heading', { name: /^(history|verlauf)$/i }).scrollIntoViewIfNeeded();
       await page.waitForTimeout(300);
     },
@@ -295,6 +295,24 @@ export const TARGETS = [
       await page.getByRole('button', { name: /delete flight|flug .*löschen/i }).first().click();
       await page.waitForTimeout(400);
       await page.locator('#delete-reason').fill('Duplicate entry');
+    },
+  },
+  {
+    name: 'flight-delete-unknown-mode',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'GET' && path === '/logbook/mode' ? { status: 500, body: { error: 'Internal error' } } : undefined,
+    act: async (page) => {
+      await page.getByRole('button', { name: /delete flight|flug .*löschen/i }).first().click();
+      await page.waitForTimeout(400);
+    },
+  },
+  {
+    name: 'flights-signed-delete-hint',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('img', { name: /signed flights can't be deleted|unterschriebene flüge/i }).first().hover();
+      await page.waitForTimeout(300);
     },
   },
   {
@@ -551,6 +569,15 @@ export const TARGETS = [
     name: 'profile-logbook-off',
     path: '/profile',
     routes: { '/logbook/mode': logbookModeOff },
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: 'profile-logbook-off-required',
+    path: '/profile',
+    routes: { '/logbook/mode': logbookModeOffRequired },
     act: async (page) => {
       await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
       await page.waitForTimeout(500);

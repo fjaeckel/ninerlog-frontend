@@ -34,18 +34,40 @@
     "crew": "Besatzung",
     "unset": "—",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "approachAirport": "in {{airport}}",
+    "approachRunway": "Piste {{runway}}",
+    "fields": {
+      "id": "Eintrags-ID",
+      "userId": "Eigentümer",
+      "createdAt": "Angelegt",
+      "updatedAt": "Zuletzt geändert",
+      "signatureId": "Unterschrift",
+      "nightTimeOverride": "Nachtflugzeit manuell gesetzt",
+      "crossCountryTimeOverride": "Überlandflugzeit manuell gesetzt",
+      "takeoffsDayOverride": "Tagstarts manuell gesetzt",
+      "takeoffsNightOverride": "Nachtstarts manuell gesetzt",
+      "landingsDayOverride": "Taglandungen manuell gesetzt",
+      "landingsNightOverride": "Nachtlandungen manuell gesetzt",
+      "sicTimeOverride": "SIC-Zeit manuell gesetzt",
+      "multiPilotTimeOverride": "Multi-Pilot-Zeit manuell gesetzt",
+      "approachesCount": "Anzahl Anflüge",
+      "other": "Sonstige Angabe",
+      "departureAirportName": "Name des Startflugplatzes",
+      "arrivalAirportName": "Name des Zielflugplatzes"
+    }
   },
   "source": {
     "user_edit": "Bearbeitet",
     "recalc": "Neu berechnet",
     "aircraft_rename": "Luftfahrzeug umbenannt",
+    "contact_rename": "Kontakt umbenannt",
     "import": "Importiert",
     "unknown": "Geändert"
   },
   "correction": {
     "title": "Grund der Korrektur",
-    "body": "Dieser Eintrag lässt sich nicht mehr frei ändern: Sein Entwurfszeitraum ist abgelaufen, er wurde unterschrieben oder liegt in einem Zeitraum, den du bestätigt hast. Die Änderung wird als Korrektur mit ihrem Grund festgehalten.",
+    "body": "Dieser Eintrag lässt sich nicht mehr frei ändern: Seine freie Bearbeitungsfrist, die ab dem Flug zählt, ist abgelaufen, er wurde unterschrieben oder liegt in einem Zeitraum, den du bestätigt hast. Die Änderung wird als Korrektur mit ihrem Grund festgehalten.",
     "label": "Grund",
     "placeholder": "z. B. On-Block-Zeit laut Bordbuch korrigiert",
     "submit": "Korrektur speichern",
@@ -55,7 +77,10 @@
     "reasonLabel": "Grund (optional)",
     "reasonHelp": "Der Flug bleibt mit diesem Grund als stornierter Eintrag erhalten.",
     "reasonPlaceholder": "z. B. Doppelter Eintrag",
-    "strictDescription": "Der Flug verlässt dein Flugbuch und bleibt mit dem angegebenen Grund als stornierter Eintrag erhalten."
+    "strictDescription": "Der Flug verlässt dein Flugbuch und bleibt mit dem angegebenen Grund als stornierter Eintrag erhalten.",
+    "unknownDescription": "Diesen Flug löschen? Ist der strenge Flugbuchmodus an, bleibt er als stornierter Eintrag erhalten.",
+    "unknownReasonHelp": "Ist der strenge Flugbuchmodus an, bleibt der Grund beim stornierten Eintrag.",
+    "signedHint": "Unterschriebene Flüge lassen sich nicht löschen. Mache zuerst die Unterschrift ungültig."
   },
   "voided": {
     "title": "Stornierte Einträge",
@@ -84,12 +109,14 @@
     "title": "Flugbuch",
     "strict": "Strenger Flugbuchmodus",
     "strictHelp": "Hält jede Änderung an einem Flug mit altem Wert, Datum und Grund fest und bewahrt gelöschte Flüge als stornierte Einträge auf.",
+    "scope": "Der strenge Modus und seine freie Bearbeitungsfrist gelten für alle Flüge in deinem Flugbuch, egal unter welcher Lizenz sie geflogen wurden.",
     "since": "Verlauf wird seit {{date}} aufgezeichnet.",
     "requiredBy": "Verlangt von {{licences}}.",
+    "reenableOnSave": "Speicherst du eine dieser Lizenzen erneut, wird der strenge Modus wieder eingeschaltet.",
     "suggestedBy": "Empfohlen für {{licences}}.",
     "draftWindow": {
-      "flight_day": "Änderungen sind bis zum Ende des Flugtags frei; spätere Änderungen sind Korrekturen.",
-      "hours_48": "Änderungen sind 48 Stunden nach dem Anlegen eines Eintrags frei; spätere Änderungen sind Korrekturen."
+      "flight_day": "Freie Bearbeitungsfrist: bis zum Ende des Flugtags. Spätere Änderungen und später nachgetragene Flüge sind Korrekturen.",
+      "hours_48": "Freie Bearbeitungsfrist: 48 Stunden ab der On-Block-Zeit des Flugs. Spätere Änderungen und später nachgetragene Flüge sind Korrekturen."
     },
     "overridesDownwardOnly": "Manuelle Überschreibungen dürfen eine automatisch berechnete Zeit nur verringern.",
     "turnOffTitle": "Strengen Modus ausschalten?",
@@ -122,7 +149,7 @@
     }
   },
   "errors": {
-    "reasonRequired": "Diese Änderung braucht einen Grund: Der Eintrag liegt außerhalb seines Bearbeitungsfensters, ist unterschrieben oder liegt in einem bestätigten Zeitraum.",
+    "reasonRequired": "Diese Änderung braucht einen Grund: Der Flug liegt außerhalb seiner freien Bearbeitungsfrist, ist unterschrieben oder liegt in einem bestätigten Zeitraum.",
     "overrideExceeds": "Ein manueller Wert darf einen automatisch berechneten Wert nur verringern.",
     "overrideFields": "Manuelle Werte über dem berechneten Wert: {{fields}}.",
     "reasonTooLong": "Der Grund ist zu lang. Verwende höchstens 500 Zeichen.",

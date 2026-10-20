@@ -1340,8 +1340,10 @@ export interface paths {
          * @description Update an existing flight log entry.
          *
          *     In strict logbook mode the edit is classified before it is written. It is a
-         *     correction when it happens after the draft window (48 hours after the entry was
-         *     created under a Swiss licence, otherwise the end of the flight day), when the
+         *     correction when it happens after the draft window (48 hours after the flight
+         *     landed, that is its date plus on-block time in UTC rolled to the next day for an
+         *     overnight flight, under a Swiss licence, or the end of the flight day when it has
+         *     no on-block time; otherwise the end of the flight day), when the
          *     flight has ever carried a completed signature, when the flight date is on or
          *     before the latest `certifiedThrough`, or when it sets an `*Override` value after
          *     the flight day. A correction needs `correctionReason`; after a voided signature
@@ -1933,7 +1935,7 @@ export interface paths {
         };
         /**
          * Export flights as CSV
-         * @description Export flight data as a CSV file — every flight, or every flight matching the `GET /flights` filters given (never paginated). Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), standard (ForeFlight-compatible), and weblogbook (the column layout of vsimakhin/web-logbook's own CSV export, so its "Apply Web Logbook Mapping" import profile maps every column in one click) formats. In strict logbook mode the standard, easa and faa formats end in two extra columns, `corrected` (`yes` or `no`) and `last_corrected_at` (the time of the latest correction as RFC 3339 UTC, empty when none). Standard-mode output has no such columns.
+         * @description Export flight data as a CSV file — every flight, or every flight matching the `GET /flights` filters given (never paginated). Supports EASA (AMC1 FCL.050 columns), FAA (ASA/Jeppesen columns), standard (ForeFlight-compatible), and weblogbook (the column layout of vsimakhin/web-logbook's own CSV export, so its "Apply Web Logbook Mapping" import profile maps every column in one click) formats. In strict logbook mode the standard, easa and faa formats end in two extra columns, `corrected` (`true` or `false`, as the other boolean columns) and `last_corrected_at` (the UTC date of the latest correction in the user's `dateFormat` followed by the time as `HH:MM`, empty when none). Standard-mode output has no such columns.
          */
         get: operations["exportFlightsCSV"];
         put?: never;
@@ -2437,7 +2439,9 @@ export interface paths {
          *     crew members, contacts, custom currency rules, custom reports,
          *     notification preferences, the carried-forward hours baseline, and the
          *     strict logbook mode with its flight revisions, mode switches and
-         *     logbook certifications. New UUIDs are assigned, so a backup restores
+         *     logbook certifications. A flight keeps its id when no flight, no void
+         *     record of the account and no other user's history holds that id, and
+         *     gets a new one otherwise; its crew follows. A backup therefore restores
          *     into any NinerLog installation, including the one it came from.
          *
          *     **The restore is all-or-nothing.** It runs in a single database
@@ -2460,19 +2464,27 @@ export interface paths {
          *       flights, because those are not part of the backup and would be lost.
          *
          *     **Logbook history.** Flight revisions follow their flights to the
-         *     restored ids (the void records of a deleted flight share one fresh id)
-         *     and keep their number, kind, source, reason, correction flag and time;
-         *     mode switches and certifications keep their timestamps, and a restored
-         *     flight keeps its `createdAt`. A strict backup switches a non-strict
-         *     account to strict mode with an `import` event. A revision with an
-         *     unreadable snapshot, an unknown kind or trigger, or a certification with
-         *     an unreadable date fails the whole restore with `400`.
+         *     restored ids (the void records of a deleted flight keep its id, or share
+         *     one fresh id when another flight or user holds it) and keep their
+         *     number, kind, source, reason, correction flag and time; a revision whose
+         *     number the account already holds is skipped, so restoring a backup into
+         *     the account it came from adds nothing twice. Mode switches and
+         *     certifications keep their timestamps, and a restored flight keeps its
+         *     `createdAt` (the flight date at 00:00 UTC when the backup has none,
+         *     never later than the restore). A strict backup switches a non-strict
+         *     account to strict mode with an `import` event. A revision without
+         *     `changedAt`, a mode switch without `createdAt`, a certification without
+         *     `certifiedAt`, a revision with an unreadable snapshot, an unknown kind or
+         *     trigger, or a certification with an unreadable date fails the whole
+         *     restore with `400`.
          *
          *     In a strict account `replace` never deletes history: the wipe is
          *     recorded with source `import` and reason "Replaced by backup restore",
-         *     so every deleted flight gets a void record, and the existing revisions,
-         *     mode switches and certifications are kept. The backup's history is then
-         *     added.
+         *     and the existing revisions, mode switches and certifications are kept.
+         *     A flight the backup restores under its own id is unchanged by the wipe
+         *     and gets no void record; every other deleted flight gets one, flagged
+         *     as a correction when deleting it would be one (draft window closed or
+         *     flight inside a certified range). The backup's history is then added.
          *
          *     Notification preferences and the flight baseline are single-row
          *     settings; a backup that carries them overwrites the current values.
@@ -6415,7 +6427,7 @@ export interface components {
                 [key: string]: unknown;
             }[];
             /** @enum {string} */
-            source: "user_edit" | "recalc" | "aircraft_rename" | "import" | "unknown";
+            source: "user_edit" | "recalc" | "aircraft_rename" | "contact_rename" | "import" | "unknown";
             reason?: string;
             isCorrection: boolean;
             /** Format: date-time */
@@ -6551,7 +6563,7 @@ export interface components {
             landingsNight: number;
             notes?: string;
         };
-        /** @description A flight as written to a backup: the stored columns of the flight, its crew and its approaches. Identifiers and timestamps are reassigned on restore. */
+        /** @description A flight as written to a backup: the stored columns of the flight, its crew and its approaches. The flight id is kept on restore when nothing holds it and reassigned otherwise; the other identifiers are reassigned. */
         BackupFlight: {
             /**
              * Format: uuid
@@ -7569,7 +7581,7 @@ export interface components {
              * @description What made the change; recalc, aircraft_rename and import are system changes
              * @enum {string}
              */
-            source: "user_edit" | "recalc" | "aircraft_rename" | "import" | "unknown";
+            source: "user_edit" | "recalc" | "aircraft_rename" | "contact_rename" | "import" | "unknown";
             reason?: string | null;
             isCorrection: boolean;
             /** Format: date-time */
@@ -7586,7 +7598,7 @@ export interface components {
             deletedAt: string;
             reason?: string | null;
             /** @enum {string} */
-            source: "user_edit" | "recalc" | "aircraft_rename" | "import" | "unknown";
+            source: "user_edit" | "recalc" | "aircraft_rename" | "contact_rename" | "import" | "unknown";
             isCorrection: boolean;
             /** Format: date */
             date: string;
@@ -7628,13 +7640,15 @@ export interface components {
         };
         LogbookMode: {
             strict: boolean;
+            /** @description Number of deleted flights kept as void records, whatever the current mode */
+            voidedCount: number;
             /**
              * Format: date-time
              * @description When strict mode was last switched on; history starts here
              */
             since?: string | null;
             /**
-             * @description The shortest free-edit window across requiring licences; flight_day when strict mode was switched on by hand
+             * @description The shortest free-edit window across requiring licences; flight_day when strict mode was switched on by hand. flight_day ends with the flight's calendar day, hours_48 48 hours after the flight landed
              * @enum {string|null}
              */
             draftWindow?: "flight_day" | "hours_48" | "null" | null;

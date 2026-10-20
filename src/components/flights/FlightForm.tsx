@@ -548,10 +548,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     setApiError(logbookErrorMessage(error, t) ?? extractApiError(error, t('form.failedToSave')));
   };
 
-  const overrideFieldLabel = (field: string) => {
-    const key = revisionFieldLabelKey(field);
-    return key ? t(key) : field;
-  };
+  const overrideFieldLabel = (field: string) => t(revisionFieldLabelKey(field));
 
   const overrideError = (field: (typeof OVERRIDE_FORM_FIELDS)[number]) =>
     errors[field]?.message ? <p className="form-error">{errors[field]?.message}</p> : null;

@@ -13,7 +13,7 @@ import { CustomReportDialog } from '../../components/reports/CustomReportDialog'
 import { definitionFromSearchParams } from '../../lib/customReports';
 import { exportFlightSearchCSV } from '../../hooks/useExport';
 import { DeleteFlightDialog } from '../../components/logbook/DeleteFlightDialog';
-import { useIsStrictLogbook, useVoidedFlights } from '../../hooks/useLogbook';
+import { useLogbookMode } from '../../hooks/useLogbook';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { FormModal } from '../../components/ui/FormModal';
@@ -120,9 +120,8 @@ export default function FlightsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const deleteFlight = useDeleteFlight();
-  const strictLogbook = useIsStrictLogbook();
-  const { data: voidedFlights } = useVoidedFlights();
-  const showVoidedLink = strictLogbook || (voidedFlights?.length ?? 0) > 0;
+  const { data: logbookMode } = useLogbookMode();
+  const showVoidedLink = logbookMode?.strict === true || (logbookMode?.voidedCount ?? 0) > 0;
 
   // Search, filters, sort and page live in the URL query string.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -885,7 +884,14 @@ export default function FlightsPage() {
                         <Pencil className="w-4 h-4" />
                       </button>
                       {flight.signatureId ? (
-                        <span className="inline-block min-w-[44px]" aria-hidden="true" />
+                        <span
+                          role="img"
+                          className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                          title={t('logbook:delete.signedHint')}
+                          aria-label={t('logbook:delete.signedHint')}
+                        >
+                          <Trash2 className="w-4 h-4" aria-hidden="true" />
+                        </span>
                       ) : (
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(flight.id); }}

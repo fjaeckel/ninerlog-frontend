@@ -34,18 +34,40 @@
     "crew": "Crew",
     "unset": "—",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "approachAirport": "at {{airport}}",
+    "approachRunway": "runway {{runway}}",
+    "fields": {
+      "id": "Entry ID",
+      "userId": "Owner",
+      "createdAt": "Created",
+      "updatedAt": "Last changed",
+      "signatureId": "Signature",
+      "nightTimeOverride": "Night time set by hand",
+      "crossCountryTimeOverride": "Cross-country time set by hand",
+      "takeoffsDayOverride": "Day takeoffs set by hand",
+      "takeoffsNightOverride": "Night takeoffs set by hand",
+      "landingsDayOverride": "Day landings set by hand",
+      "landingsNightOverride": "Night landings set by hand",
+      "sicTimeOverride": "SIC time set by hand",
+      "multiPilotTimeOverride": "Multi-pilot time set by hand",
+      "approachesCount": "Number of approaches",
+      "other": "Other detail",
+      "departureAirportName": "Departure airport name",
+      "arrivalAirportName": "Arrival airport name"
+    }
   },
   "source": {
     "user_edit": "Edited",
     "recalc": "Recalculated",
     "aircraft_rename": "Aircraft renamed",
+    "contact_rename": "Contact renamed",
     "import": "Imported",
     "unknown": "Changed"
   },
   "correction": {
     "title": "Reason for the correction",
-    "body": "This entry can no longer be changed freely: its draft window has closed, it has been signed, or it lies in a period you certified. The change is kept as a correction together with its reason.",
+    "body": "This entry can no longer be changed freely: its free-edit window, which counts from the flight, has closed, it has been signed, or it lies in a period you certified. The change is kept as a correction together with its reason.",
     "label": "Reason",
     "placeholder": "e.g. On-block time corrected from the tech log",
     "submit": "Save correction",
@@ -55,7 +77,10 @@
     "reasonLabel": "Reason (optional)",
     "reasonHelp": "The flight is kept as a void record with this reason.",
     "reasonPlaceholder": "e.g. Duplicate entry",
-    "strictDescription": "The flight leaves your logbook and is kept as a void record, with the reason you give."
+    "strictDescription": "The flight leaves your logbook and is kept as a void record, with the reason you give.",
+    "unknownDescription": "Delete this flight? If strict logbook mode is on, it is kept as a void record.",
+    "unknownReasonHelp": "If strict logbook mode is on, the reason is kept with the void record.",
+    "signedHint": "Signed flights can't be deleted. Void the signature first."
   },
   "voided": {
     "title": "Voided entries",
@@ -84,12 +109,14 @@
     "title": "Logbook",
     "strict": "Strict logbook mode",
     "strictHelp": "Keeps every change to a flight with its old value, date and reason, and keeps deleted flights as void records.",
+    "scope": "Strict mode and its free-edit window apply to every flight in your logbook, whichever licence it was flown under.",
     "since": "History recorded since {{date}}.",
     "requiredBy": "Required by {{licences}}.",
+    "reenableOnSave": "Saving one of these licences again switches strict mode back on.",
     "suggestedBy": "Suggested by {{licences}}.",
     "draftWindow": {
-      "flight_day": "Edits are free until the end of the flight day; later edits are corrections.",
-      "hours_48": "Edits are free for 48 hours after an entry is created; later edits are corrections."
+      "flight_day": "Free-edit window: until the end of the flight day. Later changes, and flights entered later, are corrections.",
+      "hours_48": "Free-edit window: 48 hours from the flight's on-block time. Later changes, and flights entered later, are corrections."
     },
     "overridesDownwardOnly": "Manual overrides may only reduce an auto-calculated time.",
     "turnOffTitle": "Turn strict mode off?",
@@ -122,7 +149,7 @@
     }
   },
   "errors": {
-    "reasonRequired": "This change needs a reason: the entry is past its draft window, signed or in a certified period.",
+    "reasonRequired": "This change needs a reason: the flight is past its free-edit window, signed or in a certified period.",
     "overrideExceeds": "A manual override may only reduce an auto-calculated value.",
     "overrideFields": "Overrides above the calculated value: {{fields}}.",
     "reasonTooLong": "The reason is too long. Use at most 500 characters.",

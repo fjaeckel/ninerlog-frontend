@@ -269,7 +269,7 @@ function crewText(flight: Flight, t: FlightsT): string {
 }
 
 /** Launch methods with a `launchMethods.*` translation, by API value. */
-const LAUNCH_METHOD_KEYS: Record<string, string> = {
+export const LAUNCH_METHOD_KEYS: Record<string, string> = {
   winch: 'winch',
   aerotow: 'aerotow',
   'self-launch': 'selfLaunch',
