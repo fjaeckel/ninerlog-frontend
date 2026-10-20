@@ -23,6 +23,7 @@
     "title": "History",
     "since": "History is recorded since {{date}}.",
     "empty": "No changes recorded yet.",
+    "onlySystem": "No edits by you — only system changes.",
     "error": "Could not load the history.",
     "correction": "Correction",
     "deleted": "Deleted",

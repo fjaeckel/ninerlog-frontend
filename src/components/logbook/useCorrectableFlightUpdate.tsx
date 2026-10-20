@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUpdateFlight } from '../../hooks/useFlights';
 import { extractApiCode } from '../../lib/errors';
@@ -39,10 +39,24 @@ export function useCorrectableFlightUpdate(): {
   const [error, setError] = useState<string | null>(null);
   const pendingRef = useRef<Pending | null>(null);
 
+  const mountedRef = useRef(true);
+  const submittingRef = useRef(false);
+
   const setPrompt = (next: Pending | null) => {
     pendingRef.current = next;
-    setPending(next);
+    if (mountedRef.current) setPending(next);
   };
+
+  // Unmount: settle an open prompt as cancelled and drop it.
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      const current = pendingRef.current;
+      pendingRef.current = null;
+      if (current && !submittingRef.current) current.settle({ status: 'cancelled' });
+    };
+  }, []);
 
   const save = async (id: string, data: FlightUpdate): Promise<CorrectableUpdateOutcome> => {
     try {
@@ -50,6 +64,7 @@ export function useCorrectableFlightUpdate(): {
       return { status: 'saved', flight };
     } catch (err) {
       if (extractApiCode(err) !== 'correction_reason_required') throw err;
+      if (!mountedRef.current) return { status: 'cancelled' };
       return new Promise<CorrectableUpdateOutcome>((settle, fail) => {
         setError(null);
         setPrompt({ id, data, settle, fail });
@@ -61,6 +76,7 @@ export function useCorrectableFlightUpdate(): {
     const current = pendingRef.current;
     if (!current) return;
     setError(null);
+    submittingRef.current = true;
     try {
       const flight = await updateFlight.mutateAsync({
         id: current.id,
@@ -70,11 +86,18 @@ export function useCorrectableFlightUpdate(): {
       current.settle({ status: 'saved', flight });
     } catch (err) {
       if (extractApiCode(err) === 'correction_reason_required' || isReasonTooLong(err)) {
-        setError(logbookErrorMessage(err, t) ?? t('logbook:errors.saveFailed'));
+        if (mountedRef.current) {
+          setError(logbookErrorMessage(err, t) ?? t('logbook:errors.saveFailed'));
+        } else {
+          setPrompt(null);
+          current.settle({ status: 'cancelled' });
+        }
         return;
       }
       setPrompt(null);
       current.fail(err);
+    } finally {
+      submittingRef.current = false;
     }
   };
 

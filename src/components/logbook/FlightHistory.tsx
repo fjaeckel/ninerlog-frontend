@@ -30,6 +30,8 @@ export function FlightHistoryList({ revisions, since }: FlightHistoryListProps) 
     <div>
       {revisions.length === 0 ? (
         <p className="text-sm text-slate-500 dark:text-slate-400">{t('logbook:history.empty')}</p>
+      ) : visible.length === 0 ? (
+        <p className="text-sm text-slate-500 dark:text-slate-400">{t('logbook:history.onlySystem')}</p>
       ) : (
         <ol className="space-y-3">
           {visible.map((revision) => (
@@ -136,14 +138,18 @@ function RevisionItem({ revision }: { revision: FlightRevision }) {
   );
 }
 
-/** History card for a flight; rendered in strict mode or when revisions exist. */
+/**
+ * History card for a flight; rendered in strict mode, when revisions exist, or
+ * when the revisions fail to load while the mode is unknown.
+ */
 export function FlightHistoryCard({ flightId, className }: { flightId: string; className?: string }) {
   const { t } = useTranslation('logbook');
-  const { data: mode } = useLogbookMode();
+  const { data: mode, isError: modeError } = useLogbookMode();
   const strict = mode?.strict === true;
-  const { data: revisions, isError } = useFlightRevisions(flightId, { enabled: mode != null });
+  const { data: revisions, isError } = useFlightRevisions(flightId);
 
-  if (!strict && !(revisions && revisions.length > 0)) return null;
+  const hasRevisions = !!revisions && revisions.length > 0;
+  if (!strict && !hasRevisions && !(isError && modeError)) return null;
 
   return (
     <section className={cn('card', className)} aria-labelledby="flight-history-title">

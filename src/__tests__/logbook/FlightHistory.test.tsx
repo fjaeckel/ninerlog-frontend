@@ -4,12 +4,17 @@ import userEvent from '@testing-library/user-event';
 import { FlightHistoryCard, FlightHistoryList } from '../../components/logbook/FlightHistory';
 import type { FlightRevision } from '../../hooks/useLogbook';
 
-const modeState: { data: unknown } = { data: null };
+const modeState: { data: unknown; isError?: boolean } = { data: null };
 const revisionsState: { data: FlightRevision[] | undefined; isError: boolean } = { data: [], isError: false };
+const revisionsCalls: unknown[][] = [];
 
 vi.mock('../../hooks/useLogbook', () => ({
   useLogbookMode: () => modeState,
-  useFlightRevisions: () => revisionsState,
+  useFlightRevisions: (...args: unknown[]) => {
+    revisionsCalls.push(args);
+    const enabled = (args[1] as { enabled?: boolean } | undefined)?.enabled ?? true;
+    return enabled ? revisionsState : { data: undefined, isError: false };
+  },
 }));
 
 const revisions: FlightRevision[] = [
@@ -128,6 +133,23 @@ describe('FlightHistoryList', () => {
     expect(screen.getByText('Amelia M. Earhart (Student)').tagName).toBe('INS');
   });
 
+  it('explains an all-system history instead of rendering an empty list', async () => {
+    const user = userEvent.setup();
+    render(<FlightHistoryList revisions={[revisions[1]]} />);
+
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+    expect(screen.getByText('No edits by you — only system changes.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /show 1 system change/i }));
+    expect(screen.queryByText('No edits by you — only system changes.')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  });
+
+  it('does not show the system-only line when user edits are visible', () => {
+    render(<FlightHistoryList revisions={revisions} />);
+    expect(screen.queryByText('No edits by you — only system changes.')).not.toBeInTheDocument();
+  });
+
   it('labels a delete', () => {
     render(
       <FlightHistoryList
@@ -143,6 +165,41 @@ describe('FlightHistoryCard', () => {
   beforeEach(() => {
     revisionsState.data = [];
     revisionsState.isError = false;
+    modeState.isError = false;
+    revisionsCalls.length = 0;
+  });
+
+  it('fetches revisions without waiting for the logbook mode', () => {
+    modeState.data = undefined;
+    render(<FlightHistoryCard flightId="f1" />);
+    expect(revisionsCalls.length).toBeGreaterThan(0);
+    for (const args of revisionsCalls) {
+      expect((args[1] as { enabled?: boolean } | undefined)?.enabled ?? true).toBe(true);
+    }
+  });
+
+  it('fails open: shows recorded history when the logbook mode errors', () => {
+    modeState.data = undefined;
+    modeState.isError = true;
+    revisionsState.data = [revisions[0]];
+    render(<FlightHistoryCard flightId="f1" />);
+    expect(screen.getByRole('heading', { name: 'History' })).toBeInTheDocument();
+    expect(screen.getByText('Correction')).toBeInTheDocument();
+  });
+
+  it('shows the load error when both the mode and the revisions fail', () => {
+    modeState.data = undefined;
+    modeState.isError = true;
+    revisionsState.data = undefined;
+    revisionsState.isError = true;
+    render(<FlightHistoryCard flightId="f1" />);
+    expect(screen.getByText('Could not load the history.')).toBeInTheDocument();
+  });
+
+  it('renders nothing while the mode loads and no revisions exist', () => {
+    modeState.data = undefined;
+    const { container } = render(<FlightHistoryCard flightId="f1" />);
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('renders nothing in standard mode without revisions', () => {

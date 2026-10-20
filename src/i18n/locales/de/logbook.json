@@ -23,6 +23,7 @@
     "title": "Verlauf",
     "since": "Verlauf wird seit {{date}} aufgezeichnet.",
     "empty": "Noch keine Änderungen aufgezeichnet.",
+    "onlySystem": "Keine Änderungen von dir – nur Systemänderungen.",
     "error": "Der Verlauf konnte nicht geladen werden.",
     "correction": "Korrektur",
     "deleted": "Gelöscht",
