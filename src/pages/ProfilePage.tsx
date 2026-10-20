@@ -22,6 +22,7 @@ import BackupsPage from './backups/BackupsPage';
 import { BaselineSection } from '../components/profile/BaselineSection';
 import { FlightColumnsSection } from '../components/profile/FlightColumnsSection';
 import { SessionsSection } from '../components/profile/SessionsSection';
+import { WhatIFlySection } from '../components/profile/WhatIFlySection';
 import { LogbookSection } from '../components/profile/LogbookSection';
 import { formatTimeOfDay } from '../lib/timeOfDay';
 
@@ -249,6 +250,8 @@ export default function ProfilePage() {
       {/* ════════════════════════════════════════════════════════════════ */}
       {activeTab === 'preferences' && (
         <div className="space-y-6">
+          <WhatIFlySection />
+
           <div className="card">
             <ThemeSwitcher variant="full" />
           </div>

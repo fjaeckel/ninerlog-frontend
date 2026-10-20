@@ -7,6 +7,18 @@ import ReportsPage from '../../pages/reports/ReportsPage';
 import * as useAnalyticsHook from '../../hooks/useAnalytics';
 import * as useCustomReportsHook from '../../hooks/useCustomReports';
 import type { FlightAnalytics } from '../../hooks/useAnalytics';
+import type { PilotProfile } from '../../hooks/usePilotProfile';
+import { PERSONA_PROFILES } from '../../test/pilotProfile';
+
+const profileState = vi.hoisted(() => ({ profile: undefined as unknown, isLoading: true }));
+
+vi.mock('../../hooks/usePilotProfile', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../hooks/usePilotProfile')>();
+  return {
+    ...actual,
+    useDisciplines: () => actual.resolveDisciplines(profileState.profile as PilotProfile | undefined, profileState.isLoading),
+  };
+});
 
 // Chart bodies stubbed; assertions target DOM the page owns (headings,
 // stat tiles, ranked bars, table-view twins).
@@ -204,6 +216,8 @@ const mockUseAnalytics = (overrides: Partial<ReturnType<typeof useAnalyticsHook.
 describe('ReportsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    profileState.profile = undefined;
+    profileState.isLoading = true;
     vi.spyOn(useCustomReportsHook, 'useCustomReports').mockReturnValue({
       data: [],
       isLoading: false,
@@ -390,5 +404,40 @@ describe('ReportsPage', () => {
     renderWithProviders(<ReportsPage />);
     expect(screen.getByRole('button', { name: /export csv/i })).toBeDisabled();
     expect(screen.getByRole('button', { name: /export pdf/i })).toBeDisabled();
+  });
+
+  describe('relevance', () => {
+    const noInstrument = {
+      ...mockAnalytics,
+      totals: { ...mockAnalytics.totals, ifrMinutes: 0, approaches: 0, actualInstrumentMinutes: 0 },
+    };
+
+    it('A1/A2 Mark: the Instrument section stays in place', () => {
+      profileState.profile = PERSONA_PROFILES.mark();
+      profileState.isLoading = false;
+      mockUseAnalytics({ data: noInstrument } as never);
+      renderWithProviders(<ReportsPage />);
+      expect(screen.getByRole('tab', { name: 'Instrument' })).toBeInTheDocument();
+      expect(screen.queryByTestId('fold-drawer')).not.toBeInTheDocument();
+    });
+
+    it('L Lena: the Instrument section folds into "More sections", never removed', async () => {
+      profileState.profile = PERSONA_PROFILES.lena();
+      profileState.isLoading = false;
+      mockUseAnalytics({ data: noInstrument } as never);
+      renderWithProviders(<ReportsPage />);
+      expect(screen.queryByRole('tab', { name: 'Instrument' })).not.toBeInTheDocument();
+      expect(document.getElementById('instrument')).toBeNull();
+      await userEvent.click(screen.getByRole('button', { name: 'More sections (1)' }));
+      expect(document.getElementById('instrument')).not.toBeNull();
+    });
+
+    it('invariant 2 — Lena with logged IFR time keeps the Instrument section', () => {
+      profileState.profile = PERSONA_PROFILES.lena();
+      profileState.isLoading = false;
+      mockUseAnalytics();
+      renderWithProviders(<ReportsPage />);
+      expect(screen.getByRole('tab', { name: 'Instrument' })).toBeInTheDocument();
+    });
   });
 });

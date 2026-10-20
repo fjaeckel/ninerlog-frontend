@@ -1,14 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Pencil, Plus, Trash2 } from 'lucide-react';
 import { License } from '../../stores/licenseStore';
-import { isPast, differenceInDays } from 'date-fns';
 import { useClassRatings, useCreateClassRating, useDeleteClassRating, useUpdateClassRating } from '../../hooks/useClassRatings';
 import { extractApiError } from '../../lib/errors';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { DocumentFileStrip } from '../documents/DocumentFileStrip';
 import { isGermanULAuthority, UL_RATING_KINDS, type ULRatingKind } from '../../lib/ultralight';
 import { ULAuthorityHint } from './ULAuthorityHint';
+import { ClassOptions, FoldDrawer, Folded, useClassGroups } from '../relevance';
+import { useRelevance } from '../../lib/relevance';
+import { useLicencePrivileges } from '../../hooks/useLicencePrivileges';
+import type { LicencePrivilegeKind } from '../../lib/privileges';
+import { ExpiryBadge } from './ExpiryBadge';
+import { LicencePrivileges } from './LicencePrivileges';
 import { countryName } from '../../lib/countries';
 
 const CLASS_TYPE_OPTIONS = [
@@ -16,37 +21,7 @@ const CLASS_TYPE_OPTIONS = [
   'SET_LAND', 'SET_SEA', 'TMG', 'GLIDER', 'ULTRALIGHT', 'GYROPLANE', 'IR', 'OTHER',
 ] as const;
 
-function ExpiryBadge({ expiryDate }: { expiryDate?: string | null }) {
-  const { t } = useTranslation('licenses');
-  const { fmtDate } = useFormatPrefs();
-  if (!expiryDate) {
-    return <span className="text-xs text-slate-500 dark:text-slate-400">{t('card.noExpiry')}</span>;
-  }
-  const expiry = new Date(expiryDate);
-  const expired = isPast(expiry);
-  const daysLeft = differenceInDays(expiry, new Date());
-  const formatted = fmtDate(expiryDate);
-
-  if (expired) {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs">
-        <span className="font-medium text-red-600 dark:text-red-400">{formatted}</span>
-        <span className="badge-expired text-xs">{t('card.expired')}</span>
-      </span>
-    );
-  }
-  if (daysLeft <= 30) {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs">
-        <span className="font-medium text-amber-600 dark:text-amber-400">{formatted}</span>
-        <span className="badge-expiring text-xs">{t('card.expiresInDays', { days: daysLeft })}</span>
-      </span>
-    );
-  }
-  return <span className="text-xs font-medium text-green-600 dark:text-green-400">{formatted}</span>;
-}
-
-function ULKindSelect({ value, onChange }: { value: ULRatingKind; onChange: (k: ULRatingKind) => void }) {
+function ULKindSelect({ value, onChange }: { value: ULRatingKind | ''; onChange: (k: ULRatingKind | '') => void }) {
   const { t } = useTranslation('licenses');
   return (
     <div>
@@ -54,9 +29,12 @@ function ULKindSelect({ value, onChange }: { value: ULRatingKind; onChange: (k: 
       <select
         id="rating-ul-kind"
         value={value}
-        onChange={(e) => onChange(e.target.value as ULRatingKind)}
+        onChange={(e) => onChange(e.target.value as ULRatingKind | '')}
         className="input input-sm mt-0.5"
+        required
+        aria-invalid={value === ''}
       >
+        <option value="" disabled>{t('card.ulKindPlaceholder')}</option>
         {UL_RATING_KINDS.map((k) => (
           <option key={k} value={k}>{t(`common:ulKinds.${k}`)}</option>
         ))}
@@ -69,10 +47,20 @@ interface LicenseCardProps {
   license: License;
   onEdit: () => void;
   onDelete: () => void;
+  /** Class rating to open in edit mode once ratings load. */
+  editRatingId?: string | null;
+  /** Opens the privilege form with this kind preselected. */
+  addPrivilegeKind?: LicencePrivilegeKind | null;
 }
 
-export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardProps) {
+export default function LicenseCard({ license, onEdit, onDelete, editRatingId, addPrivilegeKind }: LicenseCardProps) {
   const { t, i18n } = useTranslation('licenses');
+  const privilegesQuery = useLicencePrivileges(license.id);
+  const privilegeRecord = useMemo(
+    () => ({ privileges: privilegesQuery.data?.length ?? 0 }),
+    [privilegesQuery.data?.length],
+  );
+  const privilegesRelevance = useRelevance('license.privileges', { record: privilegeRecord });
   const { fmtDate } = useFormatPrefs();
   const { data: classRatings, isLoading: ratingsLoading } = useClassRatings(license.id);
   const createRating = useCreateClassRating();
@@ -80,27 +68,33 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
   const updateRating = useUpdateClassRating();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingRatingId, setEditingRatingId] = useState<string | null>(null);
-  const [newClassType, setNewClassType] = useState<string>(CLASS_TYPE_OPTIONS[0]);
+  const [pickedClassType, setNewClassType] = useState<string>('');
+  const classOptions = CLASS_TYPE_OPTIONS.map((ct) => ({
+    value: ct,
+    label: t(`classTypeLabels.${ct}`, { defaultValue: ct }),
+  }));
+  const { primary: relevantClasses } = useClassGroups(classOptions);
+  const newClassType = pickedClassType || relevantClasses[0]?.value || CLASS_TYPE_OPTIONS[0];
   const [newIssueDate, setNewIssueDate] = useState('');
   const [newExpiryDate, setNewExpiryDate] = useState('');
-  const [newULKind, setNewULKind] = useState<ULRatingKind>('THREE_AXIS');
+  const [newULKind, setNewULKind] = useState<ULRatingKind | ''>('');
   const [ratingError, setRatingError] = useState<string | null>(null);
 
   const handleAddRating = async () => {
-    if (!newClassType || !newIssueDate) return;
+    if (!newClassType || !newIssueDate || (newClassType === 'ULTRALIGHT' && !newULKind)) return;
     try {
       await createRating.mutateAsync({
         licenseId: license.id,
         data: {
           classType: newClassType as any,
-          ulKind: newClassType === 'ULTRALIGHT' ? newULKind : null,
+          ulKind: newClassType === 'ULTRALIGHT' && newULKind ? newULKind : null,
           issueDate: newIssueDate,
           expiryDate: newExpiryDate || null,
         },
       });
       setShowAddForm(false);
-      setNewClassType(CLASS_TYPE_OPTIONS[0]);
-      setNewULKind('THREE_AXIS');
+      setNewClassType('');
+      setNewULKind('');
       setNewIssueDate('');
       setNewExpiryDate('');
     } catch (err) {
@@ -119,15 +113,32 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
 
   const startEditRating = (rating: { id: string; issueDate: string; expiryDate?: string | null; ulKind?: ULRatingKind | null }) => {
     setEditingRatingId(rating.id);
-    setNewULKind(rating.ulKind ?? 'THREE_AXIS');
+    setNewULKind(rating.ulKind ?? '');
     setNewIssueDate(rating.issueDate?.split('T')[0] || '');
     setNewExpiryDate(rating.expiryDate?.split('T')[0] || '');
   };
 
   const editingRating = classRatings?.find((r) => r.id === editingRatingId);
 
+  // Opens the rating named by editRatingId once.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [openedRatingId, setOpenedRatingId] = useState<string | null>(null);
+  if (editRatingId && openedRatingId !== editRatingId) {
+    const target = classRatings?.find((r) => r.id === editRatingId);
+    if (target) {
+      setOpenedRatingId(editRatingId);
+      startEditRating(target);
+    }
+  }
+  useEffect(() => {
+    if (openedRatingId) cardRef.current?.scrollIntoView?.({ block: 'center' });
+  }, [openedRatingId]);
+  useEffect(() => {
+    if (addPrivilegeKind) cardRef.current?.scrollIntoView?.({ block: 'center' });
+  }, [addPrivilegeKind]);
+
   const handleUpdateRating = async () => {
-    if (!editingRatingId || !newIssueDate) return;
+    if (!editingRatingId || !newIssueDate || (editingRating?.classType === 'ULTRALIGHT' && !newULKind)) return;
     try {
       await updateRating.mutateAsync({
         licenseId: license.id,
@@ -135,7 +146,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
         data: {
           issueDate: newIssueDate,
           expiryDate: newExpiryDate || null,
-          ...(editingRating?.classType === 'ULTRALIGHT' ? { ulKind: newULKind } : {}),
+          ...(editingRating?.classType === 'ULTRALIGHT' && newULKind ? { ulKind: newULKind } : {}),
         },
       });
       setEditingRatingId(null);
@@ -146,8 +157,18 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
     }
   };
 
+  const privilegesSection = (
+    <LicencePrivileges
+      licenseId={license.id}
+      privileges={privilegesQuery.data}
+      isLoading={privilegesQuery.isLoading}
+      isError={privilegesQuery.isError}
+      initialAddKind={addPrivilegeKind}
+    />
+  );
+
   return (
-    <div className="card transition-shadow hover:shadow-md">
+    <div ref={cardRef} className="card transition-shadow hover:shadow-md">
       <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
         {/* Identity */}
         <div className="lg:w-52 lg:shrink-0">
@@ -259,7 +280,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <button onClick={handleUpdateRating} disabled={!newIssueDate || updateRating.isPending} className="btn-primary btn-sm text-xs">
+                          <button onClick={handleUpdateRating} disabled={!newIssueDate || (editingRating?.classType === 'ULTRALIGHT' && !newULKind) || updateRating.isPending} className="btn-primary btn-sm text-xs">
                             {updateRating.isPending ? t('common:saving') : t('common:save')}
                           </button>
                           <button onClick={() => setEditingRatingId(null)} className="btn-secondary btn-sm text-xs">{t('common:cancel')}</button>
@@ -271,7 +292,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                           {t(`classTypeLabels.${rating.classType}`, { defaultValue: rating.classType })}
                           {rating.classType === 'ULTRALIGHT' && (
                             <span className="block text-xs font-normal text-slate-500 dark:text-slate-400">
-                              {t(`common:ulKinds.${rating.ulKind ?? 'THREE_AXIS'}`)}
+                              {rating.ulKind ? t(`common:ulKinds.${rating.ulKind}`) : t('card.ulKindNotSet')}
                             </span>
                           )}
                         </span>
@@ -320,9 +341,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                     onChange={(e) => setNewClassType(e.target.value)}
                     className="input input-sm mt-0.5"
                   >
-                    {CLASS_TYPE_OPTIONS.map((ct) => (
-                      <option key={ct} value={ct}>{t(`classTypeLabels.${ct}`, { defaultValue: ct })}</option>
-                    ))}
+                    <ClassOptions options={classOptions} current={newClassType} />
                   </select>
                 </div>
                 <div>
@@ -354,7 +373,7 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
                 <div className="sm:col-span-3 flex gap-2 pt-1">
                   <button
                     onClick={handleAddRating}
-                    disabled={!newIssueDate || createRating.isPending}
+                    disabled={!newIssueDate || (newClassType === 'ULTRALIGHT' && !newULKind) || createRating.isPending}
                     className="btn-primary btn-sm"
                   >
                     {createRating.isPending ? t('common:saving') : t('common:save')}
@@ -369,6 +388,15 @@ export default function LicenseCard({ license, onEdit, onDelete }: LicenseCardPr
               </div>
             )}
           </div>
+
+          {/* Privileges */}
+          {privilegesRelevance.visible || addPrivilegeKind ? (
+            privilegesSection
+          ) : (
+            <FoldDrawer label={() => t('privileges.folded')} className="mt-0">
+              <Folded reason={privilegesRelevance.reason}>{privilegesSection}</Folded>
+            </FoldDrawer>
+          )}
         </div>
 
         {/* Actions */}

@@ -6,6 +6,7 @@ import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useRecencyPrefs } from '../../hooks/useRecencyPrefs';
 import { recencyLevel, RECENCY_DOT_CLASSES, RECENCY_REQUIRED_LANDINGS } from '../../lib/recency';
 import AircraftForm from '../../components/aircraft/AircraftForm';
+import { UnclassifiedAircraftBanner } from '../../components/aircraft/UnclassifiedAircraftBanner';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { FormModal } from '../../components/ui/FormModal';
@@ -84,6 +85,13 @@ export default function AircraftPage() {
       >
         <AircraftForm aircraftId={editingId} onClose={() => setShowForm(false)} />
       </FormModal>
+
+      {aircraft && aircraft.length > 0 && (
+        <UnclassifiedAircraftBanner
+          aircraft={aircraft}
+          onEdit={(id) => { setEditingId(id); setShowForm(true); }}
+        />
+      )}
 
       {/* Aircraft List */}
       {!aircraft || aircraft.length === 0 ? (

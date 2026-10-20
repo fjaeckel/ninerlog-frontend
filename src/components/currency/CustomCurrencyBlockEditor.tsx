@@ -11,6 +11,7 @@ import type {
 import {
   METRIC_OPTIONS, FILTER_FIELD_OPTIONS, CLASS_TYPE_OPTIONS, LAUNCH_METHOD_OPTIONS,
 } from '../../types/customCurrency';
+import { ClassOptions } from '../relevance';
 
 /**
  * Visual, no-code editor for a custom currency rule. It renders the rule as a
@@ -139,7 +140,7 @@ export function CustomCurrencyBlockEditor({ value, onChange }: Props) {
       return (
         <select className="input text-sm flex-1" value={f.value ?? ''} onChange={(e) => updateFilter(i, { ...f, value: e.target.value })}>
           <option value="">Choose class…</option>
-          {CLASS_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          <ClassOptions options={CLASS_TYPE_OPTIONS} current={f.value} />
         </select>
       );
     }

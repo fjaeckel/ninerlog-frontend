@@ -169,3 +169,26 @@ describe('FlightsPage — totals', () => {
     expect(strip).toHaveTextContent('50h 0m');
   });
 });
+
+describe('FlightsPage — launch cell', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('shows the launch count only above one', () => {
+    mockQueries(true);
+    const glider = { aircraftReg: 'D-1234', aircraftType: 'AS21', offBlockTime: null, onBlockTime: null, departureTime: '10:00:00', arrivalTime: '10:10:00' };
+    vi.mocked(useFlightsHook.useFlights).mockReturnValue({
+      data: {
+        ...page,
+        data: [
+          flight('w0', '2026-01-15', { ...glider, launchMethod: 'winch', launches: 0 }),
+          flight('w1', '2026-01-14', { ...glider, launchMethod: 'winch', launches: 1 }),
+          flight('w3', '2026-01-13', { ...glider, launchMethod: 'aerotow', launches: 3 }),
+        ],
+      },
+      isLoading: false,
+      error: null,
+    } as never);
+    renderPage();
+    expect(screen.getAllByTestId('launch-cell').map((c) => c.textContent)).toEqual(['Winch', 'Winch', 'Aerotow ×3']);
+  });
+});

@@ -87,7 +87,7 @@
       "flights": "Flüge eintragen",
       "quicklog": "Quick Log",
       "aircraft": "Luftfahrzeuge",
-      "currency": "Recency & Gültigkeit",
+      "currency": "Fortlaufende Flugerfahrung & Gültigkeit",
       "licenses": "Lizenzen & Berechtigungen",
       "credentials": "Nachweise",
       "signatures": "Fluglehrer-Unterschriften",
@@ -140,7 +140,28 @@
       "flightRevisions": "Flugrevisionen",
       "flightCorrections": "Korrekturen",
       "voidedFlights": "Stornierte Flüge",
-      "logbookCertifications": "Flugbuch-Bestätigungen"
+      "logbookCertifications": "Flugbuch-Bestätigungen",
+      "licencePrivileges": "Lizenzberechtigungen",
+      "pilotProfiles": "Pilotenprofile",
+      "pilotProfilesEverything": "Alles anzeigen",
+      "pilotProfilesOverrides": "Explizit gesetzte Disziplinen",
+      "pilotProfilesNone": "Noch hat niemand eine Disziplin explizit gesetzt.",
+      "discipline": "Disziplin",
+      "intentOn": "An",
+      "intentOff": "Aus",
+      "intentGoal": "Ziel",
+      "disciplines": {
+        "AEROPLANE": "Flugzeug",
+        "TMG": "TMG",
+        "SAILPLANE": "Segelflugzeug",
+        "ULTRALIGHT": "Ultraleicht",
+        "GYROPLANE": "Tragschrauber",
+        "HELICOPTER": "Hubschrauber",
+        "IFR": "IFR",
+        "MULTI_CREW": "Multi-Crew",
+        "INSTRUCTOR": "Lehrberechtigung",
+        "SIMULATOR": "Simulator"
+      }
     },
     "users": {
       "searchPlaceholder": "Nach E-Mail oder Name suchen...",
@@ -396,11 +417,37 @@
   "ulKinds": {
     "THREE_AXIS": "Dreiachs-UL",
     "THREE_AXIS_MOTORGLIDER": "Dreiachs-UL-Motorsegler (TMG)",
-    "WEIGHT_SHIFT": "Trike (schwerkraftgesteuert)",
-    "GYROPLANE": "Tragschrauber",
+    "WEIGHT_SHIFT": "Trike (gewichtskraftgesteuert)",
+    "GYROPLANE": "UL-Tragschrauber",
     "HELICOPTER": "UL-Hubschrauber",
     "POWERED_PARAGLIDER": "Motorschirm",
     "SAILPLANE": "UL-Segelflugzeug"
+  },
+  "privilegeKinds": {
+    "SAILPLANE_TOWING": "Segelflugzeugschlepp",
+    "BANNER_TOWING": "Bannerschlepp",
+    "CLOUD_FLYING": "Wolkenflug",
+    "AEROBATIC_BASIC": "Kunstflug (Basis)",
+    "AEROBATIC_ADVANCED": "Kunstflug (erweitert)",
+    "TMG_NIGHT": "TMG-Nachtflug",
+    "FI_S": "FI(S)",
+    "BI_S": "BI(S)",
+    "FE_S": "FE(S)",
+    "UL_PASSENGER_AUTH": "Passagierberechtigung (UL)",
+    "UL_TOWING": "UL-Schleppberechtigung",
+    "UL_TYPE_BRIEFING": "Einweisung",
+    "LAUNCH_METHOD_TRAINED": "Startart ausgebildet"
+  },
+  "saveWarnings": {
+    "title": "Gespeichert — bitte prüfen",
+    "region": "Hinweise zum Speichern",
+    "dismiss": "Hinweis ausblenden",
+    "dismissAll": "Alle ausblenden",
+    "ul_night_flight": "Nachtflugzeit auf einem UL eingetragen — Luftsportgeräte haben keine Nachtflugberechtigung (LuftPersV).",
+    "ul_night_flight_reg": "Nachtflugzeit auf dem UL {{registration}} eingetragen — Luftsportgeräte haben keine Nachtflugberechtigung (LuftPersV).",
+    "ul_mtom_exceeds_600": "Die MTOM von {{mtomKg}} kg liegt über der deutschen UL-Grenze von {{limitKg}} kg — prüfe die Luftfahrzeugklasse. Das Luftfahrzeug wurde gespeichert.",
+    "ul_120kg_class": "MTOM {{mtomKg}} kg: Dieses UL fällt möglicherweise in die Klasse der einsitzigen Luftsportgeräte bis {{limitKg}} kg, für die kein Medical nötig ist.",
+    "unknown": "Beim Speichern gab es einen Hinweis ({{code}})."
   },
   "airportInput": {
     "suggestions": "Flugplatzvorschläge"

@@ -19,6 +19,7 @@ import {
   displayPicName,
   flightFunctionKind,
   flightFunctionLabel,
+  hasBlockTimes,
 } from '../../components/flights/flightTableColumns';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ErrorState } from '../../components/ui/ErrorState';
@@ -114,6 +115,7 @@ export default function FlightDetailPage() {
   };
 
   // Only the times this flight actually logged get a tile.
+  const blockTimed = flight.isSimulator || hasBlockTimes(flight);
   const timeTiles = [
     { key: 'pic', label: t('fields.picTime'), minutes: flight.picTime },
     { key: 'dual', label: t('detail.dualTime'), minutes: flight.dualTime },
@@ -298,10 +300,10 @@ export default function FlightDetailPage() {
         <div className="flex flex-col gap-4 md:col-start-2 md:row-span-2 xl:row-span-1">
           {/* Flight Times */}
           <div className="card">
-            <h2 className="section-title mb-3">{t('detail.blockTimes')}</h2>
+            <h2 className="section-title mb-3">{blockTimed ? t('detail.blockTimes') : t('detail.flightTimes')}</h2>
             <DataTileGrid>
               <DataTile
-                label={t('detail.totalBlockTime')}
+                label={blockTimed ? t('detail.totalBlockTime') : t('detail.totalFlightTime')}
                 value={fmtDuration(flight.totalTime)}
                 mono
                 emphasis

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useAllCurrencyStatus } from '../../hooks/useCurrency';
@@ -10,18 +10,24 @@ import { useLicenses } from '../../hooks/useLicenses';
 import { useAircraftStats } from '../../hooks/useAircraft';
 import { useRecencyPrefs } from '../../hooks/useRecencyPrefs';
 import { recencyLevel, RECENCY_BADGE_CLASSES, RECENCY_REQUIRED_LANDINGS } from '../../lib/recency';
-import { CurrencyCard } from '../../components/currency/CurrencyCard';
+import { CurrencyCard, RequirementBar } from '../../components/currency/CurrencyCard';
+import { PrivilegeCard } from '../../components/currency/PrivilegeCard';
 import { CustomCurrencyCard } from '../../components/currency/CustomCurrencyCard';
 import { CurrencyExpiryBanner } from '../../components/currency/CurrencyExpiryBanner';
-import { ChevronDown, ChevronRight, Plane, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
+import { SeasonStartPlanner } from '../../components/currency/SeasonStartPlanner';
+import { ArrowRight, ChevronDown, ChevronRight, Plane, ShieldAlert, ShieldCheck, Wand2, Plus } from 'lucide-react';
 import { isPast, differenceInDays } from 'date-fns';
-import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType } from '../../types/api';
+import type { ClassRatingCurrency, PassengerCurrency as PassengerCurrencyType, PrivilegeCurrency } from '../../types/api';
 import HelpLink from '../../components/ui/HelpLink';
 import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 import { RequirementIcon } from '../../components/ui/RequirementIcon';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import { useFormatPrefs } from '../../hooks/useFormatPrefs';
 import { useCurrencyMessages } from '../../lib/currencyMessages';
+import { isRatingAlert } from '../../lib/ratingStatus';
+import { useDisciplines } from '../../hooks/usePilotProfile';
+import { isDormantClass, sortRatingsByDiscipline, useRelevance } from '../../lib/relevance';
+import { FoldDrawer, Folded } from '../../components/relevance';
 
 export default function CurrencyPage() {
   const { data: currencyStatus, isLoading: currencyLoading } = useAllCurrencyStatus();
@@ -50,6 +56,9 @@ export default function CurrencyPage() {
   // Informational 90-day recency rows: models first, then registrations.
   // Each group is gated by its user preference (Profile → Settings).
   const recencyPrefs = useRecencyPrefs();
+  const recencyRecord = useMemo(() => ({ explicit: recencyPrefs.perRegistration }), [recencyPrefs.perRegistration]);
+  const aircraftRecency = useRelevance('currency.aircraftRecency', { record: recencyRecord });
+  const disciplines = useDisciplines();
   const recencyRows = [
     ...(recencyPrefs.perModel
       ? [...(aircraftStats?.byType.values() ?? [])].map((s) => ({
@@ -80,7 +89,7 @@ export default function CurrencyPage() {
   // Group ratings by licenseId
   const ratingsByLicense: Record<string, ClassRatingCurrency[]> = {};
   if (currencyStatus?.ratings) {
-    for (const r of currencyStatus.ratings) {
+    for (const r of sortRatingsByDiscipline(disciplines, currencyStatus.ratings)) {
       if (!ratingsByLicense[r.licenseId]) {
         ratingsByLicense[r.licenseId] = [];
       }
@@ -88,8 +97,20 @@ export default function CurrencyPage() {
     }
   }
 
+  const privilegesByLicense: Record<string, PrivilegeCurrency[]> = {};
+  for (const p of currencyStatus?.privileges ?? []) {
+    (privilegesByLicense[p.licenseId] ??= []).push(p);
+  }
+  const licenseGroups = [
+    ...Object.keys(ratingsByLicense),
+    ...Object.keys(privilegesByLicense).filter((id) => !ratingsByLicense[id]),
+  ];
+
   // Count alerts
-  const expiringRatings = currencyStatus?.ratings.filter((r) => r.status === 'expiring' || r.status === 'expired') || [];
+  const expiringRatings = [
+    ...(currencyStatus?.ratings.filter((r) => isRatingAlert(r.status)) ?? []),
+    ...(currencyStatus?.privileges?.filter((p) => isRatingAlert(p.status)) ?? []),
+  ];
   const now = new Date();
   const expiringCredentials = credentials?.filter((c) => {
     if (!c.expiryDate) return false;
@@ -99,6 +120,57 @@ export default function CurrencyPage() {
   const totalAlerts = expiringRatings.length + expiringCredentials.length;
 
   const isLoading = currencyLoading || credentialsLoading;
+
+  const recencySection = (
+    <div className="mb-8" data-testid="aircraft-recency-section">
+      <h2 className="section-title mb-4">{t('aircraftRecency.title')}</h2>
+      <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+        {t('aircraftRecency.description', { required: RECENCY_REQUIRED_LANDINGS })}
+      </p>
+      <div className="card overflow-x-auto p-0">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700">
+              <th className="px-4 py-2.5 font-medium">{t('aircraftRecency.aircraft')}</th>
+              <th className="px-4 py-2.5 font-medium">{t('aircraftRecency.landings90')}</th>
+              <th className="px-4 py-2.5 font-medium">{t('aircraftRecency.status')}</th>
+              <th className="px-4 py-2.5 font-medium hidden sm:table-cell">{t('aircraftRecency.lastFlown')}</th>
+              <th className="px-4 py-2.5 font-medium hidden sm:table-cell">{t('aircraftRecency.currentUntil')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+            {recencyRows.map((row) => {
+              const level = recencyLevel(row.landings);
+              return (
+                <tr key={row.key} data-testid={`recency-${row.key}`}>
+                  <td className="px-4 py-2.5">
+                    <span className="font-medium text-slate-800 dark:text-slate-100">{row.label}</span>
+                    <span className="ml-2 text-xs text-slate-400 dark:text-slate-500">
+                      {t(`aircraftRecency.kind.${row.kind}`)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5 font-mono tabular-nums text-slate-700 dark:text-slate-200">
+                    {row.landings} / {RECENCY_REQUIRED_LANDINGS}
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <span className={`badge text-xs ${RECENCY_BADGE_CLASSES[level]}`}>
+                      {t(`aircraftRecency.level.${level}`)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5 hidden sm:table-cell text-slate-500 dark:text-slate-400 tabular-nums">
+                    {row.lastFlown ? fmtDate(row.lastFlown) : '—'}
+                  </td>
+                  <td className="px-4 py-2.5 hidden sm:table-cell text-slate-500 dark:text-slate-400 tabular-nums">
+                    {row.lapsesOn ? fmtDate(row.lapsesOn) : '—'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 
   return (
     <PageWrapper maxWidth="list">
@@ -110,6 +182,8 @@ export default function CurrencyPage() {
         titleAdornment={<HelpLink topic="currency" />}
         action={totalAlerts > 0 ? <span className="badge-expiring">{t('alerts', { count: totalAlerts })}</span> : undefined}
       />
+
+      <SeasonStartPlanner />
 
       {isLoading && <SkeletonList rows={3} />}
 
@@ -205,7 +279,7 @@ export default function CurrencyPage() {
             </div>
           )}
 
-          {Object.keys(ratingsByLicense).length === 0 && (
+          {licenseGroups.length === 0 && (
             <div className="card text-center py-8">
               <p className="text-slate-500 dark:text-slate-400 text-sm">
                 {t('noRatings')}
@@ -213,10 +287,12 @@ export default function CurrencyPage() {
             </div>
           )}
 
-          {Object.entries(ratingsByLicense).map(([licenseId, ratings]) => {
+          {licenseGroups.map((licenseId) => {
+            const ratings = ratingsByLicense[licenseId] ?? [];
+            const privileges = privilegesByLicense[licenseId] ?? [];
             const license = licenses?.find((l) => l.id === licenseId);
             const isExpanded = expandedLicenses[licenseId] !== false; // default expanded
-            const hasAlert = ratings.some((r) => r.status === 'expiring' || r.status === 'expired');
+            const hasAlert = ratings.some((r) => isRatingAlert(r.status)) || privileges.some((p) => isRatingAlert(p.status));
 
             return (
               <div key={licenseId} className="mb-4">
@@ -230,7 +306,12 @@ export default function CurrencyPage() {
                     {license ? `${license.regulatoryAuthority} ${license.licenseType}` : ratings[0]?.regulatoryAuthority || t('licenseFallback')}
                     {license?.licenseNumber && <span className="text-sm font-normal text-slate-500 dark:text-slate-400 ml-2">({license.licenseNumber})</span>}
                   </span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('ratingCount', { count: ratings.length })}</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {[
+                      ...(ratings.length > 0 || privileges.length === 0 ? [t('ratingCount', { count: ratings.length })] : []),
+                      ...(privileges.length > 0 ? [t('privilegeCount', { count: privileges.length })] : []),
+                    ].join(' · ')}
+                  </span>
                   {hasAlert && <span className="w-2 h-2 rounded-full bg-amber-500" />}
                 </button>
 
@@ -239,6 +320,11 @@ export default function CurrencyPage() {
                   <div className="grid gap-3 sm:grid-cols-2 mt-3 pl-2">
                     {ratings.map((rating) => (
                       <div key={rating.classRatingId}>
+                        {isDormantClass(disciplines, rating.classType) && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1 px-1" data-testid={`dormant-note-${rating.classRatingId}`}>
+                            {t('relevance:dormant.note')}
+                          </p>
+                        )}
                         <CurrencyCard rating={rating} />
                         {rating.ruleDescription && (
                           <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 px-1 italic">
@@ -249,6 +335,27 @@ export default function CurrencyPage() {
                         )}
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Licence privileges */}
+                {isExpanded && privileges.length > 0 && (
+                  <div className="mt-3 pl-2" data-testid={`privilege-currency-group-${licenseId}`}>
+                    <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 px-1">
+                      {t('privilegesTitle')}
+                    </h3>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {privileges.map((p) => (
+                        <div key={p.privilegeId}>
+                          <PrivilegeCard privilege={p} />
+                          {p.ruleDescriptionKey && (
+                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 px-1 italic">
+                              {t(`ruleDescriptions.${p.ruleDescriptionKey}`, { defaultValue: '' })}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -266,10 +373,16 @@ export default function CurrencyPage() {
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             {currencyStatus.passengerCurrency.map((pax: PassengerCurrencyType) => {
-              const dayOk = pax.dayStatus === 'current';
+              const authMissing = pax.messageKey === 'pax.ul_authorisation_missing';
+              const dayOk = pax.dayStatus === 'current' || (authMissing && pax.dayLandings >= pax.dayRequired);
               const nightOk = pax.nightStatus === 'current';
               const hasNight = pax.nightPrivilege !== false;
-              const allOk = hasNight ? (dayOk && nightOk) : dayOk;
+              const allOk = !authMissing && (hasNight ? (dayOk && nightOk) : dayOk);
+              const paxRequirements = pax.requirements ?? [];
+              const paxPrereqMet = paxRequirements.some((r) => r.met && r.messageKey !== 'requirement.untracked');
+              const authLicenseId = authMissing
+                ? currencyStatus.ratings.find((r) => r.classType === 'ULTRALIGHT' && r.regulatoryAuthority === pax.regulatoryAuthority)?.licenseId
+                : undefined;
               const classLabel = pax.ulKind
                 ? `${t(`classTypes.${pax.classType}`, { defaultValue: pax.classType })} · ${t(`common:ulKinds.${pax.ulKind}`)}`
                 : t(`classTypes.${pax.classType}`, { defaultValue: pax.classType });
@@ -285,10 +398,23 @@ export default function CurrencyPage() {
                       {classLabel}
                       <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1">({pax.regulatoryAuthority})</span>
                     </h3>
-                    <span className={allOk ? 'badge-current' : dayOk ? 'badge-expiring' : 'badge-expired'}>
-                      {allOk ? t('status.current') : dayOk && hasNight ? t('status.dayOnly') : dayOk ? t('status.current') : t('status.notCurrent')}
+                    <span className={authMissing ? 'badge-expiring' : allOk ? 'badge-current' : dayOk ? 'badge-expiring' : 'badge-expired'}>
+                      {authMissing ? t('status.authorisationMissing') : allOk ? t('status.current') : dayOk && hasNight ? t('status.dayOnly') : dayOk ? t('status.current') : t('status.notCurrent')}
                     </span>
                   </div>
+                  {authMissing && (
+                    <div className="mb-2 space-y-2" data-testid="pax-ul-authorisation-missing">
+                      <p className="text-xs text-amber-800 dark:text-amber-300">{currencyMessage(pax)}</p>
+                      <Link
+                        to={`/licenses?addPrivilege=UL_PASSENGER_AUTH${authLicenseId ? `&licence=${encodeURIComponent(authLicenseId)}` : ''}`}
+                        className="btn-secondary btn-sm"
+                        data-testid="pax-add-ul-authorisation"
+                      >
+                        {t('addUlPassengerAuthorisation')}
+                        <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                      </Link>
+                    </div>
+                  )}
                   {/* Day currency bar */}
                   <div className="space-y-1 mb-1">
                     <div className="flex justify-between items-center text-xs">
@@ -347,6 +473,16 @@ export default function CurrencyPage() {
                       {t('nightNotApplicable')}
                     </p>
                   )}
+                  {paxRequirements.length > 0 && (
+                    <div className="mt-3 pt-2 border-t border-slate-200/70 dark:border-slate-700 space-y-2" data-testid="pax-requirements">
+                      <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                        {t(`paxRequirementsTitle.${pax.ruleDescriptionKey ?? 'default'}`, { defaultValue: t('paxRequirementsTitle.default') })}
+                      </p>
+                      {paxRequirements.map((req) => (
+                        <RequirementBar key={req.nameKey ?? req.name} req={req} showRemedy={authMissing || !paxPrereqMet} />
+                      ))}
+                    </div>
+                  )}
                   <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 italic">
                     {pax.ruleDescriptionKey
                       ? t(`ruleDescriptions.${pax.ruleDescriptionKey}`, { defaultValue: pax.ruleDescription })
@@ -360,56 +496,7 @@ export default function CurrencyPage() {
       )}
 
       {/* Informational 90-day recency per model and registration */}
-      {!isLoading && recencyRows.length > 0 && (
-        <div className="mb-8" data-testid="aircraft-recency-section">
-          <h2 className="section-title mb-4">{t('aircraftRecency.title')}</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-            {t('aircraftRecency.description', { required: RECENCY_REQUIRED_LANDINGS })}
-          </p>
-          <div className="card overflow-x-auto p-0">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700">
-                  <th className="px-4 py-2.5 font-medium">{t('aircraftRecency.aircraft')}</th>
-                  <th className="px-4 py-2.5 font-medium">{t('aircraftRecency.landings90')}</th>
-                  <th className="px-4 py-2.5 font-medium">{t('aircraftRecency.status')}</th>
-                  <th className="px-4 py-2.5 font-medium hidden sm:table-cell">{t('aircraftRecency.lastFlown')}</th>
-                  <th className="px-4 py-2.5 font-medium hidden sm:table-cell">{t('aircraftRecency.currentUntil')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                {recencyRows.map((row) => {
-                  const level = recencyLevel(row.landings);
-                  return (
-                    <tr key={row.key} data-testid={`recency-${row.key}`}>
-                      <td className="px-4 py-2.5">
-                        <span className="font-medium text-slate-800 dark:text-slate-100">{row.label}</span>
-                        <span className="ml-2 text-xs text-slate-400 dark:text-slate-500">
-                          {t(`aircraftRecency.kind.${row.kind}`)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2.5 font-mono tabular-nums text-slate-700 dark:text-slate-200">
-                        {row.landings} / {RECENCY_REQUIRED_LANDINGS}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <span className={`badge text-xs ${RECENCY_BADGE_CLASSES[level]}`}>
-                          {t(`aircraftRecency.level.${level}`)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2.5 hidden sm:table-cell text-slate-500 dark:text-slate-400 tabular-nums">
-                        {row.lastFlown ? fmtDate(row.lastFlown) : '—'}
-                      </td>
-                      <td className="px-4 py-2.5 hidden sm:table-cell text-slate-500 dark:text-slate-400 tabular-nums">
-                        {row.lapsesOn ? fmtDate(row.lapsesOn) : '—'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {!isLoading && recencyRows.length > 0 && aircraftRecency.visible && recencySection}
 
       {/* Credentials Section */}
       {!isLoading && credentials && credentials.length > 0 && (
@@ -489,6 +576,12 @@ export default function CurrencyPage() {
           </p>
         </div>
       )}
+
+      <FoldDrawer label={(count) => t('relevance:moreSections', { count })}>
+        {!isLoading && recencyRows.length > 0 && !aircraftRecency.visible && (
+          <Folded reason={aircraftRecency.reason}>{recencySection}</Folded>
+        )}
+      </FoldDrawer>
 
       {shareRule && <ShareRuleModal rule={shareRule} onClose={() => setShareRuleId(null)} />}
 

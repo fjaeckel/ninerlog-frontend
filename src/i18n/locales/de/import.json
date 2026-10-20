@@ -39,6 +39,7 @@
   "restoreSummaryAircraftSkipped": "Luftfahrzeuge übersprungen",
   "restoreSummaryLicenses": "Lizenzen",
   "restoreSummaryClassRatings": "Klassenberechtigungen",
+  "restoreSummaryLicencePrivileges": "Lizenzberechtigungen",
   "restoreSummaryCredentials": "Nachweise",
   "restoreSummaryFlights": "Flüge",
   "restoreSummaryCrew": "Crew-Mitglieder",
@@ -78,6 +79,7 @@
     "landingsDay": "Landungen Tag",
     "landingsNight": "Landungen Nacht",
     "landingsTotal": "Landungen gesamt",
+    "launchMethod": "Startart",
     "holds": "Holdings",
     "approachesCount": "Anflüge",
     "isIpc": "IPC",
@@ -92,7 +94,11 @@
     "person3": "Person 3",
     "person4": "Person 4",
     "person5": "Person 5",
-    "person6": "Person 6"
+    "person6": "Person 6",
+    "launches": "Starts",
+    "isOutlanding": "Außenlandung",
+    "isTowFlight": "Schleppflug",
+    "releaseHeightM": "Ausklinkhöhe (m)"
   },
   "uploadFailed": "Upload fehlgeschlagen",
   "previewFailed": "Vorschau fehlgeschlagen",

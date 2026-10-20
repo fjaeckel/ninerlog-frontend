@@ -2,6 +2,7 @@
 // Source: ninerlog-api/api-spec/openapi.yaml
 
 import type { ULKind, ULRatingKind } from '../lib/ultralight';
+import type { components } from '../api/schema';
 
 // ============ Common Types ============
 
@@ -253,6 +254,9 @@ export interface Currency {
 
 export type CurrencyStatus = 'current' | 'expiring' | 'expired' | 'unknown';
 
+/** Class rating status; `lapsed` is a valid licence whose rolling recency is not met. */
+export type RatingCurrencyStatus = CurrencyStatus | 'lapsed';
+
 /**
  * Variable parts of a localised currency message. Never repeats a field the
  * enclosing object already carries — see ninerlog-api docs/CURRENCY_MESSAGES.md.
@@ -261,6 +265,19 @@ export interface CurrencyMessageParams {
   days?: number;
   needed?: number;
   date?: string;
+  /** Outstanding amount a remedy asks for, in `unit`. */
+  missing?: number;
+  /** Unit of `missing`: minutes, landings, launches, flights, approaches, holds. */
+  unit?: string;
+  /** Launch method a remedy refers to. */
+  method?: string;
+}
+
+/** What restores an unmet row; see ninerlog-api docs/CURRENCY_MESSAGES.md "Remedies". */
+export interface CurrencyRemedy {
+  /** Key into currency.json `messages` (e.g. "remedy.fly_more"). */
+  remedyKey?: string;
+  remedyParams?: CurrencyMessageParams;
 }
 
 export interface CurrencyRequirement {
@@ -277,6 +294,10 @@ export interface CurrencyRequirement {
   /** Key into currency.json `messages` (e.g. "requirement.progress"). */
   messageKey?: string;
   messageParams?: CurrencyMessageParams;
+  /** Rolling-window rules: the last date a met row stays met without flying again. */
+  validUntil?: string | null;
+  remedyKey?: string;
+  remedyParams?: CurrencyMessageParams;
 }
 
 export interface CurrencyProgress {
@@ -301,7 +322,7 @@ export interface ClassRatingCurrency {
   licenseId: string;
   regulatoryAuthority: string;
   licenseType?: string;
-  status: CurrencyStatus;
+  status: RatingCurrencyStatus;
   expiryDate?: string | null;
   /**
    * For expiry-anchored revalidation rules (EASA FCL.740.A SEP/TMG/MEP/SET,
@@ -332,6 +353,8 @@ export interface ClassRatingCurrency {
   countedClasses?: ClassType[];
   /** Ultralight kinds whose flights also count (EASA FCL.035(a)(4) credit, or a German UL rating's kinds). */
   creditedUltralightKinds?: ULKind[];
+  /** Flights on ULTRALIGHT aircraft with no kind that this German UL rating did not count. Absent when zero. */
+  unclassifiedFlights?: number;
 }
 
 export interface LaunchMethodCurrency {
@@ -343,12 +366,37 @@ export interface LaunchMethodCurrency {
   message: string;
   /** Always "launch_method.progress". */
   messageKey?: string;
+  /** The last date a met method stays met without flying again. */
+  validUntil?: string | null;
+  remedyKey?: string;
+  remedyParams?: CurrencyMessageParams;
+  /** A LAUNCH_METHOD_TRAINED privilege is recorded for the method (SFCL.155(a)). */
+  trained?: boolean;
 }
 
 export interface CurrencyStatusResponse {
   ratings: ClassRatingCurrency[];
   passengerCurrency: PassengerCurrency[];
   flightReview?: FlightReviewStatus;
+  /** One entry per licence privilege; absent when none is recorded. */
+  privileges?: PrivilegeCurrency[];
+}
+
+export type PrivilegeCurrencyStatus = 'current' | 'lapsed' | 'expired' | 'unknown';
+
+/** Currency of one licence privilege; see ninerlog-api docs/SAILPLANES.md "Privileges". */
+export interface PrivilegeCurrency {
+  privilegeId: string;
+  licenseId: string;
+  kind: components['schemas']['LicencePrivilegeKind'];
+  detail?: string;
+  status: PrivilegeCurrencyStatus;
+  /** Key into currency.json `messages` (e.g. "privilege.recency_current"). */
+  messageKey: string;
+  messageParams?: CurrencyMessageParams;
+  requirements?: CurrencyRequirement[];
+  /** Key into currency.json `ruleDescriptions` (e.g. "sfcl_205_towing"). */
+  ruleDescriptionKey?: string;
 }
 
 export interface PassengerCurrency {
@@ -381,10 +429,8 @@ export interface PassengerCurrency {
   ruleDescription: string;
   /** Key into currency.json `ruleDescriptions` (e.g. "easa_pax"). */
   ruleDescriptionKey?: string;
-  /**
-   * Never populated by the API — the backend has no code path that sets it.
-   * Kept so the guarded render does not become a type error.
-   */
+  /** Informational prerequisites (SFCL.115(a)(2), LuftPersV §84a); never change `dayStatus`. */
+  requirements?: CurrencyRequirement[];
 }
 
 export interface FlightReviewStatus {

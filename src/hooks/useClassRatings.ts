@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
+import { invalidatePilotProfile } from './invalidation';
 import type { ClassRating, ClassRatingCreate, ClassRatingUpdate } from '../types/api';
 
 export const useClassRatings = (licenseId: string) => {
@@ -30,6 +31,7 @@ export const useCreateClassRating = () => {
     onSuccess: (_, { licenseId }) => {
       queryClient.invalidateQueries({ queryKey: ['classRatings', licenseId] });
       queryClient.invalidateQueries({ queryKey: ['currency'] });
+      invalidatePilotProfile(queryClient);
     },
   });
 };
@@ -48,6 +50,7 @@ export const useUpdateClassRating = () => {
     onSuccess: (_, { licenseId }) => {
       queryClient.invalidateQueries({ queryKey: ['classRatings', licenseId] });
       queryClient.invalidateQueries({ queryKey: ['currency'] });
+      invalidatePilotProfile(queryClient);
     },
   });
 };
@@ -64,6 +67,7 @@ export const useDeleteClassRating = () => {
     onSuccess: (_, { licenseId }) => {
       queryClient.invalidateQueries({ queryKey: ['classRatings', licenseId] });
       queryClient.invalidateQueries({ queryKey: ['currency'] });
+      invalidatePilotProfile(queryClient);
     },
   });
 };

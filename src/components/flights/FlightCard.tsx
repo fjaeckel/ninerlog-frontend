@@ -9,7 +9,9 @@ import FlightRouteHeading from './FlightRouteHeading';
 import {
   flightFunctionKind,
   flightFunctionLabel,
+  hasBlockTimes,
   landingsText,
+  rowClockTimes,
   type FlightCardColumns,
 } from './flightTableColumns';
 
@@ -52,10 +54,12 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
   const weekday = new Date(`${flight.date}T00:00:00Z`).toLocaleDateString(i18n.language, { weekday: 'short', timeZone: 'UTC' });
 
   // Cells honour the flights-list column setting, as the table's do.
+  const blockTimed = hasBlockTimes(flight);
+  const [startTime, endTime] = rowClockTimes(flight);
   const offOnCells: Cell[] = columns.offOnBlock
     ? [
-        { key: 'off', label: t('tableOff'), value: fmtTimeOfDay(flight.offBlockTime || flight.departureTime) || '—' },
-        { key: 'on', label: t('tableOn'), value: fmtTimeOfDay(flight.onBlockTime || flight.arrivalTime) || '—' },
+        { key: 'off', label: t(blockTimed ? 'tableOff' : 'tableTakeoffShort'), value: fmtTimeOfDay(startTime) || '—' },
+        { key: 'on', label: t(blockTimed ? 'tableOn' : 'tableLandingShort'), value: fmtTimeOfDay(endTime) || '—' },
       ]
     : [];
 

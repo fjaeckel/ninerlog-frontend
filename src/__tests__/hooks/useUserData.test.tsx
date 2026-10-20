@@ -18,6 +18,8 @@ const RESULT: ImportJSONResult = {
   aircraftSkipped: 0,
   licensesImported: 1,
   classRatingsImported: 1,
+  licencePrivilegesImported: 0,
+  pilotProfileImported: false,
   credentialsImported: 0,
   flightsImported: 2,
   crewMembersImported: 0,

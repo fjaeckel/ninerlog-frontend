@@ -140,7 +140,28 @@
       "flightRevisions": "Flight Revisions",
       "flightCorrections": "Corrections",
       "voidedFlights": "Voided Flights",
-      "logbookCertifications": "Logbook Certifications"
+      "logbookCertifications": "Logbook Certifications",
+      "licencePrivileges": "Licence Privileges",
+      "pilotProfiles": "Pilot profiles",
+      "pilotProfilesEverything": "Show everything",
+      "pilotProfilesOverrides": "Explicit discipline settings",
+      "pilotProfilesNone": "No pilot has set a discipline explicitly yet.",
+      "discipline": "Discipline",
+      "intentOn": "On",
+      "intentOff": "Off",
+      "intentGoal": "Goal",
+      "disciplines": {
+        "AEROPLANE": "Aeroplane",
+        "TMG": "TMG",
+        "SAILPLANE": "Sailplane",
+        "ULTRALIGHT": "Ultralight",
+        "GYROPLANE": "Gyroplane",
+        "HELICOPTER": "Helicopter",
+        "IFR": "IFR",
+        "MULTI_CREW": "Multi-crew",
+        "INSTRUCTOR": "Instructor",
+        "SIMULATOR": "Simulator"
+      }
     },
     "users": {
       "searchPlaceholder": "Search by email or name...",
@@ -401,6 +422,32 @@
     "HELICOPTER": "Ultralight helicopter",
     "POWERED_PARAGLIDER": "Powered paraglider",
     "SAILPLANE": "Ultralight sailplane"
+  },
+  "privilegeKinds": {
+    "SAILPLANE_TOWING": "Sailplane towing",
+    "BANNER_TOWING": "Banner towing",
+    "CLOUD_FLYING": "Cloud flying",
+    "AEROBATIC_BASIC": "Aerobatics (basic)",
+    "AEROBATIC_ADVANCED": "Aerobatics (advanced)",
+    "TMG_NIGHT": "TMG night",
+    "FI_S": "FI(S)",
+    "BI_S": "BI(S)",
+    "FE_S": "FE(S)",
+    "UL_PASSENGER_AUTH": "Passenger authorisation (UL)",
+    "UL_TOWING": "UL towing",
+    "UL_TYPE_BRIEFING": "Type briefing",
+    "LAUNCH_METHOD_TRAINED": "Launch method trained"
+  },
+  "saveWarnings": {
+    "title": "Saved — please check",
+    "region": "Save warnings",
+    "dismiss": "Dismiss warning",
+    "dismissAll": "Dismiss all",
+    "ul_night_flight": "Night time logged on an ultralight — German ultralights have no night privilege (LuftPersV).",
+    "ul_night_flight_reg": "Night time logged on ultralight {{registration}} — German ultralights have no night privilege (LuftPersV).",
+    "ul_mtom_exceeds_600": "MTOM of {{mtomKg}} kg is above the {{limitKg}} kg German ultralight limit — check the aircraft class. The aircraft was saved.",
+    "ul_120kg_class": "MTOM of {{mtomKg}} kg: this ultralight may fall in the single-seat {{limitKg}} kg class, which needs no medical.",
+    "unknown": "The save returned a note ({{code}})."
   },
   "airportInput": {
     "suggestions": "Airport suggestions"

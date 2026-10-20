@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router';
 import { Award, Plus } from 'lucide-react';
 import { useLicenses, useDeleteLicense } from '../../hooks/useLicenses';
 import LicenseForm from '../../components/licenses/LicenseForm';
@@ -11,6 +12,7 @@ import { FormModal } from '../../components/ui/FormModal';
 import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import HelpLink from '../../components/ui/HelpLink';
+import { PRIVILEGE_KINDS, type LicencePrivilegeKind } from '../../lib/privileges';
 import { LicenceCountryPrompt } from '../../components/logbook/LicenceCountryPrompt';
 import { useLicenceStrictFollowUp } from '../../components/logbook/useLicenceStrictFollowUp';
 
@@ -21,6 +23,13 @@ export default function LicensesPage() {
   const [editingLicense, setEditingLicense] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const { t } = useTranslation('licenses');
+  const [searchParams] = useSearchParams();
+  const editRatingId = searchParams.get('editRating');
+  const addPrivilegeParam = searchParams.get('addPrivilege');
+  const addPrivilegeKind = addPrivilegeParam && (PRIVILEGE_KINDS as readonly string[]).includes(addPrivilegeParam)
+    ? (addPrivilegeParam as LicencePrivilegeKind)
+    : null;
+  const addPrivilegeLicence = searchParams.get('licence');
   const { onLicenceSaved, dialogs: strictFollowUpDialogs } = useLicenceStrictFollowUp();
 
   const handleDelete = async (id: string) => {
@@ -99,6 +108,8 @@ export default function LicensesPage() {
               license={license}
               onEdit={() => handleEdit(license.id)}
               onDelete={() => handleDelete(license.id)}
+              editRatingId={editRatingId}
+              addPrivilegeKind={addPrivilegeKind && (addPrivilegeLicence ?? licenses[0]?.id) === license.id ? addPrivilegeKind : null}
             />
           ))}
         </div>
