@@ -27,7 +27,8 @@ const ALL_FLIGHT_FIELDS = {
   distance: true, remarks: true, instructorName: true, instructorComments: true, sicTime: true,
   dualGivenTime: true, simulatedFlightTime: true, groundTrainingTime: true, actualInstrumentTime: true,
   simulatedInstrumentTime: true, holds: true, approachesCount: true, isIpc: true, isFlightReview: true,
-  isProficiencyCheck: true, launchMethod: true, picName: true, multiPilotTime: true, picusTime: true,
+  isProficiencyCheck: true, launchMethod: true, launches: true, launchesOverride: true, isOutlanding: true,
+  isTowFlight: true, releaseHeightM: true, warnings: true, picName: true, multiPilotTime: true, picusTime: true,
   spicTime: true, examinerTime: true, reliefTime: true, isSimulator: true, isPassenger: true, fstdType: true,
   approaches: true, endorsements: true, crewMembers: true, createdAt: true, updatedAt: true, signatureId: true,
 } satisfies Record<keyof Flight, true>;
@@ -110,7 +111,7 @@ describe('flightRevisions', () => {
 
   it('renders enum values with their localised labels', () => {
     expect(formatRevisionValue('launchMethod', 'self-launch', fmt)).toBe('Self-Launch');
-    expect(formatRevisionValue('launchMethod', 'winch', fmtFor('de'))).toBe('Winde');
+    expect(formatRevisionValue('launchMethod', 'winch', fmtFor('de'))).toBe('Windenstart');
     expect(formatRevisionValue('launchMethod', 'null', fmt)).toBe('—');
     expect(
       formatRevisionValue('crewMembers', [{ name: 'Amelia', role: 'SafetyPilot' }, { name: 'Bessie' }], fmt)

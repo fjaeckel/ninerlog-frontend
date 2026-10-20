@@ -53,6 +53,10 @@
       "sicTimeOverride": "SIC-Zeit manuell gesetzt",
       "multiPilotTimeOverride": "Multi-Pilot-Zeit manuell gesetzt",
       "approachesCount": "Anzahl Anflüge",
+      "launchesOverride": "Starts manuell gesetzt",
+      "isOutlanding": "Außenlandung",
+      "isTowFlight": "Schleppflug",
+      "warnings": "Hinweise beim Speichern",
       "other": "Sonstige Angabe",
       "departureAirportName": "Name des Startflugplatzes",
       "arrivalAirportName": "Name des Zielflugplatzes"

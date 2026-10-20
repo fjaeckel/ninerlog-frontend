@@ -53,6 +53,10 @@
       "sicTimeOverride": "SIC time set by hand",
       "multiPilotTimeOverride": "Multi-pilot time set by hand",
       "approachesCount": "Number of approaches",
+      "launchesOverride": "Launches set by hand",
+      "isOutlanding": "Outlanding",
+      "isTowFlight": "Tow flight",
+      "warnings": "Save warnings",
       "other": "Other detail",
       "departureAirportName": "Departure airport name",
       "arrivalAirportName": "Arrival airport name"

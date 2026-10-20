@@ -76,7 +76,7 @@ const RESTORE_SUCCESS = {
   body: {
     aircraftImported: 3, aircraftSkipped: 0, licensesImported: 2, classRatingsImported: 4,
     credentialsImported: 2, flightsImported: 214, crewMembersImported: 31, contactsImported: 12,
-    flightRevisionsImported: 37, logbookCertificationsImported: 5,
+    flightRevisionsImported: 37, logbookCertificationsImported: 5, licencePrivilegesImported: 3, pilotProfileImported: true,
     contactsSkipped: 0, contactsCreated: 3, customCurrencyRulesImported: 2, customReportsImported: 2,
     notificationPreferencesImported: true, flightBaselineImported: true, mode: 'restore',
     warnings: [
