@@ -152,4 +152,60 @@ describe('LicenseForm', () => {
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
+
+  it('saves the issuing country, clears it with null and reports the saved licence', async () => {
+    const user = userEvent.setup();
+    const existingLicense = {
+      id: '123', userId: 'user-123', regulatoryAuthority: 'EASA', licenseType: 'PPL',
+      licenseNumber: 'PPL-12345', issuingAuthority: 'BAZL', issueDate: '2024-01-01',
+      requiresSeparateLogbook: false, issuingCountry: null,
+      createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
+    };
+    vi.spyOn(useLicensesHook, 'useLicenses').mockReturnValue({ data: [existingLicense], isLoading: false, error: null } as never);
+    const saved = { ...existingLicense, issuingCountry: 'CH' };
+    mockUpdate.mutateAsync.mockResolvedValueOnce(saved);
+    const onSaved = vi.fn();
+
+    renderWithProviders(<LicenseForm licenseId="123" onClose={mockOnClose} onSaved={onSaved} />);
+
+    const select = screen.getByLabelText(/issuing country/i) as HTMLSelectElement;
+    expect(select.value).toBe('');
+    expect(screen.getByRole('option', { name: 'Switzerland' })).toHaveValue('CH');
+    await user.selectOptions(select, 'CH');
+    await user.click(screen.getByRole('button', { name: /update license/i }));
+
+    await waitFor(() => {
+      expect(mockUpdate.mutateAsync).toHaveBeenCalledWith({
+        id: '123',
+        data: expect.objectContaining({ issuingCountry: 'CH' }),
+      });
+    });
+    expect(onSaved).toHaveBeenCalledWith(saved, expect.any(Number));
+
+    mockUpdate.mutateAsync.mockResolvedValueOnce(existingLicense);
+    await user.selectOptions(select, '');
+    await user.click(screen.getByRole('button', { name: /update license/i }));
+    await waitFor(() => {
+      expect(mockUpdate.mutateAsync).toHaveBeenLastCalledWith({
+        id: '123',
+        data: expect.objectContaining({ issuingCountry: null }),
+      });
+    });
+  });
+
+  it('explains in the country help that a requiring country switches strict mode on', () => {
+    renderWithProviders(<LicenseForm onClose={mockOnClose} />);
+    expect(screen.getByLabelText(/issuing country/i)).toHaveAccessibleDescription(
+      /\(e\.g\. switzerland, germany, australia\) switches strict logbook mode on/i
+    );
+  });
+
+  it('lists countries sorted by their localised name', () => {
+    renderWithProviders(<LicenseForm onClose={mockOnClose} />);
+    const names = Array.from((screen.getByLabelText(/issuing country/i) as HTMLSelectElement).options)
+      .slice(1)
+      .map((o) => o.textContent ?? '');
+    expect(names.length).toBe(249);
+    expect([...names].sort((a, b) => a.localeCompare(b, 'en'))).toEqual(names);
+  });
 });

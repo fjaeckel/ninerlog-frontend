@@ -88,6 +88,8 @@
     "credentialNumberHint": "Falls angegeben, wird diese neben Ihrer Unterschrift vermerkt.",
     "submit": "Diesen Eintrag unterschreiben",
     "submitting": "Wird übermittelt...",
-    "signatureRequired": "Bitte zeichnen Sie eine Unterschrift, bevor Sie fortfahren."
+    "signatureRequired": "Bitte zeichnen Sie eine Unterschrift, bevor Sie fortfahren.",
+    "flightChanged": "Der Flug wurde geändert, nachdem diese Seite geöffnet wurde. Laden Sie neu, um vor dem Unterschreiben den aktuellen Eintrag zu sehen.",
+    "reload": "Neu laden"
   }
 }

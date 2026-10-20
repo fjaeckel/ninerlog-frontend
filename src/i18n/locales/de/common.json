@@ -135,7 +135,12 @@
       "totalPassengerFlights": "Passagierflüge",
       "totalContacts": "Kontakte",
       "totalCustomReports": "Eigene Berichte",
-      "activeSessions": "Aktive Sitzungen"
+      "activeSessions": "Aktive Sitzungen",
+      "strictLogbookUsers": "Strenger Flugbuchmodus",
+      "flightRevisions": "Flugrevisionen",
+      "flightCorrections": "Korrekturen",
+      "voidedFlights": "Stornierte Flüge",
+      "logbookCertifications": "Flugbuch-Bestätigungen"
     },
     "users": {
       "searchPlaceholder": "Nach E-Mail oder Name suchen...",

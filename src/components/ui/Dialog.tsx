@@ -10,6 +10,8 @@ interface DialogProps {
   description?: string;
   children: ReactNode;
   maxWidthClassName?: string;
+  /** `alertdialog` for a confirmation of a destructive action. */
+  role?: 'dialog' | 'alertdialog';
 }
 
 /**
@@ -24,6 +26,7 @@ export function Dialog({
   description,
   children,
   maxWidthClassName = 'max-w-md',
+  role = 'dialog',
 }: DialogProps) {
   const { t } = useTranslation('common');
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -46,6 +49,7 @@ export function Dialog({
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.stopPropagation();
         onClose();
         return;
       }
@@ -74,7 +78,7 @@ export function Dialog({
       <div className="fixed inset-0 bg-black/50 z-[1020]" onClick={onClose} aria-hidden="true" />
       <div
         ref={dialogRef}
-        role="dialog"
+        role={role}
         aria-modal="true"
         aria-labelledby="app-dialog-title"
         aria-describedby={description ? 'app-dialog-desc' : undefined}

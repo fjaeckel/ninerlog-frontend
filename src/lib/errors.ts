@@ -67,3 +67,14 @@ export function extractApiFieldErrors(err: unknown): Record<string, string> {
   }
   return result;
 }
+
+/**
+ * Extract the machine-readable `code` from an API error response, if any.
+ */
+export function extractApiCode(err: unknown): string | undefined {
+  if (!err || typeof err !== 'object') return undefined;
+  const direct = (err as { code?: unknown }).code;
+  if (typeof direct === 'string') return direct;
+  const nested = (err as { response?: { data?: { code?: unknown } } }).response?.data?.code;
+  return typeof nested === 'string' ? nested : undefined;
+}

@@ -8,6 +8,7 @@ import { useAuthProviders, useRegister, useResendVerification } from '../../hook
 import { APP_NAME } from '../../lib/config';
 import { LogoMark } from '../../components/ui/Logo';
 import { PasswordStrengthMeter } from '../../components/ui/PasswordStrengthMeter';
+import { RecordsPanel } from '../../components/logbook/RecordsPanel';
 import { extractApiError, extractApiStatus } from '../../lib/errors';
 import { supportedLanguages, languageNames } from '../../i18n';
 import { PASSWORD_ISSUE_KEYS, passwordIssue } from '../../lib/passwordStrength';
@@ -295,6 +296,8 @@ export default function RegisterPage() {
             </select>
             <p className="form-helper">{t('auth:register.languageHint')}</p>
           </div>
+
+          <RecordsPanel />
 
           <button
             type="submit"

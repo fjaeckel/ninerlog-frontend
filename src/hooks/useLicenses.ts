@@ -32,6 +32,7 @@ export const useCreateLicense = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['licenses'] });
+      queryClient.invalidateQueries({ queryKey: ['logbookMode'] });
       addLicense(data);
     },
   });
@@ -52,6 +53,7 @@ export const useUpdateLicense = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['licenses'] });
+      queryClient.invalidateQueries({ queryKey: ['logbookMode'] });
       updateLicenseInStore(data.id, data);
     },
   });
@@ -70,6 +72,7 @@ export const useDeleteLicense = () => {
     },
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['licenses'] });
+      queryClient.invalidateQueries({ queryKey: ['logbookMode'] });
       removeLicense(id);
     },
   });

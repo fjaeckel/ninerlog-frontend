@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +8,8 @@ import { extractApiError } from '../../lib/errors';
 import { DocumentFileGallery } from '../documents/DocumentFileGallery';
 import { isGermanULAuthority, looksLikeULLicence } from '../../lib/ultralight';
 import { ULAuthorityHint } from './ULAuthorityHint';
-import type { LicenseCreate, LicenseUpdate } from '../../types/api';
+import { countryOptions } from '../../lib/countries';
+import type { License, LicenseCreate, LicenseUpdate } from '../../types/api';
 
 const licenseSchema = z.object({
   regulatoryAuthority: z.string().min(1, 'Regulatory authority is required'),
@@ -17,6 +18,7 @@ const licenseSchema = z.object({
   issueDate: z.string().min(1, 'Issue date is required'),
   issuingAuthority: z.string().min(1, 'Issuing authority is required'),
   requiresSeparateLogbook: z.boolean(),
+  issuingCountry: z.string(),
 });
 
 type LicenseFormData = z.infer<typeof licenseSchema>;
@@ -24,10 +26,13 @@ type LicenseFormData = z.infer<typeof licenseSchema>;
 interface LicenseFormProps {
   licenseId?: string | null;
   onClose: () => void;
+  /** Called with the saved licence and the save's start (epoch ms) before `onClose`. */
+  onSaved?: (license: License, startedAt: number) => void;
 }
 
-export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
-  const { t } = useTranslation('licenses');
+export default function LicenseForm({ licenseId, onClose, onSaved }: LicenseFormProps) {
+  const { t, i18n } = useTranslation('licenses');
+  const countries = useMemo(() => countryOptions(i18n.language), [i18n.language]);
   const createLicense = useCreateLicense();
   const updateLicense = useUpdateLicense();
   const { data: licenses } = useLicenses();
@@ -51,8 +56,10 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
       issueDate: existingLicense.issueDate,
       issuingAuthority: existingLicense.issuingAuthority,
       requiresSeparateLogbook: existingLicense.requiresSeparateLogbook,
+      issuingCountry: existingLicense.issuingCountry ?? '',
     } : {
       requiresSeparateLogbook: false,
+      issuingCountry: '',
     },
   });
 
@@ -65,6 +72,7 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
         issueDate: existingLicense.issueDate,
         issuingAuthority: existingLicense.issuingAuthority,
         requiresSeparateLogbook: existingLicense.requiresSeparateLogbook,
+        issuingCountry: existingLicense.issuingCountry ?? '',
       });
     }
   }, [existingLicense, reset]);
@@ -80,8 +88,10 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
     looksLikeULLicence(watchedFields.licenseType) && !isGermanULAuthority(watchedFields.regulatoryAuthority);
 
   const onSubmit = async (data: LicenseFormData) => {
+    const startedAt = Date.now();
     try {
       setApiError(null);
+      let saved: License;
       if (isEditing && licenseId) {
         const updateData: LicenseUpdate = {
           regulatoryAuthority: data.regulatoryAuthority,
@@ -89,8 +99,9 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
           licenseNumber: data.licenseNumber,
           issuingAuthority: data.issuingAuthority,
           requiresSeparateLogbook: data.requiresSeparateLogbook,
+          issuingCountry: data.issuingCountry || null,
         };
-        await updateLicense.mutateAsync({ id: licenseId, data: updateData });
+        saved = await updateLicense.mutateAsync({ id: licenseId, data: updateData });
       } else {
         const createData: LicenseCreate = {
           regulatoryAuthority: data.regulatoryAuthority,
@@ -99,9 +110,11 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
           issueDate: data.issueDate,
           issuingAuthority: data.issuingAuthority,
           requiresSeparateLogbook: data.requiresSeparateLogbook,
+          ...(data.issuingCountry ? { issuingCountry: data.issuingCountry } : {}),
         };
-        await createLicense.mutateAsync(createData);
+        saved = await createLicense.mutateAsync(createData);
       }
+      onSaved?.(saved, startedAt);
       onClose();
     } catch (error) {
       setApiError(extractApiError(error, t('form.failedToSave')));
@@ -219,6 +232,28 @@ export default function LicenseForm({ licenseId, onClose }: LicenseFormProps) {
         {errors.issueDate && (
           <p className="form-error">{errors.issueDate.message}</p>
         )}
+      </div>
+
+      <div>
+        <label htmlFor="issuingCountry" className="form-label">
+          {t('fields.issuingCountry')}
+        </label>
+        <select
+          {...register('issuingCountry')}
+          id="issuingCountry"
+          className="input"
+          aria-describedby="issuingCountry-help"
+        >
+          <option value="">{t('form.issuingCountryNone')}</option>
+          {countries.map(({ code, name }) => (
+            <option key={code} value={code}>
+              {name}
+            </option>
+          ))}
+        </select>
+        <p id="issuingCountry-help" className="form-helper">
+          {t('form.issuingCountryHelp')}
+        </p>
       </div>
 
       <div className="flex items-center gap-2">

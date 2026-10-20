@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FlightCrewCard } from '../../components/flights/FlightCrewCard';
 
@@ -80,6 +80,80 @@ describe('FlightCrewCard', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('This flight is locked by a completed signature.');
     expect(screen.getByRole('combobox', { name: 'Role of Anna Imported' })).toHaveValue('Student');
+  });
+
+  it('asks for a correction reason, keeps the change meanwhile and resubmits with it', async () => {
+    const user = userEvent.setup();
+    mutateAsync
+      .mockRejectedValueOnce({ error: 'needs a reason', code: 'correction_reason_required', httpStatus: 422 })
+      .mockResolvedValueOnce({});
+    render(<FlightCrewCard flight={baseFlight} />);
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Role of Anna Imported' }), 'Instructor');
+
+    const dialog = await screen.findByRole('dialog', { name: /reason for the correction/i });
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: /close/i })).toHaveFocus());
+    expect(screen.getByRole('combobox', { name: 'Role of Anna Imported' })).toHaveValue('Instructor');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    await user.type(within(dialog).getByRole('textbox', { name: /reason/i }), 'Instructor was on board');
+    await user.click(within(dialog).getByRole('button', { name: /save correction/i }));
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledTimes(2));
+    expect(mutateAsync.mock.calls[1][0]).toEqual({
+      id: 'flight-1',
+      data: expect.objectContaining({
+        correctionReason: 'Instructor was on board',
+        crewMembers: [
+          { contactId: 'c-1', name: 'Anna Imported', role: 'Instructor' },
+          { contactId: null, name: 'Tom Becker', role: 'PIC' },
+        ],
+      }),
+    });
+    expect(await screen.findByText('Saved')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('rolls the change back when the correction reason is cancelled', async () => {
+    const user = userEvent.setup();
+    mutateAsync.mockRejectedValueOnce({ error: 'needs a reason', code: 'correction_reason_required', httpStatus: 422 });
+    render(<FlightCrewCard flight={baseFlight} />);
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Role of Anna Imported' }), 'Instructor');
+    const dialog = await screen.findByRole('dialog', { name: /reason for the correction/i });
+    await user.click(within(dialog).getByRole('button', { name: /^cancel$/i }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Role of Anna Imported' })).toHaveValue('Student');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(mutateAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows a localized message when the correction reason is too long', async () => {
+    const user = userEvent.setup();
+    mutateAsync
+      .mockRejectedValueOnce({ error: 'needs a reason', code: 'correction_reason_required', httpStatus: 422 })
+      .mockRejectedValueOnce({ error: 'correctionReason is too long', httpStatus: 400 });
+    render(<FlightCrewCard flight={baseFlight} />);
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Role of Anna Imported' }), 'Instructor');
+    const dialog = await screen.findByRole('dialog', { name: /reason for the correction/i });
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: /close/i })).toHaveFocus());
+    await user.type(within(dialog).getByRole('textbox', { name: /reason/i }), 'x');
+    await user.click(within(dialog).getByRole('button', { name: /save correction/i }));
+
+    expect(await within(dialog).findByText(/the reason is too long\. use at most 500 characters/i)).toBeInTheDocument();
+    expect(within(dialog).queryByText('correctionReason is too long')).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Role of Anna Imported' })).toHaveValue('Instructor');
+  });
+
+  it('maps a 409 lock to a localized message', async () => {
+    const user = userEvent.setup();
+    mutateAsync.mockRejectedValueOnce({ error: 'locked', httpStatus: 409 });
+    render(<FlightCrewCard flight={baseFlight} />);
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Role of Anna Imported' }), 'Examiner');
+    expect(await screen.findByRole('alert')).toHaveTextContent(/void the signature to change it/i);
   });
 
   it('is read-only on a signed flight', () => {

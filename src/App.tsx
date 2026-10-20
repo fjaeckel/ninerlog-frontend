@@ -18,6 +18,8 @@ const DashboardPage = lazyWithRetry(() => import('./pages/DashboardPage'));
 const LicensesPage = lazyWithRetry(() => import('./pages/licenses/LicensesPage'));
 const FlightsPage = lazyWithRetry(() => import('./pages/flights/FlightsPage'));
 const FlightDetailPage = lazyWithRetry(() => import('./pages/flights/FlightDetailPage'));
+const VoidedFlightsPage = lazyWithRetry(() => import('./pages/flights/VoidedFlightsPage'));
+const FlightHistoryPage = lazyWithRetry(() => import('./pages/flights/FlightHistoryPage'));
 const QuickLogPage = lazyWithRetry(() => import('./pages/quicklog/QuickLogPage'));
 const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage'));
 const CredentialsPage = lazyWithRetry(() => import('./pages/credentials/CredentialsPage'));
@@ -78,7 +80,9 @@ function App() {
           <Route path="/dashboard" element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />} />
           <Route path="/licenses" element={isAuthenticated ? <LicensesPage /> : <Navigate to="/login" />} />
           <Route path="/flights" element={isAuthenticated ? <FlightsPage /> : <Navigate to="/login" />} />
+          <Route path="/flights/voided" element={isAuthenticated ? <VoidedFlightsPage /> : <Navigate to="/login" />} />
           <Route path="/flights/:flightId" element={isAuthenticated ? <FlightDetailPage /> : <Navigate to="/login" />} />
+          <Route path="/flights/:flightId/history" element={isAuthenticated ? <FlightHistoryPage /> : <Navigate to="/login" />} />
           <Route path="/quicklog" element={isAuthenticated ? <QuickLogPage /> : <Navigate to="/login" />} />
           <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />} />
           <Route path="/credentials" element={isAuthenticated ? <CredentialsPage /> : <Navigate to="/login" />} />

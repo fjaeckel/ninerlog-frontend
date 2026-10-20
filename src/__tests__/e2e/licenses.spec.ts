@@ -25,7 +25,7 @@ test.describe('Licenses', () => {
     // aborts it, and WebKit treats that as an error.
     await expect(page).toHaveURL('/licenses');
     await page.reload();
-    await expect(page.getByText('EASA PPL')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'EASA PPL' })).toBeVisible({ timeout: 10000 });
   });
 
   test('should create license via form', async ({ page }) => {

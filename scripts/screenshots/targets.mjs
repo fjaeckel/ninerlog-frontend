@@ -8,11 +8,38 @@
  *   anonymous  do not seed a session — for the public/auth routes
  *   user       fields merged over the fixture user, in the session and /users/me
  *   viewport   a desktop viewport other than the default 1440×1100
- *   respond(method, path, searchParams)  a { status, body } answer overriding
- *              the fixtures, or undefined to fall through to them
+ *   routes     `{ path: body }` served in place of the default fixtures
+ *   respond(method, path, searchParams, state)  a { status, body } answer
+ *              overriding the fixtures, or undefined to fall through to them;
+ *              `state` lives for one shot
  *
  * Add a target whenever you add a screen.
  */
+import { flightRevisions, licenses, logbookMode, logbookModeOff, logbookModeOffRequired } from './fixtures.mjs';
+
+const signInfo = {
+  status: 'pending', flightDate: '2026-08-12', aircraftReg: 'D-EABC', aircraftType: 'C172',
+  route: 'EDDF - EDDH', totalTime: 95, dualTime: 95, instructorName: null, expiresAt: '2026-08-19T00:00:00Z',
+  fieldsHash: 'f00d',
+};
+
+async function signAndSubmit(page) {
+  await page.locator('#signerName').fill('Jean Batten');
+  const box = await page.locator('canvas').boundingBox();
+  await page.mouse.move(box.x + 30, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 120, box.y + 30, { steps: 8 });
+  await page.mouse.move(box.x + 220, box.y + box.height - 30, { steps: 8 });
+  await page.mouse.up();
+  await page.locator('form button[type="submit"]').click();
+  await page.waitForTimeout(600);
+}
+
+const editFlight = async (page) => {
+  await page.getByRole('button', { name: /edit flight|flug .*bearbeiten/i }).first().click();
+  await page.waitForTimeout(600);
+};
+
 async function openRestoreTab(page) {
   await page.getByRole('tab', { name: /^(restore json backup|json-sicherung wiederherstellen)$/i }).click();
   await page.waitForTimeout(300);
@@ -43,6 +70,7 @@ const RESTORE_SUCCESS = {
   body: {
     aircraftImported: 3, aircraftSkipped: 0, licensesImported: 2, classRatingsImported: 4,
     credentialsImported: 2, flightsImported: 214, crewMembersImported: 31, contactsImported: 12,
+    flightRevisionsImported: 37, logbookCertificationsImported: 5,
     contactsSkipped: 0, contactsCreated: 3, customCurrencyRulesImported: 2, customReportsImported: 2,
     notificationPreferencesImported: true, flightBaselineImported: true, mode: 'restore',
     warnings: [
@@ -197,6 +225,172 @@ export const TARGETS = [
       await page.waitForTimeout(200);
     },
   },
+  {
+    name: 'flight-detail-history-system',
+    path: '/flights/f1',
+    act: async (page) => {
+      await page.getByRole('button', { name: /show \d+ system changes?|\d+ systemänderungen? anzeigen/i }).click();
+      await page.getByRole('heading', { name: /^(history|verlauf)$/i }).scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flight-detail-history-system-only',
+    path: '/flights/f1',
+    routes: {
+      '/flights/f1/revisions': flightRevisions.f1.filter((r) => r.source !== 'user_edit'),
+    },
+    act: async (page) => {
+      await page.getByRole('heading', { name: /^(history|verlauf)$/i }).scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flight-detail-history-mode-error',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      path === '/logbook/mode' ? { status: 500, body: { error: 'Internal server error' } } : undefined,
+    act: async (page) => {
+      await page.waitForTimeout(600);
+      await page.getByRole('heading', { name: /^(history|verlauf)$/i }).scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flights-modal-edit-correction',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'PUT' && path === '/flights/f1'
+        ? {
+            status: 422,
+            body: { error: 'This edit is a correction and needs a reason', code: 'correction_reason_required' },
+          }
+        : undefined,
+    act: async (page) => {
+      await editFlight(page);
+      await page.locator('#offBlockTime').fill('09:05');
+      await page.locator('#onBlockTime').fill('10:50');
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForTimeout(600);
+      await page.locator('#correction-reason').fill('On-block time corrected from the tech log');
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'flights-modal-edit-override',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'PUT' && path === '/flights/f1'
+        ? {
+            status: 422,
+            body: {
+              error: 'A manual override may only reduce an auto-calculated time',
+              code: 'override_exceeds_calculated',
+              details: [{ field: 'nightTime', message: 'Must not exceed the calculated 0 min' }],
+            },
+          }
+        : undefined,
+    act: async (page) => {
+      await editFlight(page);
+      await page.locator('#offBlockTime').fill('09:05');
+      await page.locator('#onBlockTime').fill('10:50');
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForTimeout(600);
+      await page.locator('#nightTime').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'flights-modal-edit-override-hidden',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'PUT' && path === '/flights/f1'
+        ? {
+            status: 422,
+            body: {
+              error: 'A manual override may only reduce an auto-calculated time',
+              code: 'override_exceeds_calculated',
+              details: [
+                { field: 'nightTime', message: 'Must not exceed the calculated 0 min' },
+                { field: 'landingsDay', message: 'Must not exceed the calculated 1' },
+                { field: 'sicTime', message: 'Must not exceed the calculated 0 min' },
+              ],
+            },
+          }
+        : undefined,
+    act: async (page) => {
+      await editFlight(page);
+      await page.locator('#offBlockTime').fill('09:05');
+      await page.locator('#onBlockTime').fill('10:50');
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForTimeout(600);
+      await page.getByRole('dialog').getByRole('radiogroup').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'flight-delete-strict',
+    path: '/flights/f1',
+    act: async (page) => {
+      await page.getByRole('button', { name: /delete flight|flug .*löschen/i }).first().click();
+      await page.waitForTimeout(400);
+      await page.locator('#delete-reason').fill('Duplicate entry');
+    },
+  },
+  {
+    name: 'flight-delete-unknown-mode',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'GET' && path === '/logbook/mode' ? { status: 500, body: { error: 'Internal error' } } : undefined,
+    act: async (page) => {
+      await page.getByRole('button', { name: /delete flight|flug .*löschen/i }).first().click();
+      await page.waitForTimeout(400);
+    },
+  },
+  {
+    name: 'flights-signed-delete-hint',
+    path: '/flights',
+    act: async (page) => {
+      await page.getByRole('img', { name: /signed flights can't be deleted|unterschriebene flüge/i }).first().hover();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'flight-delete-error',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'DELETE' && path === '/flights/f1'
+        ? { status: 409, body: { error: 'Flight is signed and cannot be deleted' } }
+        : undefined,
+    act: async (page) => {
+      await page.getByRole('button', { name: /delete flight|flug .*löschen/i }).first().click();
+      await page.waitForTimeout(400);
+      await page.locator('#delete-reason').fill('Duplicate entry');
+      await page.getByRole('dialog').getByRole('button', { name: /^(delete flight|flug löschen)$/i }).click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: 'flight-detail-crew-correction',
+    path: '/flights/f1',
+    respond: (method, path) =>
+      method === 'PUT' && path === '/flights/f1'
+        ? {
+            status: 422,
+            body: { error: 'This edit is a correction and needs a reason', code: 'correction_reason_required' },
+          }
+        : undefined,
+    act: async (page) => {
+      await page.getByRole('button', { name: /change name of amelia|namen von amelia/i }).first().click();
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Control+A');
+      await page.keyboard.type('Amelia M. Earhart');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(600);
+    },
+  },
+  { name: 'flights-voided', path: '/flights/voided' },
+  { name: 'flight-history-voided', path: '/flights/fv1/history' },
   { name: 'flight-detail-simulator', path: '/flights/f6' },
   { name: 'flight-detail-signed', path: '/flights/f2' },
   {
@@ -257,6 +451,36 @@ export const TARGETS = [
       await page.waitForTimeout(300);
       await page.locator('select').first().selectOption('ULTRALIGHT');
       await page.waitForTimeout(300);
+    },
+  },
+  {
+    name: 'licenses-modal-country',
+    path: '/licenses',
+    act: async (page) => {
+      await page.getByRole('button', { name: /add country to easa lapl|staat für easa lapl/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#issuingCountry').selectOption('CH');
+      await page.locator('#issuingCountry').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'licenses-strict-notice',
+    path: '/licenses',
+    respond: (method, path, _params, state) => {
+      if (method === 'PATCH' && path === '/licenses/l5') {
+        state.saved = true;
+        return { body: { ...licenses.find((l) => l.id === 'l5'), issuingCountry: 'CH' } };
+      }
+      if (path === '/logbook/mode') return { body: state.saved ? logbookMode : logbookModeOff };
+      return undefined;
+    },
+    act: async (page) => {
+      await page.getByRole('button', { name: /add country to easa lapl|staat für easa lapl/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('#issuingCountry').selectOption('CH');
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForTimeout(1200);
     },
   },
   { name: 'credentials', path: '/credentials' },
@@ -359,6 +583,57 @@ export const TARGETS = [
     },
   },
   {
+    name: 'profile-logbook',
+    path: '/profile',
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: 'profile-logbook-certify-error',
+    path: '/profile',
+    respond: (method, path) =>
+      method === 'POST' && path === '/logbook/certifications'
+        ? { status: 422, body: { error: 'certifiedThrough is in the future', code: 'certification_in_future' } }
+        : undefined,
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+      await page.getByRole('button', { name: /^(certify|bestätigen)$/i }).click();
+      await page.waitForTimeout(400);
+      await page.locator('#certified-through').scrollIntoViewIfNeeded();
+    },
+  },
+  {
+    name: 'profile-logbook-off',
+    path: '/profile',
+    routes: { '/logbook/mode': logbookModeOff },
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: 'profile-logbook-off-required',
+    path: '/profile',
+    routes: { '/logbook/mode': logbookModeOffRequired },
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: 'profile-logbook-records',
+    path: '/profile',
+    act: async (page) => {
+      await page.getByRole('button', { name: /^(data & security|daten & sicherheit)$/i }).first().click();
+      await page.waitForTimeout(500);
+      await page.getByRole('button', { name: /^(what ninerlog records|was ninerlog aufzeichnet)$/i }).click();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
     name: 'update-indicator',
     path: '/dashboard',
     act: async (page) => {
@@ -390,12 +665,33 @@ export const TARGETS = [
   { name: 'empty-licenses', path: '/licenses', empty: true },
   { name: 'empty-credentials', path: '/credentials', empty: true },
   { name: 'empty-reports-custom', path: '/reports#custom', empty: true },
+  { name: 'empty-flights-voided', path: '/flights/voided', empty: true },
 
   // Error states — reached by failing the page's own list request.
   { name: 'error-flights', path: '/flights', fail: true },
   { name: 'error-licenses', path: '/licenses', fail: true },
 
   // Public routes.
+  {
+    name: 'sign-page',
+    path: '/sign?token=demo-token',
+    anonymous: true,
+    respond: (method, path) => (path === '/sign/demo-token' && method === 'GET' ? { body: signInfo } : undefined),
+  },
+  {
+    name: 'sign-page-flight-changed',
+    path: '/sign?token=demo-token',
+    anonymous: true,
+    respond: (method, path) => {
+      if (path !== '/sign/demo-token') return undefined;
+      if (method === 'GET') return { body: signInfo };
+      return {
+        status: 409,
+        body: { error: 'Flight was changed after the signing page was opened', code: 'flight_changed' },
+      };
+    },
+    act: signAndSubmit,
+  },
   { name: 'auth-login', path: '/login', anonymous: true },
   { name: 'auth-register', path: '/register', anonymous: true },
   { name: 'auth-reset', path: '/reset-password', anonymous: true },
@@ -413,4 +709,5 @@ export const EMPTY_BODIES = {
   '/credentials': [],
   '/contacts': [],
   '/reports/custom': [],
+  '/flights/voided': [],
 };

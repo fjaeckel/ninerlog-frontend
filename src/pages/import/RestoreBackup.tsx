@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle, CheckCircle2, ChevronRight, DatabaseBackup, Info } from 'lucide-react';
 import { FileDropzone } from '../../components/ui/FileDropzone';
 import { RestoreError, useRestoreJSON } from '../../hooks/useImport';
+import { useIsStrictLogbook } from '../../hooks/useLogbook';
 import type { ImportJSONResult, RestoreMode, RestoreWarning } from '../../hooks/useImport';
 import { SummaryCard } from './SummaryCard';
 
@@ -27,6 +28,7 @@ type Step = 'idle' | 'confirmReplace' | 'replaceBlocked' | 'done';
 export default function RestoreBackup() {
   const { t } = useTranslation(['import', 'common']);
   const restore = useRestoreJSON();
+  const strictLogbook = useIsStrictLogbook();
   const [step, setStep] = useState<Step>('idle');
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ImportJSONResult | null>(null);
@@ -127,6 +129,9 @@ export default function RestoreBackup() {
               </h2>
               <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{t('restoreReplace.body')}</p>
               <p className="text-sm text-slate-600 dark:text-slate-300 mt-3">{t('restoreReplace.deletes')}</p>
+              {strictLogbook && (
+                <p className="text-sm text-slate-600 dark:text-slate-300 mt-3">{t('restoreReplace.strict')}</p>
+              )}
               <p className="text-sm text-slate-600 dark:text-slate-300 mt-3">{t('restoreReplace.atomic')}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 break-all">
                 {t('restoreReplace.file', { name: file.name })}
@@ -195,6 +200,12 @@ export default function RestoreBackup() {
             <SummaryCard label={t('restoreSummaryFlights')} value={result.flightsImported} color="green" />
             <SummaryCard label={t('restoreSummaryCrew')} value={result.crewMembersImported} color="green" />
             <SummaryCard label={t('restoreSummaryCustomReports')} value={result.customReportsImported} color="green" />
+            <SummaryCard label={t('restoreSummaryFlightRevisions')} value={result.flightRevisionsImported} color="green" />
+            <SummaryCard
+              label={t('restoreSummaryLogbookCertifications')}
+              value={result.logbookCertificationsImported}
+              color="green"
+            />
           </div>
 
           {result.warnings.length > 0 && <RestoreWarnings warnings={result.warnings} />}

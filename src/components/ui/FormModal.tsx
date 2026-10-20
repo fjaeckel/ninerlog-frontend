@@ -51,6 +51,7 @@ export function FormModal({ open, onClose, title, size = 'md', children, classNa
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.stopPropagation();
         onClose();
         return;
       }

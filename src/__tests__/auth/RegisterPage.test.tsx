@@ -53,6 +53,17 @@ describe('RegisterPage', () => {
     void i18n.changeLanguage('en');
   });
 
+  it('shows what NinerLog records before the account is created', () => {
+    renderWithProviders(<RegisterPage />);
+    const panel = screen.getByRole('region', { name: /what ninerlog records/i });
+    expect(panel).toHaveTextContent(/no history is kept/i);
+    expect(panel).toHaveTextContent(/never recorded with history: ip address, device, browser, location/i);
+    expect(
+      panel.compareDocumentPosition(screen.getByRole('button', { name: /create account/i })) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
   it('renders registration form', () => {
     renderWithProviders(<RegisterPage />);
     

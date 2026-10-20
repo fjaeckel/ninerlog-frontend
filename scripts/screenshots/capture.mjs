@@ -118,15 +118,23 @@ async function shoot(browser, target, theme) {
     [authStorageFor(target), onboardingStorage, theme, !!target.anonymous, LANG]
   );
 
+  const routeState = {};
   await context.route('**/api/v1/**', async (route) => {
     const url = new URL(route.request().url());
     const path = url.pathname.replace(/^.*\/api\/v1/, '');
-    const custom = target.respond?.(route.request().method(), path, url.searchParams);
+    const custom = target.respond?.(route.request().method(), path, url.searchParams, routeState);
     if (custom) {
       return route.fulfill({
-        status: custom.status,
+        status: custom.status ?? 200,
         contentType: 'application/json',
         body: JSON.stringify(custom.body ?? null),
+      });
+    }
+    if (target.routes && path in target.routes) {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(target.routes[path] ?? null),
       });
     }
     if (target.fail && FAILING_PATHS.includes(path)) {

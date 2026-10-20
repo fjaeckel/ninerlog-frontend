@@ -13,6 +13,8 @@ interface ConfirmDialogProps {
   cancelLabel?: string;
   variant?: 'danger' | 'warning';
   isLoading?: boolean;
+  /** Shown above the actions, e.g. why the last confirm failed. */
+  error?: string | null;
 }
 
 export function ConfirmDialog({
@@ -25,6 +27,7 @@ export function ConfirmDialog({
   cancelLabel: cancelLabelProp,
   variant = 'danger',
   isLoading = false,
+  error,
 }: ConfirmDialogProps) {
   const { t } = useTranslation('common');
   const confirmLabel = confirmLabelProp ?? t('confirm');
@@ -43,7 +46,9 @@ export function ConfirmDialog({
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.stopPropagation();
         onCancel();
+        return;
       }
       if (e.key === 'Tab' && dialogRef.current) {
         const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
@@ -115,6 +120,11 @@ export function ConfirmDialog({
               </p>
             </div>
           </div>
+          {error && (
+            <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+              {error}
+            </p>
+          )}
           {/* type="button" is load-bearing: this dialog renders inline, so
               when it is opened from inside a <form> an untyped button would
               default to submit and save the surrounding form instead. */}

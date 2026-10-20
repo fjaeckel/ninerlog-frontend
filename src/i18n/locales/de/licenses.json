@@ -13,7 +13,8 @@
     "licenseNumber": "Lizenznummer",
     "issueDate": "Ausstellungsdatum",
     "issuingAuthority": "Ausstellende Behörde",
-    "requiresSeparateLogbook": "Separates Flugbuch erforderlich"
+    "requiresSeparateLogbook": "Separates Flugbuch erforderlich",
+    "issuingCountry": "Ausstellender Staat"
   },
   "classRatings": "Klassenberechtigungen",
   "addClassRating": "Klassenberechtigung hinzufügen",
@@ -52,7 +53,9 @@
     "licenseTypePlaceholder": "z. B. PPL",
     "issuingAuthorityPlaceholder": "LBA (Deutschland)",
     "failedToSave": "Lizenz konnte nicht gespeichert werden.",
-    "ulAuthorityHint": "Die UL-Recency (LuftPersV §45) wird nur für LBA, DULV oder DAeC geprüft. Bei einer anderen Behörde werden UL-Berechtigungen nur über das Ablaufdatum verfolgt."
+    "ulAuthorityHint": "Die UL-Recency (LuftPersV §45) wird nur für LBA, DULV oder DAeC geprüft. Bei einer anderen Behörde werden UL-Berechtigungen nur über das Ablaufdatum verfolgt.",
+    "issuingCountryNone": "Nicht angegeben",
+    "issuingCountryHelp": "Der Staat, der die Lizenz ausgestellt hat. Ein Staat, dessen Regeln ein Flugbuch mit vollständigem Änderungsverlauf verlangen (z. B. Schweiz, Deutschland, Australien), schaltet den strengen Flugbuchmodus ein."
   },
   "card": {
     "regulatoryAuthority": "Aufsichtsbehörde",
@@ -71,7 +74,8 @@
     "noExpiry": "Kein Ablaufdatum",
     "expired": "Abgelaufen",
     "expiresInDays": "Noch {{days}} Tage",
-    "ulKind": "UL-Art"
+    "ulKind": "UL-Art",
+    "issuingCountry": "Ausstellender Staat"
   },
   "classTypeLabels": {
     "SEP_LAND": "SEP (Land)",
@@ -86,5 +90,11 @@
     "ULTRALIGHT": "Ultraleicht",
     "GYROPLANE": "Tragschrauber",
     "OTHER": "Sonstige"
+  },
+  "countryPrompt": {
+    "title": "Ausstellenden Staat ergänzen",
+    "body": "NinerLog wendet die Flugbuchregeln eines Staats nur an, wenn es weiß, welcher Staat deine Lizenz ausgestellt hat. Ein Staat, der ein Flugbuch mit vollständigem Änderungsverlauf verlangt (z. B. Schweiz, Deutschland), schaltet den strengen Flugbuchmodus ein.",
+    "add": "Staat für {{licence}} ergänzen",
+    "dismiss": "Ausblenden"
   }
 }

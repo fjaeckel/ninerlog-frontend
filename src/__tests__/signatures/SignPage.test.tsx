@@ -26,6 +26,31 @@ const mockFlightInfo = {
   totalTime: 90,
   dualTime: 90,
   expiresAt: '2026-01-22T00:00:00Z',
+  fieldsHash: 'hash-as-shown',
+};
+
+const mockSigningFlow = (mutateAsync: ReturnType<typeof vi.fn>, refetch = vi.fn()) => {
+  vi.spyOn(useSignaturesHook, 'usePublicSignatureInfo').mockReturnValue({
+    data: mockFlightInfo,
+    isLoading: false,
+    isFetching: false,
+    isError: false,
+    error: null,
+    refetch,
+  } as unknown as ReturnType<typeof useSignaturesHook.usePublicSignatureInfo>);
+  vi.spyOn(useSignaturesHook, 'useCompletePublicSignature').mockReturnValue({
+    mutateAsync,
+    isPending: false,
+  } as unknown as ReturnType<typeof useSignaturesHook.useCompletePublicSignature>);
+};
+
+const drawAndSubmit = () => {
+  fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: 'Jane Instructor' } });
+  const canvas = screen.getByRole('img', { name: /signature/i });
+  fireEvent.pointerDown(canvas, { clientX: 5, clientY: 5 });
+  fireEvent.pointerMove(canvas, { clientX: 15, clientY: 15 });
+  fireEvent.pointerUp(canvas, { clientX: 15, clientY: 15 });
+  fireEvent.click(screen.getByRole('button', { name: /sign this entry/i }));
 };
 
 describe('SignPage', () => {
@@ -148,5 +173,50 @@ describe('SignPage', () => {
 
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
     await waitFor(() => expect(screen.getByText(/signature recorded/i)).toBeInTheDocument());
+  });
+
+  it('sends back the fieldsHash it was shown', async () => {
+    const mutateAsync = vi.fn().mockResolvedValue({ message: 'ok' });
+    mockSigningFlow(mutateAsync);
+    renderWithProviders();
+
+    drawAndSubmit();
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+    expect(mutateAsync.mock.calls[0][0]).toMatchObject({ signerName: 'Jane Instructor', fieldsHash: 'hash-as-shown' });
+  });
+
+  it('on 409 flight_changed explains the change and reloads the entry on request', async () => {
+    const mutateAsync = vi.fn().mockRejectedValue({
+      error: 'Flight was changed after the signing page was opened',
+      code: 'flight_changed',
+    });
+    const refetch = vi.fn().mockResolvedValue({});
+    mockSigningFlow(mutateAsync, refetch);
+    renderWithProviders();
+
+    drawAndSubmit();
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(
+      'The flight was changed after this page was opened. Reload to see the current entry before signing.'
+    );
+    expect(screen.queryByText(/signature recorded/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /^reload$/i }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sign this entry/i })).toBeDisabled();
+  });
+
+  it('shows other submit errors as before', async () => {
+    const mutateAsync = vi.fn().mockRejectedValue({ error: 'Signature image too large' });
+    mockSigningFlow(mutateAsync);
+    renderWithProviders();
+
+    drawAndSubmit();
+
+    expect(await screen.findByText('Signature image too large')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^reload$/i })).not.toBeInTheDocument();
   });
 });

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import type { components } from '../api/schema';
+import { invalidateFlightDependentQueries } from './invalidation';
 
 type Aircraft = components['schemas']['Aircraft'];
 type AircraftCreate = components['schemas']['AircraftCreate'];
@@ -117,7 +118,7 @@ export const useUpdateAircraft = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aircraft'] });
-      queryClient.invalidateQueries({ queryKey: ['currency'] });
+      invalidateFlightDependentQueries(queryClient);
     },
   });
 };

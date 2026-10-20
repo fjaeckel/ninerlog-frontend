@@ -11,6 +11,8 @@ import { FormModal } from '../../components/ui/FormModal';
 import { PageHeader, PageWrapper } from '../../components/ui/PageWrapper';
 import { SkeletonList } from '../../components/ui/Skeleton';
 import HelpLink from '../../components/ui/HelpLink';
+import { LicenceCountryPrompt } from '../../components/logbook/LicenceCountryPrompt';
+import { useLicenceStrictFollowUp } from '../../components/logbook/useLicenceStrictFollowUp';
 
 export default function LicensesPage() {
   const { data: licenses, isLoading, error } = useLicenses();
@@ -19,6 +21,7 @@ export default function LicensesPage() {
   const [editingLicense, setEditingLicense] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const { t } = useTranslation('licenses');
+  const { onLicenceSaved, dialogs: strictFollowUpDialogs } = useLicenceStrictFollowUp();
 
   const handleDelete = async (id: string) => {
     setDeleteTarget(id);
@@ -77,7 +80,7 @@ export default function LicensesPage() {
         title={editingLicense ? t('editLicense') : t('addLicense')}
         size="md"
       >
-        <LicenseForm licenseId={editingLicense} onClose={handleCloseForm} />
+        <LicenseForm licenseId={editingLicense} onClose={handleCloseForm} onSaved={onLicenceSaved} />
       </FormModal>
 
       {licenses && licenses.length === 0 ? (
@@ -89,6 +92,7 @@ export default function LicensesPage() {
         />
       ) : (
         <div className="flex flex-col gap-4">
+          {licenses && <LicenceCountryPrompt licences={licenses} onAddCountry={handleEdit} />}
           {licenses?.map((license) => (
             <LicenseCard
               key={license.id}
@@ -99,6 +103,8 @@ export default function LicensesPage() {
           ))}
         </div>
       )}
+      {strictFollowUpDialogs}
+
       {/* Delete Confirm Dialog */}
       <ConfirmDialog
         open={!!deleteTarget}

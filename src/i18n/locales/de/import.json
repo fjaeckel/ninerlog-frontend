@@ -164,6 +164,7 @@
     "title": "Dieses Konto enthält bereits Flugbuchdaten",
     "body": "Eine Sicherung wird nur in ein leeres Konto wiederhergestellt – bisher wurde nichts geändert.",
     "deletes": "„Alles ersetzen“ löscht die aktuellen Flugbuchdaten dieses Kontos – Flüge, Luftfahrzeuge, Lizenzen, Berechtigungen, Nachweise, Personen, eigene Recency-Regeln und eigene Berichte – und stellt an ihrer Stelle die Sicherung wieder her.",
+    "strict": "Dein Flugbuch ist im strengen Modus: Jeder ersetzte Flug bleibt als stornierter Eintrag erhalten, und seine Historie, Moduswechsel und Bestätigungen bleiben bestehen. Die Historie der Sicherung kommt hinzu.",
     "atomic": "Das passiert ganz oder gar nicht: Geht etwas schief, bleiben deine aktuellen Daten unverändert.",
     "file": "Sicherung: {{name}}",
     "confirm": "Aktuelle Flugbuchdaten durch diese Sicherung ersetzen? Das lässt sich nicht rückgängig machen.",
@@ -193,5 +194,7 @@
     "customReports": "Eigene Berichte",
     "notificationPreferences": "Benachrichtigungseinstellungen",
     "flightBaseline": "Übertrag"
-  }
+  },
+  "restoreSummaryFlightRevisions": "Flugrevisionen",
+  "restoreSummaryLogbookCertifications": "Flugbuch-Bestätigungen"
 }

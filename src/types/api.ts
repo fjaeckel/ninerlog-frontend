@@ -73,6 +73,8 @@ export interface License {
   issueDate: string;
   issuingAuthority: string;
   requiresSeparateLogbook: boolean;
+  /** ISO 3166-1 alpha-2 code of the issuing state */
+  issuingCountry?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -84,6 +86,7 @@ export interface LicenseCreate {
   issueDate: string;
   issuingAuthority: string;
   requiresSeparateLogbook?: boolean;
+  issuingCountry?: string | null;
 }
 
 export interface LicenseUpdate {
@@ -92,6 +95,8 @@ export interface LicenseUpdate {
   licenseNumber?: string;
   issuingAuthority?: string;
   requiresSeparateLogbook?: boolean;
+  /** null clears the country */
+  issuingCountry?: string | null;
 }
 
 // ============ Flight Types ============
