@@ -460,6 +460,16 @@ export const adminStats = {
   totalImports: 87, flightsThisMonth: 216, newUsersThisWeek: 6, lockedAccounts: 2, disabledAccounts: 1,
   totalCustomReports: 57,
   strictLogbookUsers: 23, flightRevisions: 1418, flightCorrections: 96, voidedFlights: 41, logbookCertifications: 17,
+  licencePrivileges: { total: 31, byKind: { SAILPLANE_TOWING: 6, CLOUD_FLYING: 4, UL_PASSENGER_AUTH: 21 } },
+  pilotProfiles: {
+    everythingMode: 9,
+    overrides: {
+      SAILPLANE: { on: 4, off: 1, goal: 6 },
+      ULTRALIGHT: { on: 3, off: 0, goal: 2 },
+      IFR: { on: 0, off: 5, goal: 1 },
+      INSTRUCTOR: { on: 2, off: 0, goal: 0 },
+    },
+  },
   importsByFormat: { FOREFLIGHT_CSV: 31, LOGTEN_CSV: 18, MYFLIGHTBOOK_CSV: 14,
     VEREINSFLIEGER_EXTENDED_CSV: 9, SKYDEMON_CSV: 7, CSV: 5, VEREINSFLIEGER_CSV: 3 },
   cloudBackupDestinations: { total: 34, byProvider: { s3: 18, webdav: 9, dropbox: 7 } },

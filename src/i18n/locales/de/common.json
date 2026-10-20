@@ -140,7 +140,28 @@
       "flightRevisions": "Flugrevisionen",
       "flightCorrections": "Korrekturen",
       "voidedFlights": "Stornierte Flüge",
-      "logbookCertifications": "Flugbuch-Bestätigungen"
+      "logbookCertifications": "Flugbuch-Bestätigungen",
+      "licencePrivileges": "Lizenzberechtigungen",
+      "pilotProfiles": "Pilotenprofile",
+      "pilotProfilesEverything": "Alles anzeigen",
+      "pilotProfilesOverrides": "Explizit gesetzte Disziplinen",
+      "pilotProfilesNone": "Noch hat niemand eine Disziplin explizit gesetzt.",
+      "discipline": "Disziplin",
+      "intentOn": "An",
+      "intentOff": "Aus",
+      "intentGoal": "Ziel",
+      "disciplines": {
+        "AEROPLANE": "Flugzeug",
+        "TMG": "TMG",
+        "SAILPLANE": "Segelflugzeug",
+        "ULTRALIGHT": "Ultraleicht",
+        "GYROPLANE": "Tragschrauber",
+        "HELICOPTER": "Hubschrauber",
+        "IFR": "IFR",
+        "MULTI_CREW": "Multi-Crew",
+        "INSTRUCTOR": "Lehrberechtigung",
+        "SIMULATOR": "Simulator"
+      }
     },
     "users": {
       "searchPlaceholder": "Nach E-Mail oder Name suchen...",
