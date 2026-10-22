@@ -36,6 +36,8 @@ export function FormModal({ open, onClose, title, size = 'md', children, classNa
     if (!open) return;
     previouslyFocused.current = document.activeElement as HTMLElement;
     const timer = setTimeout(() => {
+      // Focus already inside the panel stays put.
+      if (panelRef.current?.contains(document.activeElement)) return;
       panelRef.current
         ?.querySelector<HTMLElement>(
           'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'

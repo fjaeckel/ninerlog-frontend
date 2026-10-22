@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { FormModal } from '../../components/ui/FormModal';
 import { Dialog } from '../../components/ui/Dialog';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
@@ -42,5 +42,23 @@ describe('nested dialogs', () => {
     );
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'field' }), { key: 'Escape' });
     expect(closeOuter).toHaveBeenCalledTimes(1);
+  });
+
+  it('FormModal initial focus leaves focus already inside the panel', () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <FormModal open onClose={vi.fn()} title="Edit flight">
+          <input aria-label="field" />
+          <textarea aria-label="reason" />
+        </FormModal>
+      );
+      const reason = screen.getByRole('textbox', { name: 'reason' });
+      reason.focus();
+      act(() => vi.advanceTimersByTime(100));
+      expect(reason).toHaveFocus();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
