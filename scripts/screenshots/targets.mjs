@@ -216,6 +216,17 @@ export const TARGETS = [
     },
   },
   {
+    name: 'flights-modal-edit-training',
+    path: '/flights/f1',
+    act: async (page) => {
+      await page.getByRole('button', { name: /edit flight|flug .*bearbeiten/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.getByRole('button', { name: /training & currency|ausbildung & recency/i }).click();
+      await page.locator('#multiPilotTime').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+    },
+  },
+  {
     name: 'flights-modal-edit-crew',
     path: '/flights/f1',
     act: async (page) => {

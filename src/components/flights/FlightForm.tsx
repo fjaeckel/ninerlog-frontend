@@ -16,7 +16,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { isCanonicalTime, type ClockFormat } from '../../lib/timeOfDay';
 import { TimeOfDayInput } from '../ui/TimeOfDayInput';
 import type { Aircraft } from '../../hooks/useAircraft';
-import type { FlightCrewMemberInput } from '../../types/api';
+import type { CrewRole, FlightCrewMemberInput } from '../../types/api';
 import { CrewEditor } from './CrewEditor';
 import { crewDerivedNames, toCrewInputs } from './crewRoles';
 import { useCorrectableFlightUpdate } from '../logbook/useCorrectableFlightUpdate';
@@ -28,6 +28,16 @@ type FlightUpdate = components['schemas']['FlightUpdate'];
 
 /** Override fields with an inline input in this form. */
 const OVERRIDE_FORM_FIELDS = ['nightTime', 'crossCountryTime', 'takeoffsDay', 'takeoffsNight', 'multiPilotTime'] as const;
+
+/** Plain fields an edit sends only when the pilot changed them. */
+const UNCHANGED_OMITTED_FIELDS: ReadonlySet<string> = new Set([
+  'date', 'isSimulator', 'aircraftReg', 'aircraftType', 'departureIcao', 'arrivalIcao',
+  'offBlockTime', 'onBlockTime', 'departureTime', 'arrivalTime', 'route', 'ifrTime',
+  'remarks', 'instructorComments', 'simulatedFlightTime', 'groundTrainingTime',
+  'actualInstrumentTime', 'simulatedInstrumentTime', 'holds', 'isIpc', 'isFlightReview',
+  'isProficiencyCheck', 'launchMethod', 'picusTime', 'spicTime', 'examinerTime',
+  'reliefTime', 'fstdType', 'endorsements',
+]);
 
 /** Override fields the API can report without an inline input in this form. */
 const OVERRIDE_BANNER_FIELDS = ['landingsDay', 'landingsNight', 'sicTime'] as const;
@@ -75,7 +85,7 @@ const flightSchema = z.object({
   launchMethod: z.string().optional().or(z.literal('')),
   // Phase 6c regulatory compliance fields
   picName: z.string().optional().or(z.literal('')),
-  multiPilotTime: z.number().min(0),
+  multiPilotTime: z.number().int().min(0).optional(),
   picusTime: z.number().min(0),
   spicTime: z.number().min(0),
   examinerTime: z.number().min(0),
@@ -158,6 +168,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   // Crew members state
   const [crewMembers, setCrewMembers] = useState<FlightCrewMemberInput[]>([]);
 
+  // Form values as loaded from the flight being edited
+  const loadedValues = useRef<FlightFormData | null>(null);
+
   // Structured approaches state
   interface ApproachInput { type: string; airport: string; runway: string }
   const APPROACH_TYPES = ['ILS', 'LOC', 'VOR', 'RNAV/GPS', 'NDB', 'LDA', 'SDF', 'PAR', 'ASR', 'Visual', 'Circling', 'Other'] as const;
@@ -208,7 +221,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       isProficiencyCheck: false,
       launchMethod: '',
       picName: '',
-      multiPilotTime: 0,
+      multiPilotTime: undefined,
       picusTime: 0,
       spicTime: 0,
       examinerTime: 0,
@@ -220,7 +233,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
   useEffect(() => {
     if (existingFlight && isEditing) {
-      reset({
+      const loaded: FlightFormData = {
         date: existingFlight.date,
         isSimulator: existingFlight.isSimulator ?? false,
         aircraftReg: existingFlight.aircraftReg,
@@ -252,14 +265,16 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isProficiencyCheck: existingFlight.isProficiencyCheck || false,
         launchMethod: existingFlight.launchMethod || '',
         picName: existingFlight.picName || '',
-        multiPilotTime: existingFlight.multiPilotTime || 0,
+        multiPilotTime: existingFlight.multiPilotTimeOverride ? existingFlight.multiPilotTime : undefined,
         picusTime: existingFlight.picusTime || 0,
         spicTime: existingFlight.spicTime || 0,
         examinerTime: existingFlight.examinerTime || 0,
         reliefTime: existingFlight.reliefTime || 0,
         fstdType: existingFlight.fstdType || '',
         endorsements: existingFlight.endorsements || '',
-      });
+      };
+      loadedValues.current = loaded;
+      reset(loaded);
       // Load existing crew members
       if (existingFlight.crewMembers) {
         setCrewMembers(toCrewInputs(existingFlight.crewMembers));
@@ -366,7 +381,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     </button>
   );
 
-  type OverrideTimeField = 'nightTime' | 'crossCountryTime';
+  type OverrideTimeField = 'nightTime' | 'crossCountryTime' | 'multiPilotTime';
   type OverrideField = OverrideTimeField | 'takeoffsDay' | 'takeoffsNight';
 
   // A number overrides the derived value; an emptied field on a flight the
@@ -380,7 +395,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const overrideTimeHelper = (field: OverrideTimeField, autoHint: string) => {
     if (watch(field) !== undefined) return t('form.minutesEntered');
     if (isEditing && existingFlight && !existingFlight[`${field}Override`]) {
-      return t('form.minutesAutoValue', { value: formatDuration(existingFlight[field], fmt) });
+      return t('form.minutesAutoValue', { value: formatDuration(existingFlight[field] ?? 0, fmt) });
     }
     return autoHint;
   };
@@ -412,6 +427,27 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       </p>
     </div>
   );
+
+  // Names follow the crew list when it carries the role or the role was removed.
+  const crewNamePayload = (field: 'instructorName' | 'picName', role: CrewRole) => {
+    const hadRole = isEditing && (existingFlight?.crewMembers ?? []).some((m) => m.role === role);
+    const hasRole = crewMembers.some((m) => m.role === role);
+    if (!isEditing || hasRole || hadRole) return { [field]: crewDerivedNames(crewMembers)[field] };
+    return {};
+  };
+
+  // Drops edit fields still holding the value they were loaded with.
+  const omitUnchanged = <T extends object>(payload: T, data: FlightFormData): Partial<T> => {
+    const loaded = loadedValues.current;
+    if (!loaded) return payload;
+    return Object.fromEntries(
+      Object.entries(payload).filter(([key]) => {
+        if (!UNCHANGED_OMITTED_FIELDS.has(key)) return true;
+        const field = key as keyof FlightFormData;
+        return data[field] !== loaded[field];
+      }),
+    ) as Partial<T>;
+  };
 
   // Quick-add aircraft handler
   const handleQuickAdd = async () => {
@@ -472,8 +508,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isSimulator: data.isSimulator,
         aircraftType: data.aircraftType.toUpperCase(),
         remarks: data.remarks || null,
-        // Auto-derive instructor & PIC names from crew (single source of truth: Crew section).
-        instructorName: crewDerivedNames(crewMembers).instructorName,
+        ...crewNamePayload('instructorName', 'Instructor'),
         instructorComments: data.instructorComments || null,
         simulatedFlightTime: data.simulatedFlightTime,
         groundTrainingTime: data.groundTrainingTime,
@@ -487,7 +522,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isIpc: data.isIpc,
         isFlightReview: data.isFlightReview,
         isProficiencyCheck: data.isProficiencyCheck,
-        picName: crewDerivedNames(crewMembers).picName,
+        ...crewNamePayload('picName', 'PIC'),
         fstdType: data.fstdType || null,
         endorsements: data.endorsements || null,
         crewMembers: isEditing || crewMembers.length > 0 ? crewMembers : undefined,
@@ -510,7 +545,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             route: data.route || null,
             ifrTime: data.ifrTime,
             actualInstrumentTime: data.actualInstrumentTime,
-            multiPilotTime: data.multiPilotTime,
+            ...overridePayload('multiPilotTime', data.multiPilotTime),
             picusTime: data.picusTime,
             spicTime: data.spicTime,
             examinerTime: data.examinerTime,
@@ -526,7 +561,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       setApiError(null);
       setBannerOverrideFields([]);
       if (isEditing && flightId) {
-        const outcome = await correctable.save(flightId, basePayload as FlightUpdate);
+        const outcome = await correctable.save(flightId, omitUnchanged(basePayload, data) as FlightUpdate);
         if (outcome.status === 'cancelled') return;
       } else {
         await createFlight.mutateAsync(basePayload);
@@ -1328,24 +1363,12 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               <p className="form-helper">{t('form.minutesFtd')}</p>
             </div>
             )}
-            {!isSim && (
-            <div>
-              <label htmlFor="multiPilotTime" className="form-label">{t('fields.multiPilotTime')}</label>
-              <input
-                {...register('multiPilotTime', { valueAsNumber: true })}
-                type="number"
-                id="multiPilotTime"
-                step="1"
-                min="0"
-                className={cn('input', errors.multiPilotTime && 'input-error')}
-              />
-              {overrideError('multiPilotTime')}
-              <p className="form-helper">
-                {crewMembers.some((m) => m.role === 'PIC' || m.role === 'SIC')
-                  ? t('form.multiPilotAutoHelper')
-                  : t('form.multiPilotHelper')}
-              </p>
-            </div>
+            {!isSim && overrideTimeInput(
+              'multiPilotTime',
+              t('fields.multiPilotTime'),
+              crewMembers.some((m) => m.role === 'PIC' || m.role === 'SIC')
+                ? t('form.multiPilotAutoHelper')
+                : t('form.multiPilotHelper'),
             )}
             {!isSim && (
             <div>
