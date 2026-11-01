@@ -100,9 +100,8 @@
     "brace-expansion": ">=5.0.12",
     "filelist": ">=2.0.2",
     "postcss-selector-parser": ">=7.1.6",
-    "@redocly/openapi-core": {
-      "minimatch": ">=10.2.5"
-    },
+    "minimatch": ">=11.0.3 <12.0.0",
+    "glob": ">=14.0.3 <15.0.0",
     "openapi-typescript": {
       "typescript": "$typescript"
     }
