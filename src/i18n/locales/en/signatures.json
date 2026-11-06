@@ -91,5 +91,15 @@
     "signatureRequired": "Please draw a signature before submitting.",
     "flightChanged": "The flight was changed after this page was opened. Reload to see the current entry before signing.",
     "reload": "Reload"
+  },
+  "audit": {
+    "title": "Signature history",
+    "statusVoided": "Voided",
+    "unknownSigner": "Unknown instructor",
+    "signedAt": "Signed on {{date}}",
+    "voidedAt": "Voided on {{date}}",
+    "reasonLabel": "Reason",
+    "viewSignature": "View voided signature",
+    "hideSignature": "Hide signature"
   }
 }
