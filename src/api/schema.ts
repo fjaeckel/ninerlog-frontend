@@ -1346,8 +1346,8 @@ export interface paths {
          *     no on-block time; otherwise the end of the flight day), when the
          *     flight has ever carried a completed signature, when the flight date is on or
          *     before the latest `certifiedThrough`, or when it sets an `*Override` value after
-         *     the flight day. A correction needs `correctionReason`; after a voided signature
-         *     the void reason is reused when none is given. Every change is recorded as a
+         *     the flight day. A correction needs `correctionReason`, also after a voided
+         *     signature. Every change is recorded as a
          *     revision (`GET /flights/{flightId}/revisions`). Outside strict mode nothing is
          *     recorded and `correctionReason` is ignored.
          */
@@ -4072,12 +4072,12 @@ export interface components {
              */
             totalTime: number;
             /**
-             * @description Whether this flight was logged as pilot-in-command. Mutually exclusive with isDual.
+             * @description Whether this flight was logged as pilot-in-command. True together with isDual when the pilot logged PIC time while receiving instruction (14 CFR §61.51(e)(1)(i)); picTime and dualTime then cover the same minutes and count once toward the function-time total.
              * @example true
              */
             isPic: boolean;
             /**
-             * @description Whether this flight was logged as dual instruction received. Mutually exclusive with isPic.
+             * @description Whether this flight was logged as dual instruction received. May be true together with isPic (PIC while receiving instruction, 14 CFR §61.51(e)(1)(i)).
              * @example false
              */
             isDual: boolean;
@@ -4416,7 +4416,7 @@ export interface components {
              */
             readonly totalTime?: number;
             /**
-             * @description Pilot-in-command time in minutes. Computed by server — equals totalTime when isPic is true, 0 otherwise.
+             * @description Pilot-in-command time in minutes. Computed by server — equals totalTime when isPic is true, 0 otherwise. On a flight logged as both PIC and dual it equals dualTime.
              * @example 150
              */
             readonly picTime?: number;
@@ -4500,6 +4500,8 @@ export interface components {
             approaches?: components["schemas"]["ApproachEntryInput"][];
             /** @description Instructor endorsements, skill test references */
             endorsements?: string | null;
+            /** @description Declares PIC time on a flight flown while receiving instruction (14 CFR §61.51(e)(1)(i): a pilot rated for the aircraft acting as sole manipulator of the controls). Only takes effect when the crew makes the flight dual received (a third-party Instructor or Examiner); the flight is then logged with isPic and isDual both true and picTime equal to dualTime, counted once toward total time. On any other flight PIC is derived from the crew and this field is ignored. */
+            isPic?: boolean;
             /** @description People on board this flight */
             crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
         };
@@ -4580,6 +4582,8 @@ export interface components {
             approaches?: components["schemas"]["ApproachEntryInput"][];
             /** @description Instructor endorsements, skill test references */
             endorsements?: string | null;
+            /** @description Declares PIC time on a flight flown while receiving instruction (14 CFR §61.51(e)(1)(i): a pilot rated for the aircraft acting as sole manipulator of the controls). Only takes effect when the crew makes the flight dual received (a third-party Instructor or Examiner); the flight is then logged with isPic and isDual both true and picTime equal to dualTime, counted once toward total time. On any other flight PIC is derived from the crew and this field is ignored. Omitted, the stored declaration is kept; false removes it. */
+            isPic?: boolean;
             /** @description People on board this flight */
             crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
             /** @description Why the entry is corrected. Required when a strict-mode edit is a correction; ignored otherwise. */
@@ -11402,7 +11406,7 @@ export interface operations {
     deleteFlight: {
         parameters: {
             query?: {
-                /** @description Why the flight is deleted; stored on the void record in strict mode. Defaults to the void reason of the flight's latest voided signature. */
+                /** @description Why the flight is deleted; stored on the void record in strict mode. */
                 reason?: string;
             };
             header?: never;

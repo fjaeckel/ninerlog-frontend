@@ -360,6 +360,8 @@
     "ipcLabel": "Instrument Proficiency Check (IPC)",
     "flightReviewLabel": "Flugüberprüfung (BFR / 61.56)",
     "proficiencyCheckLabel": "Befähigungsüberprüfung (FCL.740.A / §61.58)",
+    "picWhileDualLabel": "Ich war PIC — alleiniger Steuerführer mit Berechtigung für dieses Luftfahrzeug (§61.51(e))",
+    "picWhileDualHelper": "Erfasst diese Zeit als PIC und als Doppelsteuer, in der Gesamtzeit einmal gezählt. Nur FAA — nach EASA ist Doppelsteuerzeit nie PIC-Zeit.",
     "fstdHelper": "FSTD-Typbezeichnung (EASA AMC1 Sp. 22 / FAA §61.51)",
     "multiPilotHelper": "Minuten auf Mehrpiloten-Flugzeug (EASA AMC1 Sp. 10)",
     "picusHelper": "Minuten als PIC under supervision (EASA FCL.030)",

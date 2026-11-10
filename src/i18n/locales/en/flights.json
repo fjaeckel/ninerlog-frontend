@@ -360,6 +360,8 @@
     "ipcLabel": "Instrument Proficiency Check (IPC)",
     "flightReviewLabel": "Flight Review (BFR / 61.56)",
     "proficiencyCheckLabel": "Proficiency Check (FCL.740.A / §61.58)",
+    "picWhileDualLabel": "I was PIC — sole manipulator, rated for this aircraft (§61.51(e))",
+    "picWhileDualHelper": "Logs this time as both PIC and dual received, counted once in total time. FAA only — under EASA, dual received is never PIC time.",
     "fstdHelper": "FSTD type designation (EASA AMC1 Col 22 / FAA §61.51)",
     "multiPilotHelper": "Minutes on multi-pilot aircraft (EASA AMC1 Col 10)",
     "picusHelper": "Minutes as PIC under supervision (EASA FCL.030)",
