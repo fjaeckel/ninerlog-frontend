@@ -616,6 +616,32 @@ describe('FlightForm', () => {
     });
   });
 
+  it('fills the type from the fleet entry registered on the flight date', async () => {
+    const user = userEvent.setup();
+    const base = {
+      userId: 'user-1', registration: 'N123AB', isComplex: false, isHighPerformance: false,
+      isTailwheel: false, isActive: true, notes: null, createdAt: '', updatedAt: '',
+    };
+    vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
+      data: [
+        { ...base, id: 'c172', type: 'C172', make: 'Cessna', model: '172', validTo: '2019-12-31' },
+        { ...base, id: 'pa16', type: 'PA16', make: 'Piper', model: 'Clipper', validFrom: '2020-01-01' },
+      ],
+      isLoading: false, error: null,
+    } as unknown as ReturnType<typeof useAircraftHook.useAircraft>);
+
+    renderWithProviders(<FlightForm onClose={mockOnClose} />);
+
+    fireEvent.change(screen.getByLabelText(/^date/i), { target: { value: '2015-06-01' } });
+    await user.type(screen.getByLabelText(/aircraft registration/i), 'N123AB');
+    const type = document.querySelector<HTMLInputElement>('input[name="aircraftType"]')!;
+    await waitFor(() => expect(type).toHaveValue('C172'));
+    expect(screen.queryByText(/save "N123AB" to your fleet/i)).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/^date/i), { target: { value: '2024-06-01' } });
+    await waitFor(() => expect(type).toHaveValue('PA16'));
+  });
+
   it('auto-fills aircraft type when selecting from suggestions', async () => {
     const user = userEvent.setup();
     const mockAircraft = [

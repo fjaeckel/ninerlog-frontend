@@ -56,6 +56,36 @@ describe('AircraftPage', () => {
     expect(screen.getByRole('status', { name: /loading/i })).toBeInTheDocument();
   });
 
+  it('shows each registration period and marks totals shared by a reused registration', () => {
+    const base = {
+      userId: 'user-1', registration: 'N123AB', aircraftClass: 'SEP_LAND', isComplex: false,
+      isHighPerformance: false, isTailwheel: false, notes: null, createdAt: '', updatedAt: '',
+    };
+    vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
+      data: [
+        { ...base, id: 'c172', type: 'C172', make: 'Cessna', model: '172', isActive: false, validTo: '2019-12-31' },
+        { ...base, id: 'pa16', type: 'PA16', make: 'Piper', model: 'Clipper', isActive: true, validFrom: '2020-01-01' },
+        { ...base, id: 'other', registration: 'D-EFGH', type: 'PA28', make: 'Piper', model: 'Archer', isActive: true },
+      ],
+      isLoading: false, error: null,
+    } as unknown as ReturnType<typeof useAircraftHook.useAircraft>);
+    const row = (registration: string) => ({
+      registration, aircraftType: 'X', totalFlights: 3, totalMinutes: 180, landingsDay: 3,
+      landingsNight: 0, lastFlightDate: '2026-01-01', landingsLast90Days: 0, recencyLapsesOn: null,
+    });
+    vi.spyOn(useAircraftHook, 'useAircraftStats').mockReturnValue({
+      data: { byReg: new Map([['N123AB', row('N123AB')], ['D-EFGH', row('D-EFGH')]]), byType: new Map() },
+      isLoading: false, error: null,
+    } as unknown as ReturnType<typeof useAircraftHook.useAircraftStats>);
+
+    renderWithProviders(<AircraftPage />);
+
+    expect(screen.getByText('Until 31.12.2019')).toBeInTheDocument();
+    expect(screen.getByText('Since 01.01.2020')).toBeInTheDocument();
+    expect(screen.getAllByText(/totals cover every aircraft that has carried N123AB/i)).toHaveLength(2);
+    expect(screen.queryByText(/carried D-EFGH/i)).not.toBeInTheDocument();
+  });
+
   it('renders aircraft cards', () => {
     vi.spyOn(useAircraftHook, 'useAircraft').mockReturnValue({
       data: [

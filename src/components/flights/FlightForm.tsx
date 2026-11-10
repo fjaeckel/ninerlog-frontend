@@ -16,6 +16,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { isCanonicalTime, type ClockFormat } from '../../lib/timeOfDay';
 import { TimeOfDayInput } from '../ui/TimeOfDayInput';
 import type { Aircraft } from '../../hooks/useAircraft';
+import { coversDate, hasRegistration, resolveAircraft, todayUtc } from '../../lib/aircraftValidity';
 import type { CrewRole, FlightCrewMemberInput } from '../../types/api';
 import { CrewEditor } from './CrewEditor';
 import { crewDerivedNames, toCrewInputs } from './crewRoles';
@@ -294,9 +295,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
   // Aircraft autocomplete: filter suggestions based on typed registration
   const watchedReg = watch('aircraftReg');
+  const flightDay = watch('date') || todayUtc();
   const filteredAircraft = (aircraftList ?? []).filter(
     (ac) =>
       ac.isActive &&
+      coversDate(ac, flightDay) &&
       ac.registration.toUpperCase().includes((watchedReg || '').toUpperCase()) &&
       (watchedReg || '').length > 0
   );
@@ -340,9 +343,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
   // Determine if entered reg matches a known aircraft (for quick-add prompt)
   const regUppercase = (watchedReg || '').toUpperCase();
-  const matchedAircraft = (aircraftList ?? []).find(
-    (ac) => ac.registration.toUpperCase() === regUppercase
-  );
+  const matchedAircraft = resolveAircraft(aircraftList, regUppercase, flightDay);
+  const regInFleet = hasRegistration(aircraftList, regUppercase);
 
   // Auto-fill type when registration exactly matches a known aircraft
   useEffect(() => {
@@ -494,9 +496,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     enteredTakeoffs !== watchedLandings;
 
   // Determine if current aircraft is a glider/TMG (show launch method)
-  const currentAircraftClass = (aircraftList ?? []).find(
-    (ac) => ac.registration.toUpperCase() === (watch('aircraftReg') || '').toUpperCase()
-  )?.aircraftClass;
+  const currentAircraftClass = matchedAircraft?.aircraftClass;
   const showLaunchMethod = !isSim && (currentAircraftClass === 'TMG' || currentAircraftClass === 'GLIDER' ||
     (currentAircraftClass && currentAircraftClass.toLowerCase().includes('glider')));
 
@@ -726,7 +726,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             )}
 
             {/* Quick-add prompt for unrecognized registration */}
-            {!matchedAircraft && regUppercase.length >= 2 && !showQuickAdd && (
+            {!regInFleet && regUppercase.length >= 2 && !showQuickAdd && (
               <button
                 type="button"
                 className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline min-h-[44px] flex items-center"
