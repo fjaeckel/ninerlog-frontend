@@ -225,6 +225,10 @@ apiClient.use({
         : { [HTTP_STATUS_KEY]: response.status };
 
     const headers = new Headers(response.headers);
+    // Remove framing and encoding headers for the replaced body.
+    headers.delete('Content-Length');
+    headers.delete('Content-Encoding');
+    headers.delete('Transfer-Encoding');
     headers.set('Content-Type', 'application/json');
     return new Response(JSON.stringify(augmented), {
       status: response.status,

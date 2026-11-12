@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import { apiClient } from '../api/client';
 import i18n from '../i18n';
 import type { components, operations } from '../api/schema';
+import { parseRegistrationResponse, parseLoginResponse } from '../api/authResponse';
 
 // Request body types extracted from operations.
 type RegisterRequest = operations['registerUser']['requestBody']['content']['application/json'] & {
@@ -34,11 +35,11 @@ export const useAuthProviders = () =>
 export const useRegister = () => {
   return useMutation({
     mutationFn: async (requestData: RegisterRequest): Promise<NonNullable<RegistrationResponse>> => {
-      const { data, error } = await apiClient.POST('/auth/register', {
-        body: requestData as any,
+      const { data, error, response } = await apiClient.POST('/auth/register', {
+        body: requestData,
       });
       if (error) throw error;
-      return data as NonNullable<RegistrationResponse>;
+      return parseRegistrationResponse(data, response);
     },
   });
 };
@@ -78,16 +79,16 @@ export const useLogin = () => {
   const { setAuth } = useAuthStore();
 
   return useMutation({
-    mutationFn: async (requestData: LoginRequest): Promise<any> => {
-      const { data, error } = await apiClient.POST('/auth/login', {
-        body: requestData as any,
+    mutationFn: async (requestData: LoginRequest) => {
+      const { data, error, response } = await apiClient.POST('/auth/login', {
+        body: requestData,
       });
       if (error) throw error;
-      return data;
+      return parseLoginResponse(data, response);
     },
     onSuccess: (data) => {
       // No setAuth while 2FA is pending.
-      if (data.requiresTwoFactor) return;
+      if ('requiresTwoFactor' in data) return;
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);
       if (data.user?.preferredLocale && data.user.preferredLocale !== i18n.language) {
         i18n.changeLanguage(data.user.preferredLocale);

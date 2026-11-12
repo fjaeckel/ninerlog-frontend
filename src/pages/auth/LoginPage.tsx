@@ -82,8 +82,8 @@ function LocalLogin() {
       setResentNotice(false);
       const result = await login.mutateAsync(data);
 
-      if ((result as any).requiresTwoFactor) {
-        setTwoFactorToken((result as any).twoFactorToken);
+      if ('requiresTwoFactor' in result) {
+        setTwoFactorToken(result.twoFactorToken);
         return;
       }
 
