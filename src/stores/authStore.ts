@@ -25,6 +25,9 @@ export const useAuthStore = create<AuthState>()(
       tokenExpiresAt: null,
       isAuthenticated: false,
       setAuth: (user, accessToken, refreshToken, expiresIn) => {
+        if (!user || !accessToken || !refreshToken || !(Number.isFinite(expiresIn) && expiresIn > 0)) {
+          throw new Error('setAuth: incomplete session');
+        }
         set({
           user,
           accessToken,

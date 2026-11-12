@@ -8,6 +8,7 @@ import { apiClient } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 import i18n from '../i18n';
 import type { components } from '../api/schema';
+import { parseSessionResponse, throwAuthError } from '../api/authResponse';
 
 export type Passkey = components['schemas']['WebAuthnCredential'];
 
@@ -108,8 +109,8 @@ export const useLoginWithPasskey = () => {
           response: assertion as any,
         },
       });
-      if (verify.error || !verify.data) throw verify.error ?? new Error('Login failed');
-      return verify.data;
+      if (verify.error) throwAuthError(verify.error, verify.response);
+      return parseSessionResponse(verify.data, verify.response);
     },
     onSuccess: (data) => {
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);

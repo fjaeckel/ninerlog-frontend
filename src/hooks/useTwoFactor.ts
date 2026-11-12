@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import type { components } from '../api/schema';
+import { parseSessionResponse, throwAuthError } from '../api/authResponse';
 
 type TwoFactorSetup = components['schemas']['TwoFactorSetup'];
 type TwoFactorEnabled = components['schemas']['TwoFactorEnabled'];
@@ -42,11 +43,11 @@ export const useDisable2FA = () => {
 export const useLogin2FA = () => {
   return useMutation({
     mutationFn: async ({ twoFactorToken, code }: { twoFactorToken: string; code: string }): Promise<AuthResponse> => {
-      const { data, error } = await apiClient.POST('/auth/2fa/login', {
-        body: { twoFactorToken, code } as any,
+      const { data, error, response } = await apiClient.POST('/auth/2fa/login', {
+        body: { twoFactorToken, code },
       });
-      if (error) throw error;
-      return data as AuthResponse;
+      if (error) throwAuthError(error, response);
+      return parseSessionResponse(data, response);
     },
   });
 };

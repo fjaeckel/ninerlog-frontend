@@ -3,7 +3,12 @@ import { useAuthStore } from '../stores/authStore';
 import { apiClient } from '../api/client';
 import i18n from '../i18n';
 import type { components, operations } from '../api/schema';
-import { parseRegistrationResponse, parseLoginResponse } from '../api/authResponse';
+import {
+  parseLoginResponse,
+  parseRegistrationResponse,
+  parseSessionResponse,
+  throwAuthError,
+} from '../api/authResponse';
 
 // Request body types extracted from operations.
 type RegisterRequest = operations['registerUser']['requestBody']['content']['application/json'] & {
@@ -38,7 +43,7 @@ export const useRegister = () => {
       const { data, error, response } = await apiClient.POST('/auth/register', {
         body: requestData,
       });
-      if (error) throw error;
+      if (error) throwAuthError(error, response);
       return parseRegistrationResponse(data, response);
     },
   });
@@ -48,12 +53,12 @@ export const useVerifyEmail = () => {
   const { setAuth } = useAuthStore();
 
   return useMutation({
-    mutationFn: async (token: string): Promise<NonNullable<AuthResponse>> => {
-      const { data, error } = await apiClient.POST('/auth/verify-email', {
-        body: { token } as any,
+    mutationFn: async (token: string): Promise<AuthResponse> => {
+      const { data, error, response } = await apiClient.POST('/auth/verify-email', {
+        body: { token },
       });
-      if (error) throw error;
-      return data as NonNullable<AuthResponse>;
+      if (error) throwAuthError(error, response);
+      return parseSessionResponse(data, response);
     },
     onSuccess: (data) => {
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);
@@ -83,7 +88,7 @@ export const useLogin = () => {
       const { data, error, response } = await apiClient.POST('/auth/login', {
         body: requestData,
       });
-      if (error) throw error;
+      if (error) throwAuthError(error, response);
       return parseLoginResponse(data, response);
     },
     onSuccess: (data) => {
@@ -101,12 +106,12 @@ export const useExchangeOidcCode = () => {
   const { setAuth } = useAuthStore();
 
   return useMutation({
-    mutationFn: async (code: string): Promise<NonNullable<AuthResponse>> => {
-      const { data, error } = await apiClient.POST('/auth/oidc/exchange', {
+    mutationFn: async (code: string): Promise<AuthResponse> => {
+      const { data, error, response } = await apiClient.POST('/auth/oidc/exchange', {
         body: { code },
       });
-      if (error) throw error;
-      return data as NonNullable<AuthResponse>;
+      if (error) throwAuthError(error, response);
+      return parseSessionResponse(data, response);
     },
     onSuccess: (data) => {
       setAuth(data.user, data.accessToken, data.refreshToken, data.expiresIn);

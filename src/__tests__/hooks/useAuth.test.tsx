@@ -2,7 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { useLogin, useRegister } from '../../hooks/useAuth';
+import {
+  useExchangeOidcCode,
+  useLogin,
+  useRegister,
+  useVerifyEmail,
+} from '../../hooks/useAuth';
+import { useLogin2FA } from '../../hooks/useTwoFactor';
 import { useAuthStore } from '../../stores/authStore';
 
 // Mock fetch before the API client captures it.
@@ -46,10 +52,16 @@ function respond(body: unknown, status: number, headers = {}) {
   );
 }
 
-beforeEach(() => useAuthStore.getState().clearAuth());
+const UNEXPECTED = 'Unexpected response from the server';
+
+beforeEach(() => {
+  useAuthStore.getState().clearAuth();
+  vi.spyOn(console, 'error').mockImplementation(() => {});
+});
 afterEach(() => {
   useAuthStore.getState().clearAuth();
   fetchMock.mockReset();
+  vi.restoreAllMocks();
 });
 
 describe('authentication through the real openapi-fetch client', () => {
@@ -102,9 +114,9 @@ describe('authentication through the real openapi-fetch client', () => {
       respond(undefined, 403, { 'Content-Length': '0' });
       const { result } = renderHook(() => hook(), { wrapper });
       await act(async () => {
-        await expect(result.current.mutateAsync(request)).rejects.toEqual({
-          httpStatus: 403,
-        });
+        await expect(result.current.mutateAsync(request)).rejects.toThrow(
+          UNEXPECTED,
+        );
       });
       expect(useAuthStore.getState().isAuthenticated).toBe(false);
     });
@@ -136,7 +148,7 @@ describe('authentication through the real openapi-fetch client', () => {
       const { result } = renderHook(() => hook(), { wrapper });
       await act(async () => {
         await expect(result.current.mutateAsync(request)).rejects.toThrow(
-          'Unexpected authentication response',
+          UNEXPECTED,
         );
       });
       expect(useAuthStore.getState().isAuthenticated).toBe(false);
@@ -152,4 +164,55 @@ describe('authentication through the real openapi-fetch client', () => {
       });
     });
   }
+
+  for (const [name, useHook, variables] of [
+    ['2FA login', useLogin2FA, { twoFactorToken: 'challenge', code: '123456' }],
+    ['email verification', useVerifyEmail, 'verify-token'],
+    ['OIDC exchange', useExchangeOidcCode, 'oidc-code'],
+  ] as const) {
+    it.each([
+      ['empty success', undefined, 200],
+      ['wrong shape', {}, 200],
+      ['missing refresh token', { user, accessToken: 'access', expiresIn: 900 }, 200],
+      ['empty error body', undefined, 403],
+    ])(`${name} rejects %s without creating a session`, async (_label, body, status) => {
+      respond(body, status);
+      const { result } = renderHook(
+        () => (useHook as () => { mutateAsync: (v: unknown) => Promise<unknown> })(),
+        { wrapper },
+      );
+      await act(async () => {
+        await expect(result.current.mutateAsync(variables)).rejects.toThrow(UNEXPECTED);
+      });
+      expect(useAuthStore.getState().isAuthenticated).toBe(false);
+      expect(console.error).toHaveBeenCalled();
+    });
+
+    it(`${name} accepts a complete session`, async () => {
+      respond(session, 200);
+      const { result } = renderHook(
+        () => (useHook as () => { mutateAsync: (v: unknown) => Promise<unknown> })(),
+        { wrapper },
+      );
+      await act(async () => {
+        await expect(result.current.mutateAsync(variables)).resolves.toEqual(session);
+      });
+    });
+  }
+});
+
+describe('authStore.setAuth', () => {
+  it.each([
+    ['empty access token', user, '', 'refresh', 900],
+    ['empty refresh token', user, 'access', '', 900],
+    ['zero expiry', user, 'access', 'refresh', 0],
+    ['non-finite expiry', user, 'access', 'refresh', Number.NaN],
+  ])('refuses an incomplete session: %s', (_label, u, access, refresh, expiresIn) => {
+    expect(() =>
+      useAuthStore
+        .getState()
+        .setAuth(u as never, access, refresh, expiresIn),
+    ).toThrow('incomplete session');
+    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+  });
 });

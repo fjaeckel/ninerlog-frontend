@@ -704,6 +704,19 @@ export const TARGETS = [
     act: signAndSubmit,
   },
   { name: 'auth-login', path: '/login', anonymous: true },
+  {
+    name: 'auth-login-unexpected',
+    path: '/login',
+    anonymous: true,
+    respond: (method, path) =>
+      method === 'POST' && path === '/auth/login' ? { status: 403, body: null } : undefined,
+    act: async (page) => {
+      await page.locator('#email').fill('pilot@example.com');
+      await page.locator('#password').fill('Example123!pass');
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForTimeout(600);
+    },
+  },
   { name: 'auth-register', path: '/register', anonymous: true },
   { name: 'auth-reset', path: '/reset-password', anonymous: true },
   { name: 'auth-new-password', path: '/new-password?token=demo-token', anonymous: true },
