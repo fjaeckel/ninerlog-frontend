@@ -442,6 +442,15 @@ export const TARGETS = [
       await page.waitForTimeout(300);
     },
   },
+  {
+    name: 'aircraft-modal-period',
+    path: '/aircraft',
+    act: async (page) => {
+      await page.locator('.card', { hasText: 'Cessna 152' }).getByRole('button', { name: /^(edit|bearbeiten)$/i }).click();
+      await page.waitForTimeout(600);
+      await page.locator('#validFrom').scrollIntoViewIfNeeded();
+    },
+  },
   { name: 'licenses', path: '/licenses' },
   {
     name: 'licenses-modal-ul',

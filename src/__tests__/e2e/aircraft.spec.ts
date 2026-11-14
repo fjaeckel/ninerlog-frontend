@@ -71,6 +71,32 @@ test.describe('Aircraft', () => {
     await page.locator('button[type="submit"]').filter({ hasText: 'Update Aircraft' }).click();
   });
 
+  test('should add a second aircraft for a reused registration', async ({ page }) => {
+    await seedAircraft(page, auth.accessToken, {
+      registration: 'N123AC', type: 'C172', make: 'Cessna', model: '172', isActive: false, validTo: '2019-12-31',
+    });
+    await page.getByRole('link', { name: 'Aircraft' }).first().click();
+    await expect(page.getByText('Until 31.12.2019')).toBeVisible({ timeout: 10000 });
+
+    const addSecond = async (validFrom: string) => {
+      await page.getByRole('button', { name: 'Add Aircraft' }).first().click();
+      await page.locator('#registration').fill('N123AC');
+      await page.locator('#type').fill('PA16');
+      await page.locator('#make').fill('Piper');
+      await page.locator('#model').fill('Clipper');
+      await page.locator('#validFrom').fill(validFrom);
+      await page.locator('button[type="submit"]').filter({ hasText: 'Add Aircraft' }).click();
+    };
+
+    await addSecond('2019-12-31');
+    await expect(page.getByText(/already exists for an overlapping period/i)).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    await addSecond('2020-01-01');
+    await expect(page.getByText('Since 01.01.2020')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.card').filter({ hasText: 'N123AC' })).toHaveCount(2);
+  });
+
   test('should delete aircraft', async ({ page }) => {
     await seedAircraft(page, auth.accessToken, { registration: 'D-ACR4' });
     await page.getByRole('link', { name: 'Aircraft' }).first().click();

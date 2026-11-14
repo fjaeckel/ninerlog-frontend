@@ -1346,8 +1346,8 @@ export interface paths {
          *     no on-block time; otherwise the end of the flight day), when the
          *     flight has ever carried a completed signature, when the flight date is on or
          *     before the latest `certifiedThrough`, or when it sets an `*Override` value after
-         *     the flight day. A correction needs `correctionReason`; after a voided signature
-         *     the void reason is reused when none is given. Every change is recorded as a
+         *     the flight day. A correction needs `correctionReason`, also after a voided
+         *     signature. Every change is recorded as a
          *     revision (`GET /flights/{flightId}/revisions`). Outside strict mode nothing is
          *     recorded and `correctionReason` is ignored.
          */
@@ -3735,6 +3735,18 @@ export interface components {
              */
             defaultArrivalIcao?: string | null;
             /**
+             * Format: date
+             * @description First day the registration identified this aircraft, inclusive; null is open-ended. Set it when a registration was reissued to a different airframe or type. Ranges of fleet entries with the same registration may not overlap, so each flight date resolves to one aircraft.
+             * @example 2019-04-01
+             */
+            validFrom?: string | null;
+            /**
+             * Format: date
+             * @description Last day the registration identified this aircraft, inclusive; null is open-ended. Must not be before validFrom.
+             * @example 2023-12-31
+             */
+            validTo?: string | null;
+            /**
              * Format: date-time
              * @example 2026-01-15T10:00:00Z
              */
@@ -3827,6 +3839,18 @@ export interface components {
              * @example LSZH
              */
             defaultArrivalIcao?: string | null;
+            /**
+             * Format: date
+             * @description First day the registration identified this aircraft, inclusive; null is open-ended. Set it when a registration was reissued to a different airframe or type. Ranges of fleet entries with the same registration may not overlap, so each flight date resolves to one aircraft.
+             * @example 2019-04-01
+             */
+            validFrom?: string | null;
+            /**
+             * Format: date
+             * @description Last day the registration identified this aircraft, inclusive; null is open-ended. Must not be before validFrom.
+             * @example 2023-12-31
+             */
+            validTo?: string | null;
         };
         AircraftUpdate: {
             /** @example D-EFGH */
@@ -3891,7 +3915,19 @@ export interface components {
              */
             defaultArrivalIcao?: string | null;
             /**
-             * @description When true and the registration is being changed, logged flights that reference the old registration are updated to the new one.
+             * Format: date
+             * @description First day the registration identified this aircraft, inclusive; null is open-ended. Set it when a registration was reissued to a different airframe or type. Ranges of fleet entries with the same registration may not overlap, so each flight date resolves to one aircraft.
+             * @example 2019-04-01
+             */
+            validFrom?: string | null;
+            /**
+             * Format: date
+             * @description Last day the registration identified this aircraft, inclusive; null is open-ended. Must not be before validFrom.
+             * @example 2023-12-31
+             */
+            validTo?: string | null;
+            /**
+             * @description When true and the registration is being changed, logged flights that reference the old registration and are dated within this aircraft's validFrom/validTo range are updated to the new one.
              * @default false
              * @example false
              */
@@ -11073,7 +11109,7 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
-            /** @description Aircraft registration already exists */
+            /** @description An aircraft with this registration already exists for an overlapping period */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -11184,6 +11220,15 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+            /** @description An aircraft with this registration already exists for an overlapping period */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     listFlights: {
@@ -11402,7 +11447,7 @@ export interface operations {
     deleteFlight: {
         parameters: {
             query?: {
-                /** @description Why the flight is deleted; stored on the void record in strict mode. Defaults to the void reason of the flight's latest voided signature. */
+                /** @description Why the flight is deleted; stored on the void record in strict mode. */
                 reason?: string;
             };
             header?: never;

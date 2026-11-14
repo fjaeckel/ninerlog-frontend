@@ -14,6 +14,8 @@ const AIRCRAFT_CLASSES = [
   'SET_LAND', 'SET_SEA', 'TMG', 'GLIDER', 'ULTRALIGHT', 'GYROPLANE',
 ] as const;
 
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal(''));
+
 const aircraftSchema = z.object({
   registration: z.string().min(1, 'Registration is required').max(20),
   type: z.string().min(1, 'Type is required').max(50),
@@ -31,6 +33,11 @@ const aircraftSchema = z.object({
   defaultDepartureIcao: z.string().max(100).optional().or(z.literal('')),
   defaultArrivalIcao: z.string().max(100).optional().or(z.literal('')),
   renameFlights: z.boolean(),
+  validFrom: isoDate,
+  validTo: isoDate,
+}).refine((d) => !d.validFrom || !d.validTo || d.validFrom <= d.validTo, {
+  path: ['validTo'],
+  message: 'validToBeforeFrom',
 });
 
 type AircraftFormData = z.infer<typeof aircraftSchema>;
@@ -85,6 +92,8 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       defaultDepartureIcao: '',
       defaultArrivalIcao: '',
       renameFlights: false,
+      validFrom: '',
+      validTo: '',
     },
   });
 
@@ -111,6 +120,8 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
       defaultDepartureIcao: existingAircraft.defaultDepartureIcao || '',
       defaultArrivalIcao: existingAircraft.defaultArrivalIcao || '',
       renameFlights: false,
+      validFrom: existingAircraft.validFrom || '',
+      validTo: existingAircraft.validTo || '',
     });
   }
 
@@ -125,6 +136,7 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
     ? aircraftStats?.byReg.get(originalRegistration.toUpperCase())?.totalFlights ?? 0
     : 0;
   const showRenameOption = registrationChanged && flightsOnOldRegistration > 0;
+  const hasPeriod = !!watch('validFrom') || !!watch('validTo');
   const isUltralight = watch('aircraftClass') === 'ULTRALIGHT';
   const isULGyroplane = isUltralight && watch('ulKind') === 'GYROPLANE';
 
@@ -147,6 +159,8 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         notes: data.notes || null,
         defaultDepartureIcao: data.defaultDepartureIcao ? normalizeLocation(data.defaultDepartureIcao) || null : null,
         defaultArrivalIcao: data.defaultArrivalIcao ? normalizeLocation(data.defaultArrivalIcao) || null : null,
+        validFrom: data.validFrom || null,
+        validTo: data.validTo || null,
         ...(isEditing ? { isActive: data.isActive } : {}),
       };
 
@@ -196,10 +210,12 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
                 type="checkbox"
                 className="checkbox"
               />
-              {t('form.renameFlights', {
-                count: flightsOnOldRegistration,
-                oldRegistration: originalRegistration,
-              })}
+              {hasPeriod
+                ? t('form.renameFlightsInPeriod', { oldRegistration: originalRegistration })
+                : t('form.renameFlights', {
+                    count: flightsOnOldRegistration,
+                    oldRegistration: originalRegistration,
+                  })}
             </label>
           )}
         </div>
@@ -410,6 +426,42 @@ export default function AircraftForm({ aircraftId, onClose }: AircraftFormProps)
         </div>
         <p className="form-helper">{t('form.defaultsHelper')}</p>
       </div>
+
+      {/* Registration period */}
+      <fieldset>
+        <legend className="form-label">{t('form.registrationPeriod')}</legend>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="validFrom" className="text-xs text-slate-500 dark:text-slate-400">
+              {t('fields.validFrom')}
+            </label>
+            <input
+              {...register('validFrom')}
+              type="date"
+              id="validFrom"
+              className="input"
+              aria-describedby="help-validity"
+            />
+          </div>
+          <div>
+            <label htmlFor="validTo" className="text-xs text-slate-500 dark:text-slate-400">
+              {t('fields.validTo')}
+            </label>
+            <input
+              {...register('validTo')}
+              type="date"
+              id="validTo"
+              className={`input ${errors.validTo ? 'input-error' : ''}`}
+              aria-invalid={!!errors.validTo}
+              aria-describedby={errors.validTo ? 'err-validTo help-validity' : 'help-validity'}
+            />
+            {errors.validTo && (
+              <p id="err-validTo" className="form-error">{t('form.validToBeforeFrom')}</p>
+            )}
+          </div>
+        </div>
+        <p id="help-validity" className="form-helper">{t('form.registrationPeriodHelper')}</p>
+      </fieldset>
 
       {/* Notes */}
       <div>
