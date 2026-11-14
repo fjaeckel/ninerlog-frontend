@@ -92,7 +92,15 @@
     "person3": "Person 3",
     "person4": "Person 4",
     "person5": "Person 5",
-    "person6": "Person 6"
+    "person6": "Person 6",
+    "flightTimeMethod": "Flugzeitmethode (block/hobbs/manual)",
+    "hobbsStart": "Hobbs Anfang",
+    "hobbsEnd": "Hobbs Ende",
+    "manualTotalTime": "Eingegebene Gesamtzeit",
+    "picTime": "Eingegebene PIC-Zeit",
+    "dualTime": "Eingegebene Zeit mit Lehrer",
+    "picTimeOverride": "PIC manuell überschrieben",
+    "dualTimeOverride": "Schulungszeit manuell überschrieben"
   },
   "uploadFailed": "Upload fehlgeschlagen",
   "previewFailed": "Vorschau fehlgeschlagen",

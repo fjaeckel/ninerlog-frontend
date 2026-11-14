@@ -15,7 +15,7 @@
  *
  * Add a target whenever you add a screen.
  */
-import { flightRevisions, licenses, logbookMode, logbookModeOff, logbookModeOffRequired } from './fixtures.mjs';
+import { flights, flightRevisions, licenses, logbookMode, logbookModeOff, logbookModeOffRequired } from './fixtures.mjs';
 
 const signInfo = {
   status: 'pending', flightDate: '2026-08-12', aircraftReg: 'D-EABC', aircraftType: 'C172',
@@ -194,6 +194,33 @@ export const TARGETS = [
       await page.getByRole('radio', { name: /simulator/i }).click();
       await page.waitForTimeout(300);
     },
+  },
+  {
+    name: 'flights-modal-decimal', path: '/flights',
+    user: { defaultFlightTimeMethod: 'manual', timeDisplayFormat: 'decimal', decimalSeparator: 'dot' },
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.locator('#manualTotalTime').fill('1.5');
+      await page.locator('#picTime').fill('1.1');
+      await page.locator('#dualTime').fill('1.5');
+      await page.locator('#simulatedInstrumentTime').fill('.5');
+    },
+  },
+  {
+    name: 'flights-modal-hobbs',
+    path: '/flights',
+    user: { defaultFlightTimeMethod: 'hobbs', decimalSeparator: 'dot' },
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      await page.locator('#hobbsStart').fill('1523.4');
+      await page.locator('#hobbsEnd').fill('1524.7');
+    },
+  },
+  {
+    name: 'flight-detail-hobbs',
+    path: '/flights/f1',
+    routes: { '/flights/f1': { ...flights[0], flightTimeMethod: 'hobbs', hobbsStartTenths: 15234, hobbsEndTenths: 15247, totalTime: 78, isPic: true, isDual: false, picTime: 78, soloTime: 78, crossCountryTime: 78 } },
+    act: async (page) => { await page.getByText(/^(hobbs time|hobbs-zeit)$/i).waitFor(); },
   },
   { name: 'flight-detail', path: '/flights/f1' },
   {

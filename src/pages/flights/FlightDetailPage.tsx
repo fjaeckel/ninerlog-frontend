@@ -1,3 +1,4 @@
+import { formatHobbsReading } from '../../lib/hobbs';
 import { useState, type ReactNode } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -41,6 +42,7 @@ export default function FlightDetailPage() {
   const deleteFlight = useDeleteFlight();
   const [showEditForm, setShowEditForm] = useState(false);
   const { fmtDateTime, fmtDateLong, fmtDuration } = useFormatPrefs();
+  const decimalSeparator = useAuthStore((s) => s.user?.decimalSeparator) ?? 'comma';
   const selfName = useAuthStore((s) => s.user?.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -298,14 +300,20 @@ export default function FlightDetailPage() {
         <div className="flex flex-col gap-4 md:col-start-2 md:row-span-2 xl:row-span-1">
           {/* Flight Times */}
           <div className="card">
-            <h2 className="section-title mb-3">{t('detail.blockTimes')}</h2>
+            <h2 className="section-title mb-3">{t(flight.flightTimeMethod && flight.flightTimeMethod !== 'block' ? 'hobbs.total' : 'detail.blockTimes')}</h2>
             <DataTileGrid>
               <DataTile
-                label={t('detail.totalBlockTime')}
+                label={t(flight.flightTimeMethod && flight.flightTimeMethod !== 'block' ? 'hobbs.total' : 'detail.totalBlockTime')}
                 value={fmtDuration(flight.totalTime)}
                 mono
                 emphasis
               />
+              {flight.flightTimeMethod === 'manual' && <DataTile label={t('hobbs.method')} value={t('durationEntry.manual')} />}
+              {flight.flightTimeMethod === 'hobbs' && <>
+                <DataTile label={t('hobbs.method')} value={t('hobbs.hobbs')} />
+                <DataTile label={t('hobbs.hobbsStart')} value={formatHobbsReading(flight.hobbsStartTenths, decimalSeparator)} mono />
+                <DataTile label={t('hobbs.hobbsEnd')} value={formatHobbsReading(flight.hobbsEndTenths, decimalSeparator)} mono />
+              </>}
               <DataTile label={t('detail.pilotFunction')} value={pilotFunction} />
               {timeTiles.map(({ key, label, minutes }) => (
                 <DataTile key={key} label={label} value={fmtDuration(minutes)} mono />

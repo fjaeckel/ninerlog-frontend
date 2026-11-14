@@ -92,7 +92,15 @@
     "person3": "Person 3",
     "person4": "Person 4",
     "person5": "Person 5",
-    "person6": "Person 6"
+    "person6": "Person 6",
+    "flightTimeMethod": "Flight Time Method (block/hobbs/manual)",
+    "hobbsStart": "Hobbs Start",
+    "hobbsEnd": "Hobbs End",
+    "manualTotalTime": "Entered total time",
+    "picTime": "Entered PIC time",
+    "dualTime": "Entered dual received",
+    "picTimeOverride": "PIC override flag",
+    "dualTimeOverride": "Dual override flag"
   },
   "uploadFailed": "Upload failed",
   "previewFailed": "Preview failed",

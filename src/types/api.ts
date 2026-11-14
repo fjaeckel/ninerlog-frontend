@@ -22,6 +22,7 @@ export interface User {
   twoFactorEnabled?: boolean;
   isAdmin?: boolean;
   timeDisplayFormat?: 'hm' | 'decimal';
+  defaultFlightTimeMethod?: 'block' | 'hobbs' | 'manual';
   dateFormat?: 'DD.MM.YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD';
   clockFormat?: '24h' | '12h';
   /** Logbook field names, pilot functions and crew roles in English under a non-English UI (default 'localized') */

@@ -440,5 +440,35 @@
   "saveAsReport": "Als Bericht speichern",
   "exportCsv": "Als CSV exportieren",
   "exportingCsv": "Wird exportiert…",
-  "exportCsvFailed": "Export fehlgeschlagen. Bitte erneut versuchen."
+  "exportCsvFailed": "Export fehlgeschlagen. Bitte erneut versuchen.",
+  "hobbs": {
+    "method": "Methode zur Flugzeiterfassung",
+    "block": "Blockzeit",
+    "hobbs": "Hobbs-Zeit",
+    "hobbsStart": "Hobbs Anfang",
+    "hobbsEnd": "Hobbs Ende",
+    "total": "Gesamtflugzeit",
+    "invalid": "Gib einen Zählerstand von 0 bis 9999999,9 mit höchstens einer Nachkommastelle ein.",
+    "order": "Der Endstand muss größer als der Anfangsstand sein.",
+    "optionalBlocks": "Die Gesamtzeit ergibt sich aus der Hobbs-Differenz. Blockzeiten sind optional und ändern sie nicht.",
+    "useTotalTime": "Gesamtflugzeit übernehmen"
+  },
+  "durationEntry": {
+    "manual": "Flugzeit eingeben",
+    "hours": "Stunden (dezimal)",
+    "hoursEntered": "Eingegebene Stunden",
+    "invalid": "Dezimalstunden eingeben, z. B. 1,5 oder ,5.",
+    "required": "Eine positive Flugdauer eingeben.",
+    "autoCredit": "Automatisch aus der Besatzung; zum Überschreiben einen Wert eingeben.",
+    "creditHelp": "PIC und Schulung mit Lehrer können unabhängig erfasst werden. Ein leeres Feld wird automatisch berechnet.",
+    "minutesImc": "Stunden unter tatsächlichen Instrumentenflugbedingungen",
+    "minutesHood": "Stunden unter der Haube",
+    "minutes": "Stunden (dezimal)",
+    "minutesFtd": "Stunden im Übungsgerät",
+    "minutesPicus": "PIC unter Aufsicht (Stunden)",
+    "minutesSpic": "Student PIC (Stunden)",
+    "minutesExaminer": "Prüfer (Stunden)",
+    "minutesRelief": "Ablösung im Reiseflug (Stunden)",
+    "autoValue": "Stunden · automatisch: {{value}}"
+  }
 }

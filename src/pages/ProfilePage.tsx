@@ -42,6 +42,7 @@ export default function ProfilePage() {
   // Re-syncs the auth store from GET /users/me.
   useCurrentUser();
   const updateProfile = useUpdateProfile();
+  const [flightTimePreferenceError, setFlightTimePreferenceError] = useState<string | null>(null);
   const changePassword = useChangePassword();
   const deleteAccount = useDeleteAccount();
   const deleteAllFlights = useDeleteAllFlights();
@@ -316,6 +317,29 @@ export default function ProfilePage() {
               <option value="hm">{t('timeDisplay.hmExample')} — {t('timeDisplay.hm')}</option>
               <option value="decimal">{t('timeDisplay.decimalExample')} — {t('timeDisplay.decimal')}</option>
             </select>
+          </div>
+
+          <div className="card">
+            <label htmlFor="defaultFlightTimeMethod" className="section-title block mb-4">{t('flightTimeMethod.title')}</label>
+            <p id="flightTimeMethodHelp" className="text-sm text-slate-500 dark:text-slate-400 mb-3">{t('flightTimeMethod.description')}</p>
+            <select
+              id="defaultFlightTimeMethod"
+              aria-describedby="flightTimeMethodHelp"
+              value={user?.defaultFlightTimeMethod ?? 'block'}
+              disabled={updateProfile.isPending}
+              onChange={async (e) => {
+                const value = e.target.value as 'block' | 'hobbs' | 'manual';
+                setFlightTimePreferenceError(null);
+                try { await updateProfile.mutateAsync({ defaultFlightTimeMethod: value }); }
+                catch { setFlightTimePreferenceError(t('flightTimeMethod.saveError')); }
+              }}
+              className="input w-full"
+            >
+              <option value="block">{t('flightTimeMethod.block')}</option>
+              <option value="hobbs">{t('flightTimeMethod.hobbs')}</option>
+              <option value="manual">{t('flightTimeMethod.manual')}</option>
+            </select>
+            {flightTimePreferenceError && <p role="alert" className="form-error">{flightTimePreferenceError}</p>}
           </div>
 
           <div className="card">

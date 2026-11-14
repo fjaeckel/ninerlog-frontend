@@ -440,5 +440,35 @@
   "saveAsReport": "Save as report",
   "exportCsv": "Export as CSV",
   "exportingCsv": "Exporting…",
-  "exportCsvFailed": "Export failed. Please try again."
+  "exportCsvFailed": "Export failed. Please try again.",
+  "hobbs": {
+    "method": "Flight Time Tracking Method",
+    "block": "Block Time",
+    "hobbs": "Hobbs Time",
+    "hobbsStart": "Hobbs Start",
+    "hobbsEnd": "Hobbs End",
+    "total": "Total Flight Time",
+    "invalid": "Enter a meter reading from 0 to 9999999.9 with at most one decimal place.",
+    "order": "Hobbs End must be greater than Hobbs Start.",
+    "optionalBlocks": "Total time uses the Hobbs difference. Block timestamps are optional and do not override it.",
+    "useTotalTime": "Use total flight time"
+  },
+  "durationEntry": {
+    "manual": "Entered flight time",
+    "hours": "Hours (decimal)",
+    "hoursEntered": "Entered hours",
+    "invalid": "Enter decimal hours, for example 1.5 or .5.",
+    "required": "Enter a positive flight duration.",
+    "autoCredit": "Automatic from crew; enter a value to override.",
+    "creditHelp": "PIC and dual received are independent credits. Clear a field to return to automatic calculation.",
+    "minutesImc": "Hours in actual instrument conditions",
+    "minutesHood": "Hours under the hood",
+    "minutes": "Hours (decimal)",
+    "minutesFtd": "Training device hours",
+    "minutesPicus": "PIC under supervision (hours)",
+    "minutesSpic": "Student PIC (hours)",
+    "minutesExaminer": "Examiner (hours)",
+    "minutesRelief": "Cruise relief (hours)",
+    "autoValue": "Hours · auto: {{value}}"
+  }
 }

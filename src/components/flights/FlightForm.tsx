@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Controller, useForm } from 'react-hook-form';
+import { DurationInput } from './DurationInput';
 import { AirportInput } from './AirportInput';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,6 +10,7 @@ import { useCreateFlight, useFlight, useFlights } from '../../hooks/useFlights';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
 import { useCreateContact } from '../../hooks/useContacts';
 import { formatDuration, blockMinutes, type TimeDisplayFormat } from '../../lib/duration';
+import { parseHobbsReading, formatHobbsReading, hobbsMinutes } from '../../lib/hobbs';
 import { airportDisplay, normalizeLocation } from '../../lib/airport';
 import { cn } from '../../lib/cn';
 import { extractApiCode, extractApiError, extractApiFieldErrors } from '../../lib/errors';
@@ -27,11 +29,11 @@ import type { components } from '../../api/schema';
 type FlightUpdate = components['schemas']['FlightUpdate'];
 
 /** Override fields with an inline input in this form. */
-const OVERRIDE_FORM_FIELDS = ['nightTime', 'crossCountryTime', 'takeoffsDay', 'takeoffsNight', 'multiPilotTime'] as const;
+const OVERRIDE_FORM_FIELDS = ['picTime', 'dualTime', 'nightTime', 'crossCountryTime', 'takeoffsDay', 'takeoffsNight', 'multiPilotTime'] as const;
 
 /** Plain fields an edit sends only when the pilot changed them. */
 const UNCHANGED_OMITTED_FIELDS: ReadonlySet<string> = new Set([
-  'date', 'isSimulator', 'aircraftReg', 'aircraftType', 'departureIcao', 'arrivalIcao',
+  'manualTotalTime', 'flightTimeMethod', 'date', 'isSimulator', 'aircraftReg', 'aircraftType', 'departureIcao', 'arrivalIcao',
   'offBlockTime', 'onBlockTime', 'departureTime', 'arrivalTime', 'route', 'ifrTime',
   'remarks', 'instructorComments', 'simulatedFlightTime', 'groundTrainingTime',
   'actualInstrumentTime', 'simulatedInstrumentTime', 'holds', 'isIpc', 'isFlightReview',
@@ -54,6 +56,12 @@ const INVALID_TIME = 'invalidTime';
 const flightSchema = z.object({
   date: z.string().min(1, 'Date is required'),
   isSimulator: z.boolean(),
+  flightTimeMethod: z.enum(['block', 'hobbs', 'manual']),
+  manualTotalTime: z.number().int().min(0).max(2147483647).optional(),
+  picTime: z.number().int().min(0).optional(),
+  dualTime: z.number().int().min(0).optional(),
+  hobbsStart: z.string(),
+  hobbsEnd: z.string(),
   aircraftReg: z.string().max(20),
   aircraftType: z.string().min(1, 'Aircraft type is required'),
   departureIcao: z.string().max(100),
@@ -104,8 +112,18 @@ const flightSchema = z.object({
   if (!v.aircraftReg) missing('aircraftReg', 'Aircraft registration is required');
   if (!v.departureIcao) missing('departureIcao', 'Departure is required');
   if (!v.arrivalIcao) missing('arrivalIcao', 'Arrival is required');
-  if (!v.offBlockTime) missing('offBlockTime', 'Off-block time is required');
-  if (!v.onBlockTime) missing('onBlockTime', 'On-block time is required');
+  if (v.flightTimeMethod === 'hobbs') {
+    const start = parseHobbsReading(v.hobbsStart);
+    const end = parseHobbsReading(v.hobbsEnd);
+    if (start === null) missing('hobbsStart', 'hobbsInvalid');
+    if (end === null) missing('hobbsEnd', 'hobbsInvalid');
+    if (start !== null && end !== null && end <= start) missing('hobbsEnd', 'hobbsOrder');
+  } else if (v.flightTimeMethod === 'manual') {
+    if (!v.manualTotalTime) missing('manualTotalTime', 'durationRequired');
+  } else {
+    if (!v.offBlockTime) missing('offBlockTime', 'Off-block time is required');
+    if (!v.onBlockTime) missing('onBlockTime', 'On-block time is required');
+  }
   for (const field of ['offBlockTime', 'onBlockTime', 'departureTime', 'arrivalTime'] as const) {
     const value = v[field];
     if (value && !isCanonicalTime(value)) missing(field, INVALID_TIME);
@@ -130,6 +148,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const { data: recentFlightsData } = useFlights({ page: 1, pageSize: 1, sortBy: 'date', sortOrder: 'desc' });
   const { user } = useAuthStore();
   const fmt = (user?.timeDisplayFormat as TimeDisplayFormat) ?? 'hm';
+  const decimalSeparator = user?.decimalSeparator ?? 'comma';
   const clockFormat = (user?.clockFormat as ClockFormat) ?? '24h';
 
   const isEditing = !!flightId;
@@ -187,16 +206,23 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     setValue,
     getValues,
     setError,
+    clearErrors,
   } = useForm<FlightFormData>({
     resolver: zodResolver(flightSchema),
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
       isSimulator: false,
+      flightTimeMethod: user?.defaultFlightTimeMethod ?? 'block',
+      manualTotalTime: undefined,
+      picTime: undefined,
+      dualTime: undefined,
+      hobbsStart: '',
+      hobbsEnd: '',
       aircraftReg: '',
       aircraftType: '',
       departureIcao: '',
       arrivalIcao: '',
-      offBlockTime: isEditing ? '' : getCurrentUtcTime(),
+      offBlockTime: isEditing || (user?.defaultFlightTimeMethod ?? 'block') !== 'block' ? '' : getCurrentUtcTime(),
       onBlockTime: '',
       departureTime: '',
       arrivalTime: '',
@@ -235,6 +261,12 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
     if (existingFlight && isEditing) {
       const loaded: FlightFormData = {
         date: existingFlight.date,
+        flightTimeMethod: existingFlight.flightTimeMethod ?? 'block',
+        manualTotalTime: existingFlight.manualTotalTime,
+        picTime: existingFlight.picTimeOverride ? existingFlight.picTime : undefined,
+        dualTime: existingFlight.dualTimeOverride ? existingFlight.dualTime : undefined,
+        hobbsStart: formatHobbsReading(existingFlight.hobbsStartTenths, decimalSeparator),
+        hobbsEnd: formatHobbsReading(existingFlight.hobbsEndTenths, decimalSeparator),
         isSimulator: existingFlight.isSimulator ?? false,
         aircraftReg: existingFlight.aircraftReg,
         aircraftType: existingFlight.aircraftType,
@@ -288,7 +320,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         })));
       }
     }
-  }, [existingFlight, isEditing, reset]);
+  }, [existingFlight, isEditing, reset, decimalSeparator]);
 
 
 
@@ -354,16 +386,28 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
   // Pre-fill on-block with off-block when off-block is entered (and on-block is empty)
   // Cuts down on time-wheel scrolling on mobile.
+  const flightTimeMethod = watch('flightTimeMethod');
   const watchedOffBlock = watch('offBlockTime');
   const watchedOnBlock = watch('onBlockTime');
   useEffect(() => {
-    if (!isEditing && watchedOffBlock && isCanonicalTime(watchedOffBlock) && !watchedOnBlock) {
+    if (!isEditing && flightTimeMethod === 'block' && watchedOffBlock && isCanonicalTime(watchedOffBlock) && !watchedOnBlock) {
       setValue('onBlockTime', watchedOffBlock, { shouldValidate: true });
     }
-  }, [watchedOffBlock, watchedOnBlock, setValue, isEditing]);
+  }, [watchedOffBlock, watchedOnBlock, setValue, isEditing, flightTimeMethod]);
 
   // Block minutes from the entered times; fills a duration field in one tap.
-  const currentBlockMinutes = blockMinutes(watchedOffBlock || '', watchedOnBlock || '');
+  const watchedHobbsStart = watch('hobbsStart');
+  const watchedHobbsEnd = watch('hobbsEnd');
+  const blockTimesUnchanged = existingFlight &&
+    watchedOffBlock === (existingFlight.offBlockTime?.slice(0, 5) ?? '') &&
+    watchedOnBlock === (existingFlight.onBlockTime?.slice(0, 5) ?? '') &&
+    (existingFlight.flightTimeMethod ?? 'block') === 'block';
+  const enteredTotal = watch('manualTotalTime');
+  const currentBlockMinutes = flightTimeMethod === 'manual'
+    ? (enteredTotal !== undefined && Number.isFinite(enteredTotal) ? enteredTotal : null)
+    : flightTimeMethod === 'hobbs'
+    ? hobbsMinutes(watchedHobbsStart, watchedHobbsEnd)
+    : blockTimesUnchanged ? existingFlight.totalTime : blockMinutes(watchedOffBlock || '', watchedOnBlock || '');
   const canUseBlockTime = currentBlockMinutes !== null && currentBlockMinutes > 0;
   const fillWithBlockTime = (field: 'ifrTime' | 'picusTime') => {
     if (!canUseBlockTime) return;
@@ -374,14 +418,14 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       type="button"
       onClick={() => fillWithBlockTime(field)}
       disabled={!canUseBlockTime}
-      title={canUseBlockTime ? formatDuration(currentBlockMinutes, fmt) : t('form.useBlockTimeDisabled')}
+      title={canUseBlockTime ? formatDuration(currentBlockMinutes, fmt) : t(flightTimeMethod === 'hobbs' ? 'hobbs.invalid' : 'form.useBlockTimeDisabled')}
       className="link text-xs py-3.5 -my-3.5 whitespace-nowrap ml-auto disabled:opacity-50 disabled:pointer-events-none"
     >
-      {t('form.useBlockTime')}
+      {t(flightTimeMethod !== 'block' ? 'hobbs.useTotalTime' : 'form.useBlockTime')}
     </button>
   );
 
-  type OverrideTimeField = 'nightTime' | 'crossCountryTime' | 'multiPilotTime';
+  type OverrideTimeField = 'picTime' | 'dualTime' | 'nightTime' | 'crossCountryTime' | 'multiPilotTime';
   type OverrideField = OverrideTimeField | 'takeoffsDay' | 'takeoffsNight';
 
   // A number overrides the derived value; an emptied field on a flight the
@@ -393,9 +437,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   };
 
   const overrideTimeHelper = (field: OverrideTimeField, autoHint: string) => {
-    if (watch(field) !== undefined) return t('form.minutesEntered');
+    if (watch(field) !== undefined) return t(fmt === 'decimal' ? 'durationEntry.hoursEntered' : 'form.minutesEntered');
     if (isEditing && existingFlight && !existingFlight[`${field}Override`]) {
-      return t('form.minutesAutoValue', { value: formatDuration(existingFlight[field] ?? 0, fmt) });
+      return t(fmt === 'decimal' ? 'durationEntry.autoValue' : 'form.minutesAutoValue', { value: formatDuration(existingFlight[field] ?? 0, fmt) });
     }
     return autoHint;
   };
@@ -403,22 +447,19 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const overrideTimeInput = (field: OverrideTimeField, label: string, autoHint: string) => (
     <div>
       <label htmlFor={field} className="form-label">{label}</label>
-      <input
-        {...register(field, { setValueAs: (v: string) => (v === '' ? undefined : Number(v)) })}
-        type="number"
-        id={field}
-        min="0"
-        step="1"
-        className={cn('input', errors[field] && 'input-error')}
-        placeholder={t('form.autoPlaceholder')}
-      />
+      <Controller name={field} control={control} render={({ field: input }) => (
+        <DurationInput id={field} value={input.value} onChange={input.onChange}
+          onEmpty={() => input.onChange(undefined)} onBlur={input.onBlur} inputRef={input.ref}
+          entryFormat={fmt} decimalSeparator={decimalSeparator} invalid={!!errors[field]}
+          placeholder={t('form.autoPlaceholder')} className={cn('input', errors[field] && 'input-error')} />
+      )} />
       {overrideError(field)}
       <p className="form-helper flex flex-wrap items-baseline justify-between gap-x-2">
         <span>{overrideTimeHelper(field, autoHint)}</span>
         {watch(field) !== undefined && (
           <button
             type="button"
-            onClick={() => setValue(field, undefined, { shouldDirty: true })}
+            onClick={() => setValue(field, undefined, { shouldDirty: true, shouldValidate: true })}
             className="link text-xs py-3.5 -my-3.5 whitespace-nowrap ml-auto"
           >
             {t('form.resetToAuto')}
@@ -483,6 +524,16 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
 
   // An FSTD session logs its duration and device instead of a route, block
   // times and landings, and feeds no flight total.
+  const clearInvalidEntries = () => {
+    const optional = new Set(['manualTotalTime', 'picTime', 'dualTime', 'nightTime', 'crossCountryTime', 'multiPilotTime', 'takeoffsDay', 'takeoffsNight']);
+    for (const [key, value] of Object.entries(getValues())) {
+      if (typeof value === 'number' && !Number.isFinite(value)) {
+        const field = key as keyof FlightFormData;
+        setValue(field, optional.has(key) ? undefined : 0);
+        clearErrors(field);
+      }
+    }
+  };
   const isSim = watch('isSimulator');
   const watchedTakeoffsDay = watch('takeoffsDay');
   const watchedTakeoffsNight = watch('takeoffsNight');
@@ -535,11 +586,19 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         ? { ...sharedPayload, ifrTime: 0 }
         : {
             ...sharedPayload,
+            flightTimeMethod: data.flightTimeMethod,
+            ...(data.flightTimeMethod === 'manual' ? { manualTotalTime: data.manualTotalTime } : {}),
+            ...overridePayload('picTime', data.picTime),
+            ...overridePayload('dualTime', data.dualTime),
+            ...(data.flightTimeMethod === 'hobbs' ? {
+              hobbsStartTenths: parseHobbsReading(data.hobbsStart) ?? undefined,
+              hobbsEndTenths: parseHobbsReading(data.hobbsEnd) ?? undefined,
+            } : {}),
             aircraftReg: data.aircraftReg.toUpperCase(),
             departureIcao: normalizeLocation(data.departureIcao),
             arrivalIcao: normalizeLocation(data.arrivalIcao),
-            offBlockTime: data.offBlockTime + ':00',
-            onBlockTime: data.onBlockTime + ':00',
+            offBlockTime: data.offBlockTime ? data.offBlockTime + ':00' : undefined,
+            onBlockTime: data.onBlockTime ? data.onBlockTime + ':00' : undefined,
             departureTime: data.departureTime ? data.departureTime + ':00' : undefined,
             arrivalTime: data.arrivalTime ? data.arrivalTime + ':00' : undefined,
             route: data.route || null,
@@ -561,7 +620,16 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       setApiError(null);
       setBannerOverrideFields([]);
       if (isEditing && flightId) {
-        const outcome = await correctable.save(flightId, omitUnchanged(basePayload, data) as FlightUpdate);
+        const timingPayload = omitUnchanged(basePayload, data) as FlightUpdate;
+        if (!data.isSimulator && data.flightTimeMethod !== 'block') {
+          if (!data.offBlockTime && loadedValues.current?.offBlockTime) timingPayload.offBlockTime = null;
+          if (!data.onBlockTime && loadedValues.current?.onBlockTime) timingPayload.onBlockTime = null;
+        }
+        if (!data.isSimulator && data.flightTimeMethod === 'hobbs' && loadedValues.current?.flightTimeMethod === 'hobbs') {
+          if (parseHobbsReading(data.hobbsStart) === existingFlight?.hobbsStartTenths) delete timingPayload.hobbsStartTenths;
+          if (parseHobbsReading(data.hobbsEnd) === existingFlight?.hobbsEndTenths) delete timingPayload.hobbsEndTenths;
+        }
+        const outcome = await correctable.save(flightId, timingPayload);
         if (outcome.status === 'cancelled') return;
       } else {
         await createFlight.mutateAsync(basePayload);
@@ -617,7 +685,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             role="radio"
             aria-checked={isSim === simulator}
             disabled={isLocked}
-            onClick={() => setValue('isSimulator', simulator, { shouldValidate: true })}
+            onClick={() => { clearInvalidEntries(); setValue('isSimulator', simulator, { shouldValidate: true }); }}
             className={cn(
               'flex-1 min-h-11 rounded-lg border px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50',
               isSim === simulator
@@ -820,24 +888,87 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               <label htmlFor="sessionTime" className="form-label">
                 {t('fields.simulatedFlightTime')} <span className="text-red-500">*</span>
               </label>
-              <input
-                {...register('simulatedFlightTime', { valueAsNumber: true })}
-                type="number"
-                id="sessionTime"
-                step="1"
-                min="0"
-                className="input"
-              />
+              <Controller name="simulatedFlightTime" control={control} render={({ field }) => (
+                <DurationInput id="sessionTime" value={field.value} onChange={field.onChange}
+                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
+                  invalid={!!errors.simulatedFlightTime} />
+              )} />
               {errors.simulatedFlightTime && (
                 <p className="form-error">{errors.simulatedFlightTime.message}</p>
               )}
-              <p className="form-helper">{t('form.minutesFtd')}</p>
+              <p className="form-helper">{t(fmt === 'decimal' ? 'durationEntry.minutesFtd' : 'form.minutesFtd')}</p>
             </div>
           </div>
         </fieldset>
       )}
 
       {/* Route & Times */}
+      {!isSim && (
+        <fieldset>
+          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('hobbs.method')}</legend>
+          <label htmlFor="flightTimeMethod" className="sr-only">{t('hobbs.method')}</label>
+          <Controller name="flightTimeMethod" control={control} render={({ field }) => (
+            <select id="flightTimeMethod" {...field} onChange={(event) => {
+              if (event.target.value !== 'manual' && !Number.isFinite(getValues('manualTotalTime'))) {
+                setValue('manualTotalTime', undefined); clearErrors('manualTotalTime');
+              }
+              field.onChange(event);
+            }} className="input w-full">
+              <option value="block">{t('hobbs.block')}</option>
+              <option value="hobbs">{t('hobbs.hobbs')}</option>
+              <option value="manual">{t('durationEntry.manual')}</option>
+            </select>
+          )} />
+          {flightTimeMethod === 'manual' && (
+            <div className="mt-4">
+              <label htmlFor="manualTotalTime" className="form-label">{t('hobbs.total')} <span className="text-red-500">*</span></label>
+              <Controller name="manualTotalTime" control={control} render={({ field }) => (
+                <DurationInput id="manualTotalTime" value={field.value} onChange={field.onChange}
+                  onEmpty={() => field.onChange(undefined)} onBlur={field.onBlur} inputRef={field.ref}
+                  entryFormat={fmt} decimalSeparator={decimalSeparator} invalid={!!errors.manualTotalTime} />
+              )} />
+              <p className="form-helper">{t(fmt === 'decimal' ? 'durationEntry.hours' : 'common:minutes')}</p>
+              {errors.manualTotalTime && <p className="form-error">{t('durationEntry.required')}</p>}
+            </div>
+          )}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+            {overrideTimeInput('picTime', t('fields.picTime'), t('durationEntry.autoCredit'))}
+            {overrideTimeInput('dualTime', t('fields.dualTime'), t('durationEntry.autoCredit'))}
+            <div>
+              <label htmlFor="simulatedInstrumentTime" className="form-label">{t('fields.simulatedInstrumentTime')}</label>
+              <Controller name="simulatedInstrumentTime" control={control} render={({ field }) => (
+                <DurationInput id="simulatedInstrumentTime" value={field.value} onChange={field.onChange}
+                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
+                  invalid={!!errors.simulatedInstrumentTime} />
+              )} />
+              <p className="form-helper">{t(fmt === 'decimal' ? 'durationEntry.minutesHood' : 'form.minutesHood')}</p>
+            </div>
+          </div>
+          <p className="form-helper mt-2">{t('durationEntry.creditHelp')}</p>
+          {flightTimeMethod === 'hobbs' && (
+            <div className="mt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0">
+                {(['hobbsStart', 'hobbsEnd'] as const).map((field) => (
+                  <div key={field}>
+                    <label htmlFor={field} className="form-label">{t(`hobbs.${field}`)} <span className="text-red-500">*</span></label>
+                    <input id={field} {...register(field)} type="text" inputMode="decimal" maxLength={9}
+                      aria-invalid={!!errors[field]} aria-describedby={errors[field] ? `${field}Error` : undefined}
+                      className={cn('input font-mono tabular-nums', errors[field] && 'input-error')} />
+                    {errors[field] && <p id={`${field}Error`} role="alert" className="form-error">{t(errors[field]?.message === 'hobbsOrder' ? 'hobbs.order' : 'hobbs.invalid')}</p>}
+                  </div>
+                ))}
+              </div>
+              <p className="form-helper">{t('hobbs.optionalBlocks')}</p>
+            </div>
+          )}
+          {(currentBlockMinutes !== null || isEditing) && (
+            <p role="status" className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-200">
+              {t('hobbs.total')}: <span className="font-mono tabular-nums">{currentBlockMinutes === null ? '—' : formatDuration(currentBlockMinutes, fmt, decimalSeparator)}</span>
+            </p>
+          )}
+        </fieldset>
+      )}
+
       {!isSim && (
       <fieldset>
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.routeAndTimesUtc')}</legend>
@@ -895,7 +1026,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 [&>*]:min-w-0">
           <div>
             <label htmlFor="offBlockTime" className="form-label">
-              {t('detail.offBlock')} <span className="text-red-500">*</span>
+              {t('detail.offBlock')} {flightTimeMethod === 'block' && <span className="text-red-500">*</span>}
             </label>
             <Controller
               control={control}
@@ -921,7 +1052,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           </div>
           <div>
             <label htmlFor="onBlockTime" className="form-label">
-              {t('detail.onBlock')} <span className="text-red-500">*</span>
+              {t('detail.onBlock')} {flightTimeMethod === 'block' && <span className="text-red-500">*</span>}
             </label>
             <Controller
               control={control}
@@ -1122,21 +1253,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         </div>
       </fieldset>
 
-      {/* Total block time (edit mode only) */}
-      {isEditing && existingFlight && !isSim && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="form-label">
-              {t('detail.totalBlockTime')}
-            </label>
-            <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono tabular-nums">
-              {formatDuration(existingFlight.totalTime, fmt)}
-            </div>
-            <p className="form-helper">{t('form.computedFromBlockTimes')}</p>
-          </div>
-        </div>
-      )}
-
       {/* Takeoffs & Landings — old location removed, now after route */}
 
       {/* Auto-Calculated Values (edit mode) */}
@@ -1203,16 +1319,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             {!isSim && (
             <div>
               <label htmlFor="ifrTime" className="form-label">{t('fields.ifrTime')}</label>
-              <input
-                {...register('ifrTime', { valueAsNumber: true })}
-                type="number"
-                id="ifrTime"
-                step="1"
-                min="0"
-                className="input"
-              />
+              <Controller name="ifrTime" control={control} render={({ field }) => (
+                <DurationInput id="ifrTime" value={field.value} onChange={field.onChange}
+                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
+                  invalid={!!errors.ifrTime} />
+              )} />
               <p className="form-helper flex flex-wrap items-baseline justify-between gap-x-2">
-                <span>{t('common:minutes')}</span>
+                <span>{t(fmt === 'decimal' ? 'durationEntry.hours' : 'common:minutes')}</span>
                 {blockTimeButton('ifrTime')}
               </p>
             </div>
@@ -1220,29 +1333,25 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             {!isSim && (
             <div>
               <label htmlFor="actualInstrumentTime" className="form-label">{t('fields.actualInstrumentTime')}</label>
-              <input
-                {...register('actualInstrumentTime', { valueAsNumber: true })}
-                type="number"
-                id="actualInstrumentTime"
-                step="1"
-                min="0"
-                className="input"
-              />
-              <p className="form-helper">{t('form.minutesImc')}</p>
+              <Controller name="actualInstrumentTime" control={control} render={({ field }) => (
+                <DurationInput id="actualInstrumentTime" value={field.value} onChange={field.onChange}
+                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
+                  invalid={!!errors.actualInstrumentTime} />
+              )} />
+              <p className="form-helper">{t(fmt === 'decimal' ? 'durationEntry.minutesImc' : 'form.minutesImc')}</p>
             </div>
             )}
+            {isSim && (
             <div>
               <label htmlFor="simulatedInstrumentTime" className="form-label">{t('fields.simulatedInstrumentTime')}</label>
-              <input
-                {...register('simulatedInstrumentTime', { valueAsNumber: true })}
-                type="number"
-                id="simulatedInstrumentTime"
-                step="1"
-                min="0"
-                className="input"
-              />
-              <p className="form-helper">{t('form.minutesHood')}</p>
+              <Controller name="simulatedInstrumentTime" control={control} render={({ field }) => (
+                <DurationInput id="simulatedInstrumentTime" value={field.value} onChange={field.onChange}
+                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
+                  invalid={!!errors.simulatedInstrumentTime} />
+              )} />
+              <p className="form-helper">{t(fmt === 'decimal' ? 'durationEntry.minutesHood' : 'form.minutesHood')}</p>
             </div>
+            )}
             <div>
               <label htmlFor="holds" className="form-label">{t('fields.holds')}</label>
               <input
@@ -1339,28 +1448,22 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
               <label htmlFor="groundTrainingTime" className="form-label">{t('fields.groundTrainingTime')}</label>
-              <input
-                {...register('groundTrainingTime', { valueAsNumber: true })}
-                type="number"
-                id="groundTrainingTime"
-                step="1"
-                min="0"
-                className="input"
-              />
-              <p className="form-helper">{t('form.minutes')}</p>
+              <Controller name="groundTrainingTime" control={control} render={({ field }) => (
+                <DurationInput id="groundTrainingTime" value={field.value} onChange={field.onChange}
+                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
+                  invalid={!!errors.groundTrainingTime} />
+              )} />
+              <p className="form-helper">{t(fmt === 'decimal' ? 'durationEntry.minutes' : 'form.minutes')}</p>
             </div>
             {!isSim && (
             <div>
               <label htmlFor="simulatedFlightTime" className="form-label">{t('fields.simulatedFlightTime')}</label>
-              <input
-                {...register('simulatedFlightTime', { valueAsNumber: true })}
-                type="number"
-                id="simulatedFlightTime"
-                step="1"
-                min="0"
-                className="input"
-              />
-              <p className="form-helper">{t('form.minutesFtd')}</p>
+              <Controller name="simulatedFlightTime" control={control} render={({ field }) => (
+                <DurationInput id="simulatedFlightTime" value={field.value} onChange={field.onChange}
+                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
+                  invalid={!!errors.simulatedFlightTime} />
+              )} />
+              <p className="form-helper">{t(fmt === 'decimal' ? 'durationEntry.minutesFtd' : 'form.minutesFtd')}</p>
             </div>
             )}
             {!isSim && overrideTimeInput(
@@ -1373,14 +1476,11 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             {!isSim && (
             <div>
               <label htmlFor="picusTime" className="form-label">{t('fields.picusTime')}</label>
-              <input
-                {...register('picusTime', { valueAsNumber: true })}
-                type="number"
-                id="picusTime"
-                step="1"
-                min="0"
-                className="input"
-              />
+              <Controller name="picusTime" control={control} render={({ field }) => (
+                <DurationInput id="picusTime" value={field.value} onChange={field.onChange}
+                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
+                  invalid={!!errors.picusTime} />
+              )} />
               <p className="form-helper flex flex-wrap items-baseline justify-between gap-x-2">
                 <span>{t('form.picusHelper')}</span>
                 {blockTimeButton('picusTime')}
@@ -1390,42 +1490,33 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             {!isSim && (
             <div>
               <label htmlFor="spicTime" className="form-label">{t('fields.spicTime')}</label>
-              <input
-                {...register('spicTime', { valueAsNumber: true })}
-                type="number"
-                id="spicTime"
-                step="1"
-                min="0"
-                className="input"
-              />
+              <Controller name="spicTime" control={control} render={({ field }) => (
+                <DurationInput id="spicTime" value={field.value} onChange={field.onChange}
+                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
+                  invalid={!!errors.spicTime} />
+              )} />
               <p className="form-helper">{t('form.spicHelper')}</p>
             </div>
             )}
             {!isSim && (
             <div>
               <label htmlFor="examinerTime" className="form-label">{t('fields.examinerTime')}</label>
-              <input
-                {...register('examinerTime', { valueAsNumber: true })}
-                type="number"
-                id="examinerTime"
-                step="1"
-                min="0"
-                className="input"
-              />
+              <Controller name="examinerTime" control={control} render={({ field }) => (
+                <DurationInput id="examinerTime" value={field.value} onChange={field.onChange}
+                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
+                  invalid={!!errors.examinerTime} />
+              )} />
               <p className="form-helper">{t('form.examinerHelper')}</p>
             </div>
             )}
             {!isSim && (
             <div>
               <label htmlFor="reliefTime" className="form-label">{t('fields.reliefTime')}</label>
-              <input
-                {...register('reliefTime', { valueAsNumber: true })}
-                type="number"
-                id="reliefTime"
-                step="1"
-                min="0"
-                className="input"
-              />
+              <Controller name="reliefTime" control={control} render={({ field }) => (
+                <DurationInput id="reliefTime" value={field.value} onChange={field.onChange}
+                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
+                  invalid={!!errors.reliefTime} />
+              )} />
               <p className="form-helper">{t('form.reliefHelper')}</p>
             </div>
             )}
@@ -1445,7 +1536,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
             <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
               <input
                 {...register('isFlightReview')}

@@ -109,11 +109,11 @@ describe('FlightForm Instrument Tracking', () => {
     screen.getAllByRole('button', { name: /use block time/i }).forEach((b) => expect(b).toBeDisabled());
   });
 
-  it('does not show instrument fields when Instrument / IFR section is collapsed', () => {
+  it('keeps simulated instrument beside flight credits while advanced instrument fields are collapsed', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
     expect(screen.queryByLabelText(/actual instrument/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/simulated instrument/i)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/simulated instrument/i)).toBeInTheDocument();
     expect(screen.queryByText(/Add Approach/)).not.toBeInTheDocument();
   });
 
