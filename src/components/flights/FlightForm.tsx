@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { useCreateFlight, useFlight, useFlights } from '../../hooks/useFlights';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
+import { useLicenses } from '../../hooks/useLicenses';
 import { useCreateContact } from '../../hooks/useContacts';
 import { formatDuration, blockMinutes, type TimeDisplayFormat } from '../../lib/duration';
 import { airportDisplay, normalizeLocation } from '../../lib/airport';
@@ -19,6 +20,7 @@ import type { Aircraft } from '../../hooks/useAircraft';
 import type { CrewRole, FlightCrewMemberInput } from '../../types/api';
 import { CrewEditor } from './CrewEditor';
 import { crewDerivedNames, toCrewInputs } from './crewRoles';
+import { picWhileDualPayload, receivesInstruction, showPicWhileDual } from './picWhileDual';
 import { useCorrectableFlightUpdate } from '../logbook/useCorrectableFlightUpdate';
 import { logbookErrorMessage } from '../../lib/logbookErrors';
 import { revisionFieldLabelKey } from '../../lib/flightRevisions';
@@ -82,6 +84,7 @@ const flightSchema = z.object({
   isIpc: z.boolean(),
   isFlightReview: z.boolean(),
   isProficiencyCheck: z.boolean(),
+  picWhileDual: z.boolean(),
   launchMethod: z.string().optional().or(z.literal('')),
   // Phase 6c regulatory compliance fields
   picName: z.string().optional().or(z.literal('')),
@@ -126,6 +129,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const { data: existingFlight } = useFlight(flightId || '');
   const isLocked = !!existingFlight?.signatureId;
   const { data: aircraftList } = useAircraft();
+  const { data: licences } = useLicenses();
   const createAircraft = useCreateAircraft();
   const { data: recentFlightsData } = useFlights({ page: 1, pageSize: 1, sortBy: 'date', sortOrder: 'desc' });
   const { user } = useAuthStore();
@@ -219,6 +223,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       isIpc: false,
       isFlightReview: false,
       isProficiencyCheck: false,
+      picWhileDual: false,
       launchMethod: '',
       picName: '',
       multiPilotTime: undefined,
@@ -263,6 +268,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         isIpc: existingFlight.isIpc || false,
         isFlightReview: existingFlight.isFlightReview || false,
         isProficiencyCheck: existingFlight.isProficiencyCheck || false,
+        picWhileDual: Boolean(existingFlight.isPic && existingFlight.isDual),
         launchMethod: existingFlight.launchMethod || '',
         picName: existingFlight.picName || '',
         multiPilotTime: existingFlight.multiPilotTimeOverride ? existingFlight.multiPilotTime : undefined,
@@ -500,6 +506,13 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const showLaunchMethod = !isSim && (currentAircraftClass === 'TMG' || currentAircraftClass === 'GLIDER' ||
     (currentAircraftClass && currentAircraftClass.toLowerCase().includes('glider')));
 
+  const loadedPicWhileDual = isEditing ? Boolean(existingFlight?.isPic && existingFlight?.isDual) : undefined;
+  const picWhileDualShown = showPicWhileDual({
+    receivingInstruction: !isSim && receivesInstruction(crewMembers),
+    licences,
+    declared: Boolean(loadedPicWhileDual),
+  });
+
   const onSubmit = async (data: FlightFormData) => {
     try {
       // Columns both kinds of entry carry.
@@ -526,6 +539,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         fstdType: data.fstdType || null,
         endorsements: data.endorsements || null,
         crewMembers: isEditing || crewMembers.length > 0 ? crewMembers : undefined,
+        ...picWhileDualPayload(picWhileDualShown, data.picWhileDual, loadedPicWhileDual),
       };
 
       // A training device is not flown between places: the API rejects the
@@ -1112,6 +1126,22 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             disabled={isLocked}
           />
 
+          {picWhileDualShown && (
+            <div>
+              <label className="flex items-center gap-2 min-h-11 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                <input
+                  {...register('picWhileDual')}
+                  type="checkbox"
+                  id="picWhileDual"
+                  className="checkbox"
+                  disabled={isLocked}
+                />
+                {t('form.picWhileDualLabel')}
+              </label>
+              <p className="form-helper">{t('form.picWhileDualHelper')}</p>
+            </div>
+          )}
+
           {/* Instructor comments — only shown when an instructor is on board */}
           {crewMembers.some((m) => m.role === 'Instructor') && (
             <div className="mt-3">
@@ -1165,7 +1195,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <div>
               <label className="form-label">{t('form.function')}</label>
               <div className="input bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
-                {existingFlight.isPic ? 'PIC' : existingFlight.isDual ? 'Dual' : (existingFlight.sicTime || 0) > 0 ? 'SIC' : '—'}
+                {existingFlight.isPic && existingFlight.isDual ? 'PIC/Dual' : existingFlight.isPic ? 'PIC' : existingFlight.isDual ? 'Dual' : (existingFlight.sicTime || 0) > 0 ? 'SIC' : '—'}
               </div>
               <p className="form-helper">{t('form.autoFromCrew')}</p>
             </div>

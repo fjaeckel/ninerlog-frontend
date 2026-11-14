@@ -15,7 +15,7 @@
  *
  * Add a target whenever you add a screen.
  */
-import { flightRevisions, licenses, logbookMode, logbookModeOff, logbookModeOffRequired } from './fixtures.mjs';
+import { flightRevisions, flights, licenses, logbookMode, logbookModeOff, logbookModeOffRequired } from './fixtures.mjs';
 
 const signInfo = {
   status: 'pending', flightDate: '2026-08-12', aircraftReg: 'D-EABC', aircraftType: 'C172',
@@ -87,6 +87,24 @@ function restoreResponder(byMode) {
     return byMode[params.get('mode') ?? 'restore'];
   };
 }
+
+/** f2 unsigned, flown with an instructor; `declared` logs it as PIC as well. */
+const picWhileDualFlight = (declared) => {
+  const base = flights.find((f) => f.id === 'f2');
+  return {
+    ...base,
+    id: 'f9',
+    signatureId: null,
+    isIpc: false,
+    isFlightReview: true,
+    isPic: declared,
+    isDual: true,
+    picTime: declared ? base.totalTime : 0,
+    dualTime: base.totalTime,
+    picName: 'Jacqueline Cochran',
+    crewMembers: [{ ...base.crewMembers[0], flightId: 'f9' }],
+  };
+};
 
 export const TARGETS = [
   { name: 'dashboard', path: '/dashboard' },
@@ -233,6 +251,31 @@ export const TARGETS = [
       await page.getByRole('button', { name: /edit flight|flug .*bearbeiten/i }).first().click();
       await page.waitForTimeout(600);
       await page.getByRole('dialog').getByRole('combobox', { name: /role of amelia|rolle von amelia/i }).scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'flights-modal-edit-pic-dual',
+    path: '/flights/f9',
+    routes: { '/flights/f9': picWhileDualFlight(true) },
+    act: async (page) => {
+      await page.getByRole('button', { name: /edit flight|flug .*bearbeiten/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.getByRole('dialog').locator('#instructorComments').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'flights-modal-edit-dual-easa',
+    path: '/flights/f9',
+    routes: {
+      '/flights/f9': picWhileDualFlight(false),
+      '/licenses': licenses.filter((l) => l.regulatoryAuthority !== 'FAA'),
+    },
+    act: async (page) => {
+      await page.getByRole('button', { name: /edit flight|flug .*bearbeiten/i }).first().click();
+      await page.waitForTimeout(600);
+      await page.getByRole('dialog').locator('#instructorComments').scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
     },
   },
