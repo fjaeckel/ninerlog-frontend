@@ -204,5 +204,20 @@
     "flightBaseline": "Übertrag"
   },
   "restoreSummaryFlightRevisions": "Flugrevisionen",
-  "restoreSummaryLogbookCertifications": "Flugbuch-Bestätigungen"
+  "restoreSummaryLogbookCertifications": "Flugbuch-Bestätigungen",
+  "durationUnits": {
+    "help": "Einheiten für Zeitspalten wählen. Zählerstände bleiben Dezimalstunden. Vorschau vor dem Import prüfen.",
+    "allDecimal": "Dezimalstunden für alle Zeitspalten",
+    "mapColumn": "{{column}} zuordnen",
+    "column": "Zeiteinheit für {{column}}",
+    "auto": "Bisherige automatische Einheiten",
+    "decimal": "Dezimalstunden (1,5 = 90 Min.)",
+    "minutes": "Ganze Minuten (90 = 90 Min.)",
+    "dateColumn": "Datumsformat für {{column}}",
+    "detectDate": "Datumsformat erkennen",
+    "conflictColumn": "Abweichende Gesamtzeit für {{column}}",
+    "review": "Abweichende Gesamtzeiten prüfen (Standard)",
+    "recorded": "Datei-Gesamtzeit als manuellen Wert behalten",
+    "calculated": "Berechnete Gesamtzeit verwenden"
+  }
 }

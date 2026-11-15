@@ -19,7 +19,7 @@
     "night": "Nacht",
     "picusDetail": "+ {{time}} PICUS"
   },
-  "blockTimeBreakdown": "Blockzeit-Aufteilung",
+  "blockTimeBreakdown": "Flugzeit-Aufteilung",
   "baselineApplied": "Inklusive {{hours}} h aus deinem Übertrag (Stand {{date}}).",
   "breakdownLabels": {
     "pic": "PIC",

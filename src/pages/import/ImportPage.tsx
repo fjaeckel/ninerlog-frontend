@@ -81,6 +81,8 @@ type UncoveredImportField = Exclude<ImportField, (typeof IMPORT_FIELDS)[number][
 type AssertNoUncoveredImportFields<T extends never> = T;
 export type _ImportFieldsAreExhaustive = AssertNoUncoveredImportFields<UncoveredImportField>;
 
+const DURATION_FIELDS = new Set(['totalTime', 'manualTotalTime', 'picTime', 'dualTime', 'isDual', 'nightTime', 'crossCountryTime', 'ifrTime', 'actualInstrumentTime', 'simulatedInstrumentTime', 'dualGivenTime']);
+
 type Step = 'upload' | 'mapping' | 'preview' | 'result';
 type Mode = 'csv' | 'json';
 
@@ -103,7 +105,7 @@ export default function ImportPage() {
     try {
       const data = await upload.mutateAsync(file);
       setUploadData(data);
-      setMappings(data.suggestedMappings || []);
+      setMappings((data.suggestedMappings || []).map((m) => !data.detectedTemplate && DURATION_FIELDS.has(m.targetField) ? { ...m, durationUnit: 'decimal_hours' } : m));
       setStep('mapping');
     } catch (err: any) {
       setError(err.message || t('uploadFailed'));
@@ -130,13 +132,17 @@ export default function ImportPage() {
     });
   };
 
+  const updateMappingOptions = (sourceColumn: string, options: Partial<ImportColumnMapping>) => {
+    setMappings((prev) => prev.map((m) => m.sourceColumn === sourceColumn ? { ...m, ...options } : m));
+  };
+
   const handlePreview = async () => {
     if (!uploadData) return;
     setError(null);
     try {
       const data = await preview.mutateAsync({
         uploadToken: uploadData.uploadToken,
-        mappings: mappings.filter((m) => m.targetField !== 'ignore'),
+        mappings: mappings.filter((m) => m.targetField !== 'ignore').map((m) => m.targetField === 'totalTime' ? { ...m, totalTimePolicy: m.totalTimePolicy ?? 'review' } : m),
         skipDuplicates: true,
       });
       setPreviewData(data);
@@ -302,16 +308,19 @@ export default function ImportPage() {
               </div>
             )}
 
+            <p className="text-sm text-slate-500 mb-3">{t('durationUnits.help')}</p>
+            <button type="button" className="btn-secondary mb-4" onClick={() => setMappings((prev) => prev.map((m) => DURATION_FIELDS.has(m.targetField) ? { ...m, durationUnit: 'decimal_hours' } : m))}>{t('durationUnits.allDecimal')}</button>
             <div className="space-y-2">
               {uploadData.columns.map((col) => {
                 const mapping = mappings.find((m) => m.sourceColumn === col);
                 return (
-                  <div key={col} className="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
+                  <div key={col} className="flex flex-wrap items-center gap-3 py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
                     <span className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300 truncate" title={col}>
                       {col}
                     </span>
                     <ArrowRight className="w-4 h-4 shrink-0 text-slate-400 dark:text-slate-500" aria-hidden="true" />
                     <select
+                      aria-label={t('durationUnits.mapColumn', { column: col })}
                       value={mapping?.targetField || 'ignore'}
                       onChange={(e) => updateMapping(col, e.target.value)}
                       className="input text-sm w-48"
@@ -320,6 +329,28 @@ export default function ImportPage() {
                         <option key={f.value} value={f.value}>{t(f.labelKey)}</option>
                       ))}
                     </select>
+                    {mapping && DURATION_FIELDS.has(mapping.targetField) && <select
+                      aria-label={t('durationUnits.column', { column: col })} value={mapping.durationUnit ?? 'auto'}
+                      onChange={(e) => updateMappingOptions(col, { durationUnit: e.target.value as ImportColumnMapping['durationUnit'] })} className="input text-sm w-48">
+                      <option value="auto">{t('durationUnits.auto')}</option>
+                      <option value="decimal_hours">{t('durationUnits.decimal')}</option>
+                      <option value="minutes">{t('durationUnits.minutes')}</option>
+                    </select>}
+                    {mapping?.targetField === 'date' && <select aria-label={t('durationUnits.dateColumn', { column: col })} value={mapping.dateFormat ?? ''}
+                      onChange={(e) => updateMappingOptions(col, { dateFormat: e.target.value })} className="input text-sm w-48">
+                      <option value="">{t('durationUnits.detectDate')}</option>
+                      {mapping.dateFormat && !['1/2/06', '1/2/2006', '2/1/2006', '2006-01-02'].includes(mapping.dateFormat) && <option value={mapping.dateFormat}>{mapping.dateFormat}</option>}
+                      <option value="1/2/06">MM/DD/YY (11/5/26)</option>
+                      <option value="1/2/2006">MM/DD/YYYY</option>
+                      <option value="2/1/2006">DD/MM/YYYY</option>
+                      <option value="2006-01-02">YYYY-MM-DD</option>
+                    </select>}
+                    {mapping?.targetField === 'totalTime' && <select aria-label={t('durationUnits.conflictColumn', { column: col })} value={mapping.totalTimePolicy ?? 'review'}
+                      onChange={(e) => updateMappingOptions(col, { totalTimePolicy: e.target.value as ImportColumnMapping['totalTimePolicy'] })} className="input text-sm w-full sm:w-64">
+                      <option value="review">{t('durationUnits.review')}</option>
+                      <option value="recorded">{t('durationUnits.recorded')}</option>
+                      <option value="calculated">{t('durationUnits.calculated')}</option>
+                    </select>}
                   </div>
                 );
               })}

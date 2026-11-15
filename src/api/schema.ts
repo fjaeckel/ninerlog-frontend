@@ -3999,7 +3999,7 @@ export interface components {
          */
         FlightTimeMethod: "block" | "hobbs" | "manual";
         /**
-         * @description Original Hobbs meter reading in integer tenths of an hour (15234 means 1523.4 hours). Hobbs flights require both readings and end greater than start. Total minutes equal (end minus start) times 6. Optional block timestamps never override this total.
+         * @description Original Hobbs meter reading in integer tenths of an hour (15234 means 1523.4 hours). Hobbs calculation requires both readings and end greater than start. Total minutes equal (end minus start) times 6 unless an explicit manualTotalTime override is present. Observations survive method changes. Optional block timestamps never override a Hobbs total.
          * @example 15234
          */
         HobbsReadingTenths: number;
@@ -4008,7 +4008,7 @@ export interface components {
             picTimeOverride?: boolean;
             /** @description True when dualTime is independently entered; otherwise derived from crew roles. */
             dualTimeOverride?: boolean;
-            /** @description Original entered flight duration in integer minutes. Required for the manual method; optional clock timestamps never override it. */
+            /** @description Explicit recorded duration in integer minutes. Required for manual entries; when present on block or Hobbs entries, overrides calculation until explicitly cleared. Original source observations are retained. */
             manualTotalTime?: number;
             flightTimeMethod?: components["schemas"]["FlightTimeMethod"];
             hobbsStartTenths?: components["schemas"]["HobbsReadingTenths"];
@@ -4380,7 +4380,7 @@ export interface components {
          *     summed into flight time (EASA AMC1 FCL.050 Cols 20-22).
          */
         FlightCreate: {
-            /** @description Original entered flight duration in integer minutes. Required for the manual method; optional clock timestamps never override it. */
+            /** @description Explicit recorded duration in integer minutes. Required for manual entries; when present on block or Hobbs entries, overrides calculation until explicitly cleared. Original source observations are retained. */
             manualTotalTime?: number;
             flightTimeMethod?: components["schemas"]["FlightTimeMethod"];
             hobbsStartTenths?: components["schemas"]["HobbsReadingTenths"];
@@ -4527,16 +4527,21 @@ export interface components {
             crewMembers?: components["schemas"]["FlightCrewMemberInput"][];
         };
         FlightUpdate: {
+            /**
+             * @description Required when removing clock evidence from a non-block entry. Preserve explicitly retains recorded night and event splits; recalculate resets only automatic values.
+             * @enum {string}
+             */
+            clockTimePolicy?: "preserve" | "recalculate";
             /** @description Independent pic credit in minutes; null restores crew-based calculation. Each credit is bounded by totalTime and may overlap the other explicitly entered credit. */
             picTime?: number | null;
             /** @description Independent dual credit in minutes; null restores crew-based calculation. Each credit is bounded by totalTime and may overlap the other explicitly entered credit. */
             dualTime?: number | null;
-            /** @description Original entered flight duration in integer minutes; null clears it when switching to another method. */
+            /** @description Explicit recorded duration in integer minutes; null restores calculation from the saved source. */
             manualTotalTime?: number | null;
             flightTimeMethod?: components["schemas"]["FlightTimeMethod"];
-            /** @description Hobbs start reading in tenths of an hour; null clears the reading when switching to block time. */
+            /** @description Hobbs start reading in tenths of an hour; null explicitly clears the observation. Method changes alone retain it. */
             hobbsStartTenths?: number | null;
-            /** @description Hobbs end reading in tenths of an hour; null clears the reading when switching to block time. */
+            /** @description Hobbs end reading in tenths of an hour; null explicitly clears the observation. Method changes alone retain it. */
             hobbsEndTenths?: number | null;
             /** Format: date */
             date?: string;
@@ -5998,7 +6003,7 @@ export interface components {
          *     accept decimal meter hours with at most one decimal place (dot or comma).
          *     A pair of readings defaults the imported row to Hobbs; a mapped manualTotalTime
          *     defaults it to manual; otherwise an omitted method means block, independent
-         *     of the user's entry preference. Source totals take precedence over timestamps.
+         *     of the user's entry preference. Conflicting supplied totals require an explicit totalTimePolicy decision. Source observations survive method changes.
          *     manualTotalTime, picTime and dualTime accept duration values. Optional
          *     picTimeOverride/dualTimeOverride flags retain automatic-versus-entered state;
          *     false ignores the corresponding value, true retains even an explicit zero.
@@ -6086,6 +6091,16 @@ export interface components {
              * @example 2006-01-02
              */
             dateFormat?: string;
+            /**
+             * @description Explicit units for numeric duration cells. Auto preserves legacy parsing; meter readings always use decimal hours.
+             * @enum {string}
+             */
+            durationUnit?: "auto" | "decimal_hours" | "minutes";
+            /**
+             * @description Resolve a supplied total that differs from its source. Review rejects conflicts; recorded retains it as an explicit override; calculated explicitly uses the source.
+             * @enum {string}
+             */
+            totalTimePolicy?: "review" | "recorded" | "calculated";
             /**
              * @description Time parsing format. Only relevant for time fields.
              * @example 15:04
@@ -6610,7 +6625,7 @@ export interface components {
             picTimeOverride?: boolean;
             /** @description True when dualTime is independently entered; otherwise derived from crew roles. */
             dualTimeOverride?: boolean;
-            /** @description Original entered flight duration in integer minutes. Required for the manual method; optional clock timestamps never override it. */
+            /** @description Explicit recorded duration in integer minutes. Required for manual entries; when present on block or Hobbs entries, overrides calculation until explicitly cleared. Original source observations are retained. */
             manualTotalTime?: number;
             flightTimeMethod?: components["schemas"]["FlightTimeMethod"];
             hobbsStartTenths?: components["schemas"]["HobbsReadingTenths"];

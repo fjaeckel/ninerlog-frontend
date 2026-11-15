@@ -170,3 +170,51 @@ describe('decimal logbook entry', () => {
   });
 
 });
+
+
+describe('source authority refinements', () => {
+  it('does not carry generated clock defaults into new manual entries', () => {
+    useAuthStore.getState().updateUser({ defaultFlightTimeMethod: 'block' });
+    renderForm();
+    expect(screen.getByLabelText(/^off-block/i)).not.toHaveValue('');
+    change(/flight time tracking method/i, 'manual');
+    expect((document.getElementById('offBlockTime') as HTMLInputElement).value).toBe('');
+    expect((document.getElementById('onBlockTime') as HTMLInputElement).value).toBe('');
+  });
+
+  it('keeps meter evidence when changing to an entered total', async () => {
+    useAuthStore.getState().updateUser({ timeDisplayFormat: 'decimal' });
+    vi.spyOn(flights, 'useFlight').mockReturnValue({ data: existing } as never);
+    renderForm('f1');
+    change(/flight time tracking method/i, 'manual');
+    expect(screen.getByLabelText(/hobbs start/i)).toHaveValue('1523.4');
+    change(/^total flight time/i, '1.5'); submit();
+    await waitFor(() => expect(update.mutateAsync).toHaveBeenCalledOnce());
+    const payload = update.mutateAsync.mock.calls[0][0].data;
+    expect(payload).toMatchObject({ flightTimeMethod: 'manual', manualTotalTime: 90 });
+    expect(payload).not.toHaveProperty('hobbsStartTenths');
+    expect(payload).not.toHaveProperty('hobbsEndTenths');
+  });
+  it('explicit reset returns an overridden Hobbs flight to calculation', async () => {
+    vi.spyOn(flights, 'useFlight').mockReturnValue({ data: { ...existing, manualTotalTime: 90, totalTime: 90 } } as never);
+    renderForm('f1');
+    fireEvent.click(screen.getByRole('button', { name: 'Use calculated total' }));
+    submit();
+    await waitFor(() => expect(update.mutateAsync).toHaveBeenCalledOnce());
+    expect(update.mutateAsync.mock.calls[0][0].data.manualTotalTime).toBeNull();
+  });
+  it('accepts the paper-logbook sample without clocks and keeps both credits', async () => {
+    useAuthStore.getState().updateUser({ defaultFlightTimeMethod: 'manual', timeDisplayFormat: 'decimal' });
+    renderForm();
+    change(/aircraft registration/i, 'N5156CH');
+    change(/aircraft type/i, '172S');
+    change(/^departure/i, 'KBEC'); change(/^arrival/i, 'KBEC');
+    change(/^total flight time/i, '1.5'); change(/^pic(?: time)?$/i, '1.5'); change(/^dual received$/i, '1.5');
+    change(/^night time/i, '0.0');
+    fireEvent.click(screen.getByRole('button', { name: 'Instrument / IFR' }));
+    change(/^simulated instrument/i, '1.1'); change(/^actual instrument/i, '0.0');
+    submit();
+    await waitFor(() => expect(create.mutateAsync).toHaveBeenCalledOnce());
+    expect(create.mutateAsync.mock.calls[0][0]).toMatchObject({ aircraftReg: 'N5156CH', aircraftType: '172S', manualTotalTime: 90, picTime: 90, dualTime: 90, nightTime: 0, actualInstrumentTime: 0, simulatedInstrumentTime: 66 });
+  });
+});

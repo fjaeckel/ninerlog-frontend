@@ -204,5 +204,20 @@
     "flightBaseline": "Carried-forward hours"
   },
   "restoreSummaryFlightRevisions": "Flight revisions",
-  "restoreSummaryLogbookCertifications": "Logbook certifications"
+  "restoreSummaryLogbookCertifications": "Logbook certifications",
+  "durationUnits": {
+    "help": "Choose units for duration columns. Meter readings always use decimal hours. Review the preview before importing.",
+    "allDecimal": "Use decimal hours for all duration columns",
+    "mapColumn": "Map {{column}}",
+    "column": "Duration units for {{column}}",
+    "auto": "Legacy automatic units",
+    "decimal": "Decimal hours (1.5 = 90 min)",
+    "minutes": "Integer minutes (90 = 90 min)",
+    "dateColumn": "Date format for {{column}}",
+    "detectDate": "Detect date format",
+    "conflictColumn": "Conflicting total policy for {{column}}",
+    "review": "Review conflicting totals (required by default)",
+    "recorded": "Keep supplied total as an entered override",
+    "calculated": "Use the calculated source total"
+  }
 }

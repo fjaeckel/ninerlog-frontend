@@ -19,7 +19,7 @@
     "night": "night",
     "picusDetail": "+ {{time}} PICUS"
   },
-  "blockTimeBreakdown": "Block Time Breakdown",
+  "blockTimeBreakdown": "Flight Time Breakdown",
   "baselineApplied": "Includes {{hours}}h carried forward from your initial-hours snapshot (as of {{date}}).",
   "breakdownLabels": {
     "pic": "PIC",
