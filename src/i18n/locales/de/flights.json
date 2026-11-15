@@ -20,7 +20,8 @@
     "crew": "Besatzung",
     "remarks": "Bemerkungen & Vermerke",
     "flags": "Flug-Merkmale",
-    "session": "Sitzung"
+    "session": "Sitzung",
+    "pilotTime": "Pilotenzeiten"
   },
   "fields": {
     "takeoffLandingTime": "Start- / Landezeit",
@@ -469,6 +470,8 @@
     "minutesSpic": "Student PIC (Stunden)",
     "minutesExaminer": "Prüfer (Stunden)",
     "minutesRelief": "Ablösung im Reiseflug (Stunden)",
-    "autoValue": "Stunden · automatisch: {{value}}"
+    "autoValue": "Stunden · automatisch: {{value}}",
+    "autoNight": "Stunden · automatisch anhand der Dämmerung",
+    "autoCrossCountry": "Stunden · automatisch bei unterschiedlichem Start- und Zielort"
   }
 }

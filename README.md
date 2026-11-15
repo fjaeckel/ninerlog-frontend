@@ -161,3 +161,7 @@ restores calculation. Simulator sessions remain separate from flight totals.
 The entry pattern follows LogTen's documented [manual totals](https://support.logten.com/en/articles/11641691-calculating-total-time-with-logten)
 and [per-field auto-fill](https://support.logten.com/en/articles/11604664-save-time-with-auto-fill-times-ios).
 Independent credit is bounded by flight duration; existing strict logbook policies still apply.
+
+Pilot credits appear under **Pilot time** beside the crew details for every flight-time method.
+Actual and simulated instrument durations stay together under **Instrument / IFR**, which opens
+automatically when editing a record with instrument data.

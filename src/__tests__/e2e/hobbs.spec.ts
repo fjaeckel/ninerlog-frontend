@@ -64,7 +64,9 @@ test('decimal flight entry preserves independent PIC, dual and instrument minute
   await expect(page.locator('#picTime')).toHaveValue('');
   await expect(page.getByRole('alert')).not.toBeVisible();
   await page.locator('#picTime').fill('1.1');
-  await page.locator('#dualTime').fill('1.5');await page.locator('#simulatedInstrumentTime').fill('.5');
+  await page.locator('#dualTime').fill('1.5');
+  await page.getByRole('button', { name:'Instrument / IFR', exact:true }).click();
+  await page.locator('#simulatedInstrumentTime').fill('.5');
   await page.locator('button[type="submit"]').filter({hasText:'Log Flight'}).click();
   await expect(page.getByText('Log New Flight')).not.toBeVisible();
   const list=await apiCall(page,'GET','/flights',undefined,auth.accessToken);

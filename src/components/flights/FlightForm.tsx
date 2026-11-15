@@ -307,6 +307,10 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       };
       loadedValues.current = loaded;
       reset(loaded);
+      if (existingFlight.ifrTime || existingFlight.actualInstrumentTime || existingFlight.simulatedInstrumentTime ||
+          existingFlight.holds || existingFlight.approachesCount || existingFlight.approaches?.length || existingFlight.isIpc) {
+        setExpandedSections((previous) => ({ ...previous, instrument: true }));
+      }
       // Load existing crew members
       if (existingFlight.crewMembers) {
         setCrewMembers(toCrewInputs(existingFlight.crewMembers));
@@ -439,7 +443,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
   const overrideTimeHelper = (field: OverrideTimeField, autoHint: string) => {
     if (watch(field) !== undefined) return t(fmt === 'decimal' ? 'durationEntry.hoursEntered' : 'form.minutesEntered');
     if (isEditing && existingFlight && !existingFlight[`${field}Override`]) {
-      return t(fmt === 'decimal' ? 'durationEntry.autoValue' : 'form.minutesAutoValue', { value: formatDuration(existingFlight[field] ?? 0, fmt) });
+      return t(fmt === 'decimal' ? 'durationEntry.autoValue' : 'form.minutesAutoValue', { value: formatDuration(existingFlight[field] ?? 0, fmt, decimalSeparator) });
     }
     return autoHint;
   };
@@ -724,7 +728,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       {/* Basic Info */}
       <fieldset>
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('sections.basic')}</legend>
-        <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0">
+        <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0 [&_.form-label]:min-h-10 sm:[&_.form-label]:min-h-0">
           <div>
             <label htmlFor="date" className="form-label">
               {t('fields.date')} <span className="text-red-500">*</span>
@@ -931,23 +935,9 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               {errors.manualTotalTime && <p className="form-error">{t('durationEntry.required')}</p>}
             </div>
           )}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
-            {overrideTimeInput('picTime', t('fields.picTime'), t('durationEntry.autoCredit'))}
-            {overrideTimeInput('dualTime', t('fields.dualTime'), t('durationEntry.autoCredit'))}
-            <div>
-              <label htmlFor="simulatedInstrumentTime" className="form-label">{t('fields.simulatedInstrumentTime')}</label>
-              <Controller name="simulatedInstrumentTime" control={control} render={({ field }) => (
-                <DurationInput id="simulatedInstrumentTime" value={field.value} onChange={field.onChange}
-                  onBlur={field.onBlur} inputRef={field.ref} entryFormat={fmt} decimalSeparator={decimalSeparator}
-                  invalid={!!errors.simulatedInstrumentTime} />
-              )} />
-              <p className="form-helper">{t(fmt === 'decimal' ? 'durationEntry.minutesHood' : 'form.minutesHood')}</p>
-            </div>
-          </div>
-          <p className="form-helper mt-2">{t('durationEntry.creditHelp')}</p>
           {flightTimeMethod === 'hobbs' && (
             <div className="mt-4 space-y-3">
-              <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0">
+              <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0 [&_.form-label]:min-h-10 sm:[&_.form-label]:min-h-0">
                 {(['hobbsStart', 'hobbsEnd'] as const).map((field) => (
                   <div key={field}>
                     <label htmlFor={field} className="form-label">{t(`hobbs.${field}`)} <span className="text-red-500">*</span></label>
@@ -1207,8 +1197,8 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
       <fieldset>
         <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('form.nightAndCrossCountry')}</legend>
         <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0">
-          {overrideTimeInput('nightTime', t('fields.nightTime'), t('form.minutesAutoNight'))}
-          {overrideTimeInput('crossCountryTime', t('fields.crossCountryTime'), t('form.minutesAutoCrossCountry'))}
+          {overrideTimeInput('nightTime', t('fields.nightTime'), t(fmt === 'decimal' ? 'durationEntry.autoNight' : 'form.minutesAutoNight'))}
+          {overrideTimeInput('crossCountryTime', t('fields.crossCountryTime'), t(fmt === 'decimal' ? 'durationEntry.autoCrossCountry' : 'form.minutesAutoCrossCountry'))}
         </div>
       </fieldset>
       )}
@@ -1252,6 +1242,17 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
           )}
         </div>
       </fieldset>
+
+      {!isSim && (
+        <fieldset>
+          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">{t('sections.pilotTime')}</legend>
+          <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0 [&_.form-label]:min-h-10 sm:[&_.form-label]:min-h-0">
+            {overrideTimeInput('picTime', t('fields.picTime'), t('durationEntry.autoCredit'))}
+            {overrideTimeInput('dualTime', t('fields.dualTime'), t('durationEntry.autoCredit'))}
+          </div>
+          <p className="form-helper mt-2">{t('durationEntry.creditHelp')}</p>
+        </fieldset>
+      )}
 
       {/* Takeoffs & Landings — old location removed, now after route */}
 
@@ -1308,14 +1309,16 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
         <button
           type="button"
           onClick={() => toggleSection('instrument')}
+          aria-expanded={expandedSections.instrument}
+          aria-controls={expandedSections.instrument ? 'instrument-fields' : undefined}
           className="flex items-center gap-2 min-h-11 text-sm font-semibold text-slate-800 dark:text-slate-100 mb-1 w-full text-left"
         >
           {expandedSections.instrument ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           {t('sections.instrument')}
         </button>
         {expandedSections.instrument && (
-          <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div id="instrument-fields">
+          <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0 [&_.form-label]:min-h-10 sm:[&_.form-label]:min-h-0">
             {!isSim && (
             <div>
               <label htmlFor="ifrTime" className="form-label">{t('fields.ifrTime')}</label>
@@ -1341,7 +1344,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               <p className="form-helper">{t(fmt === 'decimal' ? 'durationEntry.minutesImc' : 'form.minutesImc')}</p>
             </div>
             )}
-            {isSim && (
             <div>
               <label htmlFor="simulatedInstrumentTime" className="form-label">{t('fields.simulatedInstrumentTime')}</label>
               <Controller name="simulatedInstrumentTime" control={control} render={({ field }) => (
@@ -1351,7 +1353,6 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
               )} />
               <p className="form-helper">{t(fmt === 'decimal' ? 'durationEntry.minutesHood' : 'form.minutesHood')}</p>
             </div>
-            )}
             <div>
               <label htmlFor="holds" className="form-label">{t('fields.holds')}</label>
               <input
@@ -1420,7 +1421,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             <p className="form-helper mt-2">{t('form.approachHelper')}</p>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer mt-3">
+          <label className="flex min-h-11 items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer mt-3">
             <input
               {...register('isIpc')}
               type="checkbox"
@@ -1429,7 +1430,7 @@ export default function FlightForm({ flightId, onClose }: FlightFormProps) {
             />
             {t('form.ipcLabel')}
           </label>
-          </>
+          </div>
         )}
       </fieldset>
 

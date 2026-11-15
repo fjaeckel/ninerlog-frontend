@@ -20,7 +20,8 @@
     "crew": "Crew",
     "remarks": "Remarks & Endorsements",
     "flags": "Flight Flags",
-    "session": "Session"
+    "session": "Session",
+    "pilotTime": "Pilot time"
   },
   "fields": {
     "takeoffLandingTime": "Takeoff / Landing Time",
@@ -469,6 +470,8 @@
     "minutesSpic": "Student PIC (hours)",
     "minutesExaminer": "Examiner (hours)",
     "minutesRelief": "Cruise relief (hours)",
-    "autoValue": "Hours · auto: {{value}}"
+    "autoValue": "Hours · auto: {{value}}",
+    "autoNight": "Hours · auto from civil twilight",
+    "autoCrossCountry": "Hours · auto when departure ≠ arrival"
   }
 }

@@ -89,6 +89,31 @@ function restoreResponder(byMode) {
 }
 
 export const TARGETS = [
+  ...['block', 'hobbs', 'manual'].flatMap((method) => ['source', 'pilot', 'instrument'].map((view) => ({
+    name: `flight-time-${method}-${view}`,
+    path: '/flights',
+    user: { defaultFlightTimeMethod: method, timeDisplayFormat: 'decimal', decimalSeparator: 'dot' },
+    act: async (page) => {
+      await page.getByRole('button', { name: /log flight|flug eintragen/i }).first().click();
+      if (method === 'manual') await page.locator('#manualTotalTime').fill('1.5');
+      if (method === 'hobbs') {
+        await page.locator('#hobbsStart').fill('1523.4');
+        await page.locator('#hobbsEnd').fill('1524.7');
+      }
+      if (view === 'pilot') {
+        await page.locator('#picTime').fill('1.1');
+        await page.locator('#dualTime').fill('1.5');
+        await page.locator('#picTime').scrollIntoViewIfNeeded();
+      } else if (view === 'instrument') {
+        await page.getByRole('button', { name: /Instrument.*IFR/i }).click();
+        await page.locator('#simulatedInstrumentTime').fill('.5');
+        await page.locator('#actualInstrumentTime').scrollIntoViewIfNeeded();
+      }
+      await page.locator('#flightTimeMethod').focus();
+      if (view !== 'source') await page.locator(view === 'pilot' ? '#picTime' : '#actualInstrumentTime').evaluate((element, section) => element.closest(section === 'pilot' ? 'fieldset' : '.grid').scrollIntoView({ block: 'center' }), view);
+    },
+  }))),
+
   { name: 'dashboard', path: '/dashboard' },
   { name: 'flights', path: '/flights' },
   {
@@ -203,6 +228,7 @@ export const TARGETS = [
       await page.locator('#manualTotalTime').fill('1.5');
       await page.locator('#picTime').fill('1.1');
       await page.locator('#dualTime').fill('1.5');
+      await page.getByRole('button', { name: /Instrument.*IFR/i }).click();
       await page.locator('#simulatedInstrumentTime').fill('.5');
     },
   },

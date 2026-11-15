@@ -94,7 +94,9 @@ describe('decimal logbook entry', () => {
   it('saves 1.5 flight, 1.5 dual, .5 simulated instrument and 1.1 PIC', async () => {
     renderForm(); fillRequired();
     change(/^total flight time/i, '1.5'); change(/^pic(?: time)?$/i, '1.1');
-    change(/^dual received$/i, '1.5'); change(/^simulated instrument/i, '.5');
+    change(/^dual received$/i, '1.5');
+    fireEvent.click(screen.getByRole('button', { name: 'Instrument / IFR' }));
+    change(/^simulated instrument/i, '.5');
     submit();
     await waitFor(() => expect(create.mutateAsync).toHaveBeenCalledOnce());
     expect(create.mutateAsync.mock.calls[0][0]).toMatchObject({ flightTimeMethod:'manual', manualTotalTime:90, picTime:66, dualTime:90, simulatedInstrumentTime:30 });
@@ -122,6 +124,19 @@ describe('decimal logbook entry', () => {
     renderForm('f1'); change(/^pic(?: time)?$/i,''); submit();
     await waitFor(() => expect(update.mutateAsync).toHaveBeenCalledOnce());
     expect(update.mutateAsync.mock.calls[0][0].data.picTime).toBeNull();
+  });
+  it.each(['block', 'hobbs', 'manual'] as const)('%s keeps pilot credit separate from the source and instrument fields', (method) => {
+    renderForm(); change(/flight time tracking method/i, method);
+    const source = screen.getByRole('group', { name: 'Flight Time Tracking Method' });
+    const pilot = screen.getByRole('group', { name: 'Pilot time' });
+    expect(pilot).toContainElement(screen.getByLabelText(/^pic(?: time)?$/i));
+    expect(pilot).toContainElement(screen.getByLabelText(/^dual received$/i));
+    expect(source).not.toContainElement(screen.getByLabelText(/^pic(?: time)?$/i));
+    expect(screen.queryByLabelText(/^simulated instrument/i)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Instrument / IFR' }));
+    const instrument = document.getElementById('instrument-fields');
+    expect(instrument).toContainElement(screen.getByLabelText(/^simulated instrument/i));
+    expect(instrument).toContainElement(screen.getByLabelText(/^actual instrument/i));
   });
   it('rejects invalid duration text', async () => {
     renderForm(); fillRequired(); change(/^total flight time/i,'1.5junk'); submit();
