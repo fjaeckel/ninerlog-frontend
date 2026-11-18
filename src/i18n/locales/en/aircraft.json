@@ -36,7 +36,9 @@
     "defaultArrivalIcao": "Default arrival airfield",
     "notes": "Notes",
     "ulKind": "Ultralight kind",
-    "maxTakeoffMassKg": "Maximum take-off mass (kg)"
+    "maxTakeoffMassKg": "Maximum take-off mass (kg)",
+    "validFrom": "Registered from",
+    "validTo": "Registered until"
   },
   "stats": {
     "totalTime": "Total Time",
@@ -52,7 +54,8 @@
     "until": "until {{date}}",
     "modelRecency_one": "Model {{type}}: {{count}} landing in 90 days",
     "modelRecency_other": "Model {{type}}: {{count}} landings in 90 days",
-    "modelLastFlown": "last flown {{date}}"
+    "modelLastFlown": "last flown {{date}}",
+    "sharedRegistration": "Totals cover every aircraft that has carried {{registration}}."
   },
   "classes": {
     "SEP_LAND": "SEP (Land)",
@@ -87,7 +90,11 @@
     "renameFlights_other": "Also update {{count}} logged flights from {{oldRegistration}} to the new registration",
     "ulKindUnspecified": "Unspecified",
     "ulKindHelper": "Decides what the flights count toward. Three-axis ultralight time and landings count toward EASA SEP (Land) revalidation and LAPL(A) recency, a UL motorglider's toward TMG, but not the instructor flight. German UL recency is kept per kind.",
-    "maxTakeoffMassHelper": "Ultralight gyroplanes of at least 450 kg count toward EASA GPL recency time and landings (FCL.035(a)(5))."
+    "maxTakeoffMassHelper": "Ultralight gyroplanes of at least 450 kg count toward EASA GPL recency time and landings (FCL.035(a)(5)).",
+    "registrationPeriod": "Registration period",
+    "registrationPeriodHelper": "Only needed when this registration was used by a different aircraft at another time. Flights on these dates use this aircraft; leave both empty if the registration has only ever meant this aircraft.",
+    "validToBeforeFrom": "Must not be before the start date",
+    "renameFlightsInPeriod": "Also update logged flights from {{oldRegistration}} that fall within this registration period"
   },
   "classOptions": {
     "SEP_LAND": "SEP (Land) — Single Engine Piston",
@@ -100,5 +107,10 @@
     "GLIDER": "Glider — Sailplane",
     "ULTRALIGHT": "Ultralight — Microlight",
     "GYROPLANE": "Gyroplane — GPL (single-propeller gyroplane)"
+  },
+  "validity": {
+    "range": "{{from}} – {{to}}",
+    "since": "Since {{from}}",
+    "until": "Until {{to}}"
   }
 }
