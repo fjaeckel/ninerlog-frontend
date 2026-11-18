@@ -143,7 +143,7 @@ export default function FlightCard({ flight, columns, onClick }: FlightCardProps
             <span
               className={cn(
                 'shrink-0 rounded px-1 text-xs font-bold uppercase',
-                functionKind === 'pic' || functionKind === 'sim'
+                functionKind === 'pic' || functionKind === 'picdual' || functionKind === 'sim'
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
                   : functionKind === 'dual'
                     ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
