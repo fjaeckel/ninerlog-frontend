@@ -49,7 +49,7 @@
     "customHint": "Reports you saved from a flight search. Each uses its own time window."
   },
   "hero": {
-    "totalTime": "Total block time",
+    "totalTime": "Total flight time",
     "pic": "As PIC",
     "distance": "Distance",
     "acrossFlights_one": "Across {{count}} flight",
@@ -102,21 +102,21 @@
   },
   "chart": {
     "careerHours": "Career flight time",
-    "careerHoursHint": "Running total of block time, including hours carried forward from before your logbook.",
+    "careerHoursHint": "Running total of recorded flight time, including hours carried forward from before your logbook.",
     "careerTotal": "Career total",
-    "blockTime": "Block time",
+    "blockTime": "Recorded flight time",
     "monthlyHours": "Hours per month",
-    "monthlyHoursHint": "Block time logged in each calendar month.",
+    "monthlyHoursHint": "Recorded flight time logged in each calendar month.",
     "timeBreakdown": "Time breakdown",
-    "timeBreakdownHint": "Each category as a share of your total block time.",
+    "timeBreakdownHint": "Each category as a share of your total flight time.",
     "overlapNote": "Categories overlap — solo time is also PIC time, and night and IFR time can fall in any role.",
     "baselineNote": "Carried-forward hours count toward the totals only — the breakdowns by year, aircraft and airport cover logged flights.",
     "roleByYear": "Role split by year",
-    "roleByYearHint": "PIC, dual received and SIC add up to your block time for the year.",
+    "roleByYearHint": "Recorded PIC, dual received and SIC by year. Independently entered credits may overlap.",
     "instructors": "Instructors",
     "instructorsHint": "Dual instruction received, by instructor.",
     "crew": "Crew",
-    "crewHint": "Block time on flights with each logged crew member.",
+    "crewHint": "Recorded flight time on flights with each logged crew member.",
     "byType": "By aircraft type",
     "byTypeHint_one": "{{count}} type flown",
     "byTypeHint_other": "{{count}} types flown",
@@ -142,7 +142,7 @@
     "seasonality": "Seasonality",
     "seasonalityHint": "Flights by calendar month, across all years in range.",
     "flightLength": "Flight length",
-    "flightLengthHint": "How your flights are distributed by block time."
+    "flightLengthHint": "How your flights are distributed by recorded flight time."
   },
   "approach": {
     "unspecified": "Type not recorded"
@@ -166,7 +166,7 @@
   "table": {
     "month": "Month",
     "year": "Year",
-    "blockTime": "Block time",
+    "blockTime": "Recorded flight time",
     "career": "Career",
     "landings": "Landings",
     "distance": "Distance",

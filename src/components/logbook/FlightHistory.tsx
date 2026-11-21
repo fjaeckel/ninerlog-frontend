@@ -69,9 +69,10 @@ export function FlightHistoryList({ revisions, since }: FlightHistoryListProps) 
 
 function RevisionItem({ revision }: { revision: FlightRevision }) {
   const { t } = useTranslation(['logbook', 'flights']);
-  const { fmtDateTime, fmtDate, fmtDuration } = useFormatPrefs();
+  const { fmtDateTime, fmtDate, fmtDuration, decSep } = useFormatPrefs();
   const system = isSystemRevision(revision);
   const formatters: RevisionValueFormatters = {
+    decimalSeparator: decSep,
     duration: fmtDuration,
     date: fmtDate,
     label: (key, options) => t(key, { ns: 'flights', ...options }),

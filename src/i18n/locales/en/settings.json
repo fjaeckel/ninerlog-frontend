@@ -283,5 +283,13 @@
     "revokedOthers_one": "Signed out 1 other device.",
     "revokedOthers_other": "Signed out {{count}} other devices.",
     "revokeFailed": "Could not sign that device out. Please try again."
+  },
+  "flightTimeMethod": {
+    "title": "Default Flight Time Tracking Method",
+    "description": "Choose how new flights calculate total time. Existing flights keep their saved method and total. You can override this for each flight.",
+    "block": "Block Time",
+    "hobbs": "Hobbs Time",
+    "saveError": "Could not save the flight time preference. Please try again.",
+    "manual": "Entered flight time"
   }
 }

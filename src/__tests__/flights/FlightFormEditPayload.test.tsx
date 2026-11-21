@@ -91,7 +91,7 @@ describe('FlightForm edit payload', () => {
     await openTraining(user);
 
     expect(screen.getByLabelText(/^multi-pilot time/i)).toHaveValue(null);
-    expect(screen.getByText(`Minutes · auto: ${formatDuration(100, 'hm')}`)).toBeInTheDocument();
+    expect(screen.getByText(`Saved automatic value: ${formatDuration(100, 'hm')}`)).toBeInTheDocument();
   });
 
   it('keeps sending an overridden multi-pilot time', async () => {

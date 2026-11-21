@@ -20,7 +20,8 @@
     "crew": "Besatzung",
     "remarks": "Bemerkungen & Vermerke",
     "flags": "Flug-Merkmale",
-    "session": "Sitzung"
+    "session": "Sitzung",
+    "pilotTime": "Pilotenzeiten"
   },
   "fields": {
     "takeoffLandingTime": "Start- / Landezeit",
@@ -440,5 +441,62 @@
   "saveAsReport": "Als Bericht speichern",
   "exportCsv": "Als CSV exportieren",
   "exportingCsv": "Wird exportiert…",
-  "exportCsvFailed": "Export fehlgeschlagen. Bitte erneut versuchen."
+  "exportCsvFailed": "Export fehlgeschlagen. Bitte erneut versuchen.",
+  "hobbs": {
+    "method": "Methode zur Flugzeiterfassung",
+    "block": "Blockzeit",
+    "hobbs": "Hobbs-Zeit",
+    "hobbsStart": "Hobbs Anfang",
+    "hobbsEnd": "Hobbs Ende",
+    "total": "Gesamtflugzeit",
+    "invalid": "Gib einen Zählerstand von 0 bis 9999999,9 mit höchstens einer Nachkommastelle ein.",
+    "order": "Der Endstand muss größer als der Anfangsstand sein.",
+    "optionalBlocks": "Die Gesamtzeit ergibt sich aus der Hobbs-Differenz. Blockzeiten sind optional und ändern sie nicht.",
+    "useTotalTime": "Gesamtflugzeit übernehmen"
+  },
+  "durationEntry": {
+    "manual": "Flugzeit eingeben",
+    "hours": "Stunden (dezimal)",
+    "hoursEntered": "Eingegebene Stunden",
+    "invalid": "Dezimalstunden eingeben, z. B. 1,5 oder ,5.",
+    "required": "Eine positive Flugdauer eingeben.",
+    "autoCredit": "Automatisch aus der Besatzung; zum Überschreiben einen Wert eingeben.",
+    "creditHelp": "PIC und Schulung mit Lehrer können unabhängig erfasst werden. Ein leeres Feld wird automatisch berechnet.",
+    "minutesImc": "Stunden unter tatsächlichen Instrumentenflugbedingungen",
+    "minutesHood": "Stunden unter der Haube",
+    "minutes": "Stunden (dezimal)",
+    "minutesFtd": "Stunden im Übungsgerät",
+    "minutesPicus": "PIC unter Aufsicht (Stunden)",
+    "minutesSpic": "Student PIC (Stunden)",
+    "minutesExaminer": "Prüfer (Stunden)",
+    "minutesRelief": "Ablösung im Reiseflug (Stunden)",
+    "autoValue": "Stunden · automatisch: {{value}}",
+    "autoNight": "Stunden · automatisch anhand der Dämmerung",
+    "autoCrossCountry": "Stunden · automatisch bei unterschiedlichem Start- und Zielort"
+  },
+  "timeSource": {
+    "overrideTotal": "Gesamtzeit überschreiben",
+    "useCalculated": "Berechnete Gesamtzeit verwenden",
+    "overrideHelp": "Die eingegebene Gesamtzeit gilt, bis Sie wieder die Berechnung wählen. Zählerstände bleiben erhalten.",
+    "overriddenTotal": "Gesamtflugzeit · manuell überschrieben",
+    "calculatedValue": "Aus der Quelle berechnet: {{value}}",
+    "retainedReadings": "Ursprüngliche Zählerstände bleiben als Referenz erhalten.",
+    "meterHelp": "Zählerstände sind Dezimalstunden. Prüfen Sie, ob die aufgezeichnete Gesamtzeit für Ihren Flug und Ihre Nachweise zutrifft.",
+    "savedValue": "Gespeicherter automatischer Wert: {{value}}",
+    "savedCalculations": "Gespeicherte Berechnungen (vor dieser Änderung)",
+    "clockTimes": "Uhrzeiten (UTC)",
+    "optionalClocks": "Optionale Uhrzeiten (UTC)",
+    "noClockHelp": "Ohne Uhrzeiten bitte Nachtzeit und Tag-/Nachtstarts und -landungen prüfen und bei Bedarf eingeben.",
+    "reviewClocks": "Nachtzeit und Ereignisse vor dem Entfernen der Uhrzeiten prüfen",
+    "choose": "Umgang mit gespeicherten Werten wählen",
+    "keepClockValues": "Gespeicherte Nachtzeit und Ereignisse behalten",
+    "resetClockValues": "Automatische Werte ohne diese Uhrzeiten neu berechnen",
+    "clockReviewHelp": "Beibehalten markiert die Werte als eingegeben. Neuberechnung setzt automatische Nachtzeit zurück und verwendet Tagesereignisse ohne Uhrzeiten. Vorhandene manuelle Werte bleiben erhalten.",
+    "blockHelp": "Die Gesamtflugzeit wird aus Off-Block- und On-Block-Uhrzeiten berechnet.",
+    "hobbsHelp": "Zählerstände vor und nach dem Flug eingeben. Ihre Differenz ergibt die Gesamtzeit; Uhrzeiten sind optional.",
+    "manualHelp": "Die Gesamtdauer aus dem Flugbuch übernehmen. Zählerstände und Uhrzeiten sind nicht erforderlich.",
+    "decimalHelp": "Dauerfelder verwenden Dezimalstunden: {{example}} = 1 Stunde 30 Minuten. Das gilt auch für PIC, erhaltene Ausbildung, Instrumenten- und Nachtzeit.",
+    "minutesHelp": "Dauerfelder verwenden Minuten. Hobbs-Zählerstände verwenden immer Dezimalstunden.",
+    "referenceReadings": "Aufbewahrte Hobbs-Zählerstände (Referenz)"
+  }
 }

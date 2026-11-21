@@ -109,7 +109,7 @@ describe('FlightForm Instrument Tracking', () => {
     screen.getAllByRole('button', { name: /use block time/i }).forEach((b) => expect(b).toBeDisabled());
   });
 
-  it('does not show instrument fields when Instrument / IFR section is collapsed', () => {
+  it('folds all instrument fields together when the instrument section is collapsed', () => {
     renderWithProviders(<FlightForm onClose={mockOnClose} />);
 
     expect(screen.queryByLabelText(/actual instrument/i)).not.toBeInTheDocument();
@@ -224,8 +224,7 @@ describe('FlightForm Instrument Tracking', () => {
 
     renderWithProviders(<FlightForm flightId="flight-1" onClose={mockOnClose} />);
 
-    // Expand Instrument / IFR and Training & Currency sections
-    await user.click(screen.getByText('Instrument / IFR'));
+    expect(screen.getByRole('button', { name: 'Instrument / IFR' })).toHaveAttribute('aria-expanded', 'true');
     await user.click(screen.getByText('Training & Currency'));
 
     await waitFor(() => {

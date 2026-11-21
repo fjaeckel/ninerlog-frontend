@@ -49,7 +49,7 @@
     "customHint": "Berichte, die du aus einer Flugsuche gespeichert hast. Jeder nutzt seinen eigenen Zeitraum."
   },
   "hero": {
-    "totalTime": "Gesamte Blockzeit",
+    "totalTime": "Gesamte Flugzeit",
     "pic": "Als PIC",
     "distance": "Entfernung",
     "acrossFlights_one": "Auf {{count}} Flug",
@@ -102,21 +102,21 @@
   },
   "chart": {
     "careerHours": "Gesamte Flugerfahrung",
-    "careerHoursHint": "Laufende Summe der Blockzeit, inklusive der vor dem Flugbuch übernommenen Stunden.",
+    "careerHoursHint": "Laufende Summe der Flugzeit, inklusive der vor dem Flugbuch übernommenen Stunden.",
     "careerTotal": "Gesamtsumme",
-    "blockTime": "Blockzeit",
+    "blockTime": "Flugzeit",
     "monthlyHours": "Stunden pro Monat",
-    "monthlyHoursHint": "Blockzeit je Kalendermonat.",
+    "monthlyHoursHint": "Flugzeit je Kalendermonat.",
     "timeBreakdown": "Zeitaufteilung",
-    "timeBreakdownHint": "Jede Kategorie als Anteil an deiner gesamten Blockzeit.",
+    "timeBreakdownHint": "Jede Kategorie als Anteil an deiner gesamten Flugzeit.",
     "overlapNote": "Die Kategorien überschneiden sich — Solozeit ist auch PIC-Zeit, Nacht- und IFR-Zeit können in jeder Funktion anfallen.",
     "baselineNote": "Der Übertrag zählt nur zu den Gesamtsummen — die Auswertungen nach Jahr, Muster und Flugplatz zeigen nur erfasste Flüge.",
     "roleByYear": "Funktion nach Jahr",
-    "roleByYearHint": "PIC, Doppelsteuer und SIC ergeben zusammen die Blockzeit des Jahres.",
+    "roleByYearHint": "PIC, Doppelsteuer und SIC ergeben zusammen die Flugzeit des Jahres.",
     "instructors": "Fluglehrer",
     "instructorsHint": "Erhaltene Schulung, nach Fluglehrer.",
     "crew": "Besatzung",
-    "crewHint": "Blockzeit auf Flügen mit der jeweiligen Besatzung.",
+    "crewHint": "Flugzeit auf Flügen mit der jeweiligen Besatzung.",
     "byType": "Nach Muster",
     "byTypeHint_one": "{{count}} Muster geflogen",
     "byTypeHint_other": "{{count}} Muster geflogen",
@@ -142,7 +142,7 @@
     "seasonality": "Saisonalität",
     "seasonalityHint": "Flüge nach Kalendermonat über alle Jahre im Zeitraum.",
     "flightLength": "Flugdauer",
-    "flightLengthHint": "Verteilung deiner Flüge nach Blockzeit."
+    "flightLengthHint": "Verteilung deiner Flüge nach Flugzeit."
   },
   "approach": {
     "unspecified": "Art nicht erfasst"
@@ -166,7 +166,7 @@
   "table": {
     "month": "Monat",
     "year": "Jahr",
-    "blockTime": "Blockzeit",
+    "blockTime": "Flugzeit",
     "career": "Gesamt",
     "landings": "Landungen",
     "distance": "Entfernung",

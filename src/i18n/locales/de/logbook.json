@@ -55,7 +55,9 @@
       "approachesCount": "Anzahl Anflüge",
       "other": "Sonstige Angabe",
       "departureAirportName": "Name des Startflugplatzes",
-      "arrivalAirportName": "Name des Zielflugplatzes"
+      "arrivalAirportName": "Name des Zielflugplatzes",
+      "picTimeOverride": "PIC-Zeit manuell gesetzt",
+      "dualTimeOverride": "Schulungszeit manuell gesetzt"
     }
   },
   "source": {

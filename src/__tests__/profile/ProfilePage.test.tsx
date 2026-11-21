@@ -282,4 +282,22 @@ describe('ProfilePage', () => {
       });
     });
   });
+  it('saves the new-flight method through the user profile API', async () => {
+    const user = userEvent.setup();
+    mockUpdateProfile.mutateAsync.mockResolvedValue({});
+    renderWithProviders(<ProfilePage />);
+    await user.selectOptions(screen.getByLabelText('Default Flight Time Tracking Method'), 'hobbs');
+    await waitFor(() => expect(mockUpdateProfile.mutateAsync).toHaveBeenCalledWith({ defaultFlightTimeMethod: 'hobbs' }));
+    expect(screen.getByText(/Existing flights keep their saved method and total/)).toBeInTheDocument();
+  });
+
+  it('reports a failed preference save and keeps the saved selection', async () => {
+    const user = userEvent.setup();
+    mockUpdateProfile.mutateAsync.mockRejectedValueOnce(new Error('offline'));
+    renderWithProviders(<ProfilePage />);
+    await user.selectOptions(screen.getByLabelText('Default Flight Time Tracking Method'), 'hobbs');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not save the flight time preference');
+    expect(screen.getByLabelText('Default Flight Time Tracking Method')).toHaveValue('block');
+  });
+
 });
