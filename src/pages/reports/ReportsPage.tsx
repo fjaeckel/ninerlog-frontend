@@ -803,7 +803,10 @@ function RecordCard({
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-type Translate = (key: string, opts?: Record<string, unknown>) => string;
+type Translate = {
+  (key: string): string;
+  (key: string, opts: Record<string, unknown>): string;
+};
 
 function pct(value: number, total: number) {
   return total > 0 ? Math.round((value / total) * 100) : 0;

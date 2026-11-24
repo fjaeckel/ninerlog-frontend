@@ -51,7 +51,7 @@ const hasKey = (key: string, lng: string) => i18n.exists(key, { lng, ns: 'flight
 const fmtFor = (lng: string): RevisionValueFormatters => ({
   duration: (m: number) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`,
   date: (d: string) => `D(${d})`,
-  label: (key, options) => i18n.getFixedT(lng, 'flights')(key, options),
+  label: (key, options = {}) => i18n.getFixedT(lng, 'flights')(key, options),
   yes: 'Yes',
   no: 'No',
   unset: '—',
