@@ -851,7 +851,7 @@ export default function FlightsPage() {
                       </td>
                     )}
                     {columns.details.map((col) => {
-                      const text = col.text(flight, (k, o) => t(`flights:${k}`, o ?? {}), fmtTimeOfDay, selfName);
+                      const text = col.text(flight, (k: string, o?: { defaultValue?: string }) => t(`flights:${k}`, o ?? {}), fmtTimeOfDay, selfName);
                       return (
                         <td
                           key={col.key}

@@ -166,7 +166,10 @@ const detailTierSpan = (column: FlightDetailColumn) => (column.numeric ? 1 : 2);
 const AUTO_MAX_TIME_COLUMNS = 4;
 
 /** Translates a key in the `flights` namespace. */
-type FlightsT = (key: string, options?: { defaultValue?: string }) => string;
+type FlightsT = {
+  (key: string): string;
+  (key: string, options: { defaultValue?: string }): string;
+};
 
 /** Formats a time of day in the user's clock format. */
 type TimeFormat = (value?: string | null) => string;
