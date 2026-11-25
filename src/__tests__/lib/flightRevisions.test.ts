@@ -30,6 +30,7 @@ const ALL_FLIGHT_FIELDS = {
   isProficiencyCheck: true, launchMethod: true, picName: true, multiPilotTime: true, picusTime: true,
   spicTime: true, examinerTime: true, reliefTime: true, isSimulator: true, isPassenger: true, fstdType: true,
   approaches: true, endorsements: true, crewMembers: true, createdAt: true, updatedAt: true, signatureId: true,
+  manualTotalTime: true, picTimeOverride: true, dualTimeOverride: true, flightTimeMethod: true, hobbsStartTenths: true, hobbsEndTenths: true,
 } satisfies Record<keyof Flight, true>;
 
 const SOURCES = { user_edit: true, recalc: true, aircraft_rename: true, contact_rename: true, import: true, unknown: true } satisfies Record<RevisionSource, true>;
@@ -94,6 +95,12 @@ describe('flightRevisions', () => {
     expect(revisionFieldLabelKey('crewMembers')).toBe('logbook:history.crew');
     expect(resolve(revisionFieldLabelKey('nightTimeOverride'), 'en')).toBe('Night time set by hand');
     expect(resolve(revisionFieldLabelKey('isSimulator'), 'de')).toBe('Simulatorsitzung');
+  });
+
+  it('T1: formats Hobbs history as meter hours using the decimal preference', () => {
+    expect(formatRevisionValue('hobbsStartTenths', 15234, { ...fmt, decimalSeparator: 'comma' })).toBe('1523,4');
+    expect(formatRevisionValue('hobbsEndTenths', 15247, fmt)).toBe('1524.7');
+    expect(formatRevisionValue('flightTimeMethod', 'hobbs', fmt)).toBe('Hobbs Time');
   });
 
   it('formats values by type', () => {

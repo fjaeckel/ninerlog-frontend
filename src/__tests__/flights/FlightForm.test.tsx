@@ -433,7 +433,7 @@ describe('FlightForm', () => {
       expect(screen.getByLabelText(/^night time/i)).toHaveValue(30);
     });
     expect(screen.getByLabelText(/cross-country time/i)).toHaveValue(null);
-    expect(screen.getByText(/auto: 1h 55m/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/cross-country time/i).parentElement).toHaveTextContent(/saved automatic value: 1h 55m/i);
 
     await user.click(screen.getByRole('button', { name: /reset to auto/i }));
     expect(screen.getByLabelText(/^night time/i)).toHaveValue(null);

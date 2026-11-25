@@ -136,3 +136,32 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 ## Security
 
 To report a vulnerability, see [SECURITY.md](SECURITY.md).
+
+## Hobbs-based logging
+
+With a backend that supports [feature #483](https://github.com/fjaeckel/ninerlog-frontend/issues/483),
+choose **Default Flight Time Tracking Method** in Profile & Settings beside Time Display.
+New flights use Block Time or Hobbs Time, and the flight form can override the method for one flight.
+Hobbs Start and End accept meter hours with at most one decimal place, using a dot or comma.
+For example, 1523.4 to 1524.7 records 1.3 hours (78 minutes). Optional block timestamps do
+not replace that total. Changing the default leaves existing flights unchanged.
+
+Standard CSV and JSON backups retain the method and original readings. EASA/FAA CSV and
+PDF layouts continue to use the recorded total. Live Quick Log remains based on its block events.
+The frontend and companion API change must be deployed together; regenerate the client from
+the companion API specification during development.
+
+Choose **Entered flight time** for paper-logbook entry without clock or meter readings.
+With decimal time display, all flight-duration inputs accept decimal hours (dot or comma):
+1.5 flight, 1.5 dual received, .5 simulated instrument, and 1.1 PIC are saved as
+90, 90, 30 and 66 integer minutes. PIC and dual received can be entered independently;
+blank fields use crew-based calculation, explicit zero stays zero, and Reset to auto
+restores calculation. Simulator sessions remain separate from flight totals.
+
+The entry pattern follows LogTen's documented [manual totals](https://support.logten.com/en/articles/11641691-calculating-total-time-with-logten)
+and [per-field auto-fill](https://support.logten.com/en/articles/11604664-save-time-with-auto-fill-times-ios).
+Independent credit is bounded by flight duration; existing strict logbook policies still apply.
+
+Pilot credits appear under **Pilot time** beside the crew details for every flight-time method.
+Actual and simulated instrument durations stay together under **Instrument / IFR**, which opens
+automatically when editing a record with instrument data.

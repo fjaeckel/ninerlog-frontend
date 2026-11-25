@@ -283,5 +283,13 @@
     "revokedOthers_one": "1 weiteres Gerät wurde abgemeldet.",
     "revokedOthers_other": "{{count}} weitere Geräte wurden abgemeldet.",
     "revokeFailed": "Das Gerät konnte nicht abgemeldet werden. Bitte versuche es erneut."
+  },
+  "flightTimeMethod": {
+    "title": "Standardmethode zur Flugzeiterfassung",
+    "description": "Wähle die Berechnung für neue Flüge. Bestehende Flüge behalten ihre Methode und Gesamtzeit. Die Methode lässt sich für jeden Flug ändern.",
+    "block": "Blockzeit",
+    "hobbs": "Hobbs-Zeit",
+    "saveError": "Die Einstellung konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "manual": "Flugzeit eingeben"
   }
 }

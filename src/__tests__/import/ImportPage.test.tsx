@@ -100,6 +100,33 @@ describe('ImportPage', () => {
     } as any);
   });
 
+  it('sends explicit decimal units and conflict review for paper-logbook columns', async () => {
+    const preview = vi.fn().mockResolvedValue({ uploadToken: 'sample', flights: [], totalRows: 1, validCount: 1, errorCount: 0, duplicateCount: 0 });
+    vi.spyOn(useImportHook, 'useUploadImport').mockReturnValue({ mutateAsync: vi.fn().mockResolvedValue({
+      uploadToken: 'sample', format: 'CSV', columns: ['Date', 'Total time', 'PIC', 'Dual Received', 'Sim instrument'],
+      previewRows: [], totalRows: 1, suggestedMappings: [
+        { sourceColumn: 'Date', targetField: 'date' },
+        { sourceColumn: 'Total time', targetField: 'totalTime' },
+        { sourceColumn: 'PIC', targetField: 'picTime' },
+        { sourceColumn: 'Dual Received', targetField: 'dualTime' },
+        { sourceColumn: 'Sim instrument', targetField: 'simulatedInstrumentTime' },
+      ],
+    }), isPending: false } as never);
+    vi.spyOn(useImportHook, 'usePreviewImport').mockReturnValue({ mutateAsync: preview, isPending: false } as never);
+    renderWithProviders(<ImportPage />);
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [new File(['sample'], 'paper.csv', { type: 'text/csv' })] } });
+    await screen.findByText('Column Mapping');
+    fireEvent.change(screen.getByLabelText('Date format for Date'), { target: { value: '1/2/06' } });
+    expect(screen.getByLabelText('Duration units for Total time')).toHaveValue('decimal_hours');
+    fireEvent.click(screen.getByRole('button', { name: /validate.*preview/i }));
+    await waitFor(() => expect(preview).toHaveBeenCalledOnce());
+    const mappings = preview.mock.calls[0][0].mappings;
+    expect(mappings).toContainEqual({ sourceColumn: 'Date', targetField: 'date', dateFormat: '1/2/06' });
+    expect(mappings).toContainEqual({ sourceColumn: 'Total time', targetField: 'totalTime', durationUnit: 'decimal_hours', totalTimePolicy: 'review' });
+    for (const field of ['picTime', 'dualTime', 'simulatedInstrumentTime']) expect(mappings.find((m: { targetField: string }) => m.targetField === field).durationUnit).toBe('decimal_hours');
+  });
+
   it('renders upload step with title', () => {
     renderWithProviders(<ImportPage />);
     expect(screen.getByText('Import Flights')).toBeInTheDocument();

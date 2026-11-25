@@ -1,3 +1,4 @@
+import { formatHobbsReading } from './hobbs';
 import type { components } from '../api/schema';
 import { LAUNCH_METHOD_KEYS } from '../components/flights/flightTableColumns';
 
@@ -33,6 +34,12 @@ export const FLIGHT_FIELD_LABEL_KEYS: Record<keyof Flight, string> = {
   onBlockTime: 'fields.onBlockTime',
   departureTime: 'fields.takeoffTime',
   arrivalTime: 'fields.landingTime',
+  manualTotalTime: 'hobbs.total',
+  picTimeOverride: 'logbook:history.fields.picTimeOverride',
+  dualTimeOverride: 'logbook:history.fields.dualTimeOverride',
+  flightTimeMethod: 'hobbs.method',
+  hobbsStartTenths: 'hobbs.hobbsStart',
+  hobbsEndTenths: 'hobbs.hobbsEnd',
   totalTime: 'fields.totalTime',
   isPic: 'fields.isPic',
   isDual: 'fields.isDual',
@@ -95,7 +102,7 @@ export const OTHER_FIELD_LABEL_KEY = 'logbook:history.fields.other';
 
 /** Flight fields holding a duration in minutes. */
 export const DURATION_FIELDS = new Set([
-  'totalTime', 'picTime', 'dualTime', 'nightTime', 'ifrTime', 'soloTime', 'crossCountryTime', 'sicTime',
+  'manualTotalTime', 'totalTime', 'picTime', 'dualTime', 'nightTime', 'ifrTime', 'soloTime', 'crossCountryTime', 'sicTime',
   'picusTime', 'spicTime', 'examinerTime', 'reliefTime', 'dualGivenTime', 'multiPilotTime', 'simulatedFlightTime',
   'groundTrainingTime', 'actualInstrumentTime', 'simulatedInstrumentTime',
 ]);
@@ -108,6 +115,7 @@ export function revisionFieldLabelKey(field: string): string {
 }
 
 export interface RevisionValueFormatters {
+  decimalSeparator?: 'comma' | 'dot';
   duration: (minutes: number) => string;
   date: (value: string) => string;
   /** Translates a `flights` namespace key, or a `logbook:` prefixed one. */
@@ -157,6 +165,9 @@ function arrayItemText(item: unknown, fmt: RevisionValueFormatters): string {
 export function formatRevisionValue(field: string, value: unknown, fmt: RevisionValueFormatters): string {
   if (value === null || value === undefined || value === '') return fmt.unset;
   if (typeof value === 'boolean') return value ? fmt.yes : fmt.no;
+  if (typeof value === 'number' && (field === 'hobbsStartTenths' || field === 'hobbsEndTenths')) return formatHobbsReading(value, fmt.decimalSeparator);
+  if (field === 'flightTimeMethod' && value === 'manual') return fmt.label('durationEntry.manual');
+  if (field === 'flightTimeMethod' && (value === 'block' || value === 'hobbs')) return fmt.label(`hobbs.${value}`);
   if (typeof value === 'number') return DURATION_FIELDS.has(field) ? fmt.duration(value) : String(value);
   if (typeof value === 'string') {
     if (field === 'launchMethod') {

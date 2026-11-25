@@ -92,7 +92,15 @@
     "person3": "Person 3",
     "person4": "Person 4",
     "person5": "Person 5",
-    "person6": "Person 6"
+    "person6": "Person 6",
+    "flightTimeMethod": "Flight Time Method (block/hobbs/manual)",
+    "hobbsStart": "Hobbs Start",
+    "hobbsEnd": "Hobbs End",
+    "manualTotalTime": "Entered total time",
+    "picTime": "Entered PIC time",
+    "dualTime": "Entered dual received",
+    "picTimeOverride": "PIC override flag",
+    "dualTimeOverride": "Dual override flag"
   },
   "uploadFailed": "Upload failed",
   "previewFailed": "Preview failed",
@@ -196,5 +204,20 @@
     "flightBaseline": "Carried-forward hours"
   },
   "restoreSummaryFlightRevisions": "Flight revisions",
-  "restoreSummaryLogbookCertifications": "Logbook certifications"
+  "restoreSummaryLogbookCertifications": "Logbook certifications",
+  "durationUnits": {
+    "help": "Choose units for duration columns. Meter readings always use decimal hours. Review the preview before importing.",
+    "allDecimal": "Use decimal hours for all duration columns",
+    "mapColumn": "Map {{column}}",
+    "column": "Duration units for {{column}}",
+    "auto": "Legacy automatic units",
+    "decimal": "Decimal hours (1.5 = 90 min)",
+    "minutes": "Integer minutes (90 = 90 min)",
+    "dateColumn": "Date format for {{column}}",
+    "detectDate": "Detect date format",
+    "conflictColumn": "Conflicting total policy for {{column}}",
+    "review": "Review conflicting totals (required by default)",
+    "recorded": "Keep supplied total as an entered override",
+    "calculated": "Use the calculated source total"
+  }
 }

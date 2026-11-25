@@ -17,7 +17,7 @@ export function formatDuration(
   format: TimeDisplayFormat = 'hm',
   decimalSeparator: DecimalSeparator = 'dot',
 ): string {
-  if (minutes === 0) return format === 'hm' ? '0h 0m' : '0.0h';
+  if (minutes === 0) return format === 'hm' ? '0h 0m' : decimalSeparator === 'comma' ? '0,0h' : '0.0h';
 
   if (format === 'hm') {
     const h = Math.floor(minutes / 60);

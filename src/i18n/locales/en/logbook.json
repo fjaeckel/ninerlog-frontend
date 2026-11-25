@@ -55,7 +55,9 @@
       "approachesCount": "Number of approaches",
       "other": "Other detail",
       "departureAirportName": "Departure airport name",
-      "arrivalAirportName": "Arrival airport name"
+      "arrivalAirportName": "Arrival airport name",
+      "picTimeOverride": "PIC time set by hand",
+      "dualTimeOverride": "Dual received set by hand"
     }
   },
   "source": {
