@@ -174,7 +174,13 @@ export const aircraft = [
   {
     id: 'a3', userId: 'u1', registration: 'D-MTOW', type: 'DR40', make: 'Robin', model: 'DR400-180',
     aircraftClass: 'SEP_LAND', isComplex: false, isHighPerformance: false, isTailwheel: true, isMultiPilot: false,
-    defaultDepartureIcao: null, defaultArrivalIcao: null, isActive: false,
+    defaultDepartureIcao: null, defaultArrivalIcao: null, isActive: false, validTo: '2023-06-30',
+    notes: null, createdAt: iso('2024-02-01'), updatedAt: iso('2026-01-01'),
+  },
+  {
+    id: 'a7', userId: 'u1', registration: 'D-MTOW', type: 'C152', make: 'Cessna', model: '152',
+    aircraftClass: 'SEP_LAND', isComplex: false, isHighPerformance: false, isTailwheel: false, isMultiPilot: false,
+    defaultDepartureIcao: null, defaultArrivalIcao: null, isActive: true, validFrom: '2023-07-01',
     notes: null, createdAt: iso('2024-02-01'), updatedAt: iso('2026-01-01'),
   },
   {
@@ -913,6 +919,8 @@ export function bodyFor(pathname) {
   if (/^\/licenses\/[^/]+\/statistics$/.test(path)) return statistics;
   const revisionsMatch = path.match(/^\/flights\/([^/]+)\/revisions$/);
   if (revisionsMatch) return flightRevisions[revisionsMatch[1]] ?? [];
+  const aircraftMatch = path.match(/^\/aircraft\/([^/]+)$/);
+  if (aircraftMatch) return aircraft.find((a) => a.id === aircraftMatch[1]) ?? null;
   const flightMatch = path.match(/^\/flights\/([^/]+)$/);
   if (flightMatch) return flights.find((f) => f.id === flightMatch[1]) ?? flights[0];
   const reportResultMatch = path.match(/^\/reports\/custom\/([^/]+)\/result$/);

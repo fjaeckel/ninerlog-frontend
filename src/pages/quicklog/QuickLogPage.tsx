@@ -7,6 +7,7 @@ import {
 import { PageWrapper, PageHeader } from '../../components/ui/PageWrapper';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useAircraft, useCreateAircraft } from '../../hooks/useAircraft';
+import { coversDate, todayUtc } from '../../lib/aircraftValidity';
 import { extractApiError } from '../../lib/errors';
 import { airportDisplay } from '../../lib/airport';
 import {
@@ -106,8 +107,10 @@ export default function QuickLogPage() {
     return () => clearInterval(timer);
   }, [openSession?.offBlockAt]);
 
+  // Fleet entries registered today
+  const todaysFleet = (aircraft ?? []).filter((a) => coversDate(a, todayUtc()));
   // Single-plane pilots get their aircraft preselected without an extra tap
-  const effectiveReg = selectedReg || (aircraft?.length === 1 ? aircraft[0].registration : '');
+  const effectiveReg = selectedReg || (todaysFleet.length === 1 ? todaysFleet[0].registration : '');
   const activeReg = openSession?.aircraftReg ?? effectiveReg;
 
   const handleAircraftSelect = (value: string) => {
@@ -268,7 +271,7 @@ export default function QuickLogPage() {
               className="input w-full"
             >
               <option value="">{t('quicklog:selectAircraft')}</option>
-              {aircraft?.map((a) => (
+              {todaysFleet.map((a) => (
                 <option key={a.id} value={a.registration}>
                   {a.registration} — {a.type}
                 </option>

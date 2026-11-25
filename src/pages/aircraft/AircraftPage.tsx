@@ -96,6 +96,9 @@ export default function AircraftPage() {
         <div className="flex flex-col gap-4">
           {aircraft.map((ac) => {
             const stats = aircraftStats?.byReg.get(ac.registration.toUpperCase());
+            const sharesRegistration = aircraft.some(
+              (other) => other.id !== ac.id && other.registration.toUpperCase() === ac.registration.toUpperCase()
+            );
             const typeStats = aircraftStats?.byType.get(ac.type.toUpperCase());
             const staleDays = stats?.lastFlightDate ? daysSince(stats.lastFlightDate) : null;
             const isStale = ac.isActive && staleDays !== null && staleDays >= STALE_AFTER_DAYS;
@@ -115,6 +118,15 @@ export default function AircraftPage() {
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     {ac.make} {ac.model}
                   </p>
+                  {(ac.validFrom || ac.validTo) && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      {ac.validFrom && ac.validTo
+                        ? t('validity.range', { from: fmtDate(ac.validFrom), to: fmtDate(ac.validTo) })
+                        : ac.validFrom
+                          ? t('validity.since', { from: fmtDate(ac.validFrom) })
+                          : t('validity.until', { to: fmtDate(ac.validTo as string) })}
+                    </p>
+                  )}
                 </div>
 
                 {/* Specs grid */}
@@ -250,6 +262,11 @@ export default function AircraftPage() {
                     ) : (
                       <p className="text-xs text-slate-400 dark:text-slate-500">
                         {t('stats.neverFlown')}
+                      </p>
+                    )}
+                    {stats && sharesRegistration && (
+                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        {t('stats.sharedRegistration', { registration: ac.registration })}
                       </p>
                     )}
                     {/* Model-level recency: aggregated across all registrations of this type */}

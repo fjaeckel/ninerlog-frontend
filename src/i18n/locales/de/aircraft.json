@@ -36,7 +36,9 @@
     "defaultArrivalIcao": "Standard-Zielflugplatz",
     "notes": "Anmerkungen",
     "ulKind": "UL-Art",
-    "maxTakeoffMassKg": "Höchstabflugmasse (kg)"
+    "maxTakeoffMassKg": "Höchstabflugmasse (kg)",
+    "validFrom": "Registriert ab",
+    "validTo": "Registriert bis"
   },
   "stats": {
     "totalTime": "Gesamtzeit",
@@ -52,7 +54,8 @@
     "until": "bis {{date}}",
     "modelRecency_one": "Muster {{type}}: {{count}} Landung in 90 Tagen",
     "modelRecency_other": "Muster {{type}}: {{count}} Landungen in 90 Tagen",
-    "modelLastFlown": "zuletzt geflogen {{date}}"
+    "modelLastFlown": "zuletzt geflogen {{date}}",
+    "sharedRegistration": "Die Summen umfassen alle Luftfahrzeuge, die {{registration}} geführt haben."
   },
   "classes": {
     "SEP_LAND": "SEP (Land)",
@@ -87,7 +90,11 @@
     "renameFlights_other": "{{count}} geloggte Flüge von {{oldRegistration}} auf das neue Kennzeichen aktualisieren",
     "ulKindUnspecified": "Nicht angegeben",
     "ulKindHelper": "Bestimmt, worauf die Flüge angerechnet werden. Flugzeit und Landungen auf Dreiachs-UL zählen für die Verlängerung von EASA SEP (Land) und die LAPL(A)-Recency, auf einem UL-Motorsegler für TMG, der Übungsflug mit Fluglehrer aber nicht. Die UL-Recency nach LuftPersV gilt je Art.",
-    "maxTakeoffMassHelper": "UL-Tragschrauber ab 450 kg zählen für Flugzeit und Landungen der EASA-GPL-Recency (FCL.035(a)(5))."
+    "maxTakeoffMassHelper": "UL-Tragschrauber ab 450 kg zählen für Flugzeit und Landungen der EASA-GPL-Recency (FCL.035(a)(5)).",
+    "registrationPeriod": "Registrierungszeitraum",
+    "registrationPeriodHelper": "Nur nötig, wenn dieses Kennzeichen zu einer anderen Zeit von einem anderen Luftfahrzeug geführt wurde. Flüge in diesem Zeitraum werden diesem Luftfahrzeug zugeordnet; beide Felder leer lassen, wenn das Kennzeichen immer nur dieses Luftfahrzeug bezeichnet hat.",
+    "validToBeforeFrom": "Darf nicht vor dem Anfangsdatum liegen",
+    "renameFlightsInPeriod": "Auch erfasste Flüge mit {{oldRegistration}} in diesem Registrierungszeitraum aktualisieren"
   },
   "classOptions": {
     "SEP_LAND": "SEP (Land) — einmotorig, Kolbenmotor",
@@ -100,5 +107,10 @@
     "GLIDER": "Segelflugzeug",
     "ULTRALIGHT": "Ultraleicht (UL)",
     "GYROPLANE": "Tragschrauber — GPL (einmotoriger Tragschrauber)"
+  },
+  "validity": {
+    "range": "{{from}} – {{to}}",
+    "since": "Seit {{from}}",
+    "until": "Bis {{to}}"
   }
 }

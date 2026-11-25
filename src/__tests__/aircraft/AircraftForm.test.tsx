@@ -298,6 +298,67 @@ describe('AircraftForm', () => {
     });
   });
 
+  it('sends the registration period, and null when it is left empty', async () => {
+    const user = userEvent.setup();
+    mockCreate.mutateAsync.mockResolvedValue({});
+    renderWithProviders(<AircraftForm onClose={mockOnClose} />);
+
+    await user.type(screen.getByLabelText(/registration/i), 'N123AB');
+    await user.type(screen.getByLabelText(/^type/i), 'PA16');
+    await user.type(screen.getByLabelText(/^make/i), 'Piper');
+    await user.type(screen.getByLabelText(/^model/i), 'Clipper');
+    fireEvent.change(screen.getByLabelText(/registered from/i), { target: { value: '2020-01-01' } });
+    await user.click(screen.getByRole('button', { name: /add aircraft/i }));
+
+    await waitFor(() => {
+      expect(mockCreate.mutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ registration: 'N123AB', validFrom: '2020-01-01', validTo: null })
+      );
+    });
+  });
+
+  it('rejects a period that ends before it starts', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<AircraftForm onClose={mockOnClose} />);
+
+    await user.type(screen.getByLabelText(/registration/i), 'N123AB');
+    await user.type(screen.getByLabelText(/^type/i), 'PA16');
+    await user.type(screen.getByLabelText(/^make/i), 'Piper');
+    await user.type(screen.getByLabelText(/^model/i), 'Clipper');
+    fireEvent.change(screen.getByLabelText(/registered from/i), { target: { value: '2020-01-02' } });
+    fireEvent.change(screen.getByLabelText(/registered until/i), { target: { value: '2020-01-01' } });
+    await user.click(screen.getByRole('button', { name: /add aircraft/i }));
+
+    expect(await screen.findByText(/must not be before the start date/i)).toBeInTheDocument();
+    expect(mockCreate.mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('loads the registration period when editing and clears it with null', async () => {
+    const user = userEvent.setup();
+    mockUpdate.mutateAsync.mockResolvedValueOnce({});
+    vi.spyOn(useAircraftHook, 'useAircraftById').mockReturnValue({
+      data: {
+        id: 'ac-1', userId: 'user-1', registration: 'N123AB', type: 'C172', make: 'Cessna',
+        model: '172', isComplex: false, isHighPerformance: false, isTailwheel: false,
+        isActive: true, validFrom: null, validTo: '2019-12-31', createdAt: '', updatedAt: '',
+      },
+      isLoading: false, error: null,
+    } as unknown as ReturnType<typeof useAircraftHook.useAircraftById>);
+
+    renderWithProviders(<AircraftForm aircraftId="ac-1" onClose={mockOnClose} />);
+
+    const until = screen.getByLabelText(/registered until/i);
+    await waitFor(() => expect(until).toHaveValue('2019-12-31'));
+    fireEvent.change(until, { target: { value: '' } });
+    await user.click(screen.getByRole('button', { name: /update aircraft/i }));
+
+    await waitFor(() => {
+      expect(mockUpdate.mutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ validFrom: null, validTo: null }) })
+      );
+    });
+  });
+
   it('calls onClose when cancel is clicked', async () => {
     const user = userEvent.setup();
     renderWithProviders(<AircraftForm onClose={mockOnClose} />);
