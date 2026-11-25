@@ -91,5 +91,15 @@
     "signatureRequired": "Bitte zeichnen Sie eine Unterschrift, bevor Sie fortfahren.",
     "flightChanged": "Der Flug wurde geändert, nachdem diese Seite geöffnet wurde. Laden Sie neu, um vor dem Unterschreiben den aktuellen Eintrag zu sehen.",
     "reload": "Neu laden"
+  },
+  "audit": {
+    "title": "Unterschriftsverlauf",
+    "statusVoided": "Widerrufen",
+    "unknownSigner": "Unbekannter Fluglehrer",
+    "signedAt": "Unterschrieben am {{date}}",
+    "voidedAt": "Widerrufen am {{date}}",
+    "reasonLabel": "Grund",
+    "viewSignature": "Widerrufene Unterschrift anzeigen",
+    "hideSignature": "Unterschrift ausblenden"
   }
 }
