@@ -7,7 +7,7 @@ export type FlightTotals = components['schemas']['FlightTotals'];
 export type FlightColumnKey = components['schemas']['FlightListColumn'];
 
 /** What the function column reads for one entry. */
-export type FlightFunctionKind = 'sim' | 'pax' | 'pic' | 'picus' | 'spic' | 'dual' | 'sic' | 'none';
+export type FlightFunctionKind = 'sim' | 'pax' | 'picdual' | 'pic' | 'picus' | 'spic' | 'dual' | 'sic' | 'none';
 
 /**
  * An FSTD session and a flight the pilot was carried on log no flight
@@ -16,6 +16,7 @@ export type FlightFunctionKind = 'sim' | 'pax' | 'pic' | 'picus' | 'spic' | 'dua
 export function flightFunctionKind(flight: Flight): FlightFunctionKind {
   if (flight.isSimulator) return 'sim';
   if (flight.isPassenger) return 'pax';
+  if (flight.isPic && flight.isDual) return 'picdual';
   if (flight.isPic) return 'pic';
   if ((flight.picusTime || 0) > 0) return 'picus';
   if ((flight.spicTime || 0) > 0) return 'spic';
@@ -29,6 +30,7 @@ export function flightFunctionLabel(kind: FlightFunctionKind, t: (key: string) =
   if (kind === 'sim') return t('simulatorBadge');
   if (kind === 'pax') return t('passengerBadge');
   if (kind === 'none') return '—';
+  if (kind === 'picdual') return 'PIC/DUAL';
   return kind.toUpperCase();
 }
 
@@ -36,6 +38,7 @@ export function flightFunctionLabel(kind: FlightFunctionKind, t: (key: string) =
 export const FLIGHT_FUNCTION_BADGE: Record<FlightFunctionKind, string> = {
   sim: 'badge-info',
   pax: 'badge-neutral',
+  picdual: 'badge-info',
   pic: 'badge-info',
   picus: 'badge-info',
   spic: 'badge-info',

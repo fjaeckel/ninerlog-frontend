@@ -6,6 +6,7 @@ import {
   DEFAULT_CUSTOM_COLUMNS,
   FLIGHT_COLUMNS,
   flightFunctionKind,
+  flightFunctionLabel,
   selectFlightColumns,
   selectFlightCardColumns,
   type FlightColumnKey,
@@ -441,5 +442,17 @@ describe('flightFunctionKind — declared function times', () => {
   it('labels a relief-only sector SIC', () => {
     const f = flight({ isPic: false, reliefTime: 90, sicTime: 0 });
     expect(flightFunctionKind(f)).toBe('sic');
+  });
+});
+
+describe('flightFunctionKind — PIC while receiving instruction', () => {
+  it('T8: labels a flight logged as both PIC and dual PIC/DUAL', () => {
+    const f = flight({ isPic: true, isDual: true, picTime: 96, dualTime: 96 });
+    expect(flightFunctionKind(f)).toBe('picdual');
+    expect(flightFunctionLabel('picdual', (k) => k)).toBe('PIC/DUAL');
+  });
+
+  it('keeps a plain PIC flight PIC', () => {
+    expect(flightFunctionKind(flight({ isPic: true, isDual: false }))).toBe('pic');
   });
 });
